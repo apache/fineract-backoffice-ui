@@ -17,11 +17,12 @@
  * under the License.
  */
 
-import { Component, signal, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { ConfigService } from '../../core/services/config.service';
+import { AuthService } from '../../core/services/auth.service';
 
 /**
  * Dashboard component that displays the current operational status of the application.
@@ -49,10 +50,12 @@ import { ConfigService } from '../../core/services/config.service';
 export class SystemStatusComponent {
   /** The runtime configuration service */
   protected readonly configService = inject(ConfigService);
+  /** The authentication service supplying the active tenant */
+  private readonly authService = inject(AuthService);
   /** The hardcoded environment API URL for reference */
   protected readonly environmentUrl = environment.fineractApiUrl;
   /** Boolean flag indicating if the app is in production mode */
   protected readonly isProd = environment.production;
   /** Signal containing the current active tenant identifier */
-  protected readonly currentTenant = signal('default');
+  protected readonly currentTenant = this.authService.currentTenantId;
 }

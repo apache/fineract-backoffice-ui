@@ -43,6 +43,22 @@ export const routes: Routes = [
             (m) => m.SystemStatusComponent,
           ),
       },
+      {
+        path: 'features/clients',
+        loadComponent: () =>
+          import('./features/clients/clients.component').then((m) => m.ClientsComponent),
+      },
+      {
+        path: 'features/loans',
+        loadComponent: () => import('./features/loans/loans.component').then((m) => m.LoansComponent),
+      },
+      {
+        path: 'features/organization',
+        loadComponent: () =>
+          import('./features/organization/organization.component').then(
+            (m) => m.OrganizationComponent,
+          ),
+      },
     ],
   },
   {

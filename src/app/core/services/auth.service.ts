@@ -75,7 +75,7 @@ export class AuthService {
   readonly isAuthenticated = signal<boolean>(!!this.currentUser());
 
   /** Signal containing the currently active Tenant ID */
-  readonly currentTenantId = signal<string>(localStorage.getItem(this.tenantKey) || 'default');
+  readonly currentTenantId = signal<string>(this.getStoredTenantId());
 
   /** Computed signal for the current username */
   readonly username = computed(() => this.currentUser()?.username || '');
@@ -116,7 +116,9 @@ export class AuthService {
    */
   logout(): void {
     sessionStorage.removeItem(this.sessionKey);
+    localStorage.removeItem(this.tenantKey);
     this.currentUser.set(null);
+    this.currentTenantId.set(this.getDefaultTenantId());
     this.isAuthenticated.set(false);
   }
 
@@ -146,6 +148,22 @@ export class AuthService {
   private getStoredSession(): UserSession | null {
     const stored = sessionStorage.getItem(this.sessionKey);
     return stored ? (JSON.parse(stored) as UserSession) : null;
+  }
+
+  /**
+   * Retrieves the stored tenant from local storage or falls back to the configured default.
+   * @returns The active tenant identifier
+   */
+  private getStoredTenantId(): string {
+    return localStorage.getItem(this.tenantKey) || this.getDefaultTenantId();
+  }
+
+  /**
+   * Resolves the default tenant from runtime configuration.
+   * @returns The configured default tenant identifier
+   */
+  private getDefaultTenantId(): string {
+    return this.configService.config().defaultTenant || 'default';
   }
 
   /**

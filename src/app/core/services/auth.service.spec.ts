@@ -38,13 +38,13 @@ describe('AuthService', () => {
   };
 
   beforeEach(() => {
+    sessionStorage.clear();
+    localStorage.clear();
     TestBed.configureTestingModule({
       providers: [AuthService, ConfigService, provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
-    sessionStorage.clear();
-    localStorage.clear();
   });
 
   afterEach(() => {
@@ -53,6 +53,7 @@ describe('AuthService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+    expect(service.currentTenantId()).toBe('default');
   });
 
   it('should login successfully and set state', () => {
@@ -60,6 +61,8 @@ describe('AuthService', () => {
       expect(session).toEqual(mockSession);
       expect(service.isAuthenticated()).toBeTrue();
       expect(service.username()).toBe('mifos');
+      expect(service.currentTenantId()).toBe('default');
+      expect(localStorage.getItem('fineract_tenant')).toBe('default');
     });
 
     const req = httpMock.expectOne((request) => request.url.includes('/authentication'));
@@ -71,11 +74,15 @@ describe('AuthService', () => {
   it('should logout and clear state', () => {
     // Access private setSession for testing
     (service as unknown as { setSession: (s: UserSession) => void }).setSession(mockSession);
+    service.setTenantId('tenant-a');
     expect(service.isAuthenticated()).toBeTrue();
+    expect(service.currentTenantId()).toBe('tenant-a');
 
     service.logout();
     expect(service.isAuthenticated()).toBeFalse();
     expect(service.currentUser()).toBeNull();
+    expect(service.currentTenantId()).toBe('default');
     expect(sessionStorage.getItem('fineract_session')).toBeNull();
+    expect(localStorage.getItem('fineract_tenant')).toBeNull();
   });
 });

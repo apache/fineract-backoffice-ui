@@ -18,9 +18,10 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { SidebarComponent } from './sidebar.component';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
+import { RouterLink, RouterModule } from '@angular/router';
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;
@@ -41,8 +42,15 @@ describe('SidebarComponent', () => {
   });
 
   it('should render navigation links', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    const navLinks = compiled.querySelectorAll('.nav-item');
-    expect(navLinks.length).toBeGreaterThan(0);
+    const navLinks = fixture.debugElement.queryAll(By.directive(RouterLink));
+    const linkTargets = navLinks.map((link) => link.injector.get(RouterLink).href);
+
+    expect(navLinks.length).toBe(4);
+    expect(linkTargets).toEqual([
+      '/dashboard',
+      '/features/clients',
+      '/features/loans',
+      '/features/organization',
+    ]);
   });
 });
