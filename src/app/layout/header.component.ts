@@ -36,7 +36,7 @@ import { Router } from '@angular/router';
   template: `
     <header class="header" role="banner">
       <div class="logo-section">
-        <img src="favicon.png" alt="Fineract Logo" class="logo" />
+        <img src="favicon.png" [attr.alt]="'app.logoAlt' | translate" class="logo" />
         <span class="app-title">{{ 'app.title' | translate }}</span>
       </div>
 

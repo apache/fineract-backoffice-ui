@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfigService } from '../../core/services/config.service';
@@ -41,7 +41,7 @@ import { ConfigService } from '../../core/services/config.service';
     <div class="login-page">
       <div class="login-card" role="main">
         <div class="login-header">
-          <img src="favicon.png" alt="Fineract Logo" class="login-logo" />
+          <img src="favicon.png" [attr.alt]="'app.logoAlt' | translate" class="login-logo" />
           <h1>{{ 'app.title' | translate }}</h1>
           <p class="subtitle">{{ 'login.welcome' | translate }}</p>
         </div>
@@ -52,9 +52,13 @@ import { ConfigService } from '../../core/services/config.service';
               {{ 'login.serverUrl' | translate }} ℹ️
             </label>
             <select id="serverUrl" formControlName="serverUrl" (change)="onServerChange()">
-              <option value="https://demo.mifos.io/fineract-provider/api/v1">Mifos Sandbox</option>
-              <option value="https://localhost:8443/fineract-provider/api/v1">Local Server</option>
-              <option value="custom">Custom URL...</option>
+              <option value="https://demo.mifos.io/fineract-provider/api/v1">
+                {{ 'login.serverOptions.sandbox' | translate }}
+              </option>
+              <option value="https://localhost:8443/fineract-provider/api/v1">
+                {{ 'login.serverOptions.local' | translate }}
+              </option>
+              <option value="custom">{{ 'login.serverOptions.custom' | translate }}</option>
             </select>
           </div>
 
@@ -65,7 +69,7 @@ import { ConfigService } from '../../core/services/config.service';
                 id="customUrl"
                 type="text"
                 formControlName="customUrl"
-                placeholder="https://..."
+                [placeholder]="'login.customUrlPlaceholder' | translate"
               />
             </div>
           }
@@ -121,7 +125,7 @@ import { ConfigService } from '../../core/services/config.service';
         </form>
 
         <div class="login-footer">
-          <p>&copy; 2026 Apache Fineract</p>
+          <p>{{ 'login.footer' | translate: { year: currentYear } }}</p>
         </div>
       </div>
     </div>
@@ -246,12 +250,15 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly configService = inject(ConfigService);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
 
   /** Signal indicating if a login request is in progress */
   protected readonly isLoading = signal(false);
   /** Signal containing the current login error message if any */
   protected readonly error = signal<string | null>(null);
+  /** Current year for the localized footer */
+  protected readonly currentYear = new Date().getFullYear();
 
   /** Reactive form group for login credentials and server settings */
   protected readonly loginForm = this.fb.group({
@@ -299,7 +306,7 @@ export class LoginComponent {
           error: (err) => {
             this.isLoading.set(false);
             this.error.set(
-              err.error?.defaultUserMessage || 'Login failed. Check credentials/server.',
+              err.error?.defaultUserMessage || this.translate.instant('login.errors.default'),
             );
           },
         });

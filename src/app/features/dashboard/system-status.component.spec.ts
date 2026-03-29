@@ -20,7 +20,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { SystemStatusComponent } from './system-status.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -29,6 +29,7 @@ describe('SystemStatusComponent', () => {
   let fixture: ComponentFixture<SystemStatusComponent>;
   let configServiceSpy: jasmine.SpyObj<ConfigService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
+  let translateService: TranslateService;
 
   beforeEach(async () => {
     configServiceSpy = jasmine.createSpyObj('ConfigService', [], {
@@ -46,6 +47,24 @@ describe('SystemStatusComponent', () => {
       ],
     }).compileComponents();
 
+    translateService = TestBed.inject(TranslateService);
+    translateService.setTranslation('en', {
+      dashboard: {
+        systemStatus: 'System Operational Status',
+        labels: {
+          runtimeApiUrl: 'Runtime API URL',
+          fallbackApiUrl: 'Fallback API URL',
+          environment: 'Environment',
+          tenant: 'Tenant',
+        },
+        environments: {
+          production: 'Production',
+          development: 'Development',
+        },
+      },
+    });
+    translateService.use('en');
+
     fixture = TestBed.createComponent(SystemStatusComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -59,6 +78,7 @@ describe('SystemStatusComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const listItems = compiled.querySelectorAll('li');
     expect(listItems.length).toBe(4);
+    expect(compiled.textContent).toContain('System Operational Status');
     expect(compiled.textContent).toContain('Runtime API URL:');
     expect(compiled.textContent).toContain('Fallback API URL:');
     expect(compiled.textContent).toContain('Environment:');

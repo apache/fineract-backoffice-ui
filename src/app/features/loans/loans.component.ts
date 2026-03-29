@@ -27,8 +27,8 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonModule, TranslateModule],
   template: `
     <section class="card" aria-labelledby="loans-heading">
-      <h2 id="loans-heading">{{ 'nav.loans' | translate }}</h2>
-      <p>Loan workflows are being built for this release.</p>
+      <h2 id="loans-heading">{{ 'features.loans.title' | translate }}</h2>
+      <p>{{ 'features.loans.comingSoon' | translate }}</p>
     </section>
   `,
 })

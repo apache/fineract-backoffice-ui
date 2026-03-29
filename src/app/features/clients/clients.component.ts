@@ -27,8 +27,8 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [CommonModule, TranslateModule],
   template: `
     <section class="card" aria-labelledby="clients-heading">
-      <h2 id="clients-heading">{{ 'nav.clients' | translate }}</h2>
-      <p>Client management is being built for this release.</p>
+      <h2 id="clients-heading">{{ 'features.clients.title' | translate }}</h2>
+      <p>{{ 'features.clients.comingSoon' | translate }}</p>
     </section>
   `,
 })

@@ -50,7 +50,8 @@ export const routes: Routes = [
       },
       {
         path: 'features/loans',
-        loadComponent: () => import('./features/loans/loans.component').then((m) => m.LoansComponent),
+        loadComponent: () =>
+          import('./features/loans/loans.component').then((m) => m.LoansComponent),
       },
       {
         path: 'features/organization',

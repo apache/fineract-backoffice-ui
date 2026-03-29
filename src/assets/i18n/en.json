@@ -1,4 +1,4 @@
-{
+﻿{
   "license": "Apache-2.0",
   "app": {
     "title": "Fineract Backoffice UI",
@@ -9,7 +9,8 @@
       "en": "English",
       "hi": "Hindi",
       "ko": "Korean"
-    }
+    },
+    "logoAlt": "Fineract Logo"
   },
   "nav": {
     "main": "Main Navigation",
@@ -19,7 +20,17 @@
     "organization": "Organization"
   },
   "dashboard": {
-    "systemStatus": "System Operational Status"
+    "systemStatus": "System Operational Status",
+    "labels": {
+      "runtimeApiUrl": "Runtime API URL",
+      "fallbackApiUrl": "Fallback API URL",
+      "environment": "Environment",
+      "tenant": "Tenant"
+    },
+    "environments": {
+      "production": "Production",
+      "development": "Development"
+    }
   },
   "login": {
     "title": "Fineract Login",
@@ -32,8 +43,18 @@
     "submit": "Sign In",
     "loggingIn": "Signing in...",
     "tooltips": {
-      "serverUrl": "The Fineract server address. Use 'Mifos Sandbox' for testing or 'Local' for your own instance.",
-      "tenantId": "A unique ID for the financial institution. Default is 'default'. This is passed via the Fineract-Platform-TenantId header."
+      "serverUrl": "The Fineract server address. Use \u0027Mifos Sandbox\u0027 for testing or \u0027Local\u0027 for your own instance.",
+      "tenantId": "A unique ID for the financial institution. Default is \u0027default\u0027. This is passed via the Fineract-Platform-TenantId header."
+    },
+    "customUrlPlaceholder": "https://...",
+    "footer": "© {{year}} Apache Fineract",
+    "serverOptions": {
+      "sandbox": "Mifos Sandbox",
+      "local": "Local Server",
+      "custom": "Custom URL..."
+    },
+    "errors": {
+      "default": "Login failed. Check credentials or server."
     }
   },
   "idle": {
@@ -41,6 +62,20 @@
       "title": "Session Expiring",
       "message": "You have been inactive for a while. Your session will expire soon. Do you want to stay logged in?",
       "extend": "Keep me logged in"
+    }
+  },
+  "features": {
+    "clients": {
+      "title": "Client Management",
+      "comingSoon": "This feature is coming soon."
+    },
+    "loans": {
+      "title": "Loan Management",
+      "comingSoon": "This feature is coming soon."
+    },
+    "organization": {
+      "title": "Organization Settings",
+      "comingSoon": "This feature is coming soon."
     }
   }
 }

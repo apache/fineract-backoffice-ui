@@ -38,10 +38,25 @@ import { AuthService } from '../../core/services/auth.service';
     <div class="card">
       <h3>{{ 'dashboard.systemStatus' | translate }}</h3>
       <ul>
-        <li><strong>Runtime API URL:</strong> {{ configService.apiUrl }}</li>
-        <li><strong>Fallback API URL:</strong> {{ environmentUrl }}</li>
-        <li><strong>Environment:</strong> {{ isProd ? 'Production' : 'Development' }}</li>
-        <li><strong>Tenant:</strong> {{ currentTenant() }}</li>
+        <li>
+          <strong>{{ 'dashboard.labels.runtimeApiUrl' | translate }}:</strong>
+          {{ configService.apiUrl }}
+        </li>
+        <li>
+          <strong>{{ 'dashboard.labels.fallbackApiUrl' | translate }}:</strong>
+          {{ environmentUrl }}
+        </li>
+        <li>
+          <strong>{{ 'dashboard.labels.environment' | translate }}:</strong>
+          {{
+            (isProd ? 'dashboard.environments.production' : 'dashboard.environments.development')
+              | translate
+          }}
+        </li>
+        <li>
+          <strong>{{ 'dashboard.labels.tenant' | translate }}:</strong>
+          {{ currentTenant() }}
+        </li>
       </ul>
     </div>
   `,
