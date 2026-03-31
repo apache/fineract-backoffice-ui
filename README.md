@@ -17,36 +17,92 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-Fineract Backoffice UI
-A modern Angular-based backoffice interface for Apache Fineract—the open-source core banking platform for fintechs and community banks. This UI connects to Fineract's REST APIs and is designed to be deployed alongside Fineract, enabling users to understand and operate core banking functionality through role-specific experiences.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Overview
-The Fineract Backoffice UI provides a user-friendly way to interact with Fineract's core features. It is built to mirror the capabilities of the Fineract platform and expose them through workflows tailored to key user profiles, so each role can focus on the tasks most relevant to them.
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Key User Profiles & Core Functionality
-1. Admin User
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+# Fineract Backoffice UI
+
+A modern **Angular**-based backoffice interface for [Apache Fineract](https://fineract.apache.org/)—the open-source core banking platform for fintechs and community banks. This UI connects to Fineract's REST APIs and is designed to be deployed alongside Fineract, enabling users to understand and operate core banking functionality through role-specific experiences.
+
+---
+
+## Overview
+
+The Fineract Backoffice UI provides a user-friendly way to interact with Fineract’s core features. It is built to mirror the capabilities of the Fineract platform and expose them through workflows tailored to key user profiles, so each role can focus on the tasks most relevant to them.
+
+---
+
+## Key User Profiles & Core Functionality
+
+### 1. Admin User
+
 Admins manage the organizational setup, products, and staff. The UI supports:
-CapabilityDescriptionOrganization & StructureManage offices, hierarchy, and organizational unitsProduct SetupConfigure loan products, savings products, and charges with interest rules, grace periods, and feesStaff & User ManagementCreate and manage staff, assign roles, set permissionsCustomer ManagementCreate and manage customers, profiles, and organizational structureCode ManagementManage custom codes and lookups used across the systemCurrency & ConfigurationConfigure currencies, interest rates, and organization-level settings
-2. Loan Officer
+
+| Capability                   | Description                                                                                         |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Organization & Structure** | Manage offices, hierarchy, and organizational units                                                 |
+| **Product Setup**            | Configure loan products, savings products, and charges with interest rules, grace periods, and fees |
+| **Staff & User Management**  | Create and manage staff, assign roles, set permissions                                              |
+| **Customer Management**      | Create and manage customers, profiles, and organizational structure                                 |
+| **Code Management**          | Manage custom codes and lookups used across the system                                              |
+| **Currency & Configuration** | Configure currencies, interest rates, and organization-level settings                               |
+
+### 2. Loan Officer
+
 Loan officers focus on customer relationships and loan lifecycle. The UI supports:
-CapabilityDescriptionCustomer PortfolioView assigned customers, their profiles, financial history, and identificationLoan ApplicationsCreate and submit loan applications for customersDisbursementsProcess single or multi-stage disbursements based on milestonesRepaymentsRecord repayments and track collection statusLoan TrackingView loan status, amortization schedules, delinquency, and arrearsCollectionsMonitor overdue loans and apply penalties where configured
-3. System Admin
+
+| Capability             | Description                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| **Customer Portfolio** | View assigned customers, their profiles, financial history, and identification |
+| **Loan Applications**  | Create and submit loan applications for customers                              |
+| **Disbursements**      | Process single or multi-stage disbursements based on milestones                |
+| **Repayments**         | Record repayments and track collection status                                  |
+| **Loan Tracking**      | View loan status, amortization schedules, delinquency, and arrears             |
+| **Collections**        | Monitor overdue loans and apply penalties where configured                     |
+
+### 3. System Admin
+
 System admins handle security, audit, and infrastructure. The UI supports:
-CapabilityDescriptionUser Roles & PermissionsDefine roles and assign granular permissions to staffAudit & ReportingAccess audit logs, activity history, and system reportsSecurity ConfigurationManage authentication, passwords, and security settingsSystem HealthMonitor API status, integrations, and system healthBatch JobsView and manage scheduled batch jobs (e.g., interest posting, delinquency)Data ManagementExport data and manage system backups where applicable
 
-Technology Stack
+| Capability                   | Description                                                                |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| **User Roles & Permissions** | Define roles and assign granular permissions to staff                      |
+| **Audit & Reporting**        | Access audit logs, activity history, and system reports                    |
+| **Security Configuration**   | Manage authentication, passwords, and security settings                    |
+| **System Health**            | Monitor API status, integrations, and system health                        |
+| **Batch Jobs**               | View and manage scheduled batch jobs (e.g., interest posting, delinquency) |
+| **Data Management**          | Export data and manage system backups where applicable                     |
 
-Framework: Angular (with standalone components)
-Backend Integration: Fineract REST API (e.g. /fineract-provider/api/v1/)
-Authentication: Fineract-based auth (basic auth or token-based)
-i18n: Angular i18n with support for English, Hindi, and Korean
-State Management: Angular signals for reactive state
-Testing: Jasmine + Karma with 90%+ code coverage
-Code Quality: ESLint + Prettier for consistent formatting
-Deployment: Designed to run alongside Fineract (e.g. Docker, reverse proxy)
+---
 
+## Technology Stack
 
-Architecture
+- **Framework:** Angular
+- **Backend Integration:** Fineract REST API (e.g. `/fineract-provider/api/v1/`)
+- **Authentication:** Fineract-based auth (basic auth or token-based)
+- **Deployment:** Designed to run alongside Fineract (e.g. Docker, reverse proxy)
+
+---
+
+## Architecture
+
+```
 ┌─────────────────────┐         REST API          ┌─────────────────────┐
 │  Fineract Backoffice │ ─────────────────────────▶│   Apache Fineract   │
 │  UI (Angular SPA)   │  HTTPS (e.g. :8443)       │   (Core Platform)   │
@@ -58,18 +114,25 @@ Architecture
                                                     │   (PostgreSQL /     │
                                                     │   MariaDB)          │
                                                     └─────────────────────┘
+```
 
-Prerequisites
+---
 
-Node.js (v18 or later recommended) and npm or yarn
-Angular CLI (npm i -g @angular/cli)
-Apache Fineract instance (e.g. via Docker: docker run -d -p 8443:8443 apache/fineract:latest)
-Access to Fineract REST API (default demo: mifos / password on https://localhost:8443/fineract-provider/api/v1)
+## Prerequisites
 
+- **Node.js** (v18 or later recommended) and **npm** or **yarn**
+- **Angular CLI** (`npm i -g @angular/cli`)
+- **Apache Fineract** instance (e.g. via Docker: `docker run -d -p 8443:8443 apache/fineract:latest`)
+- Access to Fineract REST API (default demo: `mifos` / `password` on `https://localhost:8443/fineract-provider/api/v1`)
 
-Getting Started
-Development
-bash# Install dependencies
+---
+
+## Getting Started
+
+### Development
+
+```bash
+# Install dependencies
 npm install
 
 # Configure API base URL (e.g. in environment files)
@@ -77,69 +140,14 @@ npm install
 
 # Run development server
 ng serve
-Access the app at http://localhost:4200 (or the configured port).
-Configuration
-
-API Base URL: Point to your Fineract instance (e.g. https://your-fineract-host:8443/fineract-provider/api/v1)
-Authentication: Use Fineract credentials; the UI will send them according to your auth strategy
-Tenant: Configured via environment files; defaults to default tenant
-
-
-Development Workflow
-Code Quality
-bash# Run linter
-npm run lint
-
-# Check formatting
-npm run format:check
-
-# Auto-format code
-npm run format
-
-# Run tests
-npm test
-
-# Run tests with coverage
-npm test -- --code-coverage
 ```
 
-### Quality Standards
+Access the app at `http://localhost:4200` (or the configured port).
 
-- **Test Coverage:** Minimum 90% statement coverage required
-- **Linting:** ESLint passes without errors
-- **Formatting:** Prettier compliance enforced
-- **i18n:** All user-facing strings must use translation keys
+### Configuration
 
----
-
-## Current Features
-
-### Authentication & Authorization
-
-- Login with Fineract credentials
-- Multi-tenant support with tenant persistence
-- Protected routes with auth guards
-- Automatic logout on session expiry
-
-### Dashboard
-
-- System status overview
-- Active tenant display
-- Environment indicators (DEV/UAT/PROD)
-- Multi-language support
-
-### Feature Modules (In Development)
-
-- **Clients:** Customer management interface (placeholder)
-- **Loans:** Loan lifecycle management (placeholder)
-- **Organization:** Organizational setup and configuration (placeholder)
-
-### Internationalization
-
-- Full i18n support via Angular i18n
-- Languages: English (en), Hindi (hi), Korean (ko)
-- Translation-ready UI components
-- Runtime language switching
+- **API Base URL:** Point to your Fineract instance (e.g. `https://your-fineract-host:8443/fineract-provider/api/v1`)
+- **Authentication:** Use Fineract credentials; the UI will send them according to your auth strategy.
 
 ---
 
@@ -148,54 +156,22 @@ npm test -- --code-coverage
 The UI is built as a static SPA and can be deployed together with Fineract:
 
 1. **Standalone Build + Reverse Proxy**
-
    - Build: `ng build --configuration production`
    - Serve output (e.g. `dist/`) via NGINX or similar
    - Configure reverse proxy so the UI and Fineract share the same origin or CORS allow the API domain
 
 2. **Docker (co-located)**
-
    - Use `apache/fineract` image for the backend
    - Add an Angular build step and serve the static files from NGINX or another web server alongside Fineract
 
 3. **Single Domain Example (NGINX)**
-```
+
+   ```
    /          → Angular app (static files)
    /api/      → proxy to Fineract (https://fineract:8443/fineract-provider/api/v1)
+   ```
 
-Recent Changes
-Navigation & Routing
-
-Implemented lazy-loaded feature routes for Clients, Loans, and Organization
-Fixed broken sidebar navigation links
-Added route guards for authenticated feature modules
-
-State Management
-
-Refactored tenant state management using Angular signals
-Tenant ID now persists in localStorage and syncs with auth state
-Logout properly resets tenant to configured default
-
-Testing
-
-Increased test suite from 29 to 35 tests
-Added comprehensive specs for all new components
-Achieved 90%+ code coverage across statements, functions, and lines
-All tests passing in headless Chrome
-
-Internationalization
-
-Removed all hardcoded user-facing strings
-Added translation keys for dashboard, login, header, and feature placeholders
-Extended translations to Hindi and Korean (English placeholders where applicable)
-Full i18n compliance across the application
-
-Code Quality
-
-Applied Prettier formatting across entire codebase
-All files now comply with project formatting standards
-ESLint compliance restored
-Consistent code style enforced
+---
 
 ## Fineract API Reference
 
@@ -211,6 +187,16 @@ Copyright 2025 The Apache Software Foundation
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
 
 ---
+
+# Project Documentation
+
+For more information on contributing, setting up the project, and our coding standards, please refer to the following documents:
+
+- [Contributing Guide](CONTRIBUTING.md)
+- [Project Setup Guide](SETUP.md)
+- [Code Style Guide](STYLE.md)
+- [Prompt Checkpoint](GEMINI.md)
+
 
 # Project Documentation
 
