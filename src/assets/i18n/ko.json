@@ -1,26 +1,26 @@
-﻿{
+{
   "license": "Apache-2.0",
   "app": {
-    "title": "í”¼ë„ˆëž™íŠ¸ ë°±ì˜¤í”¼ìŠ¤ UI",
-    "welcome": "í”¼ë„ˆëž™íŠ¸ ë°±ì˜¤í”¼ìŠ¤ UIì— ì˜¤ì‹  ê²ƒì„ í™˜ì˜í•©ë‹ˆë‹¤!",
-    "logout": "ë¡œê·¸ì•„ì›ƒ",
+    "title": "피너랙트 백오피스 UI",
+    "welcome": "피너랙트 백오피스 UI에 오신 것을 환영합니다!",
+    "logout": "로그아웃",
     "language": {
-      "select": "ì–¸ì–´ ì„ íƒ",
-      "en": "ì˜ì–´",
-      "hi": "ížŒë””ì–´",
-      "ko": "í•œêµ­ì–´"
+      "select": "언어 선택",
+      "en": "영어",
+      "hi": "힌디어",
+      "ko": "한국어"
     },
     "logoAlt": "Fineract Logo"
   },
   "nav": {
-    "main": "ë©”ì¸ ë„¤ë¹„ê²Œì´ì…˜",
-    "dashboard": "ëŒ€ì‹œë³´ë“œ",
-    "clients": "ê³ ê°",
-    "loans": "ëŒ€ì¶œ",
-    "organization": "ì¡°ì§"
+    "main": "메인 네비게이션",
+    "dashboard": "대시보드",
+    "clients": "고객",
+    "loans": "대출",
+    "organization": "조직"
   },
   "dashboard": {
-    "systemStatus": "ì‹œìŠ¤í…œ ìš´ì˜ ìƒíƒœ",
+    "systemStatus": "시스템 운영 상태",
     "labels": {
       "runtimeApiUrl": "Runtime API URL",
       "fallbackApiUrl": "Fallback API URL",
@@ -33,18 +33,18 @@
     }
   },
   "login": {
-    "title": "í”¼ë„ˆëž™íŠ¸ ë¡œê·¸ì¸",
-    "welcome": "ì»¤ë®¤ë‹ˆí‹° ì€í–‰ ìš´ì˜ ê´€ë¦¬",
-    "serverUrl": "API ì—”ë“œí¬ì¸íŠ¸",
-    "customUrl": "ì‚¬ìš©ìž ì§€ì • API URL",
-    "tenantId": "í…Œë„ŒíŠ¸ ì‹ë³„ìž",
-    "username": "ì‚¬ìš©ìž ì´ë¦„",
-    "password": "ë¹„ë°€ë²ˆí˜¸",
-    "submit": "ë¡œê·¸ì¸",
-    "loggingIn": "ë¡œê·¸ì¸ ì¤‘...",
+    "title": "피너랙트 로그인",
+    "welcome": "커뮤니티 은행 운영 관리",
+    "serverUrl": "API 엔드포인트",
+    "customUrl": "사용자 지정 API URL",
+    "tenantId": "테넌트 식별자",
+    "username": "사용자 이름",
+    "password": "비밀번호",
+    "submit": "로그인",
+    "loggingIn": "로그인 중...",
     "tooltips": {
-      "serverUrl": "í”¼ë„ˆëž™íŠ¸ ì„œë²„ ì£¼ì†Œìž…ë‹ˆë‹¤. í…ŒìŠ¤íŠ¸ì—ëŠ” \u0027Mifos Sandbox\u0027ë¥¼, ìžì²´ ì¸ìŠ¤í„´ìŠ¤ì—ëŠ” \u0027Local\u0027ì„ ì‚¬ìš©í•˜ì„¸ìš”.",
-      "tenantId": "ê¸ˆìœµ ê¸°ê´€ì˜ ê³ ìœ  IDìž…ë‹ˆë‹¤. ê¸°ë³¸ê°’ì€ \u0027default\u0027ìž…ë‹ˆë‹¤."
+      "serverUrl": "피너랙트 서버 주소입니다. 테스트에는 'Mifos Sandbox'를, 자체 인스턴스에는 'Local'을 사용하세요.",
+      "tenantId": "금융 기관의 고유 ID입니다. 기본값은 'default'입니다."
     },
     "customUrlPlaceholder": "https://...",
     "footer": "© {{year}} Apache Fineract",
@@ -59,9 +59,9 @@
   },
   "idle": {
     "warning": {
-      "title": "ì„¸ì…˜ ë§Œë£Œ ì˜ˆì •",
-      "message": "í•œë™ì•ˆ í™œë™ì´ ì—†ì—ˆìŠµë‹ˆë‹¤. ê³§ ì„¸ì…˜ì´ ë§Œë£Œë©ë‹ˆë‹¤. ê³„ì† ë¡œê·¸ì¸ ìƒíƒœë¥¼ ìœ ì§€í•˜ì‹œê² ìŠµë‹ˆê¹Œ?",
-      "extend": "ë¡œê·¸ì¸ ìœ ì§€"
+      "title": "세션 만료 예정",
+      "message": "한동안 활동이 없었습니다. 곧 세션이 만료됩니다. 계속 로그인 상태를 유지하시겠습니까?",
+      "extend": "로그인 유지"
     }
   },
   "features": {
