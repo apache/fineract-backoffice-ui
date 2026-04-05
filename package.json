@@ -54,7 +54,7 @@
     "@playwright/test": "^1.58.2",
     "@types/jasmine": "~6.0.0",
     "angular-eslint": "21.0.1",
-    "eslint": "^9.39.4",
+    "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-sonarjs": "^4.0.1",
     "jasmine-core": "~5.9.0",
