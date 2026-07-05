@@ -48,7 +48,7 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.15",
+    "@angular/build": "^22.0.4",
     "@angular/cli": "^21.2.15",
     "@angular/compiler-cli": "^21.2.17",
     "@emnapi/core": "1.10.0",
