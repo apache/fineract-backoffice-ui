@@ -43,7 +43,7 @@
     "@angular/router": "^22.0.7",
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^17.0.0",
-    "@softarc/native-federation-node": "^3.3.4",
+    "@softarc/native-federation-node": "^4.0.0",
     "es-module-shims": "^1.5.12",
     "rxjs": "~7.8.0",
     "tslib": "^2.8.1",
