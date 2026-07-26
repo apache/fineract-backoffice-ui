@@ -64,7 +64,7 @@
     "angular-eslint": "^22.0.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-sonarjs": "^4.0.1",
+    "eslint-plugin-sonarjs": "^4.2.0",
     "jasmine-core": "~6.3.0",
     "jsdom": "^28.0.0",
     "karma": "~6.4.0",
