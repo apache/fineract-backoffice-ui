@@ -268,6 +268,33 @@ describe('errorInterceptor', () => {
       expect(routerSpy.navigate).not.toHaveBeenCalled();
     });
 
+    it('should report the platform reason for a domain rule violation', () => {
+      httpClient.get(testUrl, authorized).subscribe({ error: () => expect().nothing() });
+
+      httpTestingController.expectOne(testUrl).flush(
+        {
+          userMessageGlobalisationCode: 'validation.msg.domain.rule.violation',
+          defaultUserMessage: 'Errors contain reason for domain rule violation.',
+          errors: [
+            {
+              defaultUserMessage:
+                'Group cannot be closed because of active clients associated with it.',
+              userMessageGlobalisationCode: 'error.msg.Group.close.active.clients.exist',
+              parameterName: 'id',
+            },
+          ],
+        },
+        { status: 403, statusText: 'Forbidden' },
+      );
+
+      expect(notificationsSpy.error).toHaveBeenCalledWith(
+        'Errors contain reason for domain rule violation.\n\n' +
+          '\u2022 [id] Group cannot be closed because of active clients associated with it.',
+      );
+      expect(authSpy.logout).not.toHaveBeenCalled();
+      expect(routerSpy.navigate).not.toHaveBeenCalled();
+    });
+
     it('should stay silent when the caller opts out', () => {
       httpClient
         .get(testUrl, { context: skipErrorToast() })

@@ -55,14 +55,19 @@ function messageFor(error: HttpErrorResponse, i18n: I18nAdapter): string {
     return `Error: ${error.error.message}`;
   }
 
+  const hasValidationErrors = Array.isArray(error.error?.errors) && error.error.errors.length > 0;
+  const isDomainRuleViolation =
+    error.error?.userMessageGlobalisationCode === 'validation.msg.domain.rule.violation' ||
+    hasValidationErrors;
+
   // Fineract's 403 body describes the missing permission in backend terms ("NOT_ALLOWED",
   // a permission code) which means nothing to the user. What they can act on is that this
   // account lacks the right, not which internal code was checked.
-  if (error.status === 403) {
+  if (error.status === 403 && !isDomainRuleViolation) {
     return i18n.translate('COMMON.ERRORS.FORBIDDEN');
   }
 
-  if (error.error?.errors && Array.isArray(error.error.errors) && error.error.errors.length > 0) {
+  if (hasValidationErrors) {
     const stacked = error.error.errors
       .map((err: Record<string, unknown>) => {
         const msg = err['developerMessage'] || err['defaultUserMessage'] || 'Validation error';
