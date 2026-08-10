@@ -161,11 +161,9 @@ export class CheckerInboxComponent {
     });
   }
 
-onReject(task: Record<string, unknown>) {
-  if (confirm('Are you sure you want to reject this task?')) {
-    this.makerCheckerService
-      .postMakercheckersAuditId(task['id'] as number, 'reject')
-      .subscribe({
+  onReject(task: Record<string, unknown>) {
+    if (confirm('Are you sure you want to reject this task?')) {
+      this.makerCheckerService.postMakercheckersAuditId(task['id'] as number, 'reject').subscribe({
         next: () => {
           this.snackBar.open('Task rejected successfully', 'Close', { duration: 3000 });
           this.refreshSubject.next();
@@ -174,8 +172,8 @@ onReject(task: Record<string, unknown>) {
           this.snackBar.open('Failed to reject task', 'Close', { duration: 3000 });
         },
       });
+    }
   }
-}
   formatDate(dateArray: unknown): string {
     if (Array.isArray(dateArray)) {
       return new Date(dateArray[0], dateArray[1] - 1, dateArray[2]).toLocaleDateString();
