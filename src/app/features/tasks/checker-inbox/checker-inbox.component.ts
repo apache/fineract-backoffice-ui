@@ -153,7 +153,7 @@ export class CheckerInboxComponent {
 
   onReject(task: Record<string, unknown>) {
     if (confirm('Are you sure you want to reject this task?')) {
-      this.makerCheckerService.deleteMakercheckersAuditId(task['id'] as number).subscribe({
+      this.makerCheckerService.postMakercheckersAuditId(task['id'] as number, 'reject').subscribe({
         next: () => {
           this.notifications.success('Task rejected successfully');
           this.refreshSubject.next();
