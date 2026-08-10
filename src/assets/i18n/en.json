@@ -2050,7 +2050,11 @@
     "ACCOUNT_NO": "Account No",
     "EXTERNAL_ID": "External ID",
     "PARENT": "Parent",
-    "NO_RESULTS": "No results found."
+    "NO_RESULTS": "No results found.",
+    "PAGES_SECTION": "Settings & Pages",
+    "ENTITIES_SECTION": "Entities",
+    "PAGE_TYPE": "Page",
+    "SECTION": "Section"
   },
   "EMAIL_CAMPAIGNS": {
     "TITLE": "Email Campaigns",

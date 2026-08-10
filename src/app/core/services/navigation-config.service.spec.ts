@@ -26,6 +26,7 @@ import {
   NavigationConfigService,
   NavItemConfig,
   filterNavItems,
+  flattenNavRoutes,
 } from './navigation-config.service';
 import type { AppConfig } from './config.service';
 import { provideTestConfig } from '../../testing/config';
@@ -89,6 +90,52 @@ describe('filterNavItems (pure function)', () => {
     ];
     const isVisible = (item: NavItemConfig) => item.requiredPermissions === undefined;
     expect(filterNavItems(items, isVisible)).toEqual([]);
+  });
+});
+
+describe('flattenNavRoutes (pure function)', () => {
+  const ORG_LABEL_KEY = 'nav.organization';
+  const OFFICES_LABEL_KEY = 'nav.offices';
+  const OFFICES_ROUTE = '/organization/offices';
+
+  it('collects leaf routes and preserves the parent group label key', () => {
+    const items: NavItemConfig[] = [
+      {
+        labelKey: ORG_LABEL_KEY,
+        children: [
+          { route: OFFICES_ROUTE, labelKey: OFFICES_LABEL_KEY },
+          { route: '/organization/staff', labelKey: 'nav.staff' },
+        ],
+      },
+    ];
+
+    expect(flattenNavRoutes(items)).toEqual([
+      {
+        route: OFFICES_ROUTE,
+        labelKey: OFFICES_LABEL_KEY,
+        groupLabelKey: ORG_LABEL_KEY,
+      },
+      {
+        route: '/organization/staff',
+        labelKey: 'nav.staff',
+        groupLabelKey: ORG_LABEL_KEY,
+      },
+    ]);
+  });
+
+  it('skips dividers and group headers without routes', () => {
+    const items: NavItemConfig[] = [
+      { labelKey: '', divider: true },
+      { labelKey: 'nav.products', children: [{ route: '/products/loan', labelKey: 'nav.loanProducts' }] },
+    ];
+
+    expect(flattenNavRoutes(items)).toEqual([
+      {
+        route: '/products/loan',
+        labelKey: 'nav.loanProducts',
+        groupLabelKey: 'nav.products',
+      },
+    ]);
   });
 });
 
@@ -377,6 +424,27 @@ describe('NavigationConfigService', () => {
       expect(
         isVisible({ route: '/x', labelKey: 'x', requiredPermissions: 'CREATE_CLIENT' }),
       ).toBeFalse();
+    });
+  });
+
+  describe('searchRoutes', () => {
+    it('returns matching navigation shortcuts from the filtered tree', () => {
+      setPermissions(['ALL_FUNCTIONS']);
+      const results = service.searchRoutes('offices');
+      expect(results.some((result) => result.route === '/organization/offices')).toBeTrue();
+      expect(results[0]?.label).toBeTruthy();
+    });
+
+    it('excludes routes the user cannot access', () => {
+      setPermissions([]);
+      const results = service.searchRoutes('users');
+      expect(results.some((result) => result.route === '/security/users')).toBeFalse();
+    });
+
+    it('does not return the global search page itself', () => {
+      setPermissions(['ALL_FUNCTIONS']);
+      const results = service.searchRoutes('search');
+      expect(results.some((result) => result.route === '/search')).toBeFalse();
     });
   });
 });

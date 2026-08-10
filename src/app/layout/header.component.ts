@@ -24,12 +24,21 @@ import { AuthService } from '../core/services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { IonIcon, IonItem, IonLabel, IonList, IonSearchbar } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
-import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, switchMap, of, map, catchError } from 'rxjs';
 import { GuidanceService } from '../core/services/guidance.service';
 import { SidebarService } from '../core/services/sidebar.service';
 import { ThemeService } from '../core/services/theme.service';
 import { SearchAPIService, GetSearchResponse, BusinessDateManagementService } from '../api';
+import {
+  NavigationConfigService,
+  NavSearchResult,
+} from '../core/services/navigation-config.service';
 import { TooltipDirective } from '../shared/directives/tooltip.directive';
+
+/** Combined header search result — entity records or navigation shortcuts. */
+type HeaderSearchResult =
+  | { kind: 'entity'; entity: GetSearchResponse }
+  | { kind: 'nav'; nav: NavSearchResult };
 
 /**
  * Top-level application header component.
@@ -83,19 +92,27 @@ import { TooltipDirective } from '../shared/directives/tooltip.directive';
         <!-- Ionic has no autocomplete, so results render as a dropdown under the searchbar. -->
         @if (showResults() && searchResults().length > 0) {
           <ion-list class="search-results" role="listbox" data-testid="global-search-results">
-            @for (result of searchResults(); track result.entityId) {
+            @for (result of searchResults(); track resultTrackBy(result)) {
               <ion-item
                 button
                 role="option"
-                [attr.data-testid]="'search-result-' + result.entityId"
+                [attr.data-testid]="resultTestId(result)"
                 (click)="onResultSelected(result)"
               >
                 <ion-label>
                   <div class="search-result-item">
-                    <span class="result-type">{{ result.entityType }}</span>
-                    <span class="result-name">{{ result.entityName }}</span>
-                    @if (result.entityAccountNo) {
-                      <span class="result-acc">#{{ result.entityAccountNo }}</span>
+                    @if (result.kind === 'nav') {
+                      <span class="result-type">{{ 'SEARCH.PAGE_TYPE' | translate }}</span>
+                      <span class="result-name">{{ result.nav.label }}</span>
+                      @if (result.nav.groupLabel) {
+                        <span class="result-acc">{{ result.nav.groupLabel }}</span>
+                      }
+                    } @else {
+                      <span class="result-type">{{ result.entity.entityType }}</span>
+                      <span class="result-name">{{ result.entity.entityName }}</span>
+                      @if (result.entity.entityAccountNo) {
+                        <span class="result-acc">#{{ result.entity.entityAccountNo }}</span>
+                      }
                     }
                   </div>
                 </ion-label>
@@ -392,10 +409,11 @@ export class HeaderComponent implements OnInit {
   protected readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly searchService = inject(SearchAPIService);
+  private readonly navigationConfig = inject(NavigationConfigService);
   private readonly businessDateService = inject(BusinessDateManagementService);
 
   searchQuery = '';
-  readonly searchResults = signal<GetSearchResponse[]>([]);
+  readonly searchResults = signal<HeaderSearchResult[]>([]);
   protected readonly showResults = signal(false);
   private searchSubject = new Subject<string>();
 
@@ -410,7 +428,16 @@ export class HeaderComponent implements OnInit {
         distinctUntilChanged(),
         switchMap((query) => {
           if (!query || query.length < 2) return of([]);
-          return this.searchService.getSearch(query, 'clients,loans,savings');
+          const navResults = this.navigationConfig.searchRoutes(query, 8).map(
+            (nav): HeaderSearchResult => ({ kind: 'nav', nav }),
+          );
+          return this.searchService.getSearch(query, 'clients,loans,savings').pipe(
+            map((entities) => [
+              ...navResults,
+              ...entities.map((entity): HeaderSearchResult => ({ kind: 'entity', entity })),
+            ]),
+            catchError(() => of(navResults)),
+          );
         }),
       )
       .subscribe((results) => {
@@ -453,17 +480,35 @@ export class HeaderComponent implements OnInit {
     setTimeout(() => this.showResults.set(false), 150);
   }
 
-  onResultSelected(result: GetSearchResponse) {
+  onResultSelected(result: HeaderSearchResult) {
     this.searchQuery = '';
     this.showResults.set(false);
 
-    if (result.entityType === 'CLIENT') {
-      this.router.navigate(['/clients/view', result.entityId]);
-    } else if (result.entityType === 'LOAN') {
-      this.router.navigate(['/loans/view', result.entityId]);
-    } else if (result.entityType === 'SAVINGSACCOUNT') {
-      this.router.navigate(['/savings/view', result.entityId]);
+    if (result.kind === 'nav') {
+      this.router.navigateByUrl(result.nav.route);
+      return;
     }
+
+    const entity = result.entity;
+    if (entity.entityType === 'CLIENT') {
+      this.router.navigate(['/clients/view', entity.entityId]);
+    } else if (entity.entityType === 'LOAN') {
+      this.router.navigate(['/loans/view', entity.entityId]);
+    } else if (entity.entityType === 'SAVINGSACCOUNT') {
+      this.router.navigate(['/savings/view', entity.entityId]);
+    }
+  }
+
+  resultTrackBy(result: HeaderSearchResult): string {
+    return result.kind === 'nav'
+      ? `nav:${result.nav.route}`
+      : `entity:${result.entity.entityType}:${result.entity.entityId}`;
+  }
+
+  resultTestId(result: HeaderSearchResult): string {
+    return result.kind === 'nav'
+      ? `search-result-nav-${result.nav.route}`
+      : `search-result-${result.entity.entityId}`;
   }
 
   /**
