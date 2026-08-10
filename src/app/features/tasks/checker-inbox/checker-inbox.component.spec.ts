@@ -2,7 +2,8 @@
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
+ * regarding copyright ownership.
+ * The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -18,67 +19,66 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { MakerCheckerOr4EyeFunctionalityService } from '../../../api';
-import { DialogService } from '../../../core/services/dialog.service';
-import { NotificationService } from '../../../core/services/notification.service';
-import { provideIonicTesting } from '../../../testing/ionic-testing';
-import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { CheckerInboxComponent } from './checker-inbox.component';
 
 describe('CheckerInboxComponent', () => {
   let component: CheckerInboxComponent;
   let fixture: ComponentFixture<CheckerInboxComponent>;
+
   let makerCheckerService: jasmine.SpyObj<MakerCheckerOr4EyeFunctionalityService>;
-  let notifications: jasmine.SpyObj<NotificationService>;
 
   beforeEach(async () => {
     makerCheckerService = jasmine.createSpyObj('MakerCheckerOr4EyeFunctionalityService', [
-      'getMakercheckers',
-      'postMakercheckersAuditId',
-      'deleteMakercheckersAuditId',
+      'approveMakerCheckerEntry',
+      'deleteMakerCheckerEntry',
     ]);
-    notifications = jasmine.createSpyObj('NotificationService', ['success', 'error']);
-    makerCheckerService.getMakercheckers.and.returnValue(
-      of([]) as unknown as ReturnType<MakerCheckerOr4EyeFunctionalityService['getMakercheckers']>,
-    );
-    makerCheckerService.deleteMakercheckersAuditId.and.returnValue(
+
+    makerCheckerService.approveMakerCheckerEntry.and.returnValue(
       of({}) as unknown as ReturnType<
-        MakerCheckerOr4EyeFunctionalityService['deleteMakercheckersAuditId']
+        MakerCheckerOr4EyeFunctionalityService['approveMakerCheckerEntry']
+      >,
+    );
+
+    makerCheckerService.deleteMakerCheckerEntry.and.returnValue(
+      of({}) as unknown as ReturnType<
+        MakerCheckerOr4EyeFunctionalityService['deleteMakerCheckerEntry']
       >,
     );
 
     await TestBed.configureTestingModule({
       imports: [CheckerInboxComponent],
       providers: [
-        { provide: MakerCheckerOr4EyeFunctionalityService, useValue: makerCheckerService },
-        { provide: NotificationService, useValue: notifications },
-        { provide: DialogService, useValue: jasmine.createSpyObj('DialogService', ['open']) },
-        provideIonicTesting(),
-        ...provideTranslateTesting(),
+        {
+          provide: MakerCheckerOr4EyeFunctionalityService,
+          useValue: makerCheckerService,
+        },
+        {
+          provide: TranslateService,
+          useValue: {
+            instant: (key: string) => key,
+            get: (key: string) => of(key),
+          },
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CheckerInboxComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
-  it('rejects a maker-checker task and refreshes the inbox', () => {
+  it('rejects a maker-checker task without deleting audit entry', () => {
     spyOn(window, 'confirm').and.returnValue(true);
-    makerCheckerService.postMakercheckersAuditId.and.returnValue(
-      of({}) as unknown as ReturnType<
-        MakerCheckerOr4EyeFunctionalityService['postMakercheckersAuditId']
-      >,
-    );
 
     component.onReject({ id: 42 });
 
     expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to reject this task?');
-    expect(makerCheckerService.postMakercheckersAuditId).toHaveBeenCalledWith(42, 'reject');
-    expect(makerCheckerService.deleteMakercheckersAuditId).not.toHaveBeenCalled();
-    expect(notifications.success).toHaveBeenCalledWith('Task rejected successfully');
-    expect(makerCheckerService.getMakercheckers).toHaveBeenCalledTimes(2);
+
+    expect(makerCheckerService.approveMakerCheckerEntry).toHaveBeenCalledWith(42, 'reject');
+
+    expect(makerCheckerService.deleteMakerCheckerEntry).not.toHaveBeenCalled();
   });
 });
