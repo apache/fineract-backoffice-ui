@@ -55,3 +55,11 @@ playwright.config.ts
 e2e/
 src/app/api/
 .gitmodules
+
+# Apache Magpie. The snapshot is a build artefact restored from
+# .apache-magpie.lock, and the bootstrap skill is vendored upstream source
+# carrying its own SPDX headers.
+.apache-magpie/
+.apache-magpie-local/
+.apache-magpie.local.lock
+.agents/skills/magpie-setup/

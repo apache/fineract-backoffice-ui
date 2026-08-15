@@ -75,3 +75,21 @@ ssl/
 
 # Submodules
 /fineract/
+
+# Apache Magpie — agent-assisted maintenance framework.
+# The snapshot is a build artefact restored by `/magpie-setup` from the
+# committed .apache-magpie.lock; only the lock, the bootstrap skill and the
+# project's overrides are tracked. See DOCS/MAGPIE.md.
+/.apache-magpie/
+/.apache-magpie.local.lock
+/.apache-magpie-local/
+__pycache__/
+*.pyc
+/.claude/hooks/agent-guard.py
+/.claude/hooks/guards.d/
+/.agents/skills/magpie-*
+!/.agents/skills/magpie-setup
+/.claude/skills/magpie-*
+!/.claude/skills/magpie-setup
+/.github/skills/magpie-*
+!/.github/skills/magpie-setup
