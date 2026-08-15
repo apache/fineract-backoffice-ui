@@ -32,7 +32,7 @@ import { LoanProductData } from './loanProductData';
  */
 export interface PutProvisioningCriteriaRequest { 
     criteriaName?: string;
+    definitions?: Array<ProvisioningCriteriaDefinitionData>;
     loanProducts?: Array<LoanProductData>;
-    provisioningcriteria?: Array<ProvisioningCriteriaDefinitionData>;
 }
 

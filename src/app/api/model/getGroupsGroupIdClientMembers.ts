@@ -25,10 +25,11 @@
 
 
 
-export interface MixTaxonomyMappingUpdateRequest { 
-    config?: string;
-    currency?: string;
+/**
+ * Returned when the clientMembers association is requested
+ */
+export interface GetGroupsGroupIdClientMembers { 
+    displayName?: string;
     id?: number;
-    identifier?: string;
 }
 

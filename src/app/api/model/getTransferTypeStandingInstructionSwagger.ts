@@ -27,7 +27,7 @@
 
 export interface GetTransferTypeStandingInstructionSwagger { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 

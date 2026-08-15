@@ -23,17 +23,13 @@
  * Do not edit the class manually.
  */
 
-import { EnumOptionData } from './enumOptionData';
 
 
-export interface TellerTransactionData { 
-    amount?: number;
-    cashierId?: number;
-    clientId?: number;
-    id?: number;
-    officeId?: number;
-    postingDate?: string;
-    tellerId?: number;
-    type?: EnumOptionData;
+export interface PostGroupsGroupIdChanges { 
+    /**
+     * Ids of the clients associated or disassociated by the command
+     */
+    clientMembers?: Array<string>;
+    staffId?: number;
 }
 

@@ -25,7 +25,10 @@
 
 
 
-export interface MixTaxonomyMappingUpdateResponse { 
-    entityId?: number;
+export interface PostCentersCenterIdChanges { 
+    /**
+     * Ids of the groups associated or disassociated by the command
+     */
+    groupMembers?: Array<string>;
 }
 

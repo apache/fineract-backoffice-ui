@@ -25,12 +25,7 @@
 
 
 
-export interface MixTaxonomyData { 
-    description?: string;
-    dimension?: string;
-    id?: number;
-    name?: string;
-    namespace?: string;
-    type?: number;
+export interface PostClientsClientIdChanges { 
+    staffId?: number;
 }
 

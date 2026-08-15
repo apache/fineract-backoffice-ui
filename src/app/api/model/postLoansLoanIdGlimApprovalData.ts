@@ -25,9 +25,13 @@
 
 
 
-export interface MixTaxonomyMappingData { 
-    config?: string;
-    currency?: string;
-    identifier?: string;
+/**
+ * Approve GLIM Application only: the per-child-loan approval details
+ */
+export interface PostLoansLoanIdGlimApprovalData { 
+    approvedOnDate?: string;
+    dateFormat?: string;
+    loanId?: number;
+    locale?: string;
 }
 

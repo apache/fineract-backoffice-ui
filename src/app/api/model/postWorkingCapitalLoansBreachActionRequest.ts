@@ -56,6 +56,10 @@ export interface PostWorkingCapitalLoansBreachActionRequest {
      */
     minimumPaymentType?: string;
     /**
+     * Optional reset flag. If true for action=reset, starts a new breach period from the reset date
+     */
+    restartPeriodFromResetDate?: boolean;
+    /**
      * For pause: start date of the pause period. For resume/disable/enable: the action date, which must be the current business date
      */
     startDate?: string;

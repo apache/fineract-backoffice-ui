@@ -25,14 +25,11 @@
 
 
 
-export interface TellerJournalData { 
-    closingBalance?: number;
-    day?: string;
-    officeId?: number;
-    openingBalance?: number;
-    settledBalance?: number;
-    sumPayments?: number;
-    sumReceipts?: number;
-    tellerId?: number;
+/**
+ * Returned when the groupMembers association is requested
+ */
+export interface GetCentersGroupMembers { 
+    id?: number;
+    name?: string;
 }
 

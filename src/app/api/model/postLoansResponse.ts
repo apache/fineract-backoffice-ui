@@ -33,6 +33,10 @@ import { GetLoansLoanIdCurrency } from './getLoansLoanIdCurrency';
 export interface PostLoansResponse { 
     clientId?: number;
     currency?: GetLoansLoanIdCurrency;
+    /**
+     * Returned for GLIM loans: the id of the parent GLIM account
+     */
+    glimId?: number;
     loanId?: number;
     loanTermInDays?: number;
     officeId?: number;
