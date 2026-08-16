@@ -215,6 +215,7 @@ export interface AuditFilters {
             fill="clear"
             color="primary"
             (click)="onViewDetails(row)"
+            [attr.aria-label]="'COMMON.VIEW_DETAILS' | translate"
             [appTooltip]="'COMMON.VIEW_DETAILS' | translate"
           >
             <ion-icon name="eye-outline"></ion-icon>

@@ -69,6 +69,7 @@ import { DOWNLOAD } from '../../../core/adapters';
             color="primary"
             (click)="onDownload(row.id)"
             *appHasPermission="'READ_DOCUMENT'"
+            [attr.aria-label]="'COMMON.DOWNLOAD' | translate"
             [appTooltip]="'COMMON.DOWNLOAD' | translate"
           >
             <ion-icon name="download-outline"></ion-icon>
@@ -78,6 +79,7 @@ import { DOWNLOAD } from '../../../core/adapters';
             color="danger"
             (click)="onDelete(row.id)"
             *appHasPermission="'DELETE_DOCUMENT'"
+            [attr.aria-label]="'COMMON.DELETE' | translate"
             [appTooltip]="'COMMON.DELETE' | translate"
           >
             <ion-icon name="trash-outline"></ion-icon>

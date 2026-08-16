@@ -115,6 +115,7 @@ import {
                 <ion-button
                   fill="clear"
                   type="button"
+                  [attr.aria-label]="'CLIENTS.CREATE_CLIENT' | translate"
                   [appTooltip]="'CLIENTS.CREATE_CLIENT' | translate"
                   (click)="onCreateClient()"
                   style="margin-top: 4px;"
@@ -150,6 +151,7 @@ import {
                 <ion-button
                   fill="clear"
                   type="button"
+                  [attr.aria-label]="'PRODUCTS.CREATE_FIXED_DEPOSIT_PRODUCT' | translate"
                   [appTooltip]="'PRODUCTS.CREATE_FIXED_DEPOSIT_PRODUCT' | translate"
                   (click)="onCreateProduct()"
                   style="margin-top: 4px;"

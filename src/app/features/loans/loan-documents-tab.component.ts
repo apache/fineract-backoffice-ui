@@ -105,6 +105,7 @@ import { DOWNLOAD } from '../../core/adapters';
               fill="clear"
               color="primary"
               (click)="onDownload(doc.id)"
+              [attr.aria-label]="'COMMON.DOWNLOAD' | translate"
               [appTooltip]="'COMMON.DOWNLOAD' | translate"
             >
               <ion-icon name="download-outline"></ion-icon>
@@ -113,6 +114,7 @@ import { DOWNLOAD } from '../../core/adapters';
               fill="clear"
               color="danger"
               (click)="onDelete(doc.id)"
+              [attr.aria-label]="'COMMON.DELETE' | translate"
               [appTooltip]="'COMMON.DELETE' | translate"
             >
               <ion-icon name="trash-outline"></ion-icon>

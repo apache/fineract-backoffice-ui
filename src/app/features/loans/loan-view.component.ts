@@ -972,6 +972,7 @@ import {
                         <ion-button
                           fill="clear"
                           (click)="onViewTransaction(tx)"
+                          [attr.aria-label]="'COMMON.VIEW' | translate"
                           [appTooltip]="'COMMON.VIEW' | translate"
                         >
                           <ion-icon name="eye-outline"></ion-icon>

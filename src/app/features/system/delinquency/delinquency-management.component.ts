@@ -93,6 +93,7 @@ import {
                   color="primary"
                   [routerLink]="['ranges', 'edit', row.id]"
                   *appHasPermission="'UPDATE_DELINQUENCYRANGE'"
+                  [attr.aria-label]="'COMMON.EDIT' | translate"
                   [appTooltip]="'COMMON.EDIT' | translate"
                 >
                   <ion-icon name="create-outline"></ion-icon>
@@ -102,6 +103,7 @@ import {
                   color="danger"
                   (click)="onDeleteRange(row.id)"
                   *appHasPermission="'DELETE_DELINQUENCYRANGE'"
+                  [attr.aria-label]="'COMMON.DELETE' | translate"
                   [appTooltip]="'COMMON.DELETE' | translate"
                 >
                   <ion-icon name="trash-outline"></ion-icon>
@@ -143,6 +145,7 @@ import {
                   color="primary"
                   [routerLink]="['buckets', 'edit', row.id]"
                   *appHasPermission="'UPDATE_DELINQUENCYBUCKET'"
+                  [attr.aria-label]="'COMMON.EDIT' | translate"
                   [appTooltip]="'COMMON.EDIT' | translate"
                 >
                   <ion-icon name="create-outline"></ion-icon>
@@ -152,6 +155,7 @@ import {
                   color="danger"
                   (click)="onDeleteBucket(row.id)"
                   *appHasPermission="'DELETE_DELINQUENCYBUCKET'"
+                  [attr.aria-label]="'COMMON.DELETE' | translate"
                   [appTooltip]="'COMMON.DELETE' | translate"
                 >
                   <ion-icon name="trash-outline"></ion-icon>

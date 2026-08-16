@@ -74,6 +74,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
           <ion-button
             fill="clear"
             color="secondary"
+            [attr.aria-label]="'LOANS.APPROVE' | translate"
             [appTooltip]="'LOANS.APPROVE' | translate"
             (click)="onApprove(account)"
           >

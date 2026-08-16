@@ -61,6 +61,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
         <ion-button
           fill="clear"
           color="primary"
+          [attr.aria-label]="'COMMON.EDIT' | translate"
           [appTooltip]="'COMMON.EDIT' | translate"
           (click)="onEdit(product)"
         >
