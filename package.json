@@ -28,6 +28,7 @@
     "verify-api-client": "npm run generate-api && git diff --exit-code src/app/api",
     "i18n:check": "node scripts/check-translations.mjs",
     "check:icons": "node scripts/check-icons.mjs",
+    "check:a11y-names": "node scripts/check-a11y-names.mjs",
     "check:internal-endpoints": "node scripts/check-internal-endpoints.mjs",
     "api:surface": "node scripts/check-api-surface.mjs",
     "ga:check": "node scripts/ga-check.mjs",

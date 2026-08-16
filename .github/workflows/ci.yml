@@ -128,6 +128,8 @@ jobs:
         run: npm run i18n:check
       - name: Verify every ion-icon name is registered
         run: npm run check:icons
+      - name: Verify every icon-only button has an accessible name
+        run: npm run check:a11y-names
       # Fineract serves /v1/internal/** only under its `test` Spring profile, which upstream
       # states must not be enabled in production. The few screens built on those endpoints are
       # gated behind `developerToolsEnabled`; this pins that list so a new dependency on a
