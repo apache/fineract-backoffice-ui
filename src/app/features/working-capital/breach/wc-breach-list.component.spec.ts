@@ -24,12 +24,14 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { DialogService } from '../../../core/services/dialog.service';
 
 describe('WcBreachListComponent', () => {
   let component: WcBreachListComponent;
   let fixture: ComponentFixture<WcBreachListComponent>;
   let serviceSpy: jasmine.SpyObj<WorkingCapitalBreachService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   beforeEach(async () => {
     serviceSpy = jasmine.createSpyObj('WorkingCapitalBreachService', [
@@ -37,6 +39,8 @@ describe('WcBreachListComponent', () => {
       'deleteWorkingCapitalBreachBreachesBreachId',
     ]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.getWorkingCapitalBreachBreaches.and.returnValue(
       of([{ id: 1, name: 'Covenant A', breachAmount: 1000 }]) as unknown as ReturnType<
         WorkingCapitalBreachService['getWorkingCapitalBreachBreaches']
@@ -48,6 +52,7 @@ describe('WcBreachListComponent', () => {
       providers: [
         { provide: WorkingCapitalBreachService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: DialogService, useValue: dialogService },
         provideNoopAnimations(),
       ],
     }).compileComponents();
@@ -68,8 +73,8 @@ describe('WcBreachListComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/working-capital/breach/edit', 3]);
   });
 
-  it('should delete after confirmation and reload', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('should delete after confirmation and reload', async () => {
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.deleteWorkingCapitalBreachBreachesBreachId.and.returnValue(
       of({}) as unknown as ReturnType<
         WorkingCapitalBreachService['deleteWorkingCapitalBreachBreachesBreachId']
@@ -77,14 +82,16 @@ describe('WcBreachListComponent', () => {
     );
 
     component.onDelete({ id: 5, name: 'Y' });
+    await fixture.whenStable();
 
     expect(serviceSpy.deleteWorkingCapitalBreachBreachesBreachId).toHaveBeenCalledWith(5);
     expect(serviceSpy.getWorkingCapitalBreachBreaches).toHaveBeenCalledTimes(2);
   });
 
-  it('should not delete when cancelled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+  it('should not delete when cancelled', async () => {
+    dialogService.confirm.and.resolveTo(false);
     component.onDelete({ id: 5, name: 'Y' });
+    await fixture.whenStable();
     expect(serviceSpy.deleteWorkingCapitalBreachBreachesBreachId).not.toHaveBeenCalled();
   });
 });

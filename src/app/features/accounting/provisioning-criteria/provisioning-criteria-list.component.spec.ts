@@ -24,12 +24,14 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { DialogService } from '../../../core/services/dialog.service';
 
 describe('ProvisioningCriteriaListComponent', () => {
   let component: ProvisioningCriteriaListComponent;
   let fixture: ComponentFixture<ProvisioningCriteriaListComponent>;
   let serviceSpy: jasmine.SpyObj<ProvisioningCriteriaService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   beforeEach(async () => {
     serviceSpy = jasmine.createSpyObj('ProvisioningCriteriaService', [
@@ -37,6 +39,8 @@ describe('ProvisioningCriteriaListComponent', () => {
       'deleteProvisioningcriteriaCriteriaId',
     ]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.getProvisioningcriteria.and.returnValue(
       of([{ criteriaId: 1, criteriaName: 'Default', createdBy: 'admin' }]) as unknown as ReturnType<
         ProvisioningCriteriaService['getProvisioningcriteria']
@@ -48,6 +52,7 @@ describe('ProvisioningCriteriaListComponent', () => {
       providers: [
         { provide: ProvisioningCriteriaService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: DialogService, useValue: dialogService },
         provideNoopAnimations(),
       ],
     }).compileComponents();
@@ -68,8 +73,8 @@ describe('ProvisioningCriteriaListComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/accounting/provisioning-criteria/edit', 3]);
   });
 
-  it('should delete after confirmation and reload', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('should delete after confirmation and reload', async () => {
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.deleteProvisioningcriteriaCriteriaId.and.returnValue(
       of({}) as unknown as ReturnType<
         ProvisioningCriteriaService['deleteProvisioningcriteriaCriteriaId']
@@ -77,14 +82,16 @@ describe('ProvisioningCriteriaListComponent', () => {
     );
 
     component.onDelete({ criteriaId: 5, criteriaName: 'Y' });
+    await fixture.whenStable();
 
     expect(serviceSpy.deleteProvisioningcriteriaCriteriaId).toHaveBeenCalledWith(5);
     expect(serviceSpy.getProvisioningcriteria).toHaveBeenCalledTimes(2);
   });
 
-  it('should not delete when cancelled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+  it('should not delete when cancelled', async () => {
+    dialogService.confirm.and.resolveTo(false);
     component.onDelete({ criteriaId: 5, criteriaName: 'Y' });
+    await fixture.whenStable();
     expect(serviceSpy.deleteProvisioningcriteriaCriteriaId).not.toHaveBeenCalled();
   });
 });

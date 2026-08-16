@@ -24,12 +24,14 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { DialogService } from '../../../core/services/dialog.service';
 
 describe('WcLoanProductsListComponent', () => {
   let component: WcLoanProductsListComponent;
   let fixture: ComponentFixture<WcLoanProductsListComponent>;
   let serviceSpy: jasmine.SpyObj<WorkingCapitalLoanProductsService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   beforeEach(async () => {
     serviceSpy = jasmine.createSpyObj('WorkingCapitalLoanProductsService', [
@@ -37,6 +39,8 @@ describe('WcLoanProductsListComponent', () => {
       'deleteWorkingCapitalLoanProductsProductId',
     ]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.getWorkingCapitalLoanProducts.and.returnValue(
       of([
         { id: 1, name: 'WC Product A', shortName: 'WCA', principal: 5000 },
@@ -50,6 +54,7 @@ describe('WcLoanProductsListComponent', () => {
       providers: [
         { provide: WorkingCapitalLoanProductsService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: DialogService, useValue: dialogService },
         provideNoopAnimations(),
       ],
     }).compileComponents();
@@ -70,8 +75,8 @@ describe('WcLoanProductsListComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/working-capital/loan-products/edit', 3]);
   });
 
-  it('should delete after confirmation and reload', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('should delete after confirmation and reload', async () => {
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.deleteWorkingCapitalLoanProductsProductId.and.returnValue(
       of({}) as unknown as ReturnType<
         WorkingCapitalLoanProductsService['deleteWorkingCapitalLoanProductsProductId']
@@ -79,14 +84,16 @@ describe('WcLoanProductsListComponent', () => {
     );
 
     component.onDelete({ id: 5, name: 'Y' });
+    await fixture.whenStable();
 
     expect(serviceSpy.deleteWorkingCapitalLoanProductsProductId).toHaveBeenCalledWith(5);
     expect(serviceSpy.getWorkingCapitalLoanProducts).toHaveBeenCalledTimes(2);
   });
 
-  it('should not delete when cancelled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+  it('should not delete when cancelled', async () => {
+    dialogService.confirm.and.resolveTo(false);
     component.onDelete({ id: 5, name: 'Y' });
+    await fixture.whenStable();
     expect(serviceSpy.deleteWorkingCapitalLoanProductsProductId).not.toHaveBeenCalled();
   });
 });

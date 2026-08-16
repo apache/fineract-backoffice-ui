@@ -19,12 +19,13 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ProvisioningCategoryService, ProvisioningCategoryData } from '../../../api';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { DialogService } from '../../../core/services/dialog.service';
 
 /**
  * Lists provisioning categories. Categories are small master-data records
@@ -78,6 +79,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 export class ProvisioningCategoriesListComponent implements OnInit {
   private readonly categoryService = inject(ProvisioningCategoryService);
   private readonly router = inject(Router);
+  private readonly dialogService = inject(DialogService);
+  private readonly translate = inject(TranslateService);
 
   readonly columns: ColumnDef[] = [
     { key: 'categoryName', label: 'PROVISIONING_CATEGORIES.NAME', sortable: true },
@@ -111,10 +114,21 @@ export class ProvisioningCategoriesListComponent implements OnInit {
   }
 
   onDelete(row: ProvisioningCategoryData): void {
-    if (!row.id || !window.confirm('Delete this provisioning category?')) return;
-    this.categoryService.deleteProvisioningcategoryCategoryId(row.id).subscribe({
-      next: () => this.load(),
-      error: (err: unknown) => console.error('Failed to delete provisioning category', err),
-    });
+    if (!row.id) return;
+    void this.dialogService
+      .confirm({
+        title: this.translate.instant('PROVISIONING_CATEGORIES.DELETE'),
+        message: this.translate.instant('PROVISIONING_CATEGORIES.CONFIRM_DELETE', {
+          name: row.categoryName,
+        }),
+        destructive: true,
+      })
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.categoryService.deleteProvisioningcategoryCategoryId(row.id!).subscribe({
+          next: () => this.load(),
+          error: (err: unknown) => console.error('Failed to delete provisioning category', err),
+        });
+      });
   }
 }

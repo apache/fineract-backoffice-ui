@@ -18,83 +18,85 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ProvisioningCategoriesListComponent } from './provisioning-categories-list.component';
-import { ProvisioningCategoryService } from '../../../api';
+import { AccountNumberFormatsListComponent } from './account-number-formats-list.component';
+import { AccountNumberFormatService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DialogService } from '../../../core/services/dialog.service';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
-describe('ProvisioningCategoriesListComponent', () => {
-  let component: ProvisioningCategoriesListComponent;
-  let fixture: ComponentFixture<ProvisioningCategoriesListComponent>;
-  let serviceSpy: jasmine.SpyObj<ProvisioningCategoryService>;
+describe('AccountNumberFormatsListComponent', () => {
+  let component: AccountNumberFormatsListComponent;
+  let fixture: ComponentFixture<AccountNumberFormatsListComponent>;
+  let serviceSpy: jasmine.SpyObj<AccountNumberFormatService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let dialogService: jasmine.SpyObj<DialogService>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('ProvisioningCategoryService', [
-      'getProvisioningcategory',
-      'deleteProvisioningcategoryCategoryId',
+    serviceSpy = jasmine.createSpyObj('AccountNumberFormatService', [
+      'getAccountnumberformats',
+      'deleteAccountnumberformatsAccountNumberFormatId',
     ]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
     dialogService.confirm.and.resolveTo(true);
-    serviceSpy.getProvisioningcategory.and.returnValue(
+    serviceSpy.getAccountnumberformats.and.returnValue(
       of([
-        { id: 1, categoryName: 'STANDARD', categoryDescription: 'Standard' },
-      ]) as unknown as ReturnType<ProvisioningCategoryService['getProvisioningcategory']>,
+        { id: 1, accountType: { id: 1, value: 'CLIENT' }, prefixType: { id: 2, value: 'OFFICE' } },
+      ]) as unknown as ReturnType<AccountNumberFormatService['getAccountnumberformats']>,
     );
 
     await TestBed.configureTestingModule({
-      imports: [ProvisioningCategoriesListComponent, TranslateModule.forRoot()],
+      imports: [AccountNumberFormatsListComponent],
       providers: [
-        { provide: ProvisioningCategoryService, useValue: serviceSpy },
+        { provide: AccountNumberFormatService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: DialogService, useValue: dialogService },
         provideNoopAnimations(),
+        ...provideTranslateTesting(),
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ProvisioningCategoriesListComponent);
+    fixture = TestBed.createComponent(AccountNumberFormatsListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should load categories on init', () => {
+  it('should load formats on init', () => {
     expect(component).toBeTruthy();
-    expect(serviceSpy.getProvisioningcategory).toHaveBeenCalled();
-    expect(component.categories()).toHaveSize(1);
+    expect(serviceSpy.getAccountnumberformats).toHaveBeenCalled();
+    expect(component.formats()).toHaveSize(1);
   });
 
-  it('should navigate to edit with the category id', () => {
-    component.onEdit({ id: 3, categoryName: 'X' });
+  it('should navigate to edit with the format id', () => {
+    component.onEdit({ id: 3, accountType: { id: 1, value: 'LOAN' } });
     expect(routerSpy.navigate).toHaveBeenCalledWith([
-      '/accounting/provisioning-categories/edit',
+      '/organization/account-number-formats/edit',
       3,
     ]);
   });
 
-  it('should delete after confirmation and reload', async () => {
+  it('should delete after confirmation and drop the row', async () => {
     dialogService.confirm.and.resolveTo(true);
-    serviceSpy.deleteProvisioningcategoryCategoryId.and.returnValue(
+    serviceSpy.deleteAccountnumberformatsAccountNumberFormatId.and.returnValue(
       of({}) as unknown as ReturnType<
-        ProvisioningCategoryService['deleteProvisioningcategoryCategoryId']
+        AccountNumberFormatService['deleteAccountnumberformatsAccountNumberFormatId']
       >,
     );
 
-    component.onDelete({ id: 5, categoryName: 'Y' });
+    component.onDelete({ id: 1, accountType: { id: 1, value: 'CLIENT' } });
     await fixture.whenStable();
 
-    expect(serviceSpy.deleteProvisioningcategoryCategoryId).toHaveBeenCalledWith(5);
-    expect(serviceSpy.getProvisioningcategory).toHaveBeenCalledTimes(2);
+    expect(serviceSpy.deleteAccountnumberformatsAccountNumberFormatId).toHaveBeenCalledWith(1);
+    expect(component.formats()).toHaveSize(0);
   });
 
   it('should not delete when cancelled', async () => {
     dialogService.confirm.and.resolveTo(false);
-    component.onDelete({ id: 5, categoryName: 'Y' });
+    component.onDelete({ id: 1, accountType: { id: 1, value: 'CLIENT' } });
     await fixture.whenStable();
-    expect(serviceSpy.deleteProvisioningcategoryCategoryId).not.toHaveBeenCalled();
+    expect(serviceSpy.deleteAccountnumberformatsAccountNumberFormatId).not.toHaveBeenCalled();
+    expect(component.formats()).toHaveSize(1);
   });
 });

@@ -1284,7 +1284,9 @@
     "PREFIX_TYPE": "Prefix Type",
     "SAVE": "Save",
     "CANCEL": "Cancel",
-    "DELETE_CONFIRM": "Are you sure you want to delete this format?"
+    "DELETE": "Delete",
+    "DELETE_CONFIRM": "Are you sure you want to delete this format?",
+    "CONFIRM_DELETE": "Delete the account number format for “{{name}}”? Already issued identifiers keep their current shape."
   },
   "ACCOUNTING": {
     "CREATE_GL_ACCOUNT": "Create GL Account",
@@ -1442,7 +1444,9 @@
     "FREQUENCY": "Frequency",
     "FREQUENCY_TYPE": "Frequency Type",
     "CREATE": "Create Breach Definition",
-    "EDIT": "Edit Breach Definition"
+    "EDIT": "Edit Breach Definition",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete breach definition “{{name}}”?"
   },
   "WC_NEAR_BREACH": {
     "NAME": "Name",
@@ -1450,7 +1454,9 @@
     "FREQUENCY": "Frequency",
     "FREQUENCY_TYPE": "Frequency Type",
     "CREATE": "Create Near-Breach Definition",
-    "EDIT": "Edit Near-Breach Definition"
+    "EDIT": "Edit Near-Breach Definition",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete near-breach definition “{{name}}”?"
   },
   "WC_LOAN_PRODUCTS": {
     "CREATE": "Create Loan Product",
@@ -1478,7 +1484,9 @@
     "FUND": "Fund",
     "START_DATE": "Start Date",
     "CLOSE_DATE": "Close Date",
-    "EXTERNAL_ID": "External ID"
+    "EXTERNAL_ID": "External ID",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete working-capital loan product “{{name}}”?"
   },
   "WC_LOANS": {
     "CREATE": "Create Working Capital Loan",
@@ -1799,14 +1807,18 @@
     "CREATE": "Create Provisioning Category",
     "EDIT": "Edit Provisioning Category",
     "NAME": "Category Name",
-    "DESCRIPTION": "Description"
+    "DESCRIPTION": "Description",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete provisioning category “{{name}}”?"
   },
   "PROVISIONING_CRITERIA": {
     "CREATE": "Create Provisioning Criteria",
     "EDIT": "Edit Provisioning Criteria",
     "NAME": "Criteria Name",
     "CREATED_BY": "Created By",
-    "DEFINITIONS_NOTE": "Per-category provisioning definitions and loan-product mappings are managed through the API and are preserved when editing the criteria name."
+    "DEFINITIONS_NOTE": "Per-category provisioning definitions and loan-product mappings are managed through the API and are preserved when editing the criteria name.",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete provisioning criteria “{{name}}”?"
   },
   "PROVISIONING_ENTRIES": {
     "CREATE": "Create Entry",
