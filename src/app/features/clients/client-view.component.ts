@@ -619,6 +619,15 @@ const CLIENT_COMMAND_NAMES: Record<string, string> = {
                     <div class="empty-state">
                       <ion-icon name="wallet-outline"></ion-icon>
                       <p>{{ 'CLIENTS.NO_SAVINGS_ACCOUNTS' | translate }}</p>
+                      <ion-button
+                        color="primary"
+                        (click)="onCreateSavings()"
+                        *appHasPermission="'CREATE_SAVINGSACCOUNT'"
+                        data-testid="client-empty-savings-create"
+                      >
+                        <ion-icon slot="start" name="add-outline"></ion-icon>
+                        {{ 'CLIENTS.NEW_SAVINGS_ACCOUNT' | translate }}
+                      </ion-button>
                     </div>
                   }
                 </ion-card-content>
@@ -726,6 +735,15 @@ const CLIENT_COMMAND_NAMES: Record<string, string> = {
                     <div class="empty-state">
                       <ion-icon name="card-outline"></ion-icon>
                       <p>{{ 'CLIENTS.NO_LOAN_ACCOUNTS' | translate }}</p>
+                      <ion-button
+                        color="primary"
+                        (click)="onCreateLoan()"
+                        *appHasPermission="'CREATE_LOAN'"
+                        data-testid="client-empty-loans-create"
+                      >
+                        <ion-icon slot="start" name="add-outline"></ion-icon>
+                        {{ 'CLIENTS.APPLY_FOR_LOAN' | translate }}
+                      </ion-button>
                     </div>
                   }
                 </ion-card-content>
@@ -913,6 +931,15 @@ const CLIENT_COMMAND_NAMES: Record<string, string> = {
       .empty-state p {
         margin: 0;
         font-size: 16px;
+      }
+      .empty-state ion-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+      }
+      .empty-state ion-button {
+        margin-top: 16px;
       }
       .clickable-link {
         color: #3f51b5;

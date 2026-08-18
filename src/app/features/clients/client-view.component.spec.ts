@@ -147,4 +147,44 @@ describe('ClientViewComponent', () => {
     expect(clientServiceSpy.getClientsClientIdAccounts).toHaveBeenCalledWith(123);
     expect(component.client()?.displayName).toBe('John Doe');
   });
+
+  it('shows create actions in empty savings and loan tabs', () => {
+    component.activeTab.set('1');
+    fixture.detectChanges();
+
+    const savingsButton = fixture.nativeElement.querySelector(
+      '[data-testid="client-empty-savings-create"]',
+    );
+    expect(savingsButton).toBeTruthy();
+
+    component.activeTab.set('2');
+    fixture.detectChanges();
+
+    const loanButton = fixture.nativeElement.querySelector(
+      '[data-testid="client-empty-loans-create"]',
+    );
+    expect(loanButton).toBeTruthy();
+  });
+
+  it('navigates to create savings from the empty savings tab', () => {
+    component.activeTab.set('1');
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('[data-testid="client-empty-savings-create"]').click();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/products/savings-accounts/create'], {
+      queryParams: { clientId: 123 },
+    });
+  });
+
+  it('navigates to create loan from the empty loan tab', () => {
+    component.activeTab.set('2');
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('[data-testid="client-empty-loans-create"]').click();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans/create'], {
+      queryParams: { clientId: 123 },
+    });
+  });
 });
