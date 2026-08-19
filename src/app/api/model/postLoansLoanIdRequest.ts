@@ -55,6 +55,7 @@ export interface PostLoansLoanIdRequest {
      */
     glimPrincipal?: number;
     locale?: string;
+    netDisbursalAmount?: number;
     note?: string;
     /**
      * Optional array of originators to reconcile during loan disbursement. Omit the field to leave existing mappings unchanged. Send an empty array to detach all originators. Each entry can reference an existing originator by \'id\' or \'externalId\'. Missing externalIds are created during disbursement.

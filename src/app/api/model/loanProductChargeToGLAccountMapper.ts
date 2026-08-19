@@ -32,6 +32,8 @@ import { LoanProductChargeData } from './loanProductChargeData';
  */
 export interface LoanProductChargeToGLAccountMapper { 
     charge?: LoanProductChargeData;
+    chargeId?: number;
     incomeAccount?: GLAccountData;
+    incomeAccountId?: number;
 }
 

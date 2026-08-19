@@ -34,6 +34,8 @@ export interface GetClientsClientIdIdentifiersResponse {
     description?: string;
     documentKey?: string;
     documentType?: GetClientsDocumentType;
+    expiryDate?: string;
     id?: number;
+    issuanceDate?: string;
 }
 

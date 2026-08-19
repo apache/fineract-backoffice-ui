@@ -46,6 +46,7 @@ export interface GetLoansLoanIdChargesChargeIdResponse {
     dueDate?: string;
     externalId?: string;
     id?: number;
+    loanId?: number;
     name?: string;
     penalty?: boolean;
     percentage?: number;

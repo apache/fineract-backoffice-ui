@@ -670,6 +670,7 @@ model/getLoansLoanIdChargeTimeType.ts
 model/getLoansLoanIdChargesChargeIdResponse.ts
 model/getLoansLoanIdChargesTemplateResponse.ts
 model/getLoansLoanIdCodeValueData.ts
+model/getLoansLoanIdCollateralData.ts
 model/getLoansLoanIdCollateralsResponse.ts
 model/getLoansLoanIdCurrency.ts
 model/getLoansLoanIdDelinquencyPausePeriod.ts
@@ -700,6 +701,7 @@ model/getLoansLoanIdRepaymentPeriod.ts
 model/getLoansLoanIdRepaymentSchedule.ts
 model/getLoansLoanIdResponse.ts
 model/getLoansLoanIdStatus.ts
+model/getLoansLoanIdSubStatus.ts
 model/getLoansLoanIdSummary.ts
 model/getLoansLoanIdTermPeriodFrequencyType.ts
 model/getLoansLoanIdTimeline.ts
@@ -1240,6 +1242,7 @@ model/postLoansOriginatorData.ts
 model/postLoansRepaymentSchedulePeriods.ts
 model/postLoansRequest.ts
 model/postLoansRequestChargeData.ts
+model/postLoansRequestCollateralData.ts
 model/postLoansResponse.ts
 model/postMakerCheckersResponse.ts
 model/postOfficesRequest.ts

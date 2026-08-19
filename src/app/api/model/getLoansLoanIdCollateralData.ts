@@ -25,15 +25,11 @@
 
 
 
-/**
- * PutSavingsAccountsAccountIdRequest
- */
-export interface PutSavingsAccountsAccountIdRequest { 
-    clientId?: number;
-    dateFormat?: string;
-    locale?: string;
-    nominalAnnualInterestRate?: number;
-    productId?: number;
-    submittedOnDate?: string;
+export interface GetLoansLoanIdCollateralData { 
+    clientCollateralId?: number;
+    collateralId?: number;
+    quantity?: number;
+    total?: number;
+    totalCollateral?: number;
 }
 

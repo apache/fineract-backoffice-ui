@@ -28,5 +28,6 @@
 export interface PostLoansRequestChargeData { 
     amount?: number;
     chargeId?: number;
+    dueDate?: string;
 }
 

@@ -27,7 +27,7 @@ import { PostWorkingCapitalLoanTransactionsPaymentDetailRequest } from './postWo
 
 
 /**
- * Request for transaction command: repayment, creditBalanceRefund, discountFee, or discountFeeAdjustment
+ * Request for transaction command: repayment, creditBalanceRefund, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff or undoWriteOff
  */
 export interface PostWorkingCapitalLoanTransactionsRequest { 
     /**
@@ -48,6 +48,10 @@ export interface PostWorkingCapitalLoanTransactionsRequest {
      */
     relatedResourceId?: number;
     /**
+     * Optional external id for the reversal (command=undoChargeOff, undoWriteOff)
+     */
+    reversalExternalId?: string;
+    /**
      * Transaction amount
      */
     transactionAmount?: number;
@@ -55,5 +59,9 @@ export interface PostWorkingCapitalLoanTransactionsRequest {
      * Transaction date
      */
     transactionDate?: string;
+    /**
+     * Optional write-off reason code value id (command=writeOff)
+     */
+    writeoffReasonId?: number;
 }
 

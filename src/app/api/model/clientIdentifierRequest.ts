@@ -26,9 +26,13 @@
 
 
 export interface ClientIdentifierRequest { 
+    dateFormat?: string;
     description?: string;
     documentKey?: string;
     documentTypeId?: number;
+    expiryDate?: string;
+    issuanceDate?: string;
+    locale?: string;
     status?: string;
 }
 

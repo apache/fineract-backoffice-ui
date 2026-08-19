@@ -56,6 +56,8 @@ import { InteropTransactionsData } from '../model/interopTransactionsData';
 import { InteropTransferRequestData } from '../model/interopTransferRequestData';
 // @ts-ignore
 import { InteropTransferResponseData } from '../model/interopTransferResponseData';
+// @ts-ignore
+import { PostLoansLoanIdTransactionsRequest } from '../model/postLoansLoanIdTransactionsRequest';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -1288,19 +1290,23 @@ export class InterOperationService extends BaseService {
     }
 
     /**
-     * Disburse Loan by Account Id
+     * Loan Repayment by Account Id
      * @endpoint post /v1/interoperation/transactions/{accountId}/loanrepayment
      * @param accountId accountId
+     * @param postLoansLoanIdTransactionsRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postInteroperationTransactionsAccountIdLoanrepayment(accountId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public postInteroperationTransactionsAccountIdLoanrepayment(accountId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public postInteroperationTransactionsAccountIdLoanrepayment(accountId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public postInteroperationTransactionsAccountIdLoanrepayment(accountId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postInteroperationTransactionsAccountIdLoanrepayment(accountId: string, postLoansLoanIdTransactionsRequest: PostLoansLoanIdTransactionsRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
+    public postInteroperationTransactionsAccountIdLoanrepayment(accountId: string, postLoansLoanIdTransactionsRequest: PostLoansLoanIdTransactionsRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
+    public postInteroperationTransactionsAccountIdLoanrepayment(accountId: string, postLoansLoanIdTransactionsRequest: PostLoansLoanIdTransactionsRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public postInteroperationTransactionsAccountIdLoanrepayment(accountId: string, postLoansLoanIdTransactionsRequest: PostLoansLoanIdTransactionsRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (accountId === null || accountId === undefined) {
             throw new Error('Required parameter accountId was null or undefined when calling postInteroperationTransactionsAccountIdLoanrepayment.');
+        }
+        if (postLoansLoanIdTransactionsRequest === null || postLoansLoanIdTransactionsRequest === undefined) {
+            throw new Error('Required parameter postLoansLoanIdTransactionsRequest was null or undefined when calling postInteroperationTransactionsAccountIdLoanrepayment.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -1323,6 +1329,15 @@ export class InterOperationService extends BaseService {
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
 
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
             if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -1339,6 +1354,7 @@ export class InterOperationService extends BaseService {
         return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                body: postLoansLoanIdTransactionsRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

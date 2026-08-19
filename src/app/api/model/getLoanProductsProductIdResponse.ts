@@ -108,6 +108,9 @@ export interface GetLoanProductsProductIdResponse {
     feeToIncomeAccountMappings?: Set<GetLoanFeeToIncomeAccountMappings>;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
+    graceOnArrearsAgeing?: number;
+    graceOnInterestPayment?: number;
+    graceOnPrincipalPayment?: number;
     id?: number;
     inArrearsTolerance?: number;
     includeInBorrowerCycle?: boolean;

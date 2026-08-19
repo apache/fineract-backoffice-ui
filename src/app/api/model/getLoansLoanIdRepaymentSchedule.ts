@@ -29,6 +29,7 @@ import { GetLoansLoanIdCurrency } from './getLoansLoanIdCurrency';
 
 export interface GetLoansLoanIdRepaymentSchedule { 
     currency?: GetLoansLoanIdCurrency;
+    futurePeriods?: Array<GetLoansLoanIdRepaymentPeriod>;
     loanTermInDays?: number;
     periods?: Array<GetLoansLoanIdRepaymentPeriod>;
     totalFeeChargesCharged?: number;

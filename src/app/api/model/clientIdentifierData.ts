@@ -32,7 +32,9 @@ export interface ClientIdentifierData {
     description?: string;
     documentKey?: string;
     documentType?: CodeValueData;
+    expiryDate?: string;
     id?: number;
+    issuanceDate?: string;
     status?: string;
 }
 

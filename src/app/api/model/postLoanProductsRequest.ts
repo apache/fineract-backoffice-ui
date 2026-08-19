@@ -158,10 +158,13 @@ export interface PostLoanProductsRequest {
     principalThresholdForLastInstallment?: number;
     principalVariationsForBorrowerCycle?: Array<number>;
     rates?: Array<RateData>;
+    recalculationCompoundingFrequencyDayOfWeekType?: number;
     recalculationCompoundingFrequencyInterval?: number;
     recalculationCompoundingFrequencyOnDayType?: number;
     recalculationCompoundingFrequencyType?: number;
+    recalculationRestFrequencyDayOfWeekType?: number;
     recalculationRestFrequencyInterval?: number;
+    recalculationRestFrequencyOnDayType?: number;
     recalculationRestFrequencyType?: number;
     receivableFeeAccountId?: number;
     receivableInterestAccountId?: number;

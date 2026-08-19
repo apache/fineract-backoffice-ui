@@ -34,6 +34,7 @@ export interface WorkingCapitalLoanBreachScheduleData {
     nearBreach?: boolean;
     numberOfDays?: number;
     outstandingAmount?: number;
+    paidAmount?: number;
     periodNumber?: number;
     reset?: boolean;
     toDate?: string;

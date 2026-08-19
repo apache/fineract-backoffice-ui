@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { GetLoansLoanIdCollateralData } from './getLoansLoanIdCollateralData';
 import { GetLoansLoanIdStatus } from './getLoansLoanIdStatus';
 import { GetLoansLoanIdRepaymentFrequencyType } from './getLoansLoanIdRepaymentFrequencyType';
 import { StringEnumOptionData } from './stringEnumOptionData';
@@ -37,6 +38,7 @@ import { GetLoansLoanIdDelinquencySummary } from './getLoansLoanIdDelinquencySum
 import { GetLoansLoanIdOriginatorData } from './getLoansLoanIdOriginatorData';
 import { GetLoansLoanIdTransactions } from './getLoansLoanIdTransactions';
 import { GetLoansLoanIdLoanChargeData } from './getLoansLoanIdLoanChargeData';
+import { GetLoansLoanIdSubStatus } from './getLoansLoanIdSubStatus';
 import { GetLoansLoanIdDisbursementDetails } from './getLoansLoanIdDisbursementDetails';
 import { GetLoansLoanIdInterestRateFrequencyType } from './getLoansLoanIdInterestRateFrequencyType';
 import { GetLoansLoanIdInterestType } from './getLoansLoanIdInterestType';
@@ -75,6 +77,7 @@ export interface GetLoansLoanIdResponse {
     clientId?: number;
     clientName?: string;
     clientOfficeId?: number;
+    collateral?: Array<GetLoansLoanIdCollateralData>;
     currency?: GetLoansLoanIdCurrency;
     delinquencyRange?: DelinquencyRangeData;
     delinquent?: GetLoansLoanIdDelinquencySummary;
@@ -138,6 +141,7 @@ export interface GetLoansLoanIdResponse {
     repaymentSchedule?: GetLoansLoanIdRepaymentSchedule;
     repaymentStartDateType?: EnumOptionData;
     status?: GetLoansLoanIdStatus;
+    subStatus?: GetLoansLoanIdSubStatus;
     summary?: GetLoansLoanIdSummary;
     termFrequency?: number;
     termPeriodFrequencyType?: GetLoansLoanIdTermPeriodFrequencyType;

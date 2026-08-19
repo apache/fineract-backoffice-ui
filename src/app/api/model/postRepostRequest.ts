@@ -36,5 +36,6 @@ export interface PostRepostRequest {
     reportSql?: string;
     reportSubType?: string;
     reportType?: string;
+    useReport?: boolean;
 }
 

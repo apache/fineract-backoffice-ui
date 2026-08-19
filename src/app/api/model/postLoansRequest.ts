@@ -28,6 +28,7 @@ import { StringEnumOptionData } from './stringEnumOptionData';
 import { PostLoansRequestChargeData } from './postLoansRequestChargeData';
 import { PostLoansOriginatorData } from './postLoansOriginatorData';
 import { PostLoansDisbursementData } from './postLoansDisbursementData';
+import { PostLoansRequestCollateralData } from './postLoansRequestCollateralData';
 
 
 /**
@@ -47,6 +48,7 @@ export interface PostLoansRequest {
     capitalizedIncomeType?: StringEnumOptionData;
     charges?: Array<PostLoansRequestChargeData>;
     clientId?: number;
+    collateral?: Array<PostLoansRequestCollateralData>;
     datatables?: Array<PostLoansDataTable>;
     dateFormat?: string;
     daysInYearCustomStrategy?: PostLoansRequest.DaysInYearCustomStrategyEnum;

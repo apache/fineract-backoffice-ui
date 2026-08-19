@@ -34,6 +34,7 @@ export interface GetWorkingCapitalLoanCharge {
     amount?: number;
     amountOutstanding?: number;
     amountPaid?: number;
+    amountWrittenOff?: number;
     chargeCalculationType?: EnumOptionData;
     chargeId?: number;
     chargePaymentMode?: EnumOptionData;

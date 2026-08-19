@@ -170,5 +170,10 @@ export interface GetWorkingCapitalLoansLoanIdResponse {
     summary?: GetWorkingCapitalLoanSummary;
     timeline?: GetWorkingCapitalLoansLoanIdTimeline;
     totalPaymentVolume?: number;
+    writeOffReason?: CodeValueData;
+    /**
+     * Date the loan was written off. Cleared by an undo write-off
+     */
+    writtenOffOnDate?: string;
 }
 

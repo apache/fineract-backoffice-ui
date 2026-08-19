@@ -11112,13 +11112,21 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostLoansLoanIdTransactionsRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "default": {
             "content": { "application/json": { "schema": { "type": "string" } } },
             "description": "default response"
           }
         },
-        "summary": "Disburse Loan by Account Id",
+        "summary": "Loan Repayment by Account Id",
         "tags": ["Inter Operation"]
       }
     },
@@ -30958,16 +30966,22 @@
           "description": { "type": "string" },
           "documentKey": { "type": "string" },
           "documentType": { "$ref": "#/components/schemas/CodeValueData" },
+          "expiryDate": { "type": "string", "format": "date" },
           "id": { "type": "integer", "format": "int64" },
+          "issuanceDate": { "type": "string", "format": "date" },
           "status": { "type": "string" }
         }
       },
       "ClientIdentifierRequest": {
         "type": "object",
         "properties": {
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "description": { "type": "string", "example": "Document has been verified" },
           "documentKey": { "type": "string", "example": "KA-54677" },
           "documentTypeId": { "type": "integer", "format": "int64", "example": 1 },
+          "expiryDate": { "type": "string", "example": "01 January 2034" },
+          "issuanceDate": { "type": "string", "example": "01 January 2024" },
+          "locale": { "type": "string", "example": "en" },
           "status": { "type": "string", "example": "Active" }
         }
       },
@@ -33593,7 +33607,9 @@
           "description": { "type": "string", "example": "Issued in the year 2--7" },
           "documentKey": { "type": "string", "example": "12345" },
           "documentType": { "$ref": "#/components/schemas/GetClientsDocumentType" },
-          "id": { "type": "integer", "format": "int64", "example": 2 }
+          "expiryDate": { "type": "string", "format": "date" },
+          "id": { "type": "integer", "format": "int64", "example": 2 },
+          "issuanceDate": { "type": "string", "format": "date" }
         }
       },
       "GetClientsClientIdResponse": {
@@ -36164,6 +36180,9 @@
           },
           "fixedLength": { "type": "integer", "format": "int32", "example": 10 },
           "fixedPrincipalPercentagePerInstallment": { "type": "number", "example": 5.5 },
+          "graceOnArrearsAgeing": { "type": "integer", "format": "int32", "example": 1 },
+          "graceOnInterestPayment": { "type": "integer", "format": "int32", "example": 1 },
+          "graceOnPrincipalPayment": { "type": "integer", "format": "int32", "example": 1 },
           "id": { "type": "integer", "format": "int64", "example": 11 },
           "inArrearsTolerance": { "type": "integer", "format": "int32", "example": 3 },
           "includeInBorrowerCycle": { "type": "boolean", "example": true },
@@ -36815,6 +36834,7 @@
           "dueDate": { "type": "string", "format": "date" },
           "externalId": { "type": "string", "example": "95174ff9-1a75-4d72-a413-6f9b1cb988b7" },
           "id": { "type": "integer", "format": "int64", "example": 1 },
+          "loanId": { "type": "integer", "format": "int64", "example": 1 },
           "name": { "type": "string", "example": "Loan Processing fee" },
           "penalty": { "type": "boolean", "example": false },
           "percentage": { "type": "number", "format": "double", "example": 0 },
@@ -36846,6 +36866,16 @@
           "mandatory": { "type": "boolean", "example": false },
           "name": { "type": "string", "example": "code name" },
           "position": { "type": "integer", "format": "int32", "example": 0 }
+        }
+      },
+      "GetLoansLoanIdCollateralData": {
+        "type": "object",
+        "properties": {
+          "clientCollateralId": { "type": "integer", "format": "int64", "example": 1 },
+          "collateralId": { "type": "integer", "format": "int64", "example": 1 },
+          "quantity": { "type": "number", "example": 1 },
+          "total": { "type": "number", "example": 10000.0 },
+          "totalCollateral": { "type": "number", "example": 10000.0 }
         }
       },
       "GetLoansLoanIdCollateralsResponse": {
@@ -37266,6 +37296,10 @@
         "type": "object",
         "properties": {
           "currency": { "$ref": "#/components/schemas/GetLoansLoanIdCurrency" },
+          "futurePeriods": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GetLoansLoanIdRepaymentPeriod" }
+          },
           "loanTermInDays": { "type": "integer", "format": "int64", "example": 30 },
           "periods": {
             "type": "array",
@@ -37321,6 +37355,10 @@
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "clientName": { "type": "string", "example": "Kampala first Client" },
           "clientOfficeId": { "type": "integer", "format": "int64", "example": 2 },
+          "collateral": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GetLoansLoanIdCollateralData" }
+          },
           "currency": { "$ref": "#/components/schemas/GetLoansLoanIdCurrency" },
           "delinquencyRange": { "$ref": "#/components/schemas/DelinquencyRangeData" },
           "delinquent": { "$ref": "#/components/schemas/GetLoansLoanIdDelinquencySummary" },
@@ -37401,6 +37439,7 @@
           "repaymentSchedule": { "$ref": "#/components/schemas/GetLoansLoanIdRepaymentSchedule" },
           "repaymentStartDateType": { "$ref": "#/components/schemas/EnumOptionData" },
           "status": { "$ref": "#/components/schemas/GetLoansLoanIdStatus" },
+          "subStatus": { "$ref": "#/components/schemas/GetLoansLoanIdSubStatus" },
           "summary": { "$ref": "#/components/schemas/GetLoansLoanIdSummary" },
           "termFrequency": { "type": "integer", "format": "int32", "example": 12 },
           "termPeriodFrequencyType": {
@@ -37433,6 +37472,14 @@
           "overpaid": { "type": "boolean", "example": false },
           "pendingApproval": { "type": "boolean", "example": false },
           "waitingForDisbursal": { "type": "boolean", "example": false }
+        }
+      },
+      "GetLoansLoanIdSubStatus": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "loanSubStatus.foreclosed" },
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "value": { "type": "string", "example": "Foreclosed" }
         }
       },
       "GetLoansLoanIdSummary": {
@@ -40756,6 +40803,7 @@
           "amount": { "type": "number", "example": 10 },
           "amountOutstanding": { "type": "number", "example": 0 },
           "amountPaid": { "type": "number", "example": 10 },
+          "amountWrittenOff": { "type": "number", "example": 0 },
           "chargeCalculationType": { "$ref": "#/components/schemas/EnumOptionData" },
           "chargeId": { "type": "integer", "format": "int64", "example": 1 },
           "chargePaymentMode": { "$ref": "#/components/schemas/EnumOptionData" },
@@ -41305,7 +41353,14 @@
           "status": { "$ref": "#/components/schemas/GetWorkingCapitalLoansLoanIdStatus" },
           "summary": { "$ref": "#/components/schemas/GetWorkingCapitalLoanSummary" },
           "timeline": { "$ref": "#/components/schemas/GetWorkingCapitalLoansLoanIdTimeline" },
-          "totalPaymentVolume": { "type": "number", "example": 10500.0 }
+          "totalPaymentVolume": { "type": "number", "example": 10500.0 },
+          "writeOffReason": { "$ref": "#/components/schemas/CodeValueData" },
+          "writtenOffOnDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Date the loan was written off. Cleared by an undo write-off",
+            "example": "2026-07-16"
+          }
         }
       },
       "GetWorkingCapitalLoansLoanIdStatus": {
@@ -43165,7 +43220,9 @@
         "description": "LoanProductChargeToGLAccountMapper",
         "properties": {
           "charge": { "$ref": "#/components/schemas/LoanProductChargeData" },
-          "incomeAccount": { "$ref": "#/components/schemas/GLAccountData" }
+          "chargeId": { "type": "integer", "format": "int64", "example": 1 },
+          "incomeAccount": { "$ref": "#/components/schemas/GLAccountData" },
+          "incomeAccountId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
       "LoanProductConfigurableAttributes": {
@@ -45101,7 +45158,7 @@
         "type": "object",
         "description": "PostClientsClientIdChargesRequest",
         "properties": {
-          "amount": { "type": "integer", "format": "int32", "example": 100 },
+          "amount": { "type": "number", "example": 100 },
           "chargeId": { "type": "integer", "format": "int64", "example": 226 },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "dueDate": { "type": "string", "example": "01 September 2015" },
@@ -45121,9 +45178,13 @@
         "type": "object",
         "description": "PostClientsClientIdIdentifiersRequest",
         "properties": {
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "description": { "type": "string", "example": "Document has been verified" },
           "documentKey": { "type": "string", "example": "KA-54677" },
           "documentTypeId": { "type": "integer", "format": "int64", "example": 1 },
+          "expiryDate": { "type": "string", "example": "01 January 2034" },
+          "issuanceDate": { "type": "string", "example": "01 January 2024" },
+          "locale": { "type": "string", "example": "en" },
           "status": { "type": "string", "example": "Active" }
         }
       },
@@ -46078,6 +46139,11 @@
             "items": { "type": "integer", "format": "int32" }
           },
           "rates": { "type": "array", "items": { "$ref": "#/components/schemas/RateData" } },
+          "recalculationCompoundingFrequencyDayOfWeekType": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
           "recalculationCompoundingFrequencyInterval": {
             "type": "integer",
             "format": "int32",
@@ -46093,7 +46159,17 @@
             "format": "int32",
             "example": 1
           },
+          "recalculationRestFrequencyDayOfWeekType": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
           "recalculationRestFrequencyInterval": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
+          "recalculationRestFrequencyOnDayType": {
             "type": "integer",
             "format": "int32",
             "example": 1
@@ -46346,6 +46422,7 @@
             "example": 1000
           },
           "locale": { "type": "string", "example": "en" },
+          "netDisbursalAmount": { "type": "number", "example": 5000.33 },
           "note": { "type": "string", "example": "Description of disbursement details." },
           "originators": {
             "type": "array",
@@ -46601,6 +46678,10 @@
             "items": { "$ref": "#/components/schemas/PostLoansRequestChargeData" }
           },
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
+          "collateral": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PostLoansRequestCollateralData" }
+          },
           "datatables": {
             "type": "array",
             "example": "List of PostLoansDataTable",
@@ -46688,7 +46769,15 @@
         "type": "object",
         "properties": {
           "amount": { "type": "number", "example": 1.0 },
-          "chargeId": { "type": "integer", "format": "int64", "example": 1 }
+          "chargeId": { "type": "integer", "format": "int64", "example": 1 },
+          "dueDate": { "type": "string", "example": "29 September 2011" }
+        }
+      },
+      "PostLoansRequestCollateralData": {
+        "type": "object",
+        "properties": {
+          "clientCollateralId": { "type": "integer", "format": "int64", "example": 1 },
+          "quantity": { "type": "number", "example": 1 }
         }
       },
       "PostLoansResponse": {
@@ -47091,7 +47180,8 @@
           },
           "reportSql": { "type": "string", "example": "select 'very good sql' as AComment" },
           "reportSubType": { "type": "string" },
-          "reportType": { "type": "string", "example": "Table" }
+          "reportType": { "type": "string", "example": "Table" },
+          "useReport": { "type": "boolean", "example": true }
         }
       },
       "PostRolesRequest": {
@@ -47717,7 +47807,7 @@
       },
       "PostWorkingCapitalLoanTransactionsRequest": {
         "type": "object",
-        "description": "Request for transaction command: repayment, creditBalanceRefund, discountFee, or discountFeeAdjustment",
+        "description": "Request for transaction command: repayment, creditBalanceRefund, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff or undoWriteOff",
         "properties": {
           "chargeOffReasonId": {
             "type": "integer",
@@ -47744,6 +47834,11 @@
             "description": "Disbursement transaction id for discountFee; discount fee transaction id for discountFeeAdjustment",
             "example": 42
           },
+          "reversalExternalId": {
+            "type": "string",
+            "description": "Optional external id for the reversal (command=undoChargeOff, undoWriteOff)",
+            "example": "undo-write-off-ext-001"
+          },
           "transactionAmount": {
             "type": "number",
             "description": "Transaction amount",
@@ -47753,6 +47848,12 @@
             "type": "string",
             "description": "Transaction date",
             "example": "28 June 2024"
+          },
+          "writeoffReasonId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Optional write-off reason code value id (command=writeOff)",
+            "example": 3
           }
         }
       },
@@ -49751,12 +49852,16 @@
         "type": "object",
         "description": "PutSavingsAccountsAccountIdRequest",
         "properties": {
+          "clientId": { "type": "integer", "format": "int64", "example": 1 },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "locale": { "type": "string", "example": "en" },
           "nominalAnnualInterestRate": {
             "type": "number",
             "format": "double",
             "example": 5.9999999999
-          }
+          },
+          "productId": { "type": "integer", "format": "int64", "example": 1 },
+          "submittedOnDate": { "type": "string", "example": "01 March 2011" }
         }
       },
       "PutSavingsAccountsAccountIdResponse": {
@@ -49778,7 +49883,8 @@
             "type": "number",
             "format": "double",
             "example": 5.9999999999
-          }
+          },
+          "submittedOnDate": { "type": "string", "example": "01 March 2011" }
         }
       },
       "PutSavingsAccountsSavingsAccountIdChargesSavingsAccountChargeIdRequest": {
@@ -52066,6 +52172,7 @@
           "nearBreach": { "type": "boolean" },
           "numberOfDays": { "type": "integer", "format": "int32" },
           "outstandingAmount": { "type": "number" },
+          "paidAmount": { "type": "number" },
           "periodNumber": { "type": "integer", "format": "int32" },
           "reset": { "type": "boolean" },
           "toDate": { "type": "string", "format": "date" }
@@ -52077,6 +52184,7 @@
           "amount": { "type": "number" },
           "amountOutstanding": { "type": "number" },
           "amountPaid": { "type": "number" },
+          "amountWrittenOff": { "type": "number" },
           "chargeCalculationType": { "$ref": "#/components/schemas/EnumOptionData" },
           "chargeId": { "type": "integer", "format": "int64" },
           "chargeOptions": {
