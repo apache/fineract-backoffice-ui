@@ -25,7 +25,7 @@ threat model in `security.md`.
 
 ## Project
 
-Angular 21 standalone single-page application — the back-office UI for the Apache Fineract
+Angular 22 standalone single-page application — the back-office UI for the Apache Fineract
 core banking platform. It communicates with the Fineract REST API; all authorization is
 enforced server-side (see `security.md`).
 

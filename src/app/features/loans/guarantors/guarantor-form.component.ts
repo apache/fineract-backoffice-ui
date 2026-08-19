@@ -25,6 +25,7 @@ import { GuarantorsService, GuarantorsRequest, EnumOptionData } from '../../../a
 import {
   FINERACT_DATE_FORMAT,
   FINERACT_LOCALE,
+  formatArrayDate,
   formatDateToFineract,
   toIsoDate,
 } from '../../../core/utils/date-formatter';
@@ -277,9 +278,7 @@ export class GuarantorFormComponent implements OnInit {
         if (data.dob) {
           const dob = data.dob as unknown as number[];
           this.dobDate.set(
-            Array.isArray(dob)
-              ? toIsoDate(new Date(dob[0], dob[1] - 1, dob[2]))
-              : toIsoDate(new Date(data.dob)),
+            Array.isArray(dob) ? formatArrayDate(dob) : toIsoDate(new Date(data.dob)),
           );
         }
       });

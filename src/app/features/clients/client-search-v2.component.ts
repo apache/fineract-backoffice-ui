@@ -115,6 +115,7 @@ import {
                   fill="clear"
                   (click)="viewClient(row.id)"
                   [title]="'CLIENT_SEARCH_V2.VIEW' | translate"
+                  [attr.aria-label]="'CLIENT_SEARCH_V2.VIEW' | translate"
                 >
                   <ion-icon name="eye-outline"></ion-icon>
                 </ion-button>

@@ -232,7 +232,7 @@ export class CashierTransactionsComponent {
    * `[2026,8,5]` into a table cell is the failure mode either assumption produces alone.
    */
   formatDate(value: unknown): string {
-    if (typeof value === 'string') return value.split('T')[0];
+    if (typeof value === 'string') return value.split('T', 1)[0];
     return formatArrayDate(value);
   }
 

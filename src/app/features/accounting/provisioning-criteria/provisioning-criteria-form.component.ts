@@ -39,6 +39,24 @@ import {
  * per-category definitions and a loan-product mapping; those arrays are complex and
  * are preserved as-is on edit. This form edits only the criteria name.
  */
+/**
+ * The criteria as this screen holds it.
+ *
+ * The provisioning definitions — the percentage, ageing band and pair of GL accounts per category
+ * — travel under `definitions`. They were sent as `provisioningcriteria`, which the platform now
+ * refuses outright: `The parameter provisioningcriteria is not supported`, so saving an edit
+ * answered 400. The generated request type is not used directly because the property is named
+ * differently either side of the spec sync, and this has to compile against both.
+ *
+ * The form does not edit the definitions; it carries them so that changing the name does not
+ * discard the provisioning rules attached to the criteria.
+ */
+interface ProvisioningCriteriaPayload {
+  criteriaName?: string;
+  loanProducts?: unknown[];
+  definitions?: unknown[];
+}
+
 @Component({
   selector: 'app-provisioning-criteria-form',
   standalone: true,
@@ -136,7 +154,7 @@ export class ProvisioningCriteriaFormComponent implements OnInit {
   readonly isEditMode = signal(false);
   readonly isSaving = signal(false);
 
-  readonly criteria = signal<PostProvisioningCriteriaRequest>({ criteriaName: '' });
+  readonly criteria = signal<ProvisioningCriteriaPayload>({ criteriaName: '' });
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -152,10 +170,12 @@ export class ProvisioningCriteriaFormComponent implements OnInit {
   load(): void {
     if (!this.criteriaId) return;
     this.criteriaService.getProvisioningcriteriaCriteriaId(this.criteriaId).subscribe((data) => {
+      const raw = data as unknown as Record<string, unknown>;
       this.criteria.set({
         criteriaName: data.criteriaName,
-        loanProducts: data.loanProducts,
-        provisioningcriteria: data.provisioningcriteria,
+        loanProducts: data.loanProducts as unknown[] | undefined,
+        // Read under both names so this works either side of the rename.
+        definitions: (raw['definitions'] ?? raw['provisioningcriteria']) as unknown[] | undefined,
       });
     });
   }
@@ -164,8 +184,13 @@ export class ProvisioningCriteriaFormComponent implements OnInit {
     this.isSaving.set(true);
     const request$ =
       this.isEditMode() && this.criteriaId
-        ? this.criteriaService.putProvisioningcriteriaCriteriaId(this.criteriaId, this.criteria())
-        : this.criteriaService.postProvisioningcriteria(this.criteria());
+        ? this.criteriaService.putProvisioningcriteriaCriteriaId(
+            this.criteriaId,
+            this.criteria() as PostProvisioningCriteriaRequest,
+          )
+        : this.criteriaService.postProvisioningcriteria(
+            this.criteria() as PostProvisioningCriteriaRequest,
+          );
 
     request$.subscribe({
       next: () => this.router.navigate([this.LIST_PATH]),

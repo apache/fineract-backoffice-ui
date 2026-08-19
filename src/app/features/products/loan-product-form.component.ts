@@ -60,12 +60,21 @@ import { LOAN_SCHEDULE_TYPE, isAdvancedPaymentAllocationStrategy } from './loan-
 import { PaymentCreditAllocationEditorComponent } from './payment-credit-allocation-editor.component';
 import { ProductAccountingSectionComponent } from './accounting/product-accounting-section.component';
 import {
+  AdvancedAccountingMappingsComponent,
+  ChargeOption,
+  PaymentTypeOption,
+} from './accounting/advanced-accounting-mappings.component';
+import {
   ACCOUNTING_RULE,
   AccountingMappings,
   GlAccountOptions,
   LOAN_ACCOUNTING_FIELDS,
   mappingsForRule,
   mappingsFromResponse,
+  AdvancedAccountingMappings,
+  advancedMappingsForRequest,
+  advancedMappingsFromResponse,
+  emptyAdvancedMappings,
 } from './accounting/product-accounting.model';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 
@@ -85,6 +94,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
     FormsModule,
     TranslateModule,
     ProductAccountingSectionComponent,
+    AdvancedAccountingMappingsComponent,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -1223,6 +1233,15 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
               (mappingsChange)="accountingMappings.set($event)"
             ></app-product-accounting-section>
 
+            <app-advanced-accounting-mappings
+              [accountingRule]="product().accountingRule"
+              [accountOptions]="accountingMappingOptions()"
+              [paymentTypeOptions]="paymentTypeOptions()"
+              [charges]="productCharges()"
+              [mappings]="advancedMappings()"
+              (mappingsChange)="advancedMappings.set($event)"
+            ></app-advanced-accounting-mappings>
+
             <div class="form-actions">
               <ion-button
                 id="loan-product-cancel-btn"
@@ -1374,6 +1393,25 @@ export class LoanProductFormComponent implements OnInit {
   readonly accountingRuleOptions = signal<{ id?: number; value?: string }[]>([]);
   readonly accountingMappings = signal<AccountingMappings>({});
 
+  /**
+   * The advanced overrides: payment channel to fund source, fee and penalty to income.
+   *
+   * Held separately from `accountingMappings` because they are arrays the user edits in place
+   * rather than a flat set of ids, and because a rule of `NONE` must drop them the same way.
+   */
+  readonly advancedMappings = signal<AdvancedAccountingMappings>(emptyAdvancedMappings());
+  readonly paymentTypeOptions = signal<PaymentTypeOption[]>([]);
+
+  /**
+   * The charges this product carries, which is what the fee and penalty tables may map.
+   *
+   * Read from the loaded product rather than from the template's catalogue. The platform accepts
+   * a mapping for a charge the product does not carry and then never fires it, so offering the
+   * tenant's whole charge list would invite exactly that. This form has no charge picker of its
+   * own, so on create the tables correctly report that there is nothing to map yet.
+   */
+  readonly productCharges = signal<ChargeOption[]>([]);
+
   readonly product = signal<PostLoanProductsRequest>({
     currencyCode: 'USD',
     digitsAfterDecimal: 2,
@@ -1437,6 +1475,7 @@ export class LoanProductFormComponent implements OnInit {
       this.chargeOffBehaviourOptions.set(template.chargeOffBehaviourOptions ?? []);
       this.accountingMappingOptions.set(template.accountingMappingOptions ?? {});
       this.accountingRuleOptions.set(Array.from(template.accountingRuleOptions ?? []));
+      this.paymentTypeOptions.set(Array.from(template.paymentTypeOptions ?? []));
 
       this.applyTransactionProcessingStrategyFilter();
     });
@@ -1766,6 +1805,8 @@ export class LoanProductFormComponent implements OnInit {
       this.accountingMappings.set(
         mappingsFromResponse(this.accountingFields, data.accountingMappings),
       );
+      this.advancedMappings.set(advancedMappingsFromResponse(data));
+      this.productCharges.set((data.charges ?? []) as ChargeOption[]);
       this.isProgressive.set(this.product().loanScheduleType === LOAN_SCHEDULE_TYPE.PROGRESSIVE);
       this.downPaymentEnabled.set(this.product().enableDownPayment === true);
       this.multiDisburseEnabled.set(this.product().multiDisburseLoan === true);
@@ -1793,6 +1834,7 @@ export class LoanProductFormComponent implements OnInit {
         this.product().accountingRule ?? ACCOUNTING_RULE.NONE,
         this.accountingMappings(),
       ),
+      ...advancedMappingsForRequest(this.product().accountingRule, this.advancedMappings()),
     };
 
     // `enableAutoRepaymentForDownPayment` is only a valid parameter while down payment is on.

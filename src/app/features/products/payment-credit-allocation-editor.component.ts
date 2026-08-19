@@ -113,6 +113,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
                     type="button"
                     [disabled]="orderIndex === 0"
                     (click)="moveOrderEntry(rule.paymentAllocationOrder!, orderIndex, -1)"
+                    [attr.aria-label]="'COMMON.MOVE_UP' | translate"
                   >
                     <ion-icon name="arrow-up-outline" slot="icon-only"></ion-icon>
                   </ion-button>
@@ -121,6 +122,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
                     type="button"
                     [disabled]="orderIndex === rule.paymentAllocationOrder!.length - 1"
                     (click)="moveOrderEntry(rule.paymentAllocationOrder!, orderIndex, 1)"
+                    [attr.aria-label]="'COMMON.MOVE_DOWN' | translate"
                   >
                     <ion-icon name="arrow-down-outline" slot="icon-only"></ion-icon>
                   </ion-button>
@@ -201,6 +203,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
                     type="button"
                     [disabled]="orderIndex === 0"
                     (click)="moveOrderEntry(rule.creditAllocationOrder!, orderIndex, -1)"
+                    [attr.aria-label]="'COMMON.MOVE_UP' | translate"
                   >
                     <ion-icon name="arrow-up-outline" slot="icon-only"></ion-icon>
                   </ion-button>
@@ -209,6 +212,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
                     type="button"
                     [disabled]="orderIndex === rule.creditAllocationOrder!.length - 1"
                     (click)="moveOrderEntry(rule.creditAllocationOrder!, orderIndex, 1)"
+                    [attr.aria-label]="'COMMON.MOVE_DOWN' | translate"
                   >
                     <ion-icon name="arrow-down-outline" slot="icon-only"></ion-icon>
                   </ion-button>

@@ -95,9 +95,7 @@ import {
             [(ngModel)]="activeFilters.status"
             (ionChange)="onFilterChange()"
           >
-            <ion-select-option [value]="undefined">{{
-              'COMMON.ALL' | translate
-            }}</ion-select-option>
+            <ion-select-option value="">{{ 'COMMON.ALL' | translate }}</ion-select-option>
             <ion-select-option value="300">{{ 'COMMON.ACTIVE' | translate }}</ion-select-option>
             <ion-select-option value="100">{{ 'COMMON.PENDING' | translate }}</ion-select-option>
             <ion-select-option value="600">{{ 'COMMON.CLOSED' | translate }}</ion-select-option>
@@ -131,7 +129,7 @@ import {
           [attr.aria-label]="'LOANS.COLLATERAL' | translate"
           [appTooltip]="'LOANS.MANAGE_COLLATERAL' | translate"
           (click)="onViewCollateral(loan)"
-          *appHasPermission="'READ_LOANCOLLATERAL'"
+          *appHasPermission="'READ_COLLATERAL'"
         >
           <ion-icon name="shield-outline"></ion-icon>
         </ion-button>
@@ -204,7 +202,10 @@ export class LoansListComponent {
   readonly loans = signal<GetLoansLoanIdResponse[]>([]);
   readonly totalRecords = signal(0);
 
-  activeFilters: { status?: string } = {};
+  // Empty string, not `undefined`, so it round-trips through `<ion-select>`'s ngModel
+  // binding as a real match for the "All" option's own `value=""` rather than leaving the
+  // select showing nothing selected.
+  activeFilters: { status?: string } = { status: '' };
 
   private searchSubject = new Subject<string>();
   private sortSubject = new Subject<SortEvent>();
@@ -237,7 +238,10 @@ export class LoansListComponent {
             : undefined;
 
           const searchVal = this.currentFilter || undefined;
-          const status = this.activeFilters.status;
+          // Fineract's /loans endpoint rejects `status=` and `status=All` outright (a 400,
+          // "The Status value '...' is not supported") — the param must be omitted entirely
+          // to mean "any status", so the "All" sentinel is never forwarded as-is.
+          const status = this.activeFilters.status || undefined;
 
           return this.loansService
             .getLoans(

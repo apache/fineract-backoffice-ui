@@ -17,35 +17,51 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const SECURITY_ROUTES: Routes = [
   {
     path: 'users',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_USER' },
     loadComponent: () => import('./users/users-list.component').then((m) => m.UsersListComponent),
   },
   {
     path: 'users/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_USER' },
     loadComponent: () => import('./users/user-form.component').then((m) => m.UserFormComponent),
   },
   {
     path: 'users/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_USER' },
     loadComponent: () => import('./users/user-form.component').then((m) => m.UserFormComponent),
   },
   {
     path: 'roles',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_ROLE' },
     loadComponent: () => import('./roles/roles-list.component').then((m) => m.RolesListComponent),
   },
   {
     path: 'roles/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_ROLE' },
     loadComponent: () => import('./roles/role-form.component').then((m) => m.RoleFormComponent),
   },
   {
     path: 'roles/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_ROLE' },
     loadComponent: () => import('./roles/role-form.component').then((m) => m.RoleFormComponent),
   },
   {
     path: 'audits',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_AUDIT' },
     loadComponent: () =>
       import('./audit-logs/audit-logs-list.component').then((m) => m.AuditLogsListComponent),
   },

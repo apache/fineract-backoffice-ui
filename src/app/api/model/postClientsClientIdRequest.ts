@@ -38,6 +38,7 @@ export interface PostClientsClientIdRequest {
     rejectionDate?: string;
     rejectionReasonId?: number;
     reopenedDate?: string;
+    staffId?: number;
     withdrawalDate?: string;
     withdrawalReasonId?: number;
 }

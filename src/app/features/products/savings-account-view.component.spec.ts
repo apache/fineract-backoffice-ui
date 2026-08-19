@@ -114,7 +114,7 @@ describe('SavingsAccountViewComponent', () => {
   describe('block state', () => {
     function withSubStatus(subStatus: Record<string, boolean>): void {
       component.account.set({
-        ...(component.account() ?? {}),
+        ...component.account(),
         status: { active: true },
         subStatus,
       } as never);
@@ -154,7 +154,7 @@ describe('SavingsAccountViewComponent', () => {
   describe('officer assignment', () => {
     it('reports no officer when Fineract returns the zero sentinel', () => {
       component.account.set({
-        ...(component.account() ?? {}),
+        ...component.account(),
         status: { active: true },
         fieldOfficerId: 0,
       } as never);
@@ -166,12 +166,53 @@ describe('SavingsAccountViewComponent', () => {
 
     it('reports an officer once one is assigned', () => {
       component.account.set({
-        ...(component.account() ?? {}),
+        ...component.account(),
         status: { active: true },
         fieldOfficerId: 7,
       } as never);
 
       expect(component.hasOfficer()).toBeTrue();
+    });
+  });
+
+  /**
+   * Fineract is lenient about `undo` — it answers 200 for an already-reversed transaction, and for
+   * a hold or a release, without doing anything useful. `releaseAmount` is the opposite: it
+   * refuses a second release with `validation.msg.amount.is.not.on.hold`. Both cases would leave a
+   * teller pressing a button that either lies or errors, so the screen gates them itself.
+   */
+  describe('transaction actions', () => {
+    const deposit = { id: 1, reversed: false, transactionType: { deposit: true } };
+    const reversedDeposit = { id: 2, reversed: true, transactionType: { deposit: true } };
+    const openHold = {
+      id: 3,
+      reversed: false,
+      releaseTransactionId: 0,
+      transactionType: { amountHold: true },
+    };
+    const releasedHold = {
+      id: 4,
+      reversed: false,
+      releaseTransactionId: 9,
+      transactionType: { amountHold: true },
+    };
+    const release = { id: 5, reversed: false, transactionType: { amountRelease: true } };
+
+    it('offers undo only on a live money movement', () => {
+      expect(component.canUndo(deposit as any)).toBeTrue();
+      expect(component.canUndo(reversedDeposit as any)).toBeFalse();
+      expect(component.canUndo(openHold as any)).toBeFalse();
+      expect(component.canUndo(release as any)).toBeFalse();
+    });
+
+    /**
+     * `releaseTransactionId` is `0` while the hold stands rather than absent, so a `!= null`
+     * check would report every open hold as already released.
+     */
+    it('offers release only on a hold that still ties up money', () => {
+      expect(component.canRelease(openHold as any)).toBeTrue();
+      expect(component.canRelease(releasedHold as any)).toBeFalse();
+      expect(component.canRelease(deposit as any)).toBeFalse();
     });
   });
 });

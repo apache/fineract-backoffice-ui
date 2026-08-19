@@ -57,12 +57,18 @@ describe('DonutChartComponent', () => {
     // Total circumference = 2 * Math.PI * 40 ~= 251.327
     const circumference = 2 * Math.PI * 40;
 
-    expect(parseFloat(firstSegment.dashArray.split(' ')[0])).toBeCloseTo(0.75 * circumference, 1);
-    expect(parseFloat(secondSegment.dashArray.split(' ')[0])).toBeCloseTo(0.25 * circumference, 1);
+    expect(Number.parseFloat(firstSegment.dashArray.split(' ', 1)[0])).toBeCloseTo(
+      0.75 * circumference,
+      1,
+    );
+    expect(Number.parseFloat(secondSegment.dashArray.split(' ', 1)[0])).toBeCloseTo(
+      0.25 * circumference,
+      1,
+    );
 
     // First offset is 0, second cumulative offset is -75% of circumference
-    expect(parseFloat(firstSegment.dashOffset)).toBe(0);
-    expect(parseFloat(secondSegment.dashOffset)).toBeCloseTo(-0.75 * circumference, 1);
+    expect(Number.parseFloat(firstSegment.dashOffset)).toBe(0);
+    expect(Number.parseFloat(secondSegment.dashOffset)).toBeCloseTo(-0.75 * circumference, 1);
   });
 
   it('should render correct legend items', () => {

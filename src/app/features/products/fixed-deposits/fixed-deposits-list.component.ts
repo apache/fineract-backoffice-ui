@@ -50,6 +50,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="Fixed Deposit Accounts"
       helpTextKey="HELP.FIXED_DEPOSITS_DESC"
       createButtonLabel="FIXED_DEPOSITS.CREATE"
+      createPermission="CREATE_FIXEDDEPOSITACCOUNT"
       [columns]="columns"
       [data]="accounts()"
       [totalRecords]="accounts().length"
@@ -74,6 +75,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
           <ion-button
             fill="clear"
             color="secondary"
+            [attr.aria-label]="'LOANS.APPROVE' | translate"
             [appTooltip]="'LOANS.APPROVE' | translate"
             (click)="onApprove(account)"
           >

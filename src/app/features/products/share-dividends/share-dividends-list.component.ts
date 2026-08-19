@@ -60,6 +60,7 @@ interface ShareDividendRow {
       title="SHARE_DIVIDENDS.TITLE"
       helpTextKey="HELP.SHARE_DIVIDENDS_DESC"
       createButtonLabel="SHARE_DIVIDENDS.CREATE"
+      createPermission="CREATE_DIVIDEND_SHAREPRODUCT"
       [columns]="columns"
       [data]="dividends()"
       [totalRecords]="dividends().length"

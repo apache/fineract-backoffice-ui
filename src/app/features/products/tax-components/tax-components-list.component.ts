@@ -38,6 +38,7 @@ import { formatArrayDate } from '../../../core/utils/date-formatter';
       title="nav.taxComponents"
       helpTextKey="HELP.TAX_COMPONENTS_DESC"
       createButtonLabel="TAX_COMPONENTS.CREATE"
+      createPermission="CREATE_TAXCOMPONENT"
       [columns]="columns"
       [data]="components()"
       [totalRecords]="components().length"

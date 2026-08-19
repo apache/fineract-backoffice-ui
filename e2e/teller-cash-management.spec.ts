@@ -27,7 +27,7 @@
  *   npx playwright test e2e/teller-cash-management.spec.ts --project=backend --workers=1
  */
 
-import { test, expect, Page } from './fixtures';
+import { test, expect, Page, recordingTimeout } from './fixtures';
 import { login, uniqueSuffix } from './utils/fineract-login';
 import { selectOption } from './utils/select-option';
 
@@ -122,7 +122,7 @@ async function ensureCashMappings(page: Page): Promise<void> {
 
 test.describe('Teller cash management', () => {
   test('a cashier is listed, receives an allocation, and settles cash back', async ({ page }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
     await ensureCashMappings(page);
 
@@ -227,7 +227,7 @@ test.describe('Teller cash management', () => {
   test('settling more than the cashier holds is refused and the form stays usable', async ({
     page,
   }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
     await ensureCashMappings(page);
 

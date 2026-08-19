@@ -56,7 +56,7 @@ describe('NotificationService', () => {
     await service.error('boom');
 
     expect(overlay.lastToast).toEqual(
-      jasmine.objectContaining({ message: 'boom', duration: 10000, cssClass: 'error-toast' }),
+      jasmine.objectContaining({ message: 'boom', duration: 10_000, cssClass: 'error-toast' }),
     );
   });
 

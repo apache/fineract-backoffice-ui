@@ -20,7 +20,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ClientViewComponent } from './client-view.component';
+import { CLIENT_TAB, ClientViewComponent } from './client-view.component';
 import {
   ClientService,
   NotesService,
@@ -28,6 +28,7 @@ import {
   DocumentsService,
   ClientFamilyMemberService,
   ClientIdentifierService,
+  ShareAccountService,
 } from '../../api';
 import { AuthService } from '../../core/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -47,6 +48,7 @@ describe('ClientViewComponent', () => {
   let familyMemberServiceSpy: jasmine.SpyObj<ClientFamilyMemberService>;
   let identifierServiceSpy: jasmine.SpyObj<ClientIdentifierService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
+  let shareAccountServiceSpy: jasmine.SpyObj<ShareAccountService>;
   let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
@@ -71,6 +73,9 @@ describe('ClientViewComponent', () => {
       'getClientsClientIdIdentifiers',
     ]);
 
+    shareAccountServiceSpy = jasmine.createSpyObj('ShareAccountService', ['getAccountsType']);
+    shareAccountServiceSpy.getAccountsType.and.returnValue(of({ pageItems: [] }) as any);
+
     authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission'], {
       currentUser: signal({
         username: 'mifos',
@@ -82,6 +87,7 @@ describe('ClientViewComponent', () => {
         permissions: ['ALL_FUNCTIONS'],
       }),
     });
+    authServiceSpy.hasPermission.and.returnValue(true);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
@@ -96,6 +102,7 @@ describe('ClientViewComponent', () => {
         { provide: ClientFamilyMemberService, useValue: familyMemberServiceSpy },
         { provide: ClientIdentifierService, useValue: identifierServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
+        { provide: ShareAccountService, useValue: shareAccountServiceSpy },
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
@@ -148,43 +155,119 @@ describe('ClientViewComponent', () => {
     expect(component.client()?.displayName).toBe('John Doe');
   });
 
-  it('shows create actions in empty savings and loan tabs', () => {
-    component.activeTab.set('1');
-    fixture.detectChanges();
+  describe('empty account tabs', () => {
+    it('shows create actions in empty savings and loan tabs', () => {
+      component.onTabChange(CLIENT_TAB.savings);
+      fixture.detectChanges();
 
-    const savingsButton = fixture.nativeElement.querySelector(
-      '[data-testid="client-empty-savings-create"]',
-    );
-    expect(savingsButton).toBeTruthy();
+      const savingsButton = fixture.nativeElement.querySelector(
+        '[data-testid="client-empty-savings-create"]',
+      );
+      expect(savingsButton).toBeTruthy();
 
-    component.activeTab.set('2');
-    fixture.detectChanges();
+      component.onTabChange(CLIENT_TAB.loans);
+      fixture.detectChanges();
 
-    const loanButton = fixture.nativeElement.querySelector(
-      '[data-testid="client-empty-loans-create"]',
-    );
-    expect(loanButton).toBeTruthy();
-  });
+      const loanButton = fixture.nativeElement.querySelector(
+        '[data-testid="client-empty-loans-create"]',
+      );
+      expect(loanButton).toBeTruthy();
+    });
 
-  it('navigates to create savings from the empty savings tab', () => {
-    component.activeTab.set('1');
-    fixture.detectChanges();
+    it('navigates to create savings from the empty savings tab', () => {
+      component.onTabChange(CLIENT_TAB.savings);
+      fixture.detectChanges();
 
-    fixture.nativeElement.querySelector('[data-testid="client-empty-savings-create"]').click();
+      fixture.nativeElement.querySelector('[data-testid="client-empty-savings-create"]').click();
 
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/products/savings-accounts/create'], {
-      queryParams: { clientId: 123 },
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/products/savings-accounts/create'], {
+        queryParams: { clientId: 123 },
+      });
+    });
+
+    it('navigates to create loan from the empty loan tab', () => {
+      component.onTabChange(CLIENT_TAB.loans);
+      fixture.detectChanges();
+
+      fixture.nativeElement.querySelector('[data-testid="client-empty-loans-create"]').click();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans/create'], {
+        queryParams: { clientId: 123 },
+      });
     });
   });
 
-  it('navigates to create loan from the empty loan tab', () => {
-    component.activeTab.set('2');
-    fixture.detectChanges();
+  describe('deposit accounts', () => {
+    /**
+     * The platform returns savings, fixed deposits and recurring deposits in one array, told
+     * apart only by `depositType.id` — 100, 200 and 300, confirmed by opening one of each against
+     * a running Fineract. Before this split all three were listed as savings accounts and linked
+     * to the savings screen.
+     */
+    beforeEach(() => {
+      clientServiceSpy.getClientsClientIdAccounts.and.returnValue(
+        of({
+          loanAccounts: [] as any,
+          savingsAccounts: [
+            { id: 2, accountNo: '2', depositType: { id: 100, value: 'Savings' } },
+            { id: 6, accountNo: '6', depositType: { id: 200, value: 'Fixed Deposit' } },
+            { id: 7, accountNo: '7', depositType: { id: 300, value: 'Recurring Deposit' } },
+          ] as any,
+        }) as any,
+      );
+      component.loadClientAccounts();
+    });
 
-    fixture.nativeElement.querySelector('[data-testid="client-empty-loans-create"]').click();
+    it('keeps only true savings on the savings tab', () => {
+      expect(component.plainSavingsAccounts().map((account) => account.id)).toEqual([2]);
+    });
 
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans/create'], {
-      queryParams: { clientId: 123 },
+    it('separates fixed from recurring deposits', () => {
+      expect(component.fixedDepositAccounts().map((account) => account.id)).toEqual([6]);
+      expect(component.recurringDepositAccounts().map((account) => account.id)).toEqual([7]);
+    });
+
+    it('treats an account with no deposit type as savings, which is what it is', () => {
+      clientServiceSpy.getClientsClientIdAccounts.and.returnValue(
+        of({ savingsAccounts: [{ id: 11, accountNo: '11' }] as any }) as any,
+      );
+      component.loadClientAccounts();
+
+      expect(component.plainSavingsAccounts().map((account) => account.id)).toEqual([11]);
+    });
+  });
+
+  describe('share accounts', () => {
+    beforeEach(() => {
+      shareAccountServiceSpy.getAccountsType.and.returnValue(
+        of({
+          pageItems: [
+            { id: 1, accountNo: '000000001', clientId: 123, productName: 'Shares' },
+            { id: 2, accountNo: '000000002', clientId: 999, productName: 'Shares' },
+          ],
+        }) as any,
+      );
+    });
+
+    it('is not fetched until the tab is opened', () => {
+      component.loadClientAccounts();
+
+      // Most visits to a client never open this tab, and the request is not free.
+      expect(shareAccountServiceSpy.getAccountsType).not.toHaveBeenCalled();
+    });
+
+    it('shows only the accounts belonging to this client', () => {
+      component.onTabChange(CLIENT_TAB.shares);
+
+      expect(component.shareAccounts().map((account) => account.id)).toEqual([1]);
+    });
+
+    it('does not refetch when the tab is opened again', () => {
+      component.onTabChange(CLIENT_TAB.shares);
+      component.onTabChange(CLIENT_TAB.details);
+      component.onTabChange(CLIENT_TAB.shares);
+
+      expect(shareAccountServiceSpy.getAccountsType).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -17,30 +17,42 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const INTEROP_ROUTES: Routes = [
   {
     path: 'parties',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_INTERID' },
     loadComponent: () =>
       import('./interop-party-lookup.component').then((m) => m.InteropPartyLookupComponent),
   },
   {
     path: 'accounts',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_INTERID' },
     loadComponent: () =>
       import('./interop-account-view.component').then((m) => m.InteropAccountViewComponent),
   },
   {
     path: 'quotes',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_INTERQUOTE' },
     loadComponent: () => import('./interop-quotes.component').then((m) => m.InteropQuotesComponent),
   },
   {
     path: 'transfers',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_INTERTRANSFER' },
     loadComponent: () =>
       import('./interop-transfers.component').then((m) => m.InteropTransfersComponent),
   },
   {
     path: 'health',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_INTERID' },
     loadComponent: () => import('./interop-health.component').then((m) => m.InteropHealthComponent),
   },
 ];

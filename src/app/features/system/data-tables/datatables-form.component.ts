@@ -204,7 +204,13 @@ import {
                   </div>
 
                   @if (!isEditMode) {
-                    <ion-button fill="clear" color="danger" type="button" (click)="removeColumn(i)">
+                    <ion-button
+                      fill="clear"
+                      color="danger"
+                      type="button"
+                      (click)="removeColumn(i)"
+                      [attr.aria-label]="'SYSTEM.REMOVE_COLUMN' | translate"
+                    >
                       <ion-icon name="trash-outline"></ion-icon>
                     </ion-button>
                   }

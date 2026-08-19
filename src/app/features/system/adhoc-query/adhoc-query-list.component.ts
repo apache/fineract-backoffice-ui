@@ -45,6 +45,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.adhocQuery"
       helpTextKey="HELP.ADHOC_QUERY_DESC"
       createButtonLabel="ADHOC_QUERY.CREATE"
+      createPermission="CREATE_ADHOC"
       [columns]="columns"
       [data]="queries()"
       [totalRecords]="queries().length"

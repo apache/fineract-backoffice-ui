@@ -45,6 +45,20 @@ import {
   IonSegmentButton,
 } from '@ionic/angular/standalone';
 
+/**
+ * The tabs on this screen, named.
+ *
+ * They were positional strings — '0', '7' — which say nothing at the point of use and shift
+ * meaning whenever a tab is inserted in the middle. The values are still strings because
+ * `ion-segment` compares them as such.
+ */
+export const ASSET_OWNER_TAB = {
+  details: 'details',
+  loanProductAttributes: 'loanProductAttributes',
+} as const;
+
+export type AssetOwnerTab = (typeof ASSET_OWNER_TAB)[keyof typeof ASSET_OWNER_TAB];
+
 @Component({
   selector: 'app-asset-owner-view',
   standalone: true,
@@ -119,15 +133,15 @@ import {
           </ion-card-content>
         </ion-card>
         <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
-          <ion-segment-button value="0">
+          <ion-segment-button [value]="TAB.details">
             <ion-label>Journal Entries</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="1">
+          <ion-segment-button [value]="TAB.loanProductAttributes">
             <ion-label>{{ 'ASSET_OWNERS.LOAN_PRODUCT_ATTRIBUTES' | translate }}</ion-label>
           </ion-segment-button>
         </ion-segment>
 
-        @if (activeTab() === '0') {
+        @if (activeTab() === TAB.details) {
           <app-data-table
             title="Journal Entries"
             [columns]="journalColumns"
@@ -137,7 +151,7 @@ import {
           >
           </app-data-table>
         }
-        @if (activeTab() === '1') {
+        @if (activeTab() === TAB.loanProductAttributes) {
           <div class="tab-content">
             @if (attributes().length === 0) {
               <p class="empty-state">{{ 'COMMON.NO_DATA' | translate }}</p>
@@ -231,7 +245,10 @@ import {
 })
 export class AssetOwnerViewComponent implements OnInit {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
-  readonly activeTab = signal('0');
+  /** Exposed so the template names its tabs instead of numbering them. */
+  protected readonly TAB = ASSET_OWNER_TAB;
+
+  readonly activeTab = signal<AssetOwnerTab>(ASSET_OWNER_TAB.details);
   private readonly route = inject(ActivatedRoute);
   private readonly assetOwnersService = inject(ExternalAssetOwnersService);
   private readonly attributesService = inject(ExternalAssetOwnerLoanProductAttributesService);

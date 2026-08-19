@@ -38,7 +38,7 @@ import {
   IonTextarea,
   ModalController,
 } from '@ionic/angular/standalone';
-import { toIsoDate } from '../../core/utils/date-formatter';
+import { formatArrayDate, toIsoDate } from '../../core/utils/date-formatter';
 
 export interface TransactionDetailDialogData {
   loanId: number;
@@ -260,7 +260,7 @@ export class TransactionDetailDialogComponent implements OnInit {
           this.adjustAmount.set(data.amount ?? 0);
           const dateArray = data.date as unknown as number[];
           if (Array.isArray(dateArray)) {
-            this.adjustDate.set(toIsoDate(new Date(dateArray[0], dateArray[1] - 1, dateArray[2])));
+            this.adjustDate.set(formatArrayDate(dateArray));
           }
         },
         error: (err) => console.error('Failed to load transaction detail', err),

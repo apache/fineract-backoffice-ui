@@ -24,12 +24,14 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { DialogService } from '../../../core/services/dialog.service';
 
 describe('ProvisioningCategoriesListComponent', () => {
   let component: ProvisioningCategoriesListComponent;
   let fixture: ComponentFixture<ProvisioningCategoriesListComponent>;
   let serviceSpy: jasmine.SpyObj<ProvisioningCategoryService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   beforeEach(async () => {
     serviceSpy = jasmine.createSpyObj('ProvisioningCategoryService', [
@@ -37,6 +39,8 @@ describe('ProvisioningCategoriesListComponent', () => {
       'deleteProvisioningcategoryCategoryId',
     ]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.getProvisioningcategory.and.returnValue(
       of([
         { id: 1, categoryName: 'STANDARD', categoryDescription: 'Standard' },
@@ -48,6 +52,7 @@ describe('ProvisioningCategoriesListComponent', () => {
       providers: [
         { provide: ProvisioningCategoryService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: DialogService, useValue: dialogService },
         provideNoopAnimations(),
       ],
     }).compileComponents();
@@ -71,8 +76,8 @@ describe('ProvisioningCategoriesListComponent', () => {
     ]);
   });
 
-  it('should delete after confirmation and reload', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('should delete after confirmation and reload', async () => {
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.deleteProvisioningcategoryCategoryId.and.returnValue(
       of({}) as unknown as ReturnType<
         ProvisioningCategoryService['deleteProvisioningcategoryCategoryId']
@@ -80,14 +85,16 @@ describe('ProvisioningCategoriesListComponent', () => {
     );
 
     component.onDelete({ id: 5, categoryName: 'Y' });
+    await fixture.whenStable();
 
     expect(serviceSpy.deleteProvisioningcategoryCategoryId).toHaveBeenCalledWith(5);
     expect(serviceSpy.getProvisioningcategory).toHaveBeenCalledTimes(2);
   });
 
-  it('should not delete when cancelled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+  it('should not delete when cancelled', async () => {
+    dialogService.confirm.and.resolveTo(false);
     component.onDelete({ id: 5, categoryName: 'Y' });
+    await fixture.whenStable();
     expect(serviceSpy.deleteProvisioningcategoryCategoryId).not.toHaveBeenCalled();
   });
 });

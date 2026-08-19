@@ -26,6 +26,8 @@
 
 
 export interface PutCentersChanges { 
+    externalId?: string;
     name?: string;
+    staffId?: number;
 }
 

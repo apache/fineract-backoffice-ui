@@ -148,6 +148,107 @@ describe('AuthService', () => {
     });
   });
 
+  describe('two-factor authentication', () => {
+    const TFA_TOKEN = 'tfa-token-123';
+    const INVALIDATE = '/twofactor/invalidate';
+    const twoFactorSession: UserSession = {
+      ...mockSession,
+      isTwoFactorAuthenticationRequired: true,
+    };
+
+    function signIn(session: UserSession): void {
+      service.login('mifos', 'password', 'default').subscribe();
+      httpMock.expectOne((r) => r.url.includes('/authentication')).flush(session);
+    }
+
+    it('does not admit the user while a second factor is outstanding', () => {
+      // `authenticated: true` only means the password was right. Fineract refuses everything
+      // else until the one-time token is validated, so letting the user in here lands them on a
+      // dashboard where every request 403s.
+      signIn(twoFactorSession);
+
+      expect(service.currentUser()).not.toBeNull();
+      expect(service.twoFactorPending()).toBeTrue();
+      expect(service.isAuthenticated()).toBeFalse();
+      expect(service.getTfaToken()).toBeNull();
+    });
+
+    it('admits the user once the second factor is recorded', () => {
+      signIn(twoFactorSession);
+      service.completeTwoFactorAuthentication(TFA_TOKEN);
+
+      expect(service.isAuthenticated()).toBeTrue();
+      expect(service.twoFactorPending()).toBeFalse();
+      expect(service.getTfaToken()).toBe(TFA_TOKEN);
+    });
+
+    it('leaves a deployment without a second factor exactly as it was', () => {
+      // The flag is absent entirely when the platform runs without 2FA, which is the case that
+      // must not change.
+      signIn(mockSession);
+
+      expect(service.isAuthenticated()).toBeTrue();
+      expect(service.twoFactorPending()).toBeFalse();
+      expect(service.getTfaToken()).toBeNull();
+    });
+
+    it('survives a reload mid-flow without admitting the user', () => {
+      signIn(twoFactorSession);
+
+      // A fresh service over the same session storage, as a refresh would produce.
+      const reloaded = TestBed.runInInjectionContext(() => new AuthService());
+      expect(reloaded.currentUser()).not.toBeNull();
+      expect(reloaded.isAuthenticated()).toBeFalse();
+      expect(reloaded.twoFactorPending()).toBeTrue();
+    });
+
+    it('restores a completed session across a reload', () => {
+      signIn(twoFactorSession);
+      service.completeTwoFactorAuthentication(TFA_TOKEN);
+
+      const reloaded = TestBed.runInInjectionContext(() => new AuthService());
+      expect(reloaded.isAuthenticated()).toBeTrue();
+      expect(reloaded.twoFactorPending()).toBeFalse();
+      expect(reloaded.getTfaToken()).toBe(TFA_TOKEN);
+    });
+
+    it('ends the second factor at the platform on sign-out', () => {
+      signIn(twoFactorSession);
+      service.completeTwoFactorAuthentication(TFA_TOKEN);
+
+      service.logout();
+
+      // Forgetting it locally would leave it valid for its full life — 24 hours by default.
+      const invalidate = httpMock.expectOne((r) => r.url.includes(INVALIDATE));
+      expect(invalidate.request.method).toBe('POST');
+      expect(invalidate.request.body).toEqual({ token: TFA_TOKEN });
+      invalidate.flush({});
+
+      expect(service.isAuthenticated()).toBeFalse();
+      expect(service.getTfaToken()).toBeNull();
+    });
+
+    it('signs the user out even when invalidation fails', () => {
+      signIn(twoFactorSession);
+      service.completeTwoFactorAuthentication(TFA_TOKEN);
+
+      service.logout();
+      httpMock
+        .expectOne((r) => r.url.includes(INVALIDATE))
+        .flush(null, { status: 500, statusText: 'Server Error' });
+
+      expect(service.isAuthenticated()).toBeFalse();
+      expect(service.currentUser()).toBeNull();
+    });
+
+    it('does not call invalidate when there was no second factor', () => {
+      signIn(mockSession);
+      service.logout();
+      httpMock.expectNone((r) => r.url.includes(INVALIDATE));
+      expect(service.isAuthenticated()).toBeFalse();
+    });
+  });
+
   describe('permission normalization (trailing-space backend duplicates)', () => {
     it('trims a trailing-space permission on setSession so a clean check matches', () => {
       (service as unknown as { setSession: (s: UserSession) => void }).setSession({

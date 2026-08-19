@@ -17,19 +17,49 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const CENTERS_ROUTES: Routes = [
   {
     path: '',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_CENTER' },
     loadComponent: () => import('./centers-list.component').then((m) => m.CentersListComponent),
   },
   {
     path: 'create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_CENTER' },
     loadComponent: () => import('./center-form.component').then((m) => m.CenterFormComponent),
   },
   {
     path: 'edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_CENTER' },
     loadComponent: () => import('./center-form.component').then((m) => m.CenterFormComponent),
+  },
+  {
+    path: 'view/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_CENTER' },
+    loadComponent: () => import('./center-view.component').then((m) => m.CenterViewComponent),
+  },
+  // A center's notes are stored against the groups resource, so the note form is the group one.
+  // `basePath` sends it back to the center it was opened from rather than to a group view.
+  {
+    path: ':groupId/notes/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_GROUPNOTE', basePath: '/centers' },
+    loadComponent: () =>
+      import('../groups/group-note-form.component').then((m) => m.GroupNoteFormComponent),
+  },
+  {
+    path: ':groupId/notes/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_GROUPNOTE', basePath: '/centers' },
+    loadComponent: () =>
+      import('../groups/group-note-form.component').then((m) => m.GroupNoteFormComponent),
   },
 ];

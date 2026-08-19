@@ -1,0 +1,64 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+name: Release Tag
+
+# The only workflow that runs on a tag, and it is deliberately tiny.
+#
+# The obvious thing — adding `tags:` to the main CI workflow — is what the first attempt did, and
+# zizmor rejected it with eleven high-severity cache-poisoning findings. A tag push is a
+# publishing trigger, and every CI job restores an npm cache; a cache written from a
+# lower-privilege context can then reach a release build. That is the one place the threat is
+# worth taking seriously, so the tag check is separated out here where there is nothing to
+# poison: no `npm ci`, no cache, no dependencies at all.
+#
+# `scripts/check-version.mjs` reads package.json with the Node standard library and nothing else,
+# which is what makes that possible.
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Tag matches the declared version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # No `actions/setup-node`, deliberately. Omitting its `cache:` input is not enough —
+      # zizmor flags the action as caching by default, because it caches the toolchain download
+      # regardless. The runner already has Node on PATH, and `check-version.mjs` imports only
+      # `node:fs`, `node:path` and `node:url`, so there is nothing here to set up and nothing to
+      # cache. Keep it that way: a dependency added to that script pulls `npm ci` into a tag
+      # build and brings the whole finding back.
+      - name: Show the Node the runner provides
+        run: node --version
+
+      # Fails when the tag names a different version from package.json. The quiet failure this
+      # prevents is tagging 1.0.0 from a tree that still says 1.0.0-rc.1, leaving the source
+      # tarball, the container label and the SBOM all disagreeing with the tag the vote was
+      # held on.
+      - name: Verify the tag against package.json
+        run: node scripts/check-version.mjs

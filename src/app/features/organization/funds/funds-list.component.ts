@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.funds"
       helpTextKey="HELP.FUNDS_DESC"
       createButtonLabel="FUNDS.CREATE_FUND"
+      createPermission="CREATE_FUND"
       [columns]="columns"
       [data]="funds()"
       [totalRecords]="funds().length"

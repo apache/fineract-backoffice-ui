@@ -32,7 +32,7 @@
  *   npx playwright test e2e/group-membership.spec.ts --project=backend --workers=1
  */
 
-import { test, expect, Page } from './fixtures';
+import { test, expect, Page, recordingTimeout } from './fixtures';
 import { login, uniqueSuffix } from './utils/fineract-login';
 import { confirmDialog, modalFor } from './utils/ionic-locators';
 import { selectInDialog } from './utils/select-in-dialog';
@@ -170,7 +170,7 @@ test.describe('Group membership and lifecycle', () => {
   test('a group is activated, staffed, given members and a committee, then emptied', async ({
     page,
   }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
 
     const suffix = uniqueSuffix();
@@ -271,7 +271,7 @@ test.describe('Group membership and lifecycle', () => {
   });
 
   test('notes are recorded against the group and can be removed again', async ({ page }) => {
-    test.setTimeout(180000);
+    test.setTimeout(recordingTimeout(180000));
     await login(page);
 
     const suffix = uniqueSuffix();
@@ -306,7 +306,7 @@ test.describe('Group membership and lifecycle', () => {
   test('an empty group is closed with a reason, and a group with members is refused', async ({
     page,
   }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
 
     const suffix = uniqueSuffix();

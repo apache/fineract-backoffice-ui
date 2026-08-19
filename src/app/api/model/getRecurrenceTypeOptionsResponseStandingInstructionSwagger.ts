@@ -27,7 +27,7 @@
 
 export interface GetRecurrenceTypeOptionsResponseStandingInstructionSwagger { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 

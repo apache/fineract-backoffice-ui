@@ -92,7 +92,8 @@ describe('CashierTransactionsComponent', () => {
   it('renders the totals returned alongside the transactions', async () => {
     const fixture = await render();
     const text = (id: string) =>
-      (fixture.nativeElement as HTMLElement).querySelector(`[data-testid="${id}"]`)?.textContent;
+      (fixture.nativeElement as HTMLElement).querySelector(`[data-testid="${CSS.escape(id)}"]`)
+        ?.textContent;
 
     // Rendered, not just assigned: the summary arrives from an async response, which is exactly
     // the case a forced detectChanges() would paper over.

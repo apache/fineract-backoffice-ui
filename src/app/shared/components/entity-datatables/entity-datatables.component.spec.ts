@@ -57,8 +57,8 @@ describe('EntityDatatablesComponent', () => {
   const mockTableDataResultSet = {
     columnHeaders: [{ columnName: 'business_type' }, { columnName: 'revenue' }],
     data: [
-      ['Retail', 100000],
-      ['Corporate', 500000],
+      ['Retail', 100_000],
+      ['Corporate', 500_000],
     ],
   };
 
@@ -107,8 +107,8 @@ describe('EntityDatatablesComponent', () => {
       123,
     );
     expect(component.tableData()).toEqual([
-      { business_type: 'Retail', revenue: 100000 },
-      { business_type: 'Corporate', revenue: 500000 },
+      { business_type: 'Retail', revenue: 100_000 },
+      { business_type: 'Corporate', revenue: 500_000 },
     ]);
   });
 

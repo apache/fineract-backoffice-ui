@@ -47,6 +47,7 @@ import { readScheduleTypeCode, readScheduleTypeLabel } from './loan-schedule-typ
       title="nav.loanProducts"
       helpTextKey="HELP.LOAN_PRODUCTS_DESC"
       createButtonLabel="PRODUCTS.CREATE_LOAN_PRODUCT"
+      createPermission="CREATE_LOANPRODUCT"
       [columns]="columns"
       [data]="products()"
       [totalRecords]="products().length"

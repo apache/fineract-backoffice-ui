@@ -27,7 +27,7 @@
  *   npx playwright test e2e/loan-servicing.spec.ts --workers=1
  */
 
-import { test, expect } from './fixtures';
+import { test, expect, recordingTimeout } from './fixtures';
 import { login } from './utils/fineract-login';
 import { createActiveLoan } from './utils/create-active-loan';
 import { confirmDialog, modalFor, selectTab } from './utils/ionic-locators';
@@ -35,7 +35,7 @@ import { createApiContext, seedRepayment } from './utils/seed-api';
 
 test.describe('Loan servicing: notes and transaction adjustment', () => {
   test('notes can be added and removed, with a confirm dialog on delete', async ({ page }) => {
-    test.setTimeout(120000);
+    test.setTimeout(recordingTimeout(120000));
     await login(page);
     const { loanId } = await createActiveLoan(page, 'NotesDemo');
 
@@ -67,7 +67,7 @@ test.describe('Loan servicing: notes and transaction adjustment', () => {
   test('a repayment transaction can be viewed and adjusted with a corrected amount', async ({
     page,
   }) => {
-    test.setTimeout(120000);
+    test.setTimeout(recordingTimeout(120000));
     await login(page);
     const { loanId } = await createActiveLoan(page, 'AdjustDemo');
 

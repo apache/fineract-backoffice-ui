@@ -59,7 +59,7 @@ describe('LoanUndoApprovalDialogComponent', () => {
   });
 
   it('treats a whitespace-only reason as no reason', () => {
-    component.note.set('   ');
+    component.note.set(' '.repeat(3));
 
     component.onConfirm();
 

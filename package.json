@@ -1,6 +1,6 @@
 {
   "name": "fineract-backoffice-ui",
-  "version": "0.0.0",
+  "version": "1.0.0-rc.1",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=22.22.3"
@@ -18,6 +18,8 @@
     "test:e2e:local": "FINERACT_SERVER_URL=/fineract-provider/api/v1 FINERACT_TENANT_ID=default FINERACT_USERNAME=mifos FINERACT_PASSWORD=password playwright test --project=mocked --project=backend",
     "e2e:stack": "bash scripts/e2e-stack.sh",
     "e2e:stack:fresh": "bash scripts/e2e-stack.sh --fresh",
+    "e2e:stack:2fa": "bash scripts/e2e-stack-2fa.sh",
+    "test:e2e:2fa": "FINERACT_SERVER_URL=/fineract-provider/api/v1 FINERACT_TENANT_ID=default FINERACT_USERNAME=mifos FINERACT_PASSWORD=password playwright test --project=two-factor --workers=1",
     "lint": "eslint src --suppressions-location eslint-suppressions.json",
     "lint:prune": "eslint src --suppressions-location eslint-suppressions.json --prune-suppressions",
     "format": "prettier --write .",
@@ -28,8 +30,18 @@
     "verify-api-client": "npm run generate-api && git diff --exit-code src/app/api",
     "i18n:check": "node scripts/check-translations.mjs",
     "check:icons": "node scripts/check-icons.mjs",
+    "check:a11y-names": "node scripts/check-a11y-names.mjs",
+    "check:internal-endpoints": "node scripts/check-internal-endpoints.mjs",
+    "check:route-permissions": "node scripts/check-route-permissions.mjs",
+    "check:licenses": "node scripts/check-dependency-licenses.mjs",
+    "check:licenses:production": "node scripts/check-dependency-licenses.mjs --production",
+    "check:licenses:selftest": "node scripts/check-dependency-licenses.mjs --self-test",
+    "check:version": "node scripts/check-version.mjs",
+    "test:eslint-rules": "node --test \"eslint-rules/*.test.js\"",
+    "typecheck:e2e": "tsc -p tsconfig.e2e.json",
     "api:surface": "node scripts/check-api-surface.mjs",
-    "ga:check": "node scripts/ga-check.mjs"
+    "ga:check": "node scripts/ga-check.mjs",
+    "demo:record": "DEMO_RECORD=1 DEMO_BEAT_MS=900 PLAYWRIGHT_OUTPUT_DIR=demo-recordings FINERACT_SERVER_URL=/fineract-provider/api/v1 FINERACT_TENANT_ID=default FINERACT_USERNAME=mifos FINERACT_PASSWORD=password playwright test --project=backend --workers=1"
   },
   "prettier": {
     "printWidth": 100,
@@ -65,7 +77,7 @@
     "@angular-architects/native-federation": "^22.0.6",
     "@angular-devkit/build-angular": "^22.0.7",
     "@angular/build": "^22.0.7",
-    "@angular/cli": "^22.0.7",
+    "@angular/cli": "^22.1.4",
     "@angular/compiler-cli": "^22.0.7",
     "@axe-core/playwright": "^4.12.1",
     "@emnapi/core": "1.11.3",
@@ -77,7 +89,10 @@
     "angular-eslint": "^22.0.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-sonarjs": "^4.2.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-security": "^4.0.1",
+    "eslint-plugin-unicorn": "^65.0.1",
     "jasmine-core": "~6.3.0",
     "jsdom": "^28.0.0",
     "karma": "~6.4.0",

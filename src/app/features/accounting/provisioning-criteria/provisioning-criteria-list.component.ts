@@ -19,12 +19,13 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ProvisioningCriteriaService, GetProvisioningCriteriaResponse } from '../../../api';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { DialogService } from '../../../core/services/dialog.service';
 
 /**
  * Lists provisioning criteria. The list response carries the criteria name and
@@ -46,6 +47,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.provisioningCriteria"
       helpTextKey="HELP.PROVISIONING_CRITERIA_DESC"
       createButtonLabel="PROVISIONING_CRITERIA.CREATE"
+      createPermission="CREATE_PROVISIONCRITERIA"
       [columns]="columns"
       [data]="criteria()"
       [totalRecords]="criteria().length"
@@ -78,6 +80,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 export class ProvisioningCriteriaListComponent implements OnInit {
   private readonly criteriaService = inject(ProvisioningCriteriaService);
   private readonly router = inject(Router);
+  private readonly dialogService = inject(DialogService);
+  private readonly translate = inject(TranslateService);
 
   readonly columns: ColumnDef[] = [
     { key: 'criteriaName', label: 'PROVISIONING_CRITERIA.NAME', sortable: true },
@@ -111,10 +115,21 @@ export class ProvisioningCriteriaListComponent implements OnInit {
   }
 
   onDelete(row: GetProvisioningCriteriaResponse): void {
-    if (!row.criteriaId || !window.confirm('Delete this provisioning criteria?')) return;
-    this.criteriaService.deleteProvisioningcriteriaCriteriaId(row.criteriaId).subscribe({
-      next: () => this.load(),
-      error: (err: unknown) => console.error('Failed to delete provisioning criteria', err),
-    });
+    if (!row.criteriaId) return;
+    void this.dialogService
+      .confirm({
+        title: this.translate.instant('PROVISIONING_CRITERIA.DELETE'),
+        message: this.translate.instant('PROVISIONING_CRITERIA.CONFIRM_DELETE', {
+          name: row.criteriaName,
+        }),
+        destructive: true,
+      })
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.criteriaService.deleteProvisioningcriteriaCriteriaId(row.criteriaId!).subscribe({
+          next: () => this.load(),
+          error: (err: unknown) => console.error('Failed to delete provisioning criteria', err),
+        });
+      });
   }
 }

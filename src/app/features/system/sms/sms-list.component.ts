@@ -45,6 +45,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.sms"
       helpTextKey="HELP.SMS_DESC"
       createButtonLabel="SMS.CREATE"
+      createPermission="CREATE_SMS"
       [columns]="columns"
       [data]="messages()"
       [totalRecords]="messages().length"

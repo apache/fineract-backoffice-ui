@@ -32,6 +32,10 @@ export interface PostCentersCenterIdRequest {
     closureDate?: string;
     closureReasonId?: number;
     dateFormat?: string;
+    /**
+     * List of group ids to associate with or disassociate from the center
+     */
+    groupMembers?: Array<number>;
     locale?: string;
 }
 

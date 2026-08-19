@@ -135,16 +135,36 @@ test.describe('RBAC permission gating (rbacEnabled = true)', () => {
     }
   });
 
-  test('a user with READ_USER sees the Security group', async ({ page }) => {
+  test('a user with READ_USER sees only the Security entries that permission covers', async ({
+    page,
+  }) => {
     await login(page, { permissions: ['READ_CLIENT', 'READ_USER'], institutionType: 'universal' });
 
     await expect(link(page, 'Users')).toBeVisible();
-    await expect(link(page, 'Roles')).toBeVisible();
-    await expect(link(page, 'Audit Logs')).toBeVisible();
+
+    // Every routed entry now carries the permission its own route declares, so a sibling in the
+    // same group is no longer admitted by a group-level gate: Roles needs READ_ROLE and Audit
+    // Logs needs READ_AUDIT. Both are also refused by URL, which is the point of gating them —
+    // see rbac-route-protection.spec.ts.
+    await expect(link(page, 'Roles')).toHaveCount(0);
+    await expect(link(page, 'Audit Logs')).toHaveCount(0);
 
     // Other gated groups the user has no permission for stay hidden.
     await expect(link(page, 'Data Tables')).toHaveCount(0);
     await expect(link(page, 'Global Configurations')).toHaveCount(0);
+  });
+
+  test('the Security group fills in as the user is granted each of its permissions', async ({
+    page,
+  }) => {
+    await login(page, {
+      permissions: ['READ_USER', 'READ_ROLE', 'READ_AUDIT'],
+      institutionType: 'universal',
+    });
+
+    await expect(link(page, 'Users')).toBeVisible();
+    await expect(link(page, 'Roles')).toBeVisible();
+    await expect(link(page, 'Audit Logs')).toBeVisible();
   });
 
   test('a superuser (ALL_FUNCTIONS) sees all permission-gated groups', async ({ page }) => {

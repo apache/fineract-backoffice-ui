@@ -44,6 +44,7 @@ export interface ClientAddressRequest {
     longitude?: number;
     postalCode?: string;
     stateProvinceId?: number;
+    street?: string;
     townVillage?: string;
     updatedBy?: string;
     updatedOn?: string;

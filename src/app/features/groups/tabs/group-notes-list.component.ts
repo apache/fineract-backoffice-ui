@@ -64,7 +64,7 @@ import { NotificationService } from '../../../core/services/notification.service
       <ion-button
         color="primary"
         data-testid="group-add-note"
-        [routerLink]="['/groups', groupId(), 'notes', 'create']"
+        [routerLink]="[basePath(), groupId(), 'notes', 'create']"
         *appHasPermission="'CREATE_GROUPNOTE'"
       >
         <ion-icon name="add-outline"></ion-icon>
@@ -89,7 +89,7 @@ import { NotificationService } from '../../../core/services/notification.service
           <ion-button
             fill="clear"
             color="primary"
-            [routerLink]="['/groups', groupId(), 'notes', 'edit', row.id]"
+            [routerLink]="[basePath(), groupId(), 'notes', 'edit', row.id]"
             *appHasPermission="'UPDATE_GROUPNOTE'"
             [appTooltip]="'COMMON.EDIT' | appTranslate"
             [attr.aria-label]="'COMMON.EDIT' | appTranslate"
@@ -126,6 +126,14 @@ import { NotificationService } from '../../../core/services/notification.service
 })
 export class GroupNotesListComponent implements OnInit {
   readonly groupId = input.required<number>();
+  /**
+   * Where the add and edit links point.
+   *
+   * A center's notes live under the *groups* resource — `/centers/{id}/notes` answers 404
+   * "Note does not support resource centers" — so the center view reuses this component with the
+   * center's id, and only the links need to stay inside `/centers`.
+   */
+  readonly basePath = input<string>('/groups');
 
   private readonly noteService = inject(NotesService);
   private readonly dialogService = inject(DialogService);

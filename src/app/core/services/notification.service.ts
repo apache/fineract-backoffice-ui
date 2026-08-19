@@ -30,7 +30,7 @@ export interface NotificationOptions {
 }
 
 const SUCCESS_DURATION = 3000;
-const ERROR_DURATION = 10000;
+const ERROR_DURATION = 10_000;
 
 /**
  * Application-wide toast notifications.

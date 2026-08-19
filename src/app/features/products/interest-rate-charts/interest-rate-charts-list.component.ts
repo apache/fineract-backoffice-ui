@@ -47,6 +47,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.interestRateCharts"
       helpTextKey="HELP.INTEREST_RATE_CHARTS_DESC"
       createButtonLabel="INTEREST_RATE_CHARTS.CREATE"
+      createPermission="CREATE_INTERESTRATECHART"
       [columns]="columns"
       [data]="charts()"
       [totalRecords]="charts().length"

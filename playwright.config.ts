@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import os from 'node:os';
 import path from 'node:path';
 
@@ -12,7 +31,13 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * A spec belongs here if it contains no page.route() mocks.
  */
+/** Runs only against the dedicated two-factor stack; see the `two-factor` project. */
+const TWO_FACTOR_SPECS = ['two-factor-backend.spec.ts'];
+
 const BACKEND_SPECS = [
+  'center-servicing.spec.ts',
+  'parity-screens.spec.ts',
+  'rbac-backend-restricted-user.spec.ts',
   'client-transfer.spec.ts',
   'deposit-account-servicing.spec.ts',
   'deposit-product-configuration.spec.ts',
@@ -27,6 +52,8 @@ const BACKEND_SPECS = [
   'share-account-servicing.spec.ts',
   'login.spec.ts',
   'report-parameter-backend.spec.ts',
+  'savings-transaction-correction.spec.ts',
+  'share-product-accounting.spec.ts',
   'teller-cash-management.spec.ts',
 ];
 
@@ -50,11 +77,40 @@ export default defineConfig({
   // .fill()/.click() already wait ~30s via actionability; this brings plain
   // expect() into the same range instead of failing on a slow-but-correct page.
   expect: { timeout: 15000 },
+  // Recording paces every action, so a flow that fits comfortably at test speed needs a larger
+  // budget while it is being filmed.
+  timeout: process.env.DEMO_RECORD === '1' ? 900000 : 30000,
   use: {
     baseURL: 'https://localhost:4200',
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
-    video: process.env.CI ? 'on' : 'retain-on-failure',
+    // Pinned to the e2e tenant's own timezone, which is what makes the suite deterministic
+    // rather than a function of the hour it runs at.
+    //
+    // Fineract stamps and validates dates in the *tenant's* zone -- `m_tenants.timezone_id`,
+    // which its seed data sets to Asia/Kolkata -- while the application fills date fields from
+    // the *browser's* clock. Between 18:30 and 24:00 UTC those disagree by a day, so a UTC
+    // runner would send 15 August for a record the platform had already stamped 16 August and
+    // be refused: "Submitted on date cannot be after the activation date". A suite whose result
+    // depends on what time of day it starts is not a signal.
+    //
+    // This makes the *harness* deterministic. It does not fix the underlying behaviour, which
+    // affects any deployment whose users are not in the tenant's timezone -- see #358. Remove
+    // this pin when that is fixed; the suite passing without it is the proof.
+    timezoneId: 'Asia/Kolkata',
+    // `DEMO_RECORD=1` records every spec, not just the ones that fail — the suites *are* the
+    // flows, so recording them is what produces a demo of the application rather than a separate
+    // script that could drift from what the app actually does. See DOCS/DEMO.md.
+    video: process.env.DEMO_RECORD === '1' || process.env.CI ? 'on' : 'retain-on-failure',
+    // A recording of a test suite is unwatchable at test speed: every click, fill and navigation
+    // lands instantly, so a viewer sees the result of an action without ever seeing the action.
+    // `slowMo` pauses before each Playwright operation, which puts a beat on the action itself
+    // rather than uniformly slowing the footage in post — the difference between following what
+    // is happening and watching a fast-forward. Recording only; the suite runs at full speed
+    // otherwise, so this costs CI nothing.
+    launchOptions: {
+      slowMo: process.env.DEMO_RECORD === '1' ? Number(process.env.DEMO_SLOW_MO ?? 450) : 0,
+    },
   },
   projects: [
     // Seeds the reference data the real-backend specs need — enabled currencies, a
@@ -68,7 +124,7 @@ export default defineConfig({
       // with the slower half — see .github/workflows/e2e.yml.
       name: 'mocked',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: BACKEND_SPECS,
+      testIgnore: [...BACKEND_SPECS, ...TWO_FACTOR_SPECS],
     },
     {
       // Drives a real Fineract end to end. Slow, and the only half that needs the
@@ -81,7 +137,24 @@ export default defineConfig({
       // more than the 30s default. Set here rather than per test because
       // test.setTimeout() does not cover beforeEach, and logging in against a
       // cold lazy-loaded route was already exceeding the default in that hook.
-      timeout: 120000,
+      //
+      // This project setting overrides the root one, so it is what governs a recording run —
+      // where every action carries a deliberate pause and the same flow takes far longer.
+      timeout: process.env.DEMO_RECORD === '1' ? 900000 : 120000,
+    },
+    {
+      // Two-factor authentication, against the stack `scripts/e2e-stack-2fa.sh` brings up.
+      //
+      // Its own project because `fineract.security.2fa.enabled` is process-wide: with it on,
+      // every endpoint except /v1/twofactor answers 403 until a one-time token has been
+      // validated, so this cannot share an instance with the `backend` project and must stay
+      // out of the default run. No `setup` dependency for the same reason — the seeding it
+      // performs would be refused.
+      name: 'two-factor',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: TWO_FACTOR_SPECS,
+      // Each case waits on an email round-trip through the catcher on top of the usual form work.
+      timeout: 180000,
     },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] }, dependencies: ['setup'] },
     { name: 'webkit', use: { ...devices['Desktop Safari'] }, dependencies: ['setup'] },

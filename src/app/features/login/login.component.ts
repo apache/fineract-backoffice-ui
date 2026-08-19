@@ -27,6 +27,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfigService } from '../../core/services/config.service';
 import { SESSION_EXPIRED_REASON } from '../../core/interceptors/error.interceptor';
+import { TwoFactorStepComponent } from './two-factor/two-factor-step.component';
 import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.component';
 
 /**
@@ -38,7 +39,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, HelpIconComponent],
+  imports: [ReactiveFormsModule, TranslateModule, HelpIconComponent, TwoFactorStepComponent],
   template: `
     <div class="login-page">
       <div class="login-card" role="main">
@@ -71,92 +72,99 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
           </div>
         }
 
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-          <div class="form-field">
-            <label for="serverUrl">
-              {{ 'login.serverUrl' | translate }}
-              <app-help-icon helpTextKey="login.tooltips.serverUrl"></app-help-icon>
-            </label>
-            <select id="serverUrl" formControlName="serverUrl">
-              <option [value]="configService.apiUrl">
-                {{ 'login.defaultOption' | translate }} ({{ configService.apiUrl }})
-              </option>
-              <!-- Endpoints this deployment permits, from config.json. Third-party hosts used
+        @if (authService.twoFactorPending()) {
+          <app-two-factor-step
+            (completed)="onTwoFactorCompleted()"
+            (cancelled)="onTwoFactorCancelled()"
+          />
+        } @else {
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+            <div class="form-field">
+              <label for="serverUrl">
+                {{ 'login.serverUrl' | translate }}
+                <app-help-icon helpTextKey="login.tooltips.serverUrl"></app-help-icon>
+              </label>
+              <select id="serverUrl" formControlName="serverUrl">
+                <option [value]="configService.apiUrl">
+                  {{ 'login.defaultOption' | translate }} ({{ configService.apiUrl }})
+                </option>
+                <!-- Endpoints this deployment permits, from config.json. Third-party hosts used
                    to be hard-coded here, which offered a teller a one-click path to type real
                    credentials into someone else's server. What is offered is now the operator's
                    decision, and anything typed is checked against the same allow-list. -->
-              <option value="/fineract-provider/api/v1">
-                {{ 'login.proxyOption' | translate }}
-              </option>
-              @for (origin of allowedOrigins(); track origin) {
-                <option [value]="origin">{{ origin }}</option>
-              }
-              <option value="custom">{{ 'login.customOption' | translate }}</option>
-            </select>
-          </div>
+                <option value="/fineract-provider/api/v1">
+                  {{ 'login.proxyOption' | translate }}
+                </option>
+                @for (origin of allowedOrigins(); track origin) {
+                  <option [value]="origin">{{ origin }}</option>
+                }
+                <option value="custom">{{ 'login.customOption' | translate }}</option>
+              </select>
+            </div>
 
-          @if (loginForm.get('serverUrl')?.value === 'custom') {
+            @if (loginForm.get('serverUrl')?.value === 'custom') {
+              <div class="form-field">
+                <label for="customUrl">{{ 'login.customUrl' | translate }}</label>
+                <input
+                  id="customUrl"
+                  type="text"
+                  formControlName="customUrl"
+                  placeholder="https://..."
+                />
+              </div>
+            }
+
             <div class="form-field">
-              <label for="customUrl">{{ 'login.customUrl' | translate }}</label>
+              <label for="tenantId">
+                {{ 'login.tenantId' | translate }}
+                <app-help-icon helpTextKey="login.tooltips.tenantId"></app-help-icon>
+              </label>
               <input
-                id="customUrl"
+                id="tenantId"
                 type="text"
-                formControlName="customUrl"
-                placeholder="https://..."
+                formControlName="tenantId"
+                [attr.aria-invalid]="loginForm.get('tenantId')?.invalid"
               />
             </div>
-          }
 
-          <div class="form-field">
-            <label for="tenantId">
-              {{ 'login.tenantId' | translate }}
-              <app-help-icon helpTextKey="login.tooltips.tenantId"></app-help-icon>
-            </label>
-            <input
-              id="tenantId"
-              type="text"
-              formControlName="tenantId"
-              [attr.aria-invalid]="loginForm.get('tenantId')?.invalid"
-            />
-          </div>
-
-          <div class="form-field">
-            <label for="username">{{ 'login.username' | translate }}</label>
-            <input
-              id="username"
-              type="text"
-              formControlName="username"
-              autocomplete="username"
-              [attr.aria-invalid]="loginForm.get('username')?.invalid"
-            />
-          </div>
-
-          <div class="form-field">
-            <label for="password">{{ 'login.password' | translate }}</label>
-            <input
-              id="password"
-              type="password"
-              formControlName="password"
-              autocomplete="current-password"
-              [attr.aria-invalid]="loginForm.get('password')?.invalid"
-            />
-          </div>
-
-          @if (error()) {
-            <div class="error-message" role="alert">
-              {{ error() }}
+            <div class="form-field">
+              <label for="username">{{ 'login.username' | translate }}</label>
+              <input
+                id="username"
+                type="text"
+                formControlName="username"
+                autocomplete="username"
+                [attr.aria-invalid]="loginForm.get('username')?.invalid"
+              />
             </div>
-          }
 
-          <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading()">
-            @if (isLoading()) {
-              <span class="spinner"></span>
-              {{ 'login.loggingIn' | translate }}
-            } @else {
-              {{ 'login.submit' | translate }}
+            <div class="form-field">
+              <label for="password">{{ 'login.password' | translate }}</label>
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                autocomplete="current-password"
+                [attr.aria-invalid]="loginForm.get('password')?.invalid"
+              />
+            </div>
+
+            @if (error()) {
+              <div class="error-message" role="alert">
+                {{ error() }}
+              </div>
             }
-          </button>
-        </form>
+
+            <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading()">
+              @if (isLoading()) {
+                <span class="spinner"></span>
+                {{ 'login.loggingIn' | translate }}
+              } @else {
+                {{ 'login.submit' | translate }}
+              }
+            </button>
+          </form>
+        }
 
         <div class="login-footer">
           <p>&copy; 2026 Apache Fineract</p>
@@ -309,7 +317,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly authService = inject(AuthService);
+  protected readonly authService = inject(AuthService);
   protected readonly configService = inject(ConfigService);
 
   /** Absolute endpoints this deployment permits, offered alongside the default and the proxy. */
@@ -323,6 +331,8 @@ export class LoginComponent {
 
   /** Signal indicating if a login request is in progress */
   protected readonly isLoading = signal(false);
+  /** Whether entering the application needs a full reload, because the API endpoint changed. */
+  private pendingReload = false;
   /** Signal containing the current login error message if any */
   protected readonly error = signal<string | null>(null);
 
@@ -381,19 +391,18 @@ export class LoginComponent {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => {
-            // Force reload only if the target API has actually changed
-            if (finalUrl && finalUrl !== previousUrl) {
-              console.log(
-                'API Target changed from',
-                previousUrl,
-                'to',
-                finalUrl,
-                '- Reloading app.',
-              );
-              window.location.href = document.baseURI || '/';
-            } else {
-              this.router.navigate(['/']);
+            // Remembered for the two-factor path, which finishes after this callback returns.
+            this.pendingReload = !!finalUrl && finalUrl !== previousUrl;
+
+            // The password was accepted, but where the platform runs a second factor that is
+            // only the first half: `twoFactorPending` is set and the template swaps the form
+            // for the second step. Navigating now would land on a dashboard that 403s.
+            if (this.authService.twoFactorPending()) {
+              this.isLoading.set(false);
+              return;
             }
+
+            this.enterApplication();
           },
           error: (err) => {
             this.isLoading.set(false);
@@ -403,5 +412,31 @@ export class LoginComponent {
           },
         });
     }
+  }
+
+  /** The second factor succeeded; the session is complete and the user can be let in. */
+  protected onTwoFactorCompleted(): void {
+    this.enterApplication();
+  }
+
+  /** The user backed out of the second step. `TwoFactorStepComponent` has already signed them out. */
+  protected onTwoFactorCancelled(): void {
+    this.pendingReload = false;
+    this.error.set(null);
+    this.loginForm.patchValue({ password: '' });
+  }
+
+  /**
+   * Leaves the login page, reloading when the API endpoint changed under us.
+   *
+   * A changed endpoint means the whole application should re-bootstrap against it; a router
+   * navigation would keep services that had already read the old one.
+   */
+  private enterApplication(): void {
+    if (this.pendingReload) {
+      window.location.href = document.baseURI || '/';
+      return;
+    }
+    this.router.navigate(['/']);
   }
 }

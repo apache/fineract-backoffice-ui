@@ -37,7 +37,7 @@
  *   npx playwright test e2e/share-account-servicing.spec.ts --project=backend --workers=1
  */
 
-import { test, expect, Page } from './fixtures';
+import { test, expect, Page, recordingTimeout } from './fixtures';
 import { login } from './utils/fineract-login';
 import { confirmDialog, modalFor } from './utils/ionic-locators';
 import { createApiContext, seedShareAccount } from './utils/seed-api';
@@ -68,7 +68,7 @@ test.describe('Share account servicing', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('an account is approved, activated, traded and closed', async ({ page }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
 
     const accountId = await seed();
@@ -133,7 +133,7 @@ test.describe('Share account servicing', () => {
   });
 
   test('an application can be rejected', async ({ page }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
 
     const accountId = await seed('E2EShareReject');

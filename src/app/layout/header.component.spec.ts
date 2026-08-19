@@ -20,6 +20,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HeaderComponent } from './header.component';
 import { AuthService } from '../core/services/auth.service';
+import { NavigationConfigService } from '../core/services/navigation-config.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { signal } from '@angular/core';
@@ -28,6 +29,7 @@ describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
+  let navigationConfigSpy: jasmine.SpyObj<NavigationConfigService>;
   let translateService: TranslateService;
   let routerSpy: jasmine.SpyObj<Router>;
 
@@ -36,12 +38,15 @@ describe('HeaderComponent', () => {
       username: signal('mifos'),
       officeName: signal('Head Office'),
     });
+    navigationConfigSpy = jasmine.createSpyObj('NavigationConfigService', ['searchRoutes']);
+    navigationConfigSpy.searchRoutes.and.returnValue([]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), HeaderComponent],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
+        { provide: NavigationConfigService, useValue: navigationConfigSpy },
         { provide: Router, useValue: routerSpy },
       ],
     }).compileComponents();

@@ -32,6 +32,11 @@ on:
     branches:
       - main
       - develop
+  # Deliberately no `tags:` trigger. Adding one made every job in this workflow a
+  # cache-poisoning finding (zizmor, 11 × high): a tag push is a publishing trigger, and a job
+  # that restores an npm cache on one can be fed content written from a lower-privilege context,
+  # which is precisely the threat that matters for a release build. The tag check lives in
+  # release-tag.yml instead, where it needs no dependencies and therefore no cache.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -73,6 +78,11 @@ jobs:
       # longer exists, so a fixed one cannot quietly come back and the file only shrinks.
       - name: Lint TypeScript files
         run: npm run lint:prune
+      # eslint-rules/ holds this repository's own rules, currently the cognitive-complexity rule
+      # that replaced the one from the removed LGPL plugin. Its tests assert exact scores, so a
+      # silent drift into being stricter or laxer than what it replaced fails here.
+      - name: Test the repository's own ESLint rules
+        run: npm run test:eslint-rules
 
   html-lint:
     name: HTML Lint
@@ -128,6 +138,29 @@ jobs:
         run: npm run i18n:check
       - name: Verify every ion-icon name is registered
         run: npm run check:icons
+      - name: Verify every icon-only button has an accessible name
+        run: npm run check:a11y-names
+      # Fineract serves /v1/internal/** only under its `test` Spring profile, which upstream
+      # states must not be enabled in production. The few screens built on those endpoints are
+      # gated behind `developerToolsEnabled`; this pins that list so a new dependency on a
+      # test-only endpoint has to be a deliberate choice.
+      - name: Verify no ungated dependency on test-only Fineract endpoints
+        run: npm run check:internal-endpoints
+      # Route authorization and navigation visibility are declared in two places, and the
+      # failure when they disagree is silent: a menu item leading to Access Denied, or a screen
+      # missing from the menu that the URL still opens. This compares them.
+      - name: Verify route permissions agree with navigation
+        run: npm run check:route-permissions
+      # Nothing else type-checks e2e/: `npm run lint` covers src, and tsconfig.app.json excludes
+      # the suite. A helper referencing an identifier that no longer exists therefore compiled
+      # fine and failed only when CI ran the browser — which is a slow, expensive way to find a
+      # typo.
+      - name: Type-check the e2e suite
+        run: npm run typecheck:e2e
+      # Rejects 0.0.0 and anything that is not SemVer, and on a tag build asserts the tag names
+      # the same version package.json does.
+      - name: Verify the declared version
+        run: npm run check:version
 
   test:
     name: Unit Tests
@@ -210,8 +243,127 @@ jobs:
       - run: npm ci
       - name: Check Apache license headers (Custom Script)
         run: ./scripts/check-license.sh
+      # An allow-list over what ships. Kept alongside the categorised scan below rather than
+      # replaced by it: the two read npm's metadata by different routes, so a package whose
+      # licence one of them misreads is still caught by the other.
       - name: Check dependency licenses
         run: npx --no-install license-checker --production --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD"
+      # The tree is clean today, so a green scan proves nothing on its own about whether the
+      # classifier still classifies. This is what proves it — including that LGPL-3.0 still
+      # resolves to Category X, which is the case that removed eslint-plugin-sonarjs.
+      - name: Verify the licence classifier still blocks what it must
+        run: npm run check:licenses:selftest
+      # ASF policy, enforced: Category A passes, Category B is reported for PMC awareness,
+      # Category X and any licence nobody has classified fail the build. Runs over the whole
+      # tree, not just what ships: devDependencies are named in package.json, and package.json
+      # travels in a source release.
+      - name: Classify every dependency licence against ASF policy
+        run: npm run check:licenses
+
+  container:
+    name: Container Image
+    needs: dependencies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          persist-credentials: false
+
+      - name: Build the image
+        run: docker build -f deploy/Dockerfile -t fineract-backoffice-ui:ci .
+
+      # The reason this job exists. The image built and served its landing page for months while
+      # answering every single API call with the application's own HTML, because nginx had no
+      # /api/ proxy and `try_files` fell through to index.html. A 200 on `/` proves nothing; the
+      # assertions below are the ones that would have caught it.
+      - name: Start Fineract for the container to talk to
+        run: |
+          docker compose -f deploy/docker-compose-e2e.yml up -d --wait fineract-db
+          docker exec -i fineract-db psql -U postgres < deploy/init-db.sql
+          docker compose -f deploy/docker-compose-e2e.yml up -d fineract-backend
+          for _ in $(seq 1 60); do
+            if [ "$(curl -k -s -o /dev/null -w '%{http_code}' --max-time 5 \
+                  https://localhost:8443/fineract-provider/actuator/info || true)" = "200" ]; then
+              echo "Fineract is up"; exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Fineract did not come up"; exit 1
+
+      - name: Run the image against it
+        run: |
+          NET=$(docker inspect fineract-backend \
+            --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+          docker run -d --name backoffice-ui --network "$NET" -p 18080:80 \
+            -e FINERACT_API_URL=https://fineract-backend:8443/fineract-provider/api \
+            -e FINERACT_PROXY_SSL_VERIFY=off \
+            fineract-backoffice-ui:ci
+          for _ in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:18080/ && break
+            sleep 2
+          done
+
+      - name: The application is served
+        run: |
+          set -eu
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18080/)
+          [ "$code" = "200" ] || { echo "::error::GET / answered $code"; exit 1; }
+
+      - name: config.json carries every key the application reads
+        run: |
+          set -eu
+          body=$(curl -s http://localhost:18080/config.json)
+          echo "$body"
+          for key in fineractApiUrl defaultTenant rbacEnabled institutionType developerToolsEnabled; do
+            echo "$body" | grep -q "\"$key\"" || {
+              echo "::error::config.json is missing $key — the entrypoint dropped it"; exit 1; }
+          done
+
+      - name: The API is proxied, and answers as Fineract rather than as the application
+        run: |
+          set -eu
+          type=$(curl -s -o /dev/null -w '%{content_type}' \
+            -u mifos:password -H 'Fineract-Platform-TenantId: default' \
+            http://localhost:18080/api/v1/offices)
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            -u mifos:password -H 'Fineract-Platform-TenantId: default' \
+            http://localhost:18080/api/v1/offices)
+          echo "GET /api/v1/offices -> $code $type"
+          case "$type" in
+            text/html*) echo "::error::/api/v1/offices returned HTML — the SPA shell, not Fineract. \
+              deploy/nginx.conf.template has lost its /api/ proxy."; exit 1 ;;
+          esac
+          [ "$code" = "200" ] || { echo "::error::/api/v1/offices answered $code, expected 200"; exit 1; }
+
+      # `location ^~ /api/` is what stops the static-asset regex block claiming this. Without the
+      # `^~` nginx still evaluates the regex, and any API path ending in .js is served off the
+      # filesystem — a 404 for a request that should have reached the backend.
+      - name: An API path ending in .js is proxied, not served from disk
+        run: |
+          set -eu
+          type=$(curl -s -o /dev/null -w '%{content_type}' http://localhost:18080/api/v1/probe.js)
+          echo "GET /api/v1/probe.js -> $type"
+          case "$type" in
+            text/html*|application/javascript*) \
+              echo "::error::/api/v1/probe.js was served locally instead of proxied"; exit 1 ;;
+          esac
+
+      - name: Security headers survive on a proxied response
+        run: |
+          set -eu
+          headers=$(curl -s -D - -o /dev/null \
+            -u mifos:password -H 'Fineract-Platform-TenantId: default' \
+            http://localhost:18080/api/v1/offices)
+          for header in Content-Security-Policy X-Content-Type-Options X-Frame-Options; do
+            echo "$headers" | grep -qi "^$header:" || {
+              echo "::error::$header missing from the proxied response"; exit 1; }
+          done
+
+      - name: Container logs
+        if: always()
+        run: docker logs backoffice-ui 2>&1 | tail -30
 
   rat-scan:
     name: Apache RAT Scan
@@ -258,6 +410,30 @@ jobs:
       # are never deployed and have no upstream fix available.
       - run: npm audit --audit-level=high --omit=dev
 
+  ga-gate:
+    name: GA Readiness Gate
+    needs: dependencies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+      - run: npm ci
+      # The generated API surface the application actually calls, against the reviewed manifest.
+      # Recorded separately from ga:check so a drift here names the operations that moved.
+      - name: Verify the called API surface matches the manifest
+        run: npm run api:surface
+      # `scripts/ga-check.mjs` has existed, and failed, without CI ever running it. A release
+      # gate nobody runs is not a gate. Blocking failures fail this job; advisory ones report.
+      - name: Run the GA readiness gate
+        run: npm run ga:check
+
   summary:
     name: Build Summary
     runs-on: ubuntu-latest
@@ -272,8 +448,10 @@ jobs:
         test,
         build,
         compliance,
+        container,
         rat-scan,
         security,
+        ga-gate,
       ]
     if: always()
     permissions:
@@ -292,9 +470,11 @@ jobs:
           echo "| Formatting | ${{ needs.format.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Translation Check | ${{ needs.i18n-check.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| API Client Drift | ${{ needs.api-client-drift.result == 'success' && '✅ In Sync' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| GA Readiness Gate | ${{ needs.ga-gate.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Unit Tests | ${{ needs.test.result == 'success' && '✅ Pass (Artifact Uploaded)' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Prod Build | ${{ needs.build.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Compliance | ${{ needs.compliance.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Container Image | ${{ needs.container.result == 'success' && '✅ Builds and proxies the API' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| RAT Scan | ${{ needs.rat-scan.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security Audit | ${{ needs.security.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

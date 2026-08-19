@@ -53,6 +53,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
       title="nav.tellers"
       helpTextKey="HELP.TELLERS_DESC"
       createButtonLabel="TELLERS.CREATE_TELLER"
+      createPermission="CREATE_TELLER"
       [columns]="columns"
       [data]="tellers()"
       [totalRecords]="tellers().length"

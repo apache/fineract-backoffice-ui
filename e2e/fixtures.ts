@@ -129,5 +129,20 @@ export const test = base.extend<ChangeDetectionFixtures>({
   ],
 });
 
+/**
+ * A per-test budget that survives being filmed.
+ *
+ * Under `DEMO_RECORD=1` every Playwright action carries a deliberate pause (`slowMo`), so a flow
+ * that fits comfortably at test speed takes several times longer. A test's own `test.setTimeout`
+ * overrides both the project and the root config, so the scaling has to happen at the call site —
+ * otherwise a recording is cut off mid-flow and the clip ends on a frozen screen.
+ *
+ * `full-demo.spec.ts` has done this by hand since it was the only paced spec; this is the same
+ * idea, available to all of them.
+ */
+export function recordingTimeout(base: number): number {
+  return process.env.DEMO_RECORD === '1' ? base * 5 : base;
+}
+
 export { expect } from '@playwright/test';
 export type { Page, Locator, Route } from '@playwright/test';

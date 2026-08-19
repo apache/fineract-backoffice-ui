@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.loanOriginators"
       helpTextKey="HELP.LOAN_ORIGINATORS_DESC"
       createButtonLabel="LOAN_ORIGINATORS.CREATE"
+      createPermission="CREATE_LOAN_ORIGINATOR"
       [columns]="columns"
       [data]="originators()"
       [totalRecords]="originators().length"

@@ -46,6 +46,7 @@ import {
   GetOfficesResponse,
 } from '../../../api';
 import {
+  formatArrayDate,
   formatDateToFineract,
   FINERACT_DATE_FORMAT,
   FINERACT_LOCALE,
@@ -301,8 +302,7 @@ export class StaffFormComponent implements OnInit {
         emailAddress: (data as Record<string, unknown>)['emailAddress'] as string | undefined,
       });
       if (data.joiningDate) {
-        const jd = data.joiningDate as unknown as number[];
-        this.joiningDate.set(toIsoDate(new Date(jd[0], jd[1] - 1, jd[2])));
+        this.joiningDate.set(formatArrayDate(data.joiningDate));
       }
     });
   }

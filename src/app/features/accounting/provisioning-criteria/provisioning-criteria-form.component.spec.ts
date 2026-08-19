@@ -20,9 +20,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProvisioningCriteriaFormComponent } from './provisioning-criteria-form.component';
 import { ProvisioningCriteriaService } from '../../../api';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { convertToParamMap } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
@@ -53,6 +52,57 @@ describe('ProvisioningCriteriaFormComponent', () => {
     fixture = TestBed.createComponent(ProvisioningCriteriaFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  /**
+   * The definitions are the provisioning rules — a percentage, an ageing band and a pair of GL
+   * accounts per category. The form does not edit them, so it must carry them through an edit
+   * unchanged; dropping them would strip a criteria's rules when its name was changed.
+   *
+   * They were read and sent as `provisioningcriteria`, which the platform refuses outright
+   * ("The parameter provisioningcriteria is not supported"), so saving an edit answered 400.
+   */
+  it('carries the provisioning definitions through an edit under the name the platform accepts', () => {
+    const definitions = [
+      { categoryId: 1, provisioningPercentage: 1, liabilityAccount: 7, expenseAccount: 3 },
+    ];
+    serviceSpy.getProvisioningcriteriaCriteriaId.and.returnValue(
+      of({
+        criteriaName: 'Standard',
+        loanProducts: [{ id: 1 }],
+        definitions,
+      }) as unknown as ReturnType<ProvisioningCriteriaService['getProvisioningcriteriaCriteriaId']>,
+    );
+    serviceSpy.putProvisioningcriteriaCriteriaId.and.returnValue(
+      of({}) as unknown as ReturnType<
+        ProvisioningCriteriaService['putProvisioningcriteriaCriteriaId']
+      >,
+    );
+
+    component.criteriaId = 5;
+    component.isEditMode.set(true);
+    component.load();
+    component.onSubmit();
+
+    const [, body] = serviceSpy.putProvisioningcriteriaCriteriaId.calls.mostRecent().args;
+    expect((body as Record<string, unknown>)['definitions']).toEqual(definitions);
+    expect('provisioningcriteria' in (body as Record<string, unknown>)).toBeFalse();
+  });
+
+  /** An older instance answers under the previous name; the edit must still preserve them. */
+  it('reads definitions back under the previous name too', () => {
+    const definitions = [{ categoryId: 2, provisioningPercentage: 25 }];
+    serviceSpy.getProvisioningcriteriaCriteriaId.and.returnValue(
+      of({ criteriaName: 'Legacy', provisioningcriteria: definitions }) as unknown as ReturnType<
+        ProvisioningCriteriaService['getProvisioningcriteriaCriteriaId']
+      >,
+    );
+
+    component.criteriaId = 6;
+    component.isEditMode.set(true);
+    component.load();
+
+    expect(component.criteria().definitions).toEqual(definitions);
   });
 
   it('should create in create mode', () => {

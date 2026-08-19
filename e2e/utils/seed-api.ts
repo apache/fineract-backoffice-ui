@@ -35,6 +35,7 @@
  * runs in Node, where a relative path has nothing to resolve against.
  */
 
+import { randomInt } from 'node:crypto';
 import { APIRequestContext, request as playwrightRequest } from '@playwright/test';
 
 import { API_BASE, PASSWORD, TENANT_ID, USERNAME, assertBackendReachable } from './backend-env';
@@ -277,6 +278,7 @@ export async function seedClient(
 
 export interface SeededFixedDeposit {
   accountId: number;
+  clientId: number;
   clientName: string;
   productName: string;
 }
@@ -362,13 +364,88 @@ export async function seedFixedDepositAccount(
     },
   );
 
-  return { accountId, clientName: client.displayName, productName };
+  return { accountId, clientId: client.clientId, clientName: client.displayName, productName };
 }
 
 export interface SeededShareAccount {
   accountId: number;
   clientName: string;
   productName: string;
+}
+
+export interface SeededSavingsAccount {
+  savingsId: number;
+  clientId: number;
+  clientName: string;
+}
+
+/**
+ * Seeds a client and an **active** savings account carrying one deposit and one hold.
+ *
+ * Both transactions matter to what this seeds for: a deposit is the only kind of row that can be
+ * reversed, and a hold is the only kind that can be released. They also go through different
+ * endpoints — a hold is `POST /savingsaccounts/{id}/transactions?command=holdAmount`, takes
+ * `transactionAmount` rather than `amount`, and needs a `reasonForBlock` from the
+ * `SavingsAccountBlockReasons` code.
+ */
+export async function seedSavingsAccountWithTransactions(
+  api: APIRequestContext,
+  namePrefix = 'E2ESavings',
+): Promise<SeededSavingsAccount> {
+  const client = await seedClient(api, namePrefix);
+  const suffix = seedSuffix();
+  const today = fineractDate();
+
+  const { resourceId: productId } = await post<{ resourceId: number }>(api, '/savingsproducts', {
+    name: `${namePrefix} Savings ${suffix}`,
+    shortName: `V${suffix.slice(-3).toUpperCase()}`,
+    description: 'Seeded for savings transaction correction coverage',
+    currencyCode: 'USD',
+    digitsAfterDecimal: 2,
+    inMultiplesOf: 0,
+    nominalAnnualInterestRate: 5,
+    interestCompoundingPeriodType: 1,
+    interestPostingPeriodType: 4,
+    interestCalculationType: 1,
+    interestCalculationDaysInYearType: 365,
+    accountingRule: 1,
+    locale: LOCALE,
+  });
+
+  const { savingsId } = await post<{ savingsId: number }>(api, '/savingsaccounts', {
+    clientId: client.clientId,
+    productId,
+    submittedOnDate: today,
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+  for (const [command, field] of [
+    ['approve', 'approvedOnDate'],
+    ['activate', 'activatedOnDate'],
+  ] as const) {
+    await post(api, `/savingsaccounts/${savingsId}?command=${command}`, {
+      [field]: today,
+      dateFormat: DATE_FORMAT,
+      locale: LOCALE,
+    });
+  }
+
+  await post(api, `/savingsaccounts/${savingsId}/transactions?command=deposit`, {
+    transactionDate: today,
+    transactionAmount: 500,
+    paymentTypeId: 1,
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+  await post(api, `/savingsaccounts/${savingsId}/transactions?command=holdAmount`, {
+    transactionDate: today,
+    transactionAmount: 100,
+    reasonForBlock: 1,
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+
+  return { savingsId, clientId: client.clientId, clientName: client.displayName };
 }
 
 /**
@@ -607,5 +684,397 @@ export async function seedRepayment(
     transactionAmount: amount,
     dateFormat: DATE_FORMAT,
     locale: LOCALE,
+  });
+}
+
+export interface SeededChartReport {
+  reportId: number;
+  reportName: string;
+}
+
+/**
+ * A parameterless `Chart` report, so the run screen has something whose type is not `Table`.
+ *
+ * `Chart` is one of only three report types the platform accepts — posting `Pentaho` answers
+ * `validation.msg.report.reportType.is.not.one.of.expected.enumerations` naming
+ * `["Table","Chart","SMS"]` — and a chart report returns the *same* generic resultset a table
+ * report does, so the chart is drawn entirely from the column types.
+ *
+ * The SQL is written for PostgreSQL and takes no parameters on purpose: most stock loan reports
+ * compare a bigint column against a bound string (`o.id='${officeId}'`) and fail outright on
+ * PostgreSQL, which would make this a test of that defect rather than of the chart.
+ */
+export async function seedChartReport(
+  api: APIRequestContext,
+  namePrefix = 'E2EChart',
+  subType: 'Bar' | 'Pie' = 'Bar',
+): Promise<SeededChartReport> {
+  const reportName = `${namePrefix} Clients By Office ${seedSuffix()}`;
+  const { resourceId } = await post<{ resourceId: number }>(api, '/reports', {
+    reportName,
+    reportType: 'Chart',
+    reportSubType: subType,
+    reportCategory: 'Client',
+    reportSql:
+      'select o.name as "Office", count(c.id) as "Clients" ' +
+      'from m_office o left join m_client c on c.office_id = o.id ' +
+      'group by o.name order by 1',
+    useReport: true,
+  });
+  return { reportId: resourceId, reportName };
+}
+
+export interface SeededCenter {
+  centerId: number;
+  centerName: string;
+}
+
+/** A pending center, which is where the lifecycle actions on the detail view start. */
+export async function seedCenter(
+  api: APIRequestContext,
+  namePrefix = 'E2ECenter',
+): Promise<SeededCenter> {
+  const centerName = `${namePrefix} ${seedSuffix()}`;
+  const { resourceId } = await post<{ resourceId: number }>(api, '/centers', {
+    name: centerName,
+    officeId: 1,
+    active: false,
+    locale: LOCALE,
+    dateFormat: DATE_FORMAT,
+  });
+  return { centerId: resourceId, centerName };
+}
+
+export interface SeededGroup {
+  groupId: number;
+  groupName: string;
+}
+
+/**
+ * A group with no parent center, so it is a candidate for attaching to one.
+ *
+ * `GET /groups?orphansOnly=true` is what the attach dialog offers, and a group already held by a
+ * center is excluded from it — a group has at most one parent.
+ */
+export async function seedGroup(
+  api: APIRequestContext,
+  namePrefix = 'E2EGroup',
+): Promise<SeededGroup> {
+  const groupName = `${namePrefix} ${seedSuffix()}`;
+  const { resourceId } = await post<{ resourceId: number }>(api, '/groups', {
+    name: groupName,
+    officeId: 1,
+    active: false,
+    locale: LOCALE,
+    dateFormat: DATE_FORMAT,
+  });
+  return { groupId: resourceId, groupName };
+}
+
+export interface SeededStaff {
+  staffId: number;
+  staffName: string;
+}
+
+/**
+ * A member of staff in the head office.
+ *
+ * Seeded rather than assumed: a fresh Fineract has none, and a staff picker scoped to the office
+ * — as every one of them is, because the platform refuses staff from another office — then has
+ * nothing to offer. `displayName` comes back as "lastname, firstname", which is what the pickers
+ * show.
+ */
+export async function seedStaff(
+  api: APIRequestContext,
+  namePrefix = 'E2EStaff',
+): Promise<SeededStaff> {
+  const lastname = `${namePrefix}${seedSuffix()}`;
+  const { resourceId } = await post<{ resourceId: number }>(api, '/staff', {
+    officeId: 1,
+    firstname: 'Field',
+    lastname,
+    isLoanOfficer: true,
+    joiningDate: fineractDate(new Date(2020, 0, 1)),
+    locale: LOCALE,
+    dateFormat: DATE_FORMAT,
+  });
+  return { staffId: resourceId, staffName: `${lastname}, Field` };
+}
+
+export interface SeededRestrictedUser {
+  username: string;
+  password: string;
+  roleId: number;
+  userId: number;
+  /** Exactly the permission codes the user holds, as granted to their role. */
+  permissions: string[];
+}
+
+/**
+ * A Fineract role granted precisely the permissions listed, and nothing else.
+ *
+ * `PUT /roles/{id}/permissions` takes a map of code to boolean and applies it as a delta, so a
+ * freshly created role — which starts with none — ends up holding exactly these.
+ *
+ * @param api - an API context authenticated as a user who may administer roles
+ * @param permissions - permission codes, which must exist in `GET /permissions`
+ * @param namePrefix - distinguishes the role in a stack that keeps its database between runs
+ * @returns the new role's id
+ */
+export async function seedRole(
+  api: APIRequestContext,
+  permissions: string[],
+  namePrefix = 'E2ERole',
+): Promise<number> {
+  const name = `${namePrefix}${seedSuffix()}`;
+  const { resourceId } = await post<{ resourceId: number }>(api, '/roles', {
+    name,
+    description: 'Seeded by the RBAC e2e suite',
+  });
+  await put(api, `/roles/${resourceId}/permissions`, {
+    permissions: Object.fromEntries(permissions.map((code) => [code, true])),
+  });
+  return resourceId;
+}
+
+const UPPER = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+const LOWER = 'abcdefghijkmnopqrstuvwxyz';
+const DIGIT = '23456789';
+// No underscore: Fineract's policy requires a character matching `[^\w\s]`, and `\w`
+// includes `_` — a password whose only punctuation was an underscore would be rejected.
+const SPECIAL = '#$%&*+-=?@^';
+
+/**
+ * A throwaway password that satisfies Fineract's policy, drawn fresh each time.
+ *
+ * The policy is `^(?!.*(.)\1)(?!.*\s)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^\w\s]).{12,50}$` —
+ * 12 to 50 characters, one of each class, no whitespace, and **no character repeated
+ * consecutively**. That last clause is the one that catches people out, and the validation error
+ * does not mention it until you read `args`.
+ *
+ * Generated rather than written down. A literal that satisfies the rule is by construction a
+ * credential-shaped string, which secret scanners flag and reviewers have to think about; there
+ * is no value in having one in the tree when the account is created and used within a single
+ * test run.
+ */
+function generatePassword(): string {
+  const pools = [UPPER, LOWER, DIGIT, SPECIAL];
+  const characters: string[] = [];
+  // One from each class first, so the policy's lookaheads are satisfied by construction,
+  // then fill out the length from the union.
+  const all = pools.join('');
+  while (characters.length < 16) {
+    const pool = characters.length < pools.length ? pools[characters.length] : all;
+    const candidate = pool[randomInt(pool.length)];
+    // Reject rather than reshuffle: the "no consecutive repeat" rule is the only ordering
+    // constraint, and refusing a duplicate neighbour is the whole of enforcing it.
+    if (candidate !== characters[characters.length - 1]) characters.push(candidate);
+  }
+  return characters.join('');
+}
+
+/**
+ * A user who genuinely holds only the given permissions, for signing into the application as.
+ *
+ * The point of seeding rather than mocking is that the resulting session is the platform's own
+ * answer: whatever the UI then allows or refuses can be checked against what Fineract itself
+ * allows or refuses, which is the only way to show the two agree.
+ *
+ * The password is generated to satisfy Fineract's policy — 12 to 50 characters, one of each
+ * class, no whitespace, and no character repeated consecutively — which rejects most obvious
+ * literals with a validation error that does not mention the rule until you read `args`.
+ *
+ * @param api - an API context authenticated as a user who may administer roles and users
+ * @param permissions - permission codes the user should hold, and only those
+ */
+export async function seedRestrictedUser(
+  api: APIRequestContext,
+  permissions: string[],
+): Promise<SeededRestrictedUser> {
+  const roleId = await seedRole(api, permissions);
+  const suffix = seedSuffix();
+  const username = `e2erbac${suffix}`;
+  const password = generatePassword();
+
+  const { resourceId } = await post<{ resourceId: number }>(api, '/users', {
+    username,
+    firstname: 'Restricted',
+    lastname: `User${suffix}`,
+    email: `${username}@example.invalid`,
+    officeId: 1,
+    roles: [roleId],
+    sendPasswordToEmail: false,
+    password,
+    repeatPassword: password,
+  });
+
+  return { username, password, roleId, userId: resourceId, permissions };
+}
+
+/**
+ * Asks Fineract the same question the UI just asked, as the restricted user themselves.
+ *
+ * Returns the HTTP status so a spec can assert the platform's answer directly rather than
+ * inferring it from what the UI did — the client guard is defence-in-depth, and this is how a
+ * test tells the difference between the two agreeing and the client merely looking convincing.
+ */
+export async function statusAs(
+  user: SeededRestrictedUser,
+  method: 'GET' | 'POST',
+  path: string,
+  body?: unknown,
+): Promise<number> {
+  const context = await playwrightRequest.newContext({
+    ignoreHTTPSErrors: true,
+    extraHTTPHeaders: {
+      'Fineract-Platform-TenantId': TENANT,
+      'Content-Type': 'application/json',
+      Authorization: `Basic ${Buffer.from(`${user.username}:${user.password}`).toString('base64')}`,
+    },
+  });
+  try {
+    const url = `${API_BASE}${path}`;
+    const response =
+      method === 'GET' ? await context.get(url) : await context.post(url, { data: body ?? {} });
+    return response.status();
+  } finally {
+    await context.dispose();
+  }
+}
+
+export interface SeededJournalEntry {
+  /** The id of one line, which is what the detail route takes. */
+  entryId: number;
+  /** The id of the transaction, which is what reversal takes. */
+  transactionId: string;
+  debitAccountName: string;
+  creditAccountName: string;
+}
+
+/**
+ * A manual journal entry that can actually be reversed.
+ *
+ * Reversal is refused for system-generated entries — those written by the platform behind a loan
+ * or savings transaction — so a spec covering the reverse action cannot reuse whatever the other
+ * specs happen to have posted. It has to make one by hand, which is what this does.
+ */
+export async function seedManualJournalEntry(
+  api: APIRequestContext,
+  namePrefix = 'E2EJournal',
+): Promise<SeededJournalEntry> {
+  const suffix = seedSuffix();
+  const debitAccountName = `${namePrefix} Cash ${suffix}`;
+  const creditAccountName = `${namePrefix} Income ${suffix}`;
+
+  const { resourceId: debitId } = await post<{ resourceId: number }>(api, '/glaccounts', {
+    name: debitAccountName,
+    glCode: `E2E-D-${suffix}`,
+    type: 1,
+    usage: 1,
+    manualEntriesAllowed: true,
+  });
+  const { resourceId: creditId } = await post<{ resourceId: number }>(api, '/glaccounts', {
+    name: creditAccountName,
+    glCode: `E2E-C-${suffix}`,
+    type: 4,
+    usage: 1,
+    manualEntriesAllowed: true,
+  });
+
+  const { transactionId } = await post<{ transactionId: string }>(api, '/journalentries', {
+    officeId: 1,
+    currencyCode: 'USD',
+    transactionDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+    comments: 'Seeded for reversal coverage',
+    debits: [{ glAccountId: debitId, amount: 100 }],
+    credits: [{ glAccountId: creditId, amount: 100 }],
+  });
+
+  const page = await get<{ pageItems: { id: number }[] }>(
+    api,
+    `/journalentries?transactionId=${transactionId}`,
+  );
+  return {
+    entryId: page.pageItems[0].id,
+    transactionId,
+    debitAccountName,
+    creditAccountName,
+  };
+}
+
+export interface SeededReportDefinition {
+  reportId: number;
+  reportName: string;
+}
+
+/** A tenant report definition — the only kind the platform allows to be edited or deleted. */
+export async function seedReportDefinition(
+  api: APIRequestContext,
+  namePrefix = 'E2EReportDef',
+): Promise<SeededReportDefinition> {
+  const reportName = `${namePrefix} ${seedSuffix()}`;
+  const { resourceId } = await post<{ resourceId: number }>(api, '/reports', {
+    reportName,
+    reportType: 'Table',
+    reportCategory: 'Client',
+    description: 'Seeded for report definition coverage',
+    reportSql: 'select 1 as one',
+    useReport: true,
+    reportParameters: [],
+  });
+  return { reportId: resourceId, reportName };
+}
+
+/**
+ * A loan left in "Submitted and pending approval", which is what an approval queue is made of.
+ *
+ * `seedActiveLoan` approves and disburses; a queue needs the opposite, so this stops at submission.
+ */
+export async function seedPendingLoan(
+  api: APIRequestContext,
+  namePrefix = 'E2EQueue',
+): Promise<{ loanId: number; clientName: string; accountNo: string }> {
+  const client = await seedClient(api, namePrefix);
+  const product = await seedLoanProduct(api, namePrefix);
+
+  const { loanId } = await post<{ loanId: number }>(api, '/loans', {
+    clientId: client.clientId,
+    productId: product.productId,
+    principal: 1000,
+    loanTermFrequency: 6,
+    loanTermFrequencyType: 2,
+    numberOfRepayments: 6,
+    repaymentEvery: 1,
+    repaymentFrequencyType: 2,
+    interestRatePerPeriod: 2,
+    amortizationType: 1,
+    interestType: 0,
+    interestCalculationPeriodType: 1,
+    transactionProcessingStrategyCode: 'mifos-standard-strategy',
+    expectedDisbursementDate: fineractDate(),
+    submittedOnDate: fineractDate(),
+    loanType: 'individual',
+    locale: LOCALE,
+    dateFormat: DATE_FORMAT,
+  });
+
+  const loan = await get<{ accountNo: string }>(api, `/loans/${loanId}`);
+  return { loanId, clientName: client.displayName, accountNo: loan.accountNo };
+}
+
+/**
+ * Reverses a journal transaction over the API.
+ *
+ * Used to put a record into the reversed state a spec wants to *read*, rather than to test the
+ * reversal itself — that goes through the UI.
+ */
+export async function reverseJournalEntry(
+  api: APIRequestContext,
+  transactionId: string,
+): Promise<void> {
+  await post(api, `/journalentries/${transactionId}?command=reverse`, {
+    comments: 'Reversed by the e2e suite',
   });
 }

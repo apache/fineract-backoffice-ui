@@ -24,12 +24,14 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { DialogService } from '../../../core/services/dialog.service';
 
 describe('WcNearBreachListComponent', () => {
   let component: WcNearBreachListComponent;
   let fixture: ComponentFixture<WcNearBreachListComponent>;
   let serviceSpy: jasmine.SpyObj<WorkingCapitalNearBreachService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   beforeEach(async () => {
     serviceSpy = jasmine.createSpyObj('WorkingCapitalNearBreachService', [
@@ -37,6 +39,8 @@ describe('WcNearBreachListComponent', () => {
       'deleteWorkingCapitalNearBreachBreachId',
     ]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.getWorkingCapitalNearBreach.and.returnValue(
       of([{ id: 1, name: 'Warn A', threshold: 80 }]) as unknown as ReturnType<
         WorkingCapitalNearBreachService['getWorkingCapitalNearBreach']
@@ -48,6 +52,7 @@ describe('WcNearBreachListComponent', () => {
       providers: [
         { provide: WorkingCapitalNearBreachService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: DialogService, useValue: dialogService },
         provideNoopAnimations(),
       ],
     }).compileComponents();
@@ -68,8 +73,8 @@ describe('WcNearBreachListComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/working-capital/near-breach/edit', 7]);
   });
 
-  it('should delete after confirmation and reload', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('should delete after confirmation and reload', async () => {
+    dialogService.confirm.and.resolveTo(true);
     serviceSpy.deleteWorkingCapitalNearBreachBreachId.and.returnValue(
       of({}) as unknown as ReturnType<
         WorkingCapitalNearBreachService['deleteWorkingCapitalNearBreachBreachId']
@@ -77,8 +82,16 @@ describe('WcNearBreachListComponent', () => {
     );
 
     component.onDelete({ id: 5, name: 'Y' });
+    await fixture.whenStable();
 
     expect(serviceSpy.deleteWorkingCapitalNearBreachBreachId).toHaveBeenCalledWith(5);
     expect(serviceSpy.getWorkingCapitalNearBreach).toHaveBeenCalledTimes(2);
+  });
+
+  it('should not delete when cancelled', async () => {
+    dialogService.confirm.and.resolveTo(false);
+    component.onDelete({ id: 5, name: 'Y' });
+    await fixture.whenStable();
+    expect(serviceSpy.deleteWorkingCapitalNearBreachBreachId).not.toHaveBeenCalled();
   });
 });

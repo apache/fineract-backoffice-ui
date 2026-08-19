@@ -29,6 +29,11 @@
  * Request for updating period payment rate on an active Working Capital Loan
  */
 export interface PutWorkingCapitalLoansLoanIdRateRequest { 
+    dateFormat?: string;
+    /**
+     * Date the new rate takes effect. Mandatory. May be backdated or set in the future, but not before the disbursement date.
+     */
+    effectiveDate: string;
     locale?: string;
     note?: string;
     /**

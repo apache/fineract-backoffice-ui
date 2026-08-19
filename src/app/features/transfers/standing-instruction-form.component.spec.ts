@@ -198,6 +198,7 @@ describe('StandingInstructionFormComponent', () => {
         instructionsServiceSpy.getStandinginstructionsStandingInstructionId,
       ).toHaveBeenCalledWith(99);
       expect(component.request.name).toBe('Existing SI');
+      expect(component.validFrom).toBe('2026-06-16');
 
       component.onSubmit();
       expect(

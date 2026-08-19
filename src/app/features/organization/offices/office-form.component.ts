@@ -38,7 +38,7 @@ import {
   IonSelectOption,
   IonSpinner,
 } from '@ionic/angular/standalone';
-import { toIsoDate } from '../../../core/utils/date-formatter';
+import { formatArrayDate, toIsoDate } from '../../../core/utils/date-formatter';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import {
   OfficesService,
@@ -217,9 +217,8 @@ export class OfficeFormComponent implements OnInit {
   loadOfficeData() {
     if (!this.officeId) return;
     this.officesService.getOfficesOfficeId(this.officeId).subscribe((data) => {
-      const dateArray = data.openingDate as unknown as number[];
-      if (dateArray) {
-        this.openingDate.set(toIsoDate(new Date(dateArray[0], dateArray[1] - 1, dateArray[2])));
+      if (data.openingDate) {
+        this.openingDate.set(formatArrayDate(data.openingDate));
       }
       this.office.set({
         name: data.name,

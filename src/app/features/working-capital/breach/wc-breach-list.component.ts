@@ -19,12 +19,13 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { WorkingCapitalBreachService, WorkingCapitalBreachData } from '../../../api';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { DialogService } from '../../../core/services/dialog.service';
 
 /**
  * Lists working-capital covenant breach definitions. Breaches are small master-data
@@ -49,6 +50,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.wcBreach"
       helpTextKey="HELP.WC_BREACH_DESC"
       createButtonLabel="WC_BREACH.CREATE"
+      createPermission="CREATE_WORKINGCAPITALBREACH"
       [columns]="columns"
       [data]="breaches()"
       [totalRecords]="breaches().length"
@@ -81,6 +83,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 export class WcBreachListComponent implements OnInit {
   private readonly breachService = inject(WorkingCapitalBreachService);
   private readonly router = inject(Router);
+  private readonly dialogService = inject(DialogService);
+  private readonly translate = inject(TranslateService);
 
   readonly columns: ColumnDef[] = [
     { key: 'name', label: 'WC_BREACH.NAME', sortable: true },
@@ -117,10 +121,19 @@ export class WcBreachListComponent implements OnInit {
   }
 
   onDelete(row: WorkingCapitalBreachData): void {
-    if (!row.id || !window.confirm('Delete this breach definition?')) return;
-    this.breachService.deleteWorkingCapitalBreachBreachesBreachId(row.id).subscribe({
-      next: () => this.load(),
-      error: (err: unknown) => console.error('Failed to delete breach', err),
-    });
+    if (!row.id) return;
+    void this.dialogService
+      .confirm({
+        title: this.translate.instant('WC_BREACH.DELETE'),
+        message: this.translate.instant('WC_BREACH.CONFIRM_DELETE', { name: row.name }),
+        destructive: true,
+      })
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.breachService.deleteWorkingCapitalBreachBreachesBreachId(row.id!).subscribe({
+          next: () => this.load(),
+          error: (err: unknown) => console.error('Failed to delete breach', err),
+        });
+      });
   }
 }

@@ -50,6 +50,7 @@ import {
       title="SAVINGS_CHARGES.TITLE"
       helpTextKey="HELP.SAVINGS_CHARGES_DESC"
       createButtonLabel="SAVINGS_CHARGES.CREATE"
+      createPermission="UPDATE_SAVINGSACCOUNT"
       [columns]="columns"
       [data]="charges()"
       [totalRecords]="charges().length"

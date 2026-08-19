@@ -41,6 +41,27 @@ export interface ReportParameter {
   readonly parentParameterName: string | null;
   readonly queryParameter: string;
   readonly options: readonly ReportSelectOption[];
+  /**
+   * The lookup ran and failed.
+   *
+   * "No options" and "options unknown" are different things to a user choosing a filter, and an
+   * empty dropdown says the first while meaning the second — the failure mode #223 was raised for.
+   */
+  readonly optionsFailed: boolean;
+}
+
+/** The sentinel the report SQL compares against for an unfiltered run. */
+export const ALL_OPTION: ReportSelectOption = { id: '-1', name: '', isAll: true };
+
+/**
+ * Whether the parameter offers "All".
+ *
+ * This is declared by the parameter definition rather than discovered by the lookup, so it stays
+ * knowable even when the lookup fails — which is what lets a broken dependent lookup degrade to an
+ * unfiltered run instead of blocking the report outright.
+ */
+export function offersAllOption(parameter: Pick<ReportParameter, 'selectAll'>): boolean {
+  return String(parameter.selectAll).toUpperCase() === 'Y';
 }
 
 export interface ReportResult {
@@ -87,36 +108,69 @@ export class ReportExecutionService {
     return this.http.get(this.reportUrl(reportName), { params, responseType: 'text' });
   }
 
+  /**
+   * Fetches the options for one dependent parameter, scoped by its parent's current value.
+   *
+   * The platform substitutes the parent value into the lookup SQL by name, so the parent's own
+   * `queryParameter` is what carries it — `R_officeId` for a lookup written against `${officeId}`.
+   *
+   * Failures are deliberately *not* swallowed here: the caller distinguishes a lookup that
+   * returned nothing from one that never answered, and only the caller knows which parent
+   * selection the failure belongs to.
+   */
+  getDependentOptions(
+    parameter: ReportParameter,
+    parentQueryParameter: string,
+    parentValue: string | number,
+  ): Observable<readonly ReportSelectOption[]> {
+    const params = new HttpParams()
+      .set('parameterType', 'true')
+      .set(parentQueryParameter, String(parentValue));
+
+    return this.http
+      .get<GenericResultset>(this.reportUrl(parameter.name), { params })
+      .pipe(map((response) => this.withAllOption(parameter, this.toSelectOptions(response))));
+  }
+
   private loadSelectOptions(parameters: ReportParameter[]): Observable<ReportParameter[]> {
+    const declared = new Set(parameters.map((parameter) => parameter.name));
+
     const requests = parameters.map((parameter) => {
-      // Parent-dependent options cannot be fetched until the parent has a value. Populating them
-      // after a parent selection is tracked in #301; for now they remain empty without preventing
-      // the rest of the parameter form from loading.
-      if (parameter.displayType !== 'select' || parameter.parentParameterName) {
+      // A dependent parameter cannot be fetched until its parent has a value, so it is left to the
+      // caller to load once the parent is chosen. A parameter naming a parent the report does not
+      // actually declare is treated as independent — otherwise it could never become selectable,
+      // and the report could never be run.
+      const waitsForParent =
+        parameter.parentParameterName !== null && declared.has(parameter.parentParameterName);
+      if (parameter.displayType !== 'select' || waitsForParent) {
         return of(parameter);
       }
 
       const params = new HttpParams().set('parameterType', 'true');
       return this.http.get<GenericResultset>(this.reportUrl(parameter.name), { params }).pipe(
-        map((response) => {
-          const options = (response.data ?? []).map((entry) => this.toSelectOption(entry.row));
-          const offersAll = String(parameter.selectAll).toUpperCase() === 'Y';
-          const alreadyOffersAll = options.some((option) => String(option.id) === '-1');
-
-          return {
-            ...parameter,
-            options:
-              offersAll && !alreadyOffersAll
-                ? [...options, { id: '-1', name: '', isAll: true }]
-                : options,
-          };
-        }),
-        // A tenant-specific lookup failure should affect only that field, not the entire form.
-        catchError(() => of(parameter)),
+        map((response) => ({
+          ...parameter,
+          options: this.withAllOption(parameter, this.toSelectOptions(response)),
+        })),
+        // A tenant-specific lookup failure should affect only that field, not the entire form —
+        // but it is recorded, so the field can say so rather than showing an empty list.
+        catchError(() => of({ ...parameter, optionsFailed: true })),
       );
     });
 
     return requests.length > 0 ? forkJoin(requests) : of([]);
+  }
+
+  private toSelectOptions(response: GenericResultset): ReportSelectOption[] {
+    return (response.data ?? []).map((entry) => this.toSelectOption(entry.row));
+  }
+
+  private withAllOption(
+    parameter: ReportParameter,
+    options: ReportSelectOption[],
+  ): readonly ReportSelectOption[] {
+    const alreadyOffersAll = options.some((option) => String(option.id) === String(ALL_OPTION.id));
+    return offersAllOption(parameter) && !alreadyOffersAll ? [...options, ALL_OPTION] : options;
   }
 
   private toReportParameter(row: unknown): ReportParameter | null {
@@ -155,6 +209,7 @@ export class ReportExecutionService {
       parentParameterName: typeof parent === 'string' && parent ? parent : null,
       queryParameter: `R_${variable}`,
       options: [],
+      optionsFailed: false,
     };
   }
 
@@ -164,7 +219,7 @@ export class ReportExecutionService {
     }
     const [id, name] = row;
     if ((typeof id !== 'string' && typeof id !== 'number') || typeof name !== 'string') {
-      throw new Error('A report parameter lookup omitted a required field.');
+      throw new TypeError('A report parameter lookup omitted a required field.');
     }
     return { id, name };
   }

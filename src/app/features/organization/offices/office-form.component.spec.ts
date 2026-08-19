@@ -36,6 +36,7 @@ describe('OfficeFormComponent', () => {
   const OFFICES_PATH = '/organization/offices';
   const NEW_OFFICE = 'New Office';
   const TEST_OFFICE = 'Test Office';
+  const TEST_OPENING_DATE = '2026-06-16';
 
   beforeEach(async () => {
     officesServiceSpy = jasmine.createSpyObj('OfficesService', [
@@ -197,16 +198,17 @@ describe('OfficeFormComponent', () => {
       expect(component.officeId).toBe(12);
       expect(officesServiceSpy.getOfficesOfficeId).toHaveBeenCalledWith(12);
       expect(component.office().name).toBe(TEST_OFFICE);
+      expect(component.openingDate()).toBe(TEST_OPENING_DATE);
 
       officesServiceSpy.putOfficesOfficeId.and.returnValue(of({}) as unknown as Observable<never>);
-      component.openingDate.set('2026-06-16');
+      component.openingDate.set(TEST_OPENING_DATE);
       component.onSubmit();
 
       expect(officesServiceSpy.putOfficesOfficeId).toHaveBeenCalledWith(
         12,
         jasmine.objectContaining({
           name: TEST_OFFICE,
-          openingDate: '2026-06-16',
+          openingDate: TEST_OPENING_DATE,
         }),
       );
     });

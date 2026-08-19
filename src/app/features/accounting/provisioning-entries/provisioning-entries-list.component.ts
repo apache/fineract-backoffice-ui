@@ -37,6 +37,7 @@ import { ProvisioningEntriesService, ProvisioningEntryData } from '../../../api'
       title="nav.provisioningEntries"
       helpTextKey="HELP.PROVISIONING_ENTRIES_DESC"
       createButtonLabel="PROVISIONING_ENTRIES.CREATE"
+      createPermission="CREATE_PROVISIONENTRIES"
       [columns]="columns"
       [data]="entries()"
       [totalRecords]="entries().length"

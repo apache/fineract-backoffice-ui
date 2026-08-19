@@ -19,8 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DefaultService } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -104,14 +103,19 @@ interface SmsCampaign {
               <ng-container cdkColumnDef="actions">
                 <th cdk-header-cell *cdkHeaderCellDef>{{ 'SMS_CAMPAIGNS.ACTIONS' | translate }}</th>
                 <td cdk-cell *cdkCellDef="let row">
-                  <ion-button fill="clear" color="primary" (click)="edit(row.id)" title="Edit">
+                  <ion-button
+                    fill="clear"
+                    color="primary"
+                    (click)="edit(row.id)"
+                    [attr.aria-label]="'SMS_CAMPAIGNS.EDIT' | translate"
+                  >
                     <ion-icon name="create-outline"></ion-icon>
                   </ion-button>
                   <ion-button
                     fill="clear"
                     color="secondary"
                     (click)="activate(row.id)"
-                    title="{{ 'SMS_CAMPAIGNS.ACTIVATE' | translate }}"
+                    [attr.aria-label]="'SMS_CAMPAIGNS.ACTIVATE' | translate"
                   >
                     <ion-icon name="play-outline"></ion-icon>
                   </ion-button>
@@ -119,7 +123,7 @@ interface SmsCampaign {
                     fill="clear"
                     color="danger"
                     (click)="deactivate(row.id)"
-                    title="{{ 'SMS_CAMPAIGNS.DEACTIVATE' | translate }}"
+                    [attr.aria-label]="'SMS_CAMPAIGNS.DEACTIVATE' | translate"
                   >
                     <ion-icon name="pause-outline"></ion-icon>
                   </ion-button>
@@ -127,7 +131,7 @@ interface SmsCampaign {
                     fill="clear"
                     color="danger"
                     (click)="delete(row.id)"
-                    title="{{ 'SMS_CAMPAIGNS.DELETE' | translate }}"
+                    [attr.aria-label]="'SMS_CAMPAIGNS.DELETE' | translate"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>

@@ -50,7 +50,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       <ion-button
         color="primary"
         [routerLink]="['/clients', clientId(), 'notes', 'create']"
-        *appHasPermission="'CREATE_NOTE'"
+        *appHasPermission="'CREATE_CLIENTNOTE'"
       >
         <ion-icon name="add-outline"></ion-icon>
         {{ 'CLIENTS.ADD_NOTE' | translate }}
@@ -73,7 +73,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
             fill="clear"
             color="primary"
             [routerLink]="['/clients', clientId(), 'notes', 'edit', row.id]"
-            *appHasPermission="'UPDATE_NOTE'"
+            *appHasPermission="'UPDATE_CLIENTNOTE'"
+            [attr.aria-label]="'COMMON.EDIT' | translate"
             [appTooltip]="'COMMON.EDIT' | translate"
           >
             <ion-icon name="create-outline"></ion-icon>
@@ -82,7 +83,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
             fill="clear"
             color="danger"
             (click)="onDelete(row.id)"
-            *appHasPermission="'DELETE_NOTE'"
+            *appHasPermission="'DELETE_CLIENTNOTE'"
+            [attr.aria-label]="'COMMON.DELETE' | translate"
             [appTooltip]="'COMMON.DELETE' | translate"
           >
             <ion-icon name="trash-outline"></ion-icon>

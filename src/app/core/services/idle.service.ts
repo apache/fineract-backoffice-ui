@@ -18,9 +18,10 @@
  */
 
 import { Injectable, inject, NgZone, OnDestroy, effect } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from './auth.service';
-import { Router } from '@angular/router';
-import { fromEvent, merge, Subscription, throttleTime } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, fromEvent, merge, Subscription, throttleTime } from 'rxjs';
 import { ModalHandle } from '../adapters';
 import { DialogService } from './dialog.service';
 import { InactivityDialogComponent } from '../../layout/inactivity-dialog.component';
@@ -44,6 +45,18 @@ export class IdleService implements OnDestroy {
   private idleSubscription?: Subscription;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private dialogRef: ModalHandle<boolean> | null = null;
+  /**
+   * True from the instant the warning is requested, not from when it finishes presenting.
+   *
+   * `dialogRef` alone cannot guard the activity-event handler below: it is only assigned
+   * once `dialogService.present()`'s promise resolves, which leaves a window — a throttled
+   * activity event landing in the moment between the timer firing and the modal actually
+   * being on screen — where that handler saw `dialogRef` still unset and called
+   * `resetTimer()`. That clears the hard logout timeout `showInactivityWarning()` had just
+   * armed and reschedules a fresh 13-minute wait, leaving the now-visible warning dialog
+   * with nothing left to time it out — indefinitely, if the user never answers it.
+   */
+  private presentingWarning = false;
 
   // Configuration
   /** Total time of inactivity allowed before forced logout (15 minutes) */
@@ -60,6 +73,22 @@ export class IdleService implements OnDestroy {
         this.stopMonitoring();
       }
     });
+
+    // Belt-and-suspenders: whatever ends up sending the user to the login page — the
+    // logout timer below, a 401 elsewhere in the app — must never leave this warning on
+    // screen once they have actually landed there. `stopMonitoring()` already runs when
+    // `isAuthenticated` flips to `false`, but this does not depend on that signal update,
+    // the dismiss it triggers, or this service's own timer logic ever having run at all.
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe((event) => {
+        if ((event as NavigationEnd).urlAfterRedirects.startsWith('/login')) {
+          this.closeDialog();
+        }
+      });
   }
 
   /**
@@ -81,8 +110,8 @@ export class IdleService implements OnDestroy {
       ).pipe(throttleTime(5000));
 
       this.idleSubscription = activityEvents$.subscribe(() => {
-        // Only reset the timer if the warning dialog is not currently open
-        if (!this.dialogRef) {
+        // Only reset the timer if the warning dialog is not currently open (or being opened).
+        if (!this.presentingWarning) {
           this.resetTimer();
         }
       });
@@ -128,7 +157,8 @@ export class IdleService implements OnDestroy {
    */
   private showInactivityWarning(): void {
     this.ngZone.run(() => {
-      if (this.dialogRef) return;
+      if (this.presentingWarning) return;
+      this.presentingWarning = true;
 
       // The warning must not be dismissable by backdrop or escape — ignoring it has to
       // fall through to the logout timer below, not silently cancel the countdown.
@@ -142,6 +172,7 @@ export class IdleService implements OnDestroy {
 
           return handle.result.then((shouldExtend) => {
             this.dialogRef = null;
+            this.presentingWarning = false;
             if (shouldExtend) {
               this.resetTimer();
             } else {
@@ -175,6 +206,7 @@ export class IdleService implements OnDestroy {
    * Safely closes the warning dialog if it is open.
    */
   private closeDialog(): void {
+    this.presentingWarning = false;
     if (this.dialogRef) {
       void this.dialogRef.dismiss();
       this.dialogRef = null;

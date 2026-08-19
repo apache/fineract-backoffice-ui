@@ -101,7 +101,7 @@ export function toIsoDate(date: Date | string | null | undefined): string {
 
   if (typeof date === 'string') {
     // ion-datetime emits a full local ISO timestamp; the date part is already correct.
-    return date.split('T')[0];
+    return date.split('T', 1)[0];
   }
 
   if (isNaN(date.getTime())) return '';

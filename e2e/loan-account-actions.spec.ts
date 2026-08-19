@@ -26,14 +26,14 @@
  *   npx playwright test e2e/loan-account-actions.spec.ts --workers=1
  */
 
-import { test, expect } from './fixtures';
+import { test, expect, recordingTimeout } from './fixtures';
 import { login } from './utils/fineract-login';
 import { createActiveLoan } from './utils/create-active-loan';
 import { confirmDialog, menuItem } from './utils/ionic-locators';
 
 test.describe('Loan account lifecycle actions', () => {
   test('new action menu items appear only for active loans', async ({ page }) => {
-    test.setTimeout(120000);
+    test.setTimeout(recordingTimeout(120000));
     await login(page);
     const { loanId } = await createActiveLoan(page);
 
@@ -50,7 +50,7 @@ test.describe('Loan account lifecycle actions', () => {
   test('undo disbursal shows a confirm dialog and reverts the loan to Approved', async ({
     page,
   }) => {
-    test.setTimeout(120000);
+    test.setTimeout(recordingTimeout(120000));
     await login(page);
     const { loanId } = await createActiveLoan(page);
 
@@ -81,7 +81,7 @@ test.describe('Loan account lifecycle actions', () => {
   test('write off requires confirmation and moves the loan out of Active status', async ({
     page,
   }) => {
-    test.setTimeout(120000);
+    test.setTimeout(recordingTimeout(120000));
     await login(page);
     const { loanId } = await createActiveLoan(page);
 

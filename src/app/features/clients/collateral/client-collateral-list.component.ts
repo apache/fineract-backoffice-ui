@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="CLIENT_COLLATERAL.TITLE"
       helpTextKey="HELP.CLIENT_COLLATERAL_DESC"
       createButtonLabel="CLIENT_COLLATERAL.CREATE"
+      createPermission="CREATE_CLIENT_COLLATERAL_PRODUCT"
       [columns]="columns"
       [data]="collaterals()"
       [totalRecords]="collaterals().length"

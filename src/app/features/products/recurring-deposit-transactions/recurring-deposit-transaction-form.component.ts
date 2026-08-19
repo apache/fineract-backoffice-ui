@@ -49,9 +49,8 @@ import {
 } from '../../../core/utils/date-formatter';
 
 /**
- * Deposit form for a single recurring deposit account. The account id is read from the route.
- * Payment-type options come from the transaction template endpoint; the form posts a deposit
- * against the account's transaction collection.
+ * Transaction form for a single recurring deposit account. The account id and command are read
+ * from the route. Payment-type options come from the transaction template endpoint.
  */
 @Component({
   selector: 'app-recurring-deposit-transaction-form',
@@ -79,7 +78,12 @@ import {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ 'RECURRING_DEPOSIT_TRANSACTIONS.CREATE' | translate }}
+            {{
+              (command() === 'withdrawal'
+                ? 'SAVINGS.WITHDRAWAL'
+                : 'RECURRING_DEPOSIT_TRANSACTIONS.CREATE'
+              ) | translate
+            }}
           </ion-card-title>
         </ion-card-header>
 
@@ -176,6 +180,7 @@ export class RecurringDepositTransactionFormComponent implements OnInit {
   private readonly router = inject(Router);
 
   accountId!: number;
+  readonly command = signal<'deposit' | 'withdrawal'>('deposit');
   readonly isSaving = signal(false);
 
   transactionDate = toIsoDate(new Date());
@@ -185,6 +190,8 @@ export class RecurringDepositTransactionFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.accountId = Number(this.route.snapshot.paramMap.get('accountId'));
+    const command = this.route.snapshot.paramMap.get('command');
+    this.command.set(command === 'withdrawal' ? 'withdrawal' : 'deposit');
     this.transactionsService
       .getRecurringdepositaccountsRecurringDepositAccountIdTransactionsTemplate(this.accountId)
       .subscribe((tpl) => {
@@ -203,7 +210,11 @@ export class RecurringDepositTransactionFormComponent implements OnInit {
     };
 
     this.transactionsService
-      .postRecurringdepositaccountsRecurringDepositAccountIdTransactions(this.accountId, request)
+      .postRecurringdepositaccountsRecurringDepositAccountIdTransactions(
+        this.accountId,
+        request,
+        this.command(),
+      )
       .subscribe({
         next: () =>
           this.router.navigate(['/products/recurring-deposits', this.accountId, 'transactions']),

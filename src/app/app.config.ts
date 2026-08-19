@@ -27,7 +27,7 @@ import {
   ApplicationConfig,
   ErrorHandler,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { TitleStrategy, provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { TranslateModule } from '@ngx-translate/core';
@@ -44,6 +44,7 @@ import { ConfigService } from './core/services/config.service';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 
 import { BASE_PATH } from './api/variables';
+import { TranslatedTitleStrategy } from './core/router/translated-title.strategy';
 
 /**
  * Factory function to load configuration before app bootstrap
@@ -74,6 +75,8 @@ export const appConfig: ApplicationConfig = {
     ...(isDevMode() ? [provideCheckNoChangesConfig({ interval: 500, exhaustive: true })] : []),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideRouter(routes),
+    // Routes carry a translation key in `title`; this resolves it. See the strategy's own docs.
+    { provide: TitleStrategy, useClass: TranslatedTitleStrategy },
     // Order is the chain order, outermost first. `retryInterceptor` is last, and so closest
     // to the backend, deliberately: `loadingInterceptor` outside it counts one logical request
     // instead of flickering the progress bar per attempt, `errorInterceptor` toasts only once
@@ -99,7 +102,7 @@ export const appConfig: ApplicationConfig = {
       useFactory: (configService: ConfigService) => {
         const url = configService.apiUrl;
         console.log('Initializing API BASE_PATH:', url);
-        return url.endsWith('/v1') ? url.substring(0, url.length - 3) : url;
+        return url.endsWith('/v1') ? url.slice(0, Math.max(0, url.length - 3)) : url;
       },
       deps: [ConfigService],
     },

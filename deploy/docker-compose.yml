@@ -15,19 +15,78 @@
 # specific language governing permissions and limitations
 # under the License.
 
-version: '3.8'
+# The back-office UI alongside a Fineract of its own.
+#
+#   docker compose -f deploy/docker-compose.yml up --build
+#   open http://localhost:8080        (mifos / password on a fresh database)
+#
+# This file previously started the UI alone and pointed it at a public demo instance operated by
+# someone else, which meant the credentials an operator typed into their first run left the
+# machine. It now brings up the backend it talks to, so nothing leaves the compose network unless
+# a deployment deliberately points it elsewhere.
+#
+# `version:` is deliberately absent — Compose V2 ignores it and warns about it.
 
 services:
+  fineract-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      # Local development credentials for a database published on no host port. Anything
+      # long-lived belongs in a secret, not here.
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - fineract-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - fineract-network
+
+  fineract:
+    image: apache/fineract:latest
+    depends_on:
+      fineract-db:
+        condition: service_healthy
+    environment:
+      - FINERACT_HIKARI_JDBC_URL=jdbc:postgresql://fineract-db:5432/fineract_tenants
+      - FINERACT_HIKARI_USERNAME=postgres
+      - FINERACT_HIKARI_PASSWORD=postgres
+      - FINERACT_DEFAULT_TENANTDB_HOSTNAME=fineract-db
+      - FINERACT_DEFAULT_TENANTDB_PORT=5432
+      - FINERACT_DEFAULT_TENANTDB_UID=postgres
+      - FINERACT_DEFAULT_TENANTDB_PWD=postgres
+      - FINERACT_DEFAULT_TENANTDB_NAME=fineract_default
+      - FINERACT_NODE_ID=1
+    # Not published to the host. The browser reaches Fineract through the UI's own origin, which
+    # is the whole point of the proxy — exposing it here would invite a deployment to bypass that
+    # and then discover the Content-Security-Policy refusing the cross-origin request.
+    expose:
+      - '8443'
+    networks:
+      - fineract-network
+
   fineract-backoffice-ui:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
     image: fineract-backoffice-ui:latest
+    depends_on:
+      - fineract
     ports:
       - '8080:80'
     environment:
-      - FINERACT_API_URL=https://demo.mifos.io/fineract-provider/api
+      # Where *this container* reaches Fineract. Not a browser-visible URL: nginx proxies
+      # /api/ here, and the application only ever calls its own origin.
+      - FINERACT_API_URL=https://fineract:8443/fineract-provider/api
+      # The stock Fineract image serves a self-signed certificate, so the proxy cannot verify it.
+      # Set this to `on` wherever the upstream presents a certificate the container trusts.
+      - FINERACT_PROXY_SSL_VERIFY=off
       - DEFAULT_TENANT=default
+      - RBAC_ENABLED=true
+      - DEVELOPER_TOOLS_ENABLED=false
     restart: unless-stopped
     networks:
       - fineract-network
@@ -35,3 +94,6 @@ services:
 networks:
   fineract-network:
     driver: bridge
+
+volumes:
+  fineract-postgres-data:

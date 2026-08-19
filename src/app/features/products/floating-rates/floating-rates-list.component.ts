@@ -45,6 +45,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.floatingRates"
       helpTextKey="HELP.FLOATING_RATES_DESC"
       createButtonLabel="FLOATING_RATES.CREATE"
+      createPermission="CREATE_FLOATINGRATE"
       [columns]="columns"
       [data]="rates()"
       [totalRecords]="rates().length"

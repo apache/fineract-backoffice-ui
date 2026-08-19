@@ -70,12 +70,20 @@ export interface PostLoansRequest {
     graceOnInterestCharged?: number;
     graceOnInterestPayment?: number;
     graceOnPrincipalPayment?: number;
+    /**
+     * Mandatory for group and GLIM loans
+     */
+    groupId?: number;
     inArrearsTolerance?: number;
     interestCalculationPeriodType?: number;
     interestRateFrequencyType?: number;
     interestRatePerPeriod?: number;
     interestRecognitionOnDisbursementDate?: boolean;
     interestType?: number;
+    /**
+     * GLIM loans only: marks this application as the GLIM parent account
+     */
+    isParentAccount?: boolean;
     linkAccountId?: number;
     loanScheduleProcessingType?: string;
     loanTermFrequency?: number;
@@ -98,6 +106,10 @@ export interface PostLoansRequest {
     repaymentStartDateType?: number;
     repaymentsStartingFromDate?: string;
     submittedOnDate?: string;
+    /**
+     * GLIM loans only: the total principal of the parent GLIM account
+     */
+    totalLoan?: number;
     transactionProcessingStrategyCode?: string;
 }
 export namespace PostLoansRequest {

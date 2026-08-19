@@ -17,11 +17,15 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const CAMPAIGNS_ROUTES: Routes = [
   {
     path: 'email',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_EMAIL_CAMPAIGN' },
     loadComponent: () =>
       import('./email-campaigns/email-campaigns-list.component').then(
         (m) => m.EmailCampaignsListComponent,
@@ -29,6 +33,8 @@ export const CAMPAIGNS_ROUTES: Routes = [
   },
   {
     path: 'email/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_EMAIL_CAMPAIGN' },
     loadComponent: () =>
       import('./email-campaigns/email-campaign-form.component').then(
         (m) => m.EmailCampaignFormComponent,
@@ -36,6 +42,8 @@ export const CAMPAIGNS_ROUTES: Routes = [
   },
   {
     path: 'email/:id/edit',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_EMAIL_CAMPAIGN' },
     loadComponent: () =>
       import('./email-campaigns/email-campaign-form.component').then(
         (m) => m.EmailCampaignFormComponent,
@@ -43,6 +51,8 @@ export const CAMPAIGNS_ROUTES: Routes = [
   },
   {
     path: 'sms',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_SMSCAMPAIGN' },
     loadComponent: () =>
       import('./sms-campaigns/sms-campaigns-list.component').then(
         (m) => m.SmsCampaignsListComponent,
@@ -50,16 +60,22 @@ export const CAMPAIGNS_ROUTES: Routes = [
   },
   {
     path: 'sms/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_SMSCAMPAIGN' },
     loadComponent: () =>
       import('./sms-campaigns/sms-campaign-form.component').then((m) => m.SmsCampaignFormComponent),
   },
   {
     path: 'sms/:id/edit',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_SMSCAMPAIGN' },
     loadComponent: () =>
       import('./sms-campaigns/sms-campaign-form.component').then((m) => m.SmsCampaignFormComponent),
   },
   {
     path: 'email-messages',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_EMAIL_CAMPAIGN' },
     loadComponent: () =>
       import('./email-messages/email-messages.component').then((m) => m.EmailMessagesComponent),
   },

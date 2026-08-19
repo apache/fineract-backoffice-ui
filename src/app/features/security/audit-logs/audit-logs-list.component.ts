@@ -215,6 +215,7 @@ export interface AuditFilters {
             fill="clear"
             color="primary"
             (click)="onViewDetails(row)"
+            [attr.aria-label]="'COMMON.VIEW_DETAILS' | translate"
             [appTooltip]="'COMMON.VIEW_DETAILS' | translate"
           >
             <ion-icon name="eye-outline"></ion-icon>
@@ -304,10 +305,10 @@ export class AuditLogsListComponent implements OnInit {
           const sortOrder = this.currentSort.direction.toUpperCase() || 'DESC';
 
           const fromDate = this.activeFilters.makerDateTimeFrom
-            ? this.activeFilters.makerDateTimeFrom.toISOString().split('T')[0]
+            ? this.activeFilters.makerDateTimeFrom.toISOString().split('T', 1)[0]
             : undefined;
           const toDate = this.activeFilters.makerDateTimeTo
-            ? this.activeFilters.makerDateTimeTo.toISOString().split('T')[0]
+            ? this.activeFilters.makerDateTimeTo.toISOString().split('T', 1)[0]
             : undefined;
 
           return this.auditsService

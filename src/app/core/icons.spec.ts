@@ -29,7 +29,11 @@ describe('APP_ICONS', () => {
   });
 
   it('keys are kebab-case, matching the ion-icon name attribute', () => {
+    // The detector flags the nested quantifier below, but the mandatory '-' between groups
+    // makes backtracking linear, and the input is this file's own icon-name keys rather than
+    // anything a user supplies.
     const malformed = Object.keys(APP_ICONS).filter(
+      // eslint-disable-next-line security/detect-unsafe-regex
       (name) => !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name),
     );
 

@@ -62,8 +62,8 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
         <ion-button
           fill="clear"
           color="primary"
-          title="View Details"
           (click)="onViewDetails(transfer)"
+          [attr.aria-label]="'COMMON.VIEW_DETAILS' | translate"
         >
           <ion-icon name="eye-outline"></ion-icon>
         </ion-button>

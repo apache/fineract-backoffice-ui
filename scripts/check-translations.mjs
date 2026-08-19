@@ -83,6 +83,10 @@ const PATTERNS = [
     String.raw`\[(?:title|helpTextKey|label|placeholder|createButtonLabel)\]\s*=\s*['"]'${KEY}'['"]`,
     'g',
   ),
+  // Route definitions: `title: 'nav.groups'` in a *.routes.ts Routes array. Resolved as a
+  // key by TranslatedTitleStrategy, so a typo here is a missing key like any other. The KEY
+  // shape (dotted identifier) keeps this off ordinary `title:` properties holding a phrase.
+  new RegExp(String.raw`\btitle:\s*['"]${KEY}['"]`, 'g'),
 ];
 
 function referencedKeys(files) {

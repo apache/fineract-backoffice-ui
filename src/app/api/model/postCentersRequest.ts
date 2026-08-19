@@ -29,8 +29,17 @@
  * PostCentersRequest
  */
 export interface PostCentersRequest { 
+    activationDate?: string;
     active?: boolean;
+    dateFormat?: string;
+    externalId?: string;
+    /**
+     * List of group ids to associate at creation
+     */
+    groupMembers?: Array<number>;
+    locale?: string;
     name?: string;
     officeId?: number;
+    staffId?: number;
 }
 

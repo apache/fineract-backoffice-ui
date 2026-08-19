@@ -58,12 +58,13 @@ interface MappingGroup {
 const GROUP_LABELS: Record<GlAccountType, string> = {
   asset: 'ACCOUNTING.ASSET',
   liability: 'ACCOUNTING.LIABILITY',
+  equity: 'ACCOUNTING.EQUITY',
   income: 'ACCOUNTING.INCOME',
   expense: 'ACCOUNTING.EXPENSE',
 };
 
 /** Rendering order, which follows the order a trial balance is read in. */
-const GROUP_ORDER: readonly GlAccountType[] = ['asset', 'liability', 'income', 'expense'];
+const GROUP_ORDER: readonly GlAccountType[] = ['asset', 'liability', 'equity', 'income', 'expense'];
 
 /**
  * The accounting block of a product form: pick a rule, then map the accounts it requires.
@@ -211,6 +212,8 @@ export class ProductAccountingSectionComponent {
         return Array.from(options.assetAccountOptions ?? []);
       case 'liability':
         return Array.from(options.liabilityAccountOptions ?? []);
+      case 'equity':
+        return Array.from(options.equityAccountOptions ?? []);
       case 'income':
         return Array.from(options.incomeAccountOptions ?? []);
       case 'expense':

@@ -27,7 +27,7 @@
 
 export interface GetInstructionTypeOptionsResponseStandingInstructionSwagger { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 

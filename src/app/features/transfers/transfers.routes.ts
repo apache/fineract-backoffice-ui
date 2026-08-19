@@ -17,17 +17,22 @@
  * under the License.
  */
 
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
 
 export const TRANSFERS_ROUTES: Routes = [
   {
     path: 'account-transfer',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_ACCOUNTTRANSFER' },
     loadComponent: () =>
       import('./account-transfer-form.component').then((m) => m.AccountTransferFormComponent),
   },
   {
     path: 'standing-instructions',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_STANDINGINSTRUCTION' },
     loadComponent: () =>
       import('./standing-instructions-list.component').then(
         (m) => m.StandingInstructionsListComponent,
@@ -35,6 +40,8 @@ export const TRANSFERS_ROUTES: Routes = [
   },
   {
     path: 'standing-instructions/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_STANDINGINSTRUCTION' },
     loadComponent: () =>
       import('./standing-instruction-form.component').then(
         (m) => m.StandingInstructionFormComponent,
@@ -42,6 +49,8 @@ export const TRANSFERS_ROUTES: Routes = [
   },
   {
     path: 'standing-instructions/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_STANDINGINSTRUCTION' },
     loadComponent: () =>
       import('./standing-instruction-form.component').then(
         (m) => m.StandingInstructionFormComponent,
@@ -49,6 +58,8 @@ export const TRANSFERS_ROUTES: Routes = [
   },
   {
     path: 'standing-instructions/history',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_STANDINGINSTRUCTION' },
     loadComponent: () =>
       import('./standing-instruction-history.component').then(
         (m) => m.StandingInstructionHistoryComponent,
@@ -56,8 +67,9 @@ export const TRANSFERS_ROUTES: Routes = [
   },
   {
     path: 'history',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_ACCOUNTTRANSFER' },
     loadComponent: () =>
       import('./account-transfers-list.component').then((m) => m.AccountTransfersListComponent),
-    canActivate: [authGuard],
   },
 ];

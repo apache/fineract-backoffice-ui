@@ -53,15 +53,25 @@ import { DialogService } from '../../../core/services/dialog.service';
           <ion-button
             fill="clear"
             color="primary"
-            title="View Payload"
             (click)="onViewPayload(task)"
+            [attr.aria-label]="'CHECKER_INBOX.VIEW_PAYLOAD' | translate"
           >
             <ion-icon name="eye-outline"></ion-icon>
           </ion-button>
-          <ion-button fill="clear" class="approve-btn" title="Approve" (click)="onApprove(task)">
+          <ion-button
+            fill="clear"
+            class="approve-btn"
+            (click)="onApprove(task)"
+            [attr.aria-label]="'ACTIONS.APPROVE' | translate"
+          >
             <ion-icon name="checkmark-circle-outline"></ion-icon>
           </ion-button>
-          <ion-button fill="clear" color="danger" title="Reject" (click)="onReject(task)">
+          <ion-button
+            fill="clear"
+            color="danger"
+            (click)="onReject(task)"
+            [attr.aria-label]="'ACTIONS.REJECT' | translate"
+          >
             <ion-icon name="close-circle-outline"></ion-icon>
           </ion-button>
         </div>

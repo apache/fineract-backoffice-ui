@@ -43,6 +43,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="TELLERS.CASHIERS"
       helpTextKey="HELP.CASHIERS_DESC"
       createButtonLabel="TELLERS.ALLOCATE_CASHIER"
+      createPermission="ALLOCATECASHIER_TELLER"
       [columns]="columns"
       [data]="cashiers()"
       [totalRecords]="cashiers().length"

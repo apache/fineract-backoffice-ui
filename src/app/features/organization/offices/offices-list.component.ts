@@ -26,6 +26,7 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
 import { OfficesService, GetOfficesResponse } from '../../../api';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { TranslatePipe } from '../../../core/adapters';
 
 @Component({
   selector: 'app-offices-list',
@@ -37,12 +38,14 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
     IonIcon,
     IonButton,
     TooltipDirective,
+    TranslatePipe,
   ],
   template: `
     <app-data-table
       title="nav.offices"
       helpTextKey="HELP.OFFICES_DESC"
       createButtonLabel="OFFICES.CREATE_OFFICE"
+      createPermission="CREATE_OFFICE"
       [columns]="columns"
       [data]="offices()"
       [totalRecords]="offices().length"
@@ -54,6 +57,15 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-office>
+        <ion-button
+          fill="clear"
+          data-testid="office-view"
+          [title]="'COMMON.VIEW' | appTranslate"
+          [attr.aria-label]="'COMMON.VIEW' | appTranslate"
+          (click)="onViewOffice(office)"
+        >
+          <ion-icon name="eye-outline"></ion-icon>
+        </ion-button>
         <ion-button
           fill="clear"
           color="primary"
@@ -93,6 +105,10 @@ export class OfficesListComponent implements OnInit {
 
   onCreateOffice(): void {
     this.router.navigate(['/organization/offices/create']);
+  }
+
+  onViewOffice(office: GetOfficesResponse): void {
+    void this.router.navigate(['/organization/offices/view', office.id]);
   }
 
   onEditOffice(office: GetOfficesResponse): void {

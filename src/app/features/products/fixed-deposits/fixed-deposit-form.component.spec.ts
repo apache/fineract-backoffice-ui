@@ -211,7 +211,7 @@ describe('FixedDepositAccountFormComponent', () => {
       depositAmount: 1000,
       depositPeriod: 12,
       depositPeriodFrequencyId: 2,
-      nominalAnnualInterestRate: 5.0,
+      nominalAnnualInterestRate: 5,
     });
     component.submittedOnDate.set(SUBMITTED_ON);
 
@@ -231,7 +231,7 @@ describe('FixedDepositAccountFormComponent', () => {
       depositAmount: 2000,
       depositPeriod: 24,
       depositPeriodFrequencyId: 2,
-      nominalAnnualInterestRate: 6.0,
+      nominalAnnualInterestRate: 6,
     });
     component.submittedOnDate.set(SUBMITTED_ON);
 

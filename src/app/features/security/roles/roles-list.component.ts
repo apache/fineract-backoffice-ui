@@ -42,6 +42,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.roles"
       helpTextKey="HELP.ROLES_DESC"
       createButtonLabel="ROLES.CREATE"
+      createPermission="CREATE_ROLE"
       [columns]="columns"
       [data]="roles()"
       [totalRecords]="roles().length"

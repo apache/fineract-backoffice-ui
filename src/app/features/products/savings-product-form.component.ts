@@ -46,12 +46,21 @@ import {
 } from '../../api';
 import { ProductAccountingSectionComponent } from './accounting/product-accounting-section.component';
 import {
+  AdvancedAccountingMappingsComponent,
+  ChargeOption,
+  PaymentTypeOption,
+} from './accounting/advanced-accounting-mappings.component';
+import {
   ACCOUNTING_RULE,
   AccountingMappings,
   GlAccountOptions,
   SAVINGS_ACCOUNTING_FIELDS,
   mappingsForRule,
   mappingsFromResponse,
+  AdvancedAccountingMappings,
+  advancedMappingsForRequest,
+  advancedMappingsFromResponse,
+  emptyAdvancedMappings,
 } from './accounting/product-accounting.model';
 
 @Component({
@@ -61,6 +70,7 @@ import {
     FormsModule,
     TranslateModule,
     ProductAccountingSectionComponent,
+    AdvancedAccountingMappingsComponent,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -206,6 +216,15 @@ import {
               (mappingsChange)="accountingMappings.set($event)"
             ></app-product-accounting-section>
 
+            <app-advanced-accounting-mappings
+              [accountingRule]="product().accountingRule"
+              [accountOptions]="accountingMappingOptions()"
+              [paymentTypeOptions]="paymentTypeOptions()"
+              [charges]="productCharges()"
+              [mappings]="advancedMappings()"
+              (mappingsChange)="advancedMappings.set($event)"
+            ></app-advanced-accounting-mappings>
+
             <div class="form-actions">
               <ion-button
                 id="savings-product-cancel-btn"
@@ -278,6 +297,12 @@ export class SavingsProductFormComponent implements OnInit {
   readonly accountingRuleOptions = signal<{ id?: number; value?: string }[]>([]);
   readonly accountingMappings = signal<AccountingMappings>({});
 
+  /** The advanced overrides — see the loan form for why these are held apart from the base ids. */
+  readonly advancedMappings = signal<AdvancedAccountingMappings>(emptyAdvancedMappings());
+  readonly paymentTypeOptions = signal<PaymentTypeOption[]>([]);
+  /** Charges the product carries; the tenant catalogue would invite mappings that never fire. */
+  readonly productCharges = signal<ChargeOption[]>([]);
+
   readonly product = signal<PostSavingsProductsRequest>({
     currencyCode: 'USD',
     digitsAfterDecimal: 2,
@@ -296,6 +321,9 @@ export class SavingsProductFormComponent implements OnInit {
       );
       this.accountingRuleOptions.set(
         Array.from((raw['accountingRuleOptions'] as { id?: number; value?: string }[]) ?? []),
+      );
+      this.paymentTypeOptions.set(
+        Array.from((raw['paymentTypeOptions'] as PaymentTypeOption[]) ?? []),
       );
     });
 
@@ -335,6 +363,10 @@ export class SavingsProductFormComponent implements OnInit {
           (data as unknown as Record<string, unknown>)['accountingMappings'] as object,
         ),
       );
+      this.advancedMappings.set(advancedMappingsFromResponse(data));
+      this.productCharges.set(
+        ((data as unknown as Record<string, unknown>)['charges'] as ChargeOption[]) ?? [],
+      );
     });
   }
 
@@ -342,6 +374,7 @@ export class SavingsProductFormComponent implements OnInit {
   private buildRequest(): PostSavingsProductsRequest {
     return {
       ...this.product(),
+      ...advancedMappingsForRequest(this.product().accountingRule, this.advancedMappings()),
       ...mappingsForRule(
         this.accountingFields,
         this.product().accountingRule ?? ACCOUNTING_RULE.NONE,

@@ -20,7 +20,7 @@
 import { Component, inject, signal } from '@angular/core';
 
 import { TranslateModule } from '@ngx-translate/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, merge, of } from 'rxjs';
 import { catchError, map, startWith, switchMap, tap } from 'rxjs/operators';
 import {
@@ -37,6 +37,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
   selector: 'app-centers-list',
   standalone: true,
   imports: [
+    RouterModule,
     TranslateModule,
     StatusBadgeComponent,
     DataTableComponent,
@@ -51,6 +52,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       title="nav.centers"
       helpTextKey="HELP.CENTERS_DESC"
       createButtonLabel="Create Center"
+      createPermission="CREATE_CENTER"
       [columns]="columns"
       [data]="centers()"
       [totalRecords]="totalRecords"
@@ -60,6 +62,12 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       [pageIndex]="pageIndex()"
       (pageChange)="onPage($event)"
     >
+      <ng-template appCellTemplate="name" let-center>
+        <a [routerLink]="['/centers/view', center.id]" data-testid="center-name-link">
+          {{ center.name }}
+        </a>
+      </ng-template>
+
       <ng-template appCellTemplate="status" let-center>
         <app-status-badge [status]="center.status?.value"></app-status-badge>
       </ng-template>

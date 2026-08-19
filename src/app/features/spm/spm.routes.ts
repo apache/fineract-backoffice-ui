@@ -17,6 +17,8 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const SPM_ROUTES: Routes = [
@@ -27,11 +29,15 @@ export const SPM_ROUTES: Routes = [
   },
   {
     path: 'surveys/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'REGISTER_SURVEY' },
     loadComponent: () =>
       import('./surveys/spm-surveys-form.component').then((m) => m.SpmSurveysFormComponent),
   },
   {
     path: 'surveys/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'REGISTER_SURVEY' },
     loadComponent: () =>
       import('./surveys/spm-surveys-form.component').then((m) => m.SpmSurveysFormComponent),
   },
@@ -47,6 +53,8 @@ export const SPM_ROUTES: Routes = [
   },
   {
     path: 'likelihood',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_LIKELIHOOD' },
     loadComponent: () =>
       import('./likelihood/likelihood.component').then((m) => m.LikelihoodComponent),
   },

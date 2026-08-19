@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   IonCard,
@@ -39,6 +39,8 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ConfigService } from '../../core/services/config.service';
 import { ClientService, LoansService, SavingsAccountService } from '../../api';
+import { AuthService } from '../../core/services/auth.service';
+import { HasPermissionDirective } from '../../shared';
 import {
   DonutChartComponent,
   ChartData,
@@ -66,12 +68,13 @@ import {
     RouterModule,
     DonutChartComponent,
     NgClass,
+    HasPermissionDirective,
   ],
   template: `
     <div class="dashboard-container">
       <ion-grid class="widgets-grid-container">
         <ion-row>
-          <ion-col size="12" size-sm="6" size-lg="3">
+          <ion-col size="12" size-sm="6" size-lg="3" *appHasPermission="'READ_CLIENT'">
             <ion-card
               class="widget-card clients"
               id="dashboard-clients-widget"
@@ -94,7 +97,7 @@ import {
             </ion-card>
           </ion-col>
 
-          <ion-col size="12" size-sm="6" size-lg="3">
+          <ion-col size="12" size-sm="6" size-lg="3" *appHasPermission="'READ_LOAN'">
             <ion-card
               class="widget-card loans"
               id="dashboard-loans-widget"
@@ -119,7 +122,7 @@ import {
             </ion-card>
           </ion-col>
 
-          <ion-col size="12" size-sm="6" size-lg="3">
+          <ion-col size="12" size-sm="6" size-lg="3" *appHasPermission="'READ_SAVINGSACCOUNT'">
             <ion-card
               class="widget-card savings"
               id="dashboard-savings-widget"
@@ -165,7 +168,12 @@ import {
 
       <div class="dashboard-layout">
         <div class="main-column">
-          <ion-card class="approval-card">
+          <!--
+            OR, not AND: a user who can see one kind of pending approval should get the
+            card for it. A user who can see neither would otherwise be shown a reassuring
+            "no pending approvals" that only means they were not allowed to look.
+          -->
+          <ion-card class="approval-card" *appHasPermission="['READ_LOAN', 'READ_SAVINGSACCOUNT']">
             <ion-card-header>
               <ion-card-title>
                 <ion-icon name="time-outline"></ion-icon>
@@ -227,7 +235,7 @@ import {
         </div>
 
         <div class="side-column">
-          <ion-card class="chart-card">
+          <ion-card class="chart-card" *appHasPermission="'READ_LOAN'">
             <ion-card-header>
               <ion-card-title>
                 <ion-icon name="pie-chart-outline"></ion-icon>
@@ -239,7 +247,7 @@ import {
             </ion-card-content>
           </ion-card>
 
-          <ion-card class="chart-card">
+          <ion-card class="chart-card" *appHasPermission="'READ_SAVINGSACCOUNT'">
             <ion-card-header>
               <ion-card-title>
                 <ion-icon name="pie-chart-outline"></ion-icon>
@@ -496,6 +504,7 @@ import {
 })
 export class SystemStatusComponent implements OnInit {
   protected readonly configService = inject(ConfigService);
+  private readonly authService = inject(AuthService);
   private readonly clientService = inject(ClientService);
   private readonly loansService = inject(LoansService);
   private readonly savingsService = inject(SavingsAccountService);
@@ -505,6 +514,34 @@ export class SystemStatusComponent implements OnInit {
   protected readonly isProd = environment.production;
   protected readonly currentTenant = signal('default');
   readonly isLoading = signal(true);
+
+  /**
+   * Whether this user may read the entity a widget counts.
+   *
+   * The dashboard is the one screen everybody lands on, so it is also the one screen where a
+   * user is guaranteed to meet every widget whether or not their role covers it. Asking for
+   * counts they cannot read produced a row of 403s and their error toasts on arrival — and
+   * because `forkJoin` fails fast, a single refusal zeroed every other metric alongside it.
+   *
+   * Mirrors what `*appHasPermission` does, `rbacEnabled` included, so the request a widget makes
+   * and the widget's own visibility are decided by the same rule.
+   */
+  private canRead(permission: string): boolean {
+    return !this.configService.rbacEnabled() || this.authService.hasPermission(permission);
+  }
+
+  protected readonly canReadClients = computed(() => {
+    this.authService.currentUser();
+    return this.canRead('READ_CLIENT');
+  });
+  protected readonly canReadLoans = computed(() => {
+    this.authService.currentUser();
+    return this.canRead('READ_LOAN');
+  });
+  protected readonly canReadSavings = computed(() => {
+    this.authService.currentUser();
+    return this.canRead('READ_SAVINGSACCOUNT');
+  });
 
   readonly clientCount = signal(0);
   readonly activeLoans = signal(0);
@@ -523,52 +560,66 @@ export class SystemStatusComponent implements OnInit {
   private loadMetrics(): void {
     this.isLoading.set(true);
 
+    // `of(null)` rather than omitting the key: the shape the subscriber reads stays the same
+    // whichever widgets this user can see, so there is one code path instead of two.
+    const skipped = of(null as unknown as Record<string, unknown>);
+
     const metrics$ = forkJoin({
-      clients: this.clientService.getClients(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0,
-        1,
-      ),
-      loanActive: this.loansService.getLoans(
-        undefined,
-        0,
-        1,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        '300',
-      ),
-      loanPending: this.loansService.getLoans(
-        undefined,
-        0,
-        1,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        '100',
-      ),
-      loanClosed: this.loansService.getLoans(
-        undefined,
-        0,
-        1,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        '600',
-      ),
-      savings: this.savingsService.getSavingsaccounts(undefined, 0, 100),
+      clients: !this.canReadClients()
+        ? skipped
+        : this.clientService.getClients(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            0,
+            1,
+          ),
+      loanActive: !this.canReadLoans()
+        ? skipped
+        : this.loansService.getLoans(
+            undefined,
+            0,
+            1,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            '300',
+          ),
+      loanPending: !this.canReadLoans()
+        ? skipped
+        : this.loansService.getLoans(
+            undefined,
+            0,
+            1,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            '100',
+          ),
+      loanClosed: !this.canReadLoans()
+        ? skipped
+        : this.loansService.getLoans(
+            undefined,
+            0,
+            1,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            '600',
+          ),
+      savings: !this.canReadSavings()
+        ? skipped
+        : this.savingsService.getSavingsaccounts(undefined, 0, 100),
     });
 
     metrics$.pipe(catchError(() => of(null))).subscribe((data: Record<string, unknown> | null) => {
@@ -623,11 +674,15 @@ export class SystemStatusComponent implements OnInit {
       }
     });
 
-    // Separately fetch real pending list for the list widget (first 50) using status code 100
+    // Separately fetch real pending list for the list widget (first 50) using status code 100.
+    // Unlike the metrics above this had no `catchError` at all, so a refusal surfaced as an
+    // error toast rather than as an empty widget.
+    if (!this.canReadLoans()) return;
     this.loansService
       .getLoans(undefined, 0, 50, undefined, undefined, undefined, undefined, undefined, '100')
+      .pipe(catchError(() => of(null)))
       .subscribe((data) => {
-        if (data.pageItems) {
+        if (data?.pageItems) {
           this.pendingLoans.set(Array.from(data.pageItems as unknown as Record<string, unknown>[]));
         }
       });

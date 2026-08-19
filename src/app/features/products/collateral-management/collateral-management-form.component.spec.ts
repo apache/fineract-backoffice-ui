@@ -20,9 +20,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CollateralManagementFormComponent } from './collateral-management-form.component';
 import { CollateralManagementService } from '../../../api';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { convertToParamMap } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 

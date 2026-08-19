@@ -21,6 +21,7 @@ import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LoanAccountLockService, LoanAccountLockResponseDTO } from '../../../api';
+import { ConfigService } from '../../../core/services/config.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
   IonButton,
@@ -88,30 +89,38 @@ import {
           }
         </div>
 
-        <hr class="divider" />
+        <!--
+          Placing a lock posts to /v1/internal/loans/{id}/place-lock/{owner}, which Fineract
+          serves only under its test Spring profile and which answers 404 on a normal deployment.
+          The lock *listing* above uses the supported /v1/loans/locked, so only this half is
+          gated rather than the whole screen.
+        -->
+        @if (developerToolsEnabled()) {
+          <hr class="divider" />
 
-        <div class="section">
-          <h3>{{ 'LOAN_ACCOUNT_LOCK.PLACE_LOCK' | translate }}</h3>
+          <div class="section">
+            <h3>{{ 'LOAN_ACCOUNT_LOCK.PLACE_LOCK' | translate }}</h3>
 
-          <ion-item fill="outline">
-            <ion-label position="stacked">{{
-              'LOAN_ACCOUNT_LOCK.LOCK_OWNER' | translate
-            }}</ion-label>
-            <ion-input
-              [attr.aria-label]="'LOAN_ACCOUNT_LOCK.LOCK_OWNER' | translate"
-              type="text"
-              [(ngModel)]="lockOwner"
-            ></ion-input>
-          </ion-item>
+            <ion-item fill="outline">
+              <ion-label position="stacked">{{
+                'LOAN_ACCOUNT_LOCK.LOCK_OWNER' | translate
+              }}</ion-label>
+              <ion-input
+                [attr.aria-label]="'LOAN_ACCOUNT_LOCK.LOCK_OWNER' | translate"
+                type="text"
+                [(ngModel)]="lockOwner"
+              ></ion-input>
+            </ion-item>
 
-          <ion-button
-            color="secondary"
-            [disabled]="isLoading() || !loanId || !lockOwner"
-            (click)="placeLock()"
-          >
-            {{ 'LOAN_ACCOUNT_LOCK.PLACE_LOCK' | translate }}
-          </ion-button>
-        </div>
+            <ion-button
+              color="secondary"
+              [disabled]="isLoading() || !loanId || !lockOwner"
+              (click)="placeLock()"
+            >
+              {{ 'LOAN_ACCOUNT_LOCK.PLACE_LOCK' | translate }}
+            </ion-button>
+          </div>
+        }
       </ion-card-content>
     </ion-card>
   `,
@@ -138,6 +147,10 @@ import {
 })
 export class LoanAccountLockComponent {
   private readonly loanAccountLockService = inject(LoanAccountLockService);
+  private readonly config = inject(ConfigService);
+
+  /** Gates the place-lock half of this screen; see the note in the template. */
+  readonly developerToolsEnabled = this.config.developerToolsEnabled;
   private readonly notifications = inject(NotificationService);
   private readonly translate = inject(TranslateService);
 

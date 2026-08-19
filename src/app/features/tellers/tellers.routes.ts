@@ -17,6 +17,8 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const TELLERS_ROUTES: Routes = [
@@ -26,10 +28,14 @@ export const TELLERS_ROUTES: Routes = [
   },
   {
     path: 'create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_TELLER' },
     loadComponent: () => import('./teller-form.component').then((m) => m.TellerFormComponent),
   },
   {
     path: 'edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_TELLER' },
     loadComponent: () => import('./teller-form.component').then((m) => m.TellerFormComponent),
   },
   {
@@ -39,6 +45,8 @@ export const TELLERS_ROUTES: Routes = [
   },
   {
     path: ':tellerId/cashiers/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'ALLOCATECASHIER_TELLER' },
     loadComponent: () =>
       import('./cashiers/cashier-form.component').then((m) => m.CashierFormComponent),
   },
@@ -53,16 +61,11 @@ export const TELLERS_ROUTES: Routes = [
   },
   {
     path: ':tellerId/cashiers/:cashierId/transactions/:command',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'ALLOCATECASHTOCASHIER_TELLER' },
     loadComponent: () =>
       import('./cashiers/cashier-transaction-form.component').then(
         (m) => m.CashierTransactionFormComponent,
-      ),
-  },
-  {
-    path: 'cashier-journals',
-    loadComponent: () =>
-      import('./cashier-journals/cashier-journals-list.component').then(
-        (m) => m.CashierJournalsListComponent,
       ),
   },
 ];
