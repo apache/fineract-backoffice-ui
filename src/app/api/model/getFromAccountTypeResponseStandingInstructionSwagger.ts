@@ -27,7 +27,7 @@
 
 export interface GetFromAccountTypeResponseStandingInstructionSwagger { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 

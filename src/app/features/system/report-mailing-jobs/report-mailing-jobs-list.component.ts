@@ -43,6 +43,20 @@ import {
 /**
  * Lists scheduled report-mailing jobs with a Run History tab.
  */
+/**
+ * The tabs on this screen, named.
+ *
+ * They were positional strings — '0', '7' — which say nothing at the point of use and shift
+ * meaning whenever a tab is inserted in the middle. The values are still strings because
+ * `ion-segment` compares them as such.
+ */
+export const MAILING_TAB = {
+  jobs: 'jobs',
+  history: 'history',
+} as const;
+
+export type MailingTab = (typeof MAILING_TAB)[keyof typeof MAILING_TAB];
+
 @Component({
   selector: 'app-report-mailing-jobs-list',
   standalone: true,
@@ -62,19 +76,20 @@ import {
   ],
   template: `
     <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
-      <ion-segment-button value="0">
+      <ion-segment-button [value]="TAB.jobs">
         <ion-label>{{ 'nav.reportMailingJobs' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="1">
+      <ion-segment-button [value]="TAB.history">
         <ion-label>{{ 'REPORT_MAILING.RUN_HISTORY' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
 
-    @if (activeTab() === '0') {
+    @if (activeTab() === TAB.jobs) {
       <app-data-table
         title="nav.reportMailingJobs"
         helpTextKey="HELP.REPORT_MAILING_JOBS_DESC"
         createButtonLabel="REPORT_MAILING_JOBS.CREATE"
+        createPermission="CREATE_REPORTMAILINGJOB"
         [columns]="columns"
         [data]="jobs()"
         [totalRecords]="jobs().length"
@@ -106,7 +121,7 @@ import {
         </ng-template>
       </app-data-table>
     }
-    @if (activeTab() === '1') {
+    @if (activeTab() === TAB.history) {
       <div class="history-container">
         @if (historyLoading()) {
           <div class="spinner-wrap">
@@ -182,7 +197,10 @@ import {
 })
 export class ReportMailingJobsListComponent implements OnInit {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
-  readonly activeTab = signal('0');
+  /** Exposed so the template names its tabs instead of numbering them. */
+  protected readonly TAB = MAILING_TAB;
+
+  readonly activeTab = signal<MailingTab>(MAILING_TAB.jobs);
   private readonly jobsService = inject(ReportMailingJobsService);
   private readonly historyService = inject(ListReportMailingJobHistoryService);
   private readonly router = inject(Router);

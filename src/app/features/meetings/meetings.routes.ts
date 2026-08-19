@@ -17,6 +17,8 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const MEETINGS_ROUTES: Routes = [
@@ -27,14 +29,20 @@ export const MEETINGS_ROUTES: Routes = [
   },
   {
     path: ':entityType/:entityId',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_MEETING' },
     loadComponent: () => import('./meetings-list.component').then((m) => m.MeetingsListComponent),
   },
   {
     path: ':entityType/:entityId/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_MEETING' },
     loadComponent: () => import('./meeting-form.component').then((m) => m.MeetingFormComponent),
   },
   {
     path: ':entityType/:entityId/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_MEETING' },
     loadComponent: () => import('./meeting-form.component').then((m) => m.MeetingFormComponent),
   },
 ];

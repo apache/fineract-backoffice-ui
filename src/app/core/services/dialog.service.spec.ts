@@ -102,9 +102,6 @@ describe('DialogService', () => {
     });
   });
 
-  /* eslint-disable sonarjs/assertions-in-tests --
-     These assert with expectAsync().toBeResolvedTo(), which the rule does not
-     recognise as an assertion. Rewriting them would only satisfy the check. */
   describe('confirm', () => {
     it('resolves true only when the dialog reports confirmation', async () => {
       overlay.nextModalResult = true;
@@ -123,7 +120,6 @@ describe('DialogService', () => {
 
       await expectAsync(service.confirm({ title: 'T', message: 'M' })).toBeResolvedTo(false);
     });
-    /* eslint-enable sonarjs/assertions-in-tests */
 
     it('supplies translated default button labels that callers can override', async () => {
       await service.confirm({ title: 'T', message: 'M', confirmText: 'Delete it' });

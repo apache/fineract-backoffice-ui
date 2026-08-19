@@ -48,6 +48,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
       title="MEETINGS.TITLE"
       helpTextKey="HELP.MEETINGS_DESC"
       createButtonLabel="MEETINGS.CREATE"
+      createPermission="CREATE_MEETING"
       [columns]="columns"
       [data]="meetings()"
       [totalRecords]="meetings().length"

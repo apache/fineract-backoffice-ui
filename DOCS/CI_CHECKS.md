@@ -1,3 +1,22 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
 # CI checks
 
 Every check that runs on a pull request, what it actually enforces, and how to run
@@ -12,6 +31,7 @@ npm run lint
 npm run format:check
 npm run i18n:check
 npm run check:icons
+npm run check:a11y-names
 npm run api:surface
 npm test -- --watch=false --browsers=ChromeHeadless
 npm run build
@@ -98,15 +118,42 @@ served minified, so a hand-copied spec fails this check as one 1.4 MB line — r
 ### `i18n-check`
 
 ```bash
-npm run i18n:check       # every referenced key exists in src/assets/i18n/en.json
-npm run check:icons      # every <ion-icon name> is registered in src/app/core/icons.ts
+npm run i18n:check         # every referenced key exists in src/assets/i18n/en.json
+npm run check:icons        # every <ion-icon name> is registered in src/app/core/icons.ts
+npm run check:a11y-names   # every icon-only <ion-button> has an accessible name
 ```
 
-Both failures are invisible at runtime rather than loud: a missing translation key
-renders as the raw key, and an unregistered ionicon renders as blank space with no
-console error.
+All three failures are invisible at runtime rather than loud: a missing translation
+key renders as the raw key, an unregistered ionicon renders as blank space with no
+console error, and an unnamed icon-only button looks perfectly fine on screen while
+announcing itself to a screen reader as "button" and nothing else.
 
 `npm run i18n:check -- --unused` lists orphaned keys.
+
+#### `check:a11y-names`
+
+An `<ion-button>` whose only content is an `<ion-icon>` has no text to compute an
+accessible name from, so it needs `[attr.aria-label]`, bound to the translation key
+that already names the action:
+
+```html
+<ion-button [attr.aria-label]="'COMMON.EDIT' | translate" [appTooltip]="'COMMON.EDIT' | translate">
+  <ion-icon name="create-outline"></ion-icon>
+</ion-button>
+```
+
+Two things look like they already do this and do not:
+
+- **`[appTooltip]`** sets `aria-describedby`. A description is not a name. It is never
+  consulted by the accessible name computation, it only exists 300ms after hover or
+  focus, and a screen reader user reading in browse mode never triggers it.
+- **`title`** names the wrong element. `<ion-button>` renders a native `<button>` into
+  its shadow root and that inner element is what carries `role=button`. Ionic forwards
+  `aria-label` to it but not `title`, so the title lands on the outer host, which the
+  accessibility tree exposes as `role=generic`, leaving the button itself anonymous.
+
+An `aria-label` on the `<ion-icon>` does count, because name-from-content descends into
+children, and the check accepts it.
 
 ### `test`
 
@@ -194,6 +241,11 @@ npx --no-install license-checker --production \
 Two separate things: every source file carries the ASF header, and every
 production dependency has a compatible licence.
 
+Every licence in that list is ASF Category A. Adding one is a decision about what
+the project may redistribute, not a way to make a build pass — a Category B
+dependency may not ship in a source release at all. That constraint is why the UI
+carries no webfont; see `DOCS/FONTS.md`.
+
 The header check covers `src`, `deploy`, `.github`, `scripts` and `e2e`. **A new
 `.github/workflows/*.yml` needs the header too** — that catches people out.
 `src/app/api/` is excluded.
@@ -239,16 +291,17 @@ gates are the machine-checkable part of what would have to change for that line 
 come out. Each is documented at its definition in `scripts/ga-check.mjs`, against the
 trust boundaries in `security.md`.
 
-| Gate                 | Status today | What it wants                                                                |
-| -------------------- | ------------ | ---------------------------------------------------------------------------- |
-| `headers`            | **fail**     | `deploy/nginx.conf` sets CSP (or `X-Frame-Options`), HSTS, nosniff, referrer |
-| `api-url-validation` | **fail**     | `ConfigService.setApiUrl()` validates against an allow-list                  |
-| `auth-header-scope`  | **fail**     | `authInterceptor` does not send `Authorization` to a foreign origin          |
-| `xss-sinks`          | pass         | no `bypassSecurityTrust*`, `[innerHTML]`, `document.write`                   |
-| `login-hosts`        | **fail**     | the server picker offers no third-party hosts                                |
-| `adapter-boundary`   | advisory     | the suppressions backlog only falls                                          |
-| `api-surface`        | pass         | as `api-surface` above                                                       |
-| `deps`               | pass         | no high/critical advisories in the **production** tree                       |
+| Gate                 | Status today | What it wants                                                                         |
+| -------------------- | ------------ | ------------------------------------------------------------------------------------- |
+| `headers`            | **fail**     | `deploy/nginx.conf.template` sets CSP (or `X-Frame-Options`), HSTS, nosniff, referrer |
+| `api-url-validation` | **fail**     | `ConfigService.setApiUrl()` validates against an allow-list                           |
+| `auth-header-scope`  | **fail**     | `authInterceptor` does not send `Authorization` to a foreign origin                   |
+| `xss-sinks`          | pass         | no `bypassSecurityTrust*`, `[innerHTML]`, `document.write`                            |
+| `login-hosts`        | **fail**     | the server picker offers no third-party hosts                                         |
+| `adapter-boundary`   | advisory     | the suppressions backlog only falls                                                   |
+| `api-surface`        | pass         | as `api-surface` above                                                                |
+| `deps`               | pass         | no high/critical advisories in the **production** tree                                |
+| `external-fonts`     | pass         | no `fonts.googleapis.com` / `fonts.gstatic.com` in source or in `dist/`               |
 
 Two conventions worth knowing:
 

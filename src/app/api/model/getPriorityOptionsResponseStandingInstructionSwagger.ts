@@ -27,7 +27,7 @@
 
 export interface GetPriorityOptionsResponseStandingInstructionSwagger { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 

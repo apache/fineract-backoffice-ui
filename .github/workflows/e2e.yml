@@ -18,6 +18,17 @@
 name: E2E Tests
 
 on:
+  # Every push, on every branch. The suite is the only thing that exercises this application
+  # against a real Fineract, and waiting for a pull request to open means a branch can be several
+  # commits deep in a broken state before anything says so. It costs a stack bring-up per push;
+  # the concurrency rule below is what keeps that from compounding.
+  push:
+    branches:
+      - '**'
+  # Kept alongside `push` so pull requests from forks are covered: a fork's pushes land in the
+  # fork, not here, so `push` alone would leave external contributions untested. A branch in this
+  # repository with an open pull request will therefore get both runs — same commit, tested twice.
+  # Dropping this trigger removes the duplicate at the cost of fork coverage.
   pull_request:
     branches:
       - main
@@ -25,8 +36,11 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  # Superseded runs are cancelled everywhere except the long-lived branches, where the point of
+  # the run is the record that this commit passed. Without this, pushing three times in five
+  # minutes queues three full Fineract bring-ups.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
 
 # Granted per job rather than here: a workflow-level `pull-requests: write` hands
 # that token to every step in every job, including the ones that run npm install
@@ -170,6 +184,76 @@ jobs:
           script: |
             const upsert = require('./.github/scripts/upsert-e2e-comment.js');
             await upsert({ github, context });
+
+  two-factor:
+    name: E2E (two-factor, real Fineract)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Generate Local SSL Certificates for Dev Server
+        run: |
+          mkdir -p ssl
+          openssl req -new -x509 -keyout ssl/localhost.key -out ssl/localhost.crt -days 365 -nodes -subj "/CN=localhost"
+
+      # A separate instance from the `backend` job, not a variant of it.
+      # `fineract.security.2fa.enabled` is process-wide: with it on, every endpoint except
+      # /v1/twofactor answers 403 until a one-time token has been validated, so the two suites
+      # cannot share a Fineract. The script also starts a mail catcher and points Fineract's SMTP
+      # settings at it, because the one-time token is delivered by email and nothing is persisted
+      # before the send — a failed send issues no token at all.
+      - name: Start Fineract with two-factor authentication
+        run: bash scripts/e2e-stack-2fa.sh
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run two-factor E2E tests
+        env:
+          FINERACT_SERVER_URL: '/fineract-provider/api/v1'
+          FINERACT_TENANT_ID: 'default'
+          FINERACT_USERNAME: 'mifos'
+          FINERACT_PASSWORD: 'password'
+          MAILPIT_URL: 'http://localhost:8025'
+          PLAYWRIGHT_HTML_OPEN: 'never'
+          PLAYWRIGHT_OUTPUT_DIR: ${{ runner.temp }}/e2e-output-2fa
+        run: npx playwright test --project=two-factor --workers=1 --reporter=line,html
+
+      - name: Print Fineract logs on failure
+        if: failure()
+        run: |
+          docker compose -f deploy/docker-compose-e2e.yml -f deploy/docker-compose-e2e-2fa.yml \
+            logs --tail=100 fineract-backend mailpit
+
+      - name: Upload report and videos
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: playwright-report-two-factor
+          path: |
+            playwright-report/
+            ${{ runner.temp }}/e2e-output-2fa/
+          if-no-files-found: warn
+          retention-days: 7
 
   backend:
     name: E2E (real Fineract)

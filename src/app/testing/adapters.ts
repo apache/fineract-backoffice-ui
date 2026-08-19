@@ -34,6 +34,7 @@ import {
   StorageKey,
   StorageScope,
   ToastRequest,
+  TranslateParams,
 } from '../core/adapters';
 
 /**
@@ -117,12 +118,24 @@ export class FakeI18nAdapter implements I18nAdapter {
   /** Keys with an entry here resolve to it; everything else echoes. */
   readonly catalogue = new Map<string, string>();
 
-  translate(key: string): string {
-    return this.catalogue.get(key) ?? key;
+  /**
+   * Echoes the key, or the catalogue entry, with `{{param}}` placeholders filled in.
+   *
+   * The interpolation is not decoration. Without it a string assembled from parameters — the
+   * permission a control is missing, a count, a name — resolves to the bare key here, so a
+   * spec asserting on the assembled text can only ever assert that a key was used. That makes
+   * the composition itself untestable, which is the half most likely to be wrong.
+   */
+  translate(key: string, params?: TranslateParams): string {
+    const template = this.catalogue.get(key) ?? key;
+    if (!params) return template;
+    return template.replaceAll(/\{\{\s*(\w+)\s*\}\}/g, (match, name: string) =>
+      name in params ? String(params[name]) : match,
+    );
   }
 
-  translateAsync(key: string): Observable<string> {
-    return of(this.translate(key));
+  translateAsync(key: string, params?: TranslateParams): Observable<string> {
+    return of(this.translate(key, params));
   }
 
   use(lang: string): Observable<void> {

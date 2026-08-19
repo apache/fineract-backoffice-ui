@@ -24,7 +24,15 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { SidebarService } from '../core/services/sidebar.service';
-import { NavigationConfigService } from '../core/services/navigation-config.service';
+import { AuthService } from '../core/services/auth.service';
+import { summarisePermissions } from '../shared/pipes/permission-summary.pipe';
+import { NavItemConfig, NavigationConfigService } from '../core/services/navigation-config.service';
+
+/** `READ_GLACCOUNT` -> `GLACCOUNT`. Null when the code is not verb-and-entity shaped. */
+function entityOf(code: string): string | null {
+  const at = code.trim().indexOf('_');
+  return at > 0 ? code.trim().slice(at + 1) : null;
+}
 
 /**
  * Responsive sidebar component for primary application navigation.
@@ -76,6 +84,7 @@ import { NavigationConfigService } from '../core/services/navigation-config.serv
               routerLinkActive="active"
               class="nav-item"
               [class.sub-item]="depth > 0"
+              [attr.title]="capabilities(item)"
             >
               @if (item.icon) {
                 <ion-icon class="nav-icon" [name]="item.icon"></ion-icon>
@@ -230,4 +239,32 @@ import { NavigationConfigService } from '../core/services/navigation-config.serv
 export class SidebarComponent {
   protected readonly sidebarService = inject(SidebarService);
   protected readonly navigationConfig = inject(NavigationConfigService);
+  private readonly authService = inject(AuthService);
+
+  /**
+   * What the signed-in user can do in the module a nav entry leads to, as a hover hint.
+   *
+   * Only entries the user can already reach are in the tree — a refused one is filtered out
+   * rather than shown greyed, because a menu is a list of destinations and a destination that
+   * is not theirs is not a destination. So this never has to say "you cannot"; it says what
+   * they will find when they arrive, which is the part that is not obvious from a one-word
+   * label like "Clients".
+   *
+   * Derived from the codes the user actually holds for that entity, not from the single code
+   * the entry is gated on: holding `READ_CLIENT` and `CREATE_CLIENT` should read as both.
+   */
+  protected capabilities(item: NavItemConfig): string | null {
+    const gate = item.requiredPermissions;
+    if (!gate) return null;
+    const entity = entityOf(Array.isArray(gate) ? gate[0] : gate);
+    if (!entity) return null;
+
+    const held = (this.authService.currentUser()?.permissions ?? []).filter(
+      (code) => entityOf(code) === entity,
+    );
+    // A superuser holds ALL_FUNCTIONS rather than the individual codes, so there is nothing
+    // specific to enumerate and a generic "you can do everything" is noise on every item.
+    if (held.length === 0) return null;
+    return summarisePermissions(held);
+  }
 }

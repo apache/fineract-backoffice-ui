@@ -43,13 +43,22 @@
   box-sizing: border-box;
 }
 
+/* The UI uses the platform's own interface font — no webfont is downloaded, from this origin
+   or any other. Inter used to be pulled from Google Fonts, which made the production build fail
+   whenever fonts.googleapis.com was unreachable and, at runtime, asked the browser for binaries
+   that `deploy/nginx.conf`'s `font-src 'self' data:` blocked outright. The deployed UI has
+   therefore always rendered in this stack; naming it explicitly is what the container already
+   showed users. `system-ui` leads so Linux and Android resolve their real UI font instead of
+   falling through to bare `sans-serif`. See DOCS/FONTS.md. */
 body {
   font-family:
-    'Inter',
+    system-ui,
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
     Roboto,
+    'Helvetica Neue',
+    Arial,
     sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);

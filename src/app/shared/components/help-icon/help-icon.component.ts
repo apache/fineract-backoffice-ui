@@ -20,7 +20,7 @@
 import { input, Component } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { TooltipDirective } from '../../directives/tooltip.directive';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 
 /**
  * Inline help affordance rendering the BFSI definition for a field or table.
@@ -31,14 +31,14 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-help-icon',
   standalone: true,
-  imports: [IonIcon, TranslateModule, TooltipDirective],
+  imports: [IonIcon, TranslatePipe, TooltipDirective],
   template: `
     <ion-icon
       class="help-icon"
       name="help-circle-outline"
       data-testid="help-icon"
-      [appTooltip]="helpTextKey() | translate"
-      [attr.aria-label]="helpTextKey() | translate"
+      [appTooltip]="helpTextKey() | appTranslate"
+      [attr.aria-label]="helpTextKey() | appTranslate"
       role="img"
     ></ion-icon>
   `,

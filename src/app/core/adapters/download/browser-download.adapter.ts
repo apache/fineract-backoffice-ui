@@ -49,7 +49,7 @@ export class BrowserDownloadAdapter implements DownloadAdapter {
       anchor.download = this.sanitise(filename);
       // Firefox ignores `click()` on an anchor that is not in the document. Chrome and Safari
       // do not care, which is why half the call sites this replaces omitted it and worked.
-      document.body.appendChild(anchor);
+      document.body.append(anchor);
       anchor.click();
       anchor.remove();
     } finally {
@@ -83,7 +83,7 @@ export class BrowserDownloadAdapter implements DownloadAdapter {
       // The characters Windows refuses in a filename, plus control characters. Spaces are
       // deliberately kept: `Client Statement 2026.pdf` is a perfectly good name.
       // eslint-disable-next-line no-control-regex -- control characters are exactly the target
-      .replace(/[:*?"<>|\u0000-\u001f]/g, '_')
+      .replaceAll(/[:*?"<>|\u0000-\u001F]/g, '_')
       // A leading dot hides the file on Unix; a leading dash reads as a flag to shell tools.
       .replace(/^[.\-\s]+/, '')
       .trim();

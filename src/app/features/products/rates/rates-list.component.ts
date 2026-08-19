@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.rates"
       helpTextKey="HELP.RATES_DESC"
       createButtonLabel="RATES.CREATE"
+      createPermission="CREATE_RATE"
       [columns]="columns"
       [data]="rates()"
       [totalRecords]="rates().length"

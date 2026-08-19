@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="INTEREST_PAUSES.TITLE"
       helpTextKey="HELP.INTEREST_PAUSES_DESC"
       createButtonLabel="INTEREST_PAUSES.CREATE"
+      createPermission="CREATE_INTEREST_PAUSE"
       [columns]="columns"
       [data]="pauses()"
       [totalRecords]="pauses().length"

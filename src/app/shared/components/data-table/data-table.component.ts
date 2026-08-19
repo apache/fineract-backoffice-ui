@@ -45,6 +45,7 @@ import { PaginatorComponent } from '../paginator/paginator.component';
 import { PageEvent, SortDirection, SortEvent } from '../../models/table.model';
 import { CellTemplateDirective } from './cell-template.directive';
 import { TooltipDirective } from '../../directives/tooltip.directive';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 export interface ColumnDef {
   key: string;
@@ -91,6 +92,7 @@ const NEXT_DIRECTION: Record<SortDirection, SortDirection> = {
     SearchFilterComponent,
     PaginatorComponent,
     TooltipDirective,
+    HasPermissionDirective,
   ],
   template: `
     <ion-card class="data-table-card">
@@ -108,7 +110,12 @@ const NEXT_DIRECTION: Record<SortDirection, SortDirection> = {
         </ion-card-title>
         <div class="header-actions">
           @if (createButtonLabel()) {
-            <ion-button data-testid="data-table-create" color="primary" (click)="onCreate()">
+            <ion-button
+              data-testid="data-table-create"
+              color="primary"
+              *appHasPermission="createPermission()"
+              (click)="onCreate()"
+            >
               <ion-icon name="add-outline" slot="start"></ion-icon>
               {{ createButtonLabel() | translate }}
             </ion-button>
@@ -357,6 +364,16 @@ export class DataTableComponent<T> {
   readonly title = input('');
   readonly helpTextKey = input('');
   readonly createButtonLabel = input('');
+  /**
+   * Permission the create button requires, if any.
+   *
+   * The route behind the button is gated too, so leaving this unset is safe rather than
+   * dangerous — a user without the permission simply meets Access Denied instead of being
+   * refused up front. Setting it is about not offering the action at all: a button that leads
+   * only to a refusal is a worse answer than no button. An empty value shows it to everyone,
+   * which keeps every list that has not been reviewed behaving exactly as before.
+   */
+  readonly createPermission = input<string | string[]>('');
   readonly columns = input<ColumnDef[]>([]);
   readonly data = input<T[]>([]);
   /** Total number of records. If server-side, this comes from API response. */

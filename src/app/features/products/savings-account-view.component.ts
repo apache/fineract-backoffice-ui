@@ -29,7 +29,11 @@ import {
   SavingsAccountTransactionData,
   SavingsAccountChargeData,
 } from '../../api';
-import { StatusBadgeComponent, HasPermissionDirective } from '../../shared';
+import { StatusBadgeComponent, RequiresPermissionDirective } from '../../shared';
+import { EntityNotesComponent } from '../../shared/components/entity-notes/entity-notes.component';
+import { EntityDocumentsComponent } from '../../shared/components/entity-documents/entity-documents.component';
+import { EntityDatatablesComponent } from '../../shared/components/entity-datatables/entity-datatables.component';
+import { SavingsStandingInstructionsTabComponent } from './savings/savings-standing-instructions-tab.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { DialogService } from '../../core/services/dialog.service';
 import {
@@ -69,15 +73,38 @@ import {
   resolveAccountRoutePrefix,
 } from '../../core/utils/account-type-resolver';
 
+/**
+ * The tabs on this screen, named.
+ *
+ * They were positional strings — '0', '7' — which say nothing at the point of use and shift
+ * meaning whenever a tab is inserted in the middle. The values are still strings because
+ * `ion-segment` compares them as such.
+ */
+export const SAVINGS_TAB = {
+  overview: 'overview',
+  transactions: 'transactions',
+  charges: 'charges',
+  notes: 'notes',
+  documents: 'documents',
+  standingInstructions: 'standingInstructions',
+  customFields: 'customFields',
+} as const;
+
+export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
+
 @Component({
   selector: 'app-savings-account-view',
   standalone: true,
   imports: [
+    EntityNotesComponent,
+    EntityDocumentsComponent,
+    EntityDatatablesComponent,
+    SavingsStandingInstructionsTabComponent,
     RouterModule,
     TranslateModule,
     CdkTableModule,
     StatusBadgeComponent,
-    HasPermissionDirective,
+    RequiresPermissionDirective,
     DecimalPipe,
     NgClass,
     IonIcon,
@@ -127,7 +154,7 @@ import {
               @if (account()?.status?.submittedAndPendingApproval) {
                 <ion-button
                   color="secondary"
-                  *appHasPermission="'APPROVE_SAVINGSACCOUNT'"
+                  appRequiresPermission="APPROVE_SAVINGSACCOUNT"
                   (click)="onSavingsAction('approve')"
                   [appTooltip]="'SAVINGS.APPROVE' | translate"
                 >
@@ -140,7 +167,7 @@ import {
                   color="danger"
                   fill="outline"
                   data-testid="savings-reject"
-                  *appHasPermission="'REJECT_SAVINGSACCOUNT'"
+                  appRequiresPermission="REJECT_SAVINGSACCOUNT"
                   (click)="onDatedCommand('reject', 'rejectedOnDate')"
                 >
                   <ion-icon name="close-circle-outline"></ion-icon>
@@ -150,7 +177,7 @@ import {
                   color="medium"
                   fill="outline"
                   data-testid="savings-withdrawn"
-                  *appHasPermission="'WITHDRAW_SAVINGSACCOUNT'"
+                  appRequiresPermission="WITHDRAW_SAVINGSACCOUNT"
                   (click)="onDatedCommand('withdrawnByApplicant', 'withdrawnOnDate')"
                 >
                   <ion-icon name="arrow-undo-outline"></ion-icon>
@@ -160,7 +187,7 @@ import {
               @if (account()?.status?.approved) {
                 <ion-button
                   color="primary"
-                  *appHasPermission="'ACTIVATE_SAVINGSACCOUNT'"
+                  appRequiresPermission="ACTIVATE_SAVINGSACCOUNT"
                   (click)="onSavingsAction('activate')"
                   [appTooltip]="'SAVINGS.ACTIVATE' | translate"
                 >
@@ -171,7 +198,7 @@ import {
               @if (account()?.status?.active) {
                 <ion-button
                   color="danger"
-                  *appHasPermission="'CLOSE_SAVINGSACCOUNT'"
+                  appRequiresPermission="CLOSE_SAVINGSACCOUNT"
                   (click)="onSavingsAction('close')"
                   [appTooltip]="'SAVINGS.CLOSE' | translate"
                 >
@@ -181,7 +208,7 @@ import {
               }
               <ion-button
                 color="primary"
-                *appHasPermission="'DEPOSIT_SAVINGSACCOUNT'"
+                appRequiresPermission="DEPOSIT_SAVINGSACCOUNT"
                 (click)="onTransaction('deposit')"
                 [appTooltip]="'SAVINGS.DEPOSIT_CASH' | translate"
               >
@@ -190,7 +217,7 @@ import {
               </ion-button>
               <ion-button
                 color="danger"
-                *appHasPermission="'WITHDRAW_SAVINGSACCOUNT'"
+                appRequiresPermission="WITHDRAW_SAVINGSACCOUNT"
                 (click)="onTransaction('withdrawal')"
                 [appTooltip]="'SAVINGS.WITHDRAW_CASH' | translate"
               >
@@ -337,18 +364,33 @@ import {
 
         <!-- Tabs Section -->
         <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
-          <ion-segment-button value="0">
+          <ion-segment-button [value]="TAB.overview">
             <ion-label>Overview</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="1">
+          <ion-segment-button [value]="TAB.transactions" data-testid="savings-tab-transactions">
             <ion-label>{{ 'COMMON.TRANSACTIONS' | translate }}</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="2">
+          <ion-segment-button [value]="TAB.charges">
             <ion-label>{{ 'LOANS.CHARGES' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button [value]="TAB.notes" data-testid="savings-tab-notes">
+            <ion-label>{{ 'SAVINGS.NOTES' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button [value]="TAB.documents" data-testid="savings-tab-documents">
+            <ion-label>{{ 'SAVINGS.DOCUMENTS' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button
+            [value]="TAB.standingInstructions"
+            data-testid="savings-tab-standing-instructions"
+          >
+            <ion-label>{{ 'SAVINGS.STANDING_INSTRUCTIONS' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button [value]="TAB.customFields" data-testid="savings-tab-custom-fields">
+            <ion-label>{{ 'SYSTEM.CUSTOM_FIELDS' | translate }}</ion-label>
           </ion-segment-button>
         </ion-segment>
 
-        @if (activeTab() === '0') {
+        @if (activeTab() === TAB.overview) {
           <div class="tab-content">
             <div class="info-grid">
               <ion-card class="info-card">
@@ -412,7 +454,7 @@ import {
             </div>
           </div>
         }
-        @if (activeTab() === '1') {
+        @if (activeTab() === TAB.transactions) {
           <div class="tab-content">
             <ion-card class="table-card">
               <ion-card-content>
@@ -459,6 +501,38 @@ import {
                       </td>
                     </ng-container>
 
+                    <ng-container cdkColumnDef="actions">
+                      <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACTIONS' | translate }}</th>
+                      <td cdk-cell *cdkCellDef="let tx">
+                        @if (canRelease(tx)) {
+                          <ion-button
+                            fill="clear"
+                            size="small"
+                            [attr.data-testid]="'savings-tx-release-' + tx.id"
+                            [attr.aria-label]="'ACTIONS.RELEASE_AMOUNT' | translate"
+                            (click)="onReleaseAmount(tx)"
+                          >
+                            <ion-icon name="lock-open-outline"></ion-icon>
+                          </ion-button>
+                        } @else if (canUndo(tx)) {
+                          <ion-button
+                            fill="clear"
+                            color="danger"
+                            size="small"
+                            [attr.data-testid]="'savings-tx-undo-' + tx.id"
+                            [attr.aria-label]="'ACTIONS.UNDO_TRANSACTION' | translate"
+                            (click)="onUndoTransaction(tx)"
+                          >
+                            <ion-icon name="arrow-undo-outline"></ion-icon>
+                          </ion-button>
+                        } @else if (tx.reversed) {
+                          <span class="reversed-marker" data-testid="savings-tx-reversed">
+                            {{ 'COMMON.REVERSED' | translate }}
+                          </span>
+                        }
+                      </td>
+                    </ng-container>
+
                     <tr cdk-header-row *cdkHeaderRowDef="transactionColumns"></tr>
                     <tr cdk-row *cdkRowDef="let row; columns: transactionColumns"></tr>
                   </table>
@@ -472,7 +546,7 @@ import {
             </ion-card>
           </div>
         }
-        @if (activeTab() === '2') {
+        @if (activeTab() === TAB.charges) {
           <div class="tab-content">
             <ion-card class="table-card">
               <ion-card-content>
@@ -511,6 +585,39 @@ import {
                 }
               </ion-card-content>
             </ion-card>
+          </div>
+        }
+
+        @if (activeTab() === TAB.notes) {
+          <div class="tab-content">
+            <app-entity-notes resourceType="savings" [resourceId]="accountId"></app-entity-notes>
+          </div>
+        }
+
+        @if (activeTab() === TAB.documents) {
+          <div class="tab-content">
+            <app-entity-documents
+              entityType="savings"
+              [entityId]="accountId"
+            ></app-entity-documents>
+          </div>
+        }
+
+        @if (activeTab() === TAB.standingInstructions) {
+          <div class="tab-content">
+            <app-savings-standing-instructions-tab
+              [savingsAccountId]="accountId"
+              [clientId]="account()?.clientId"
+            ></app-savings-standing-instructions-tab>
+          </div>
+        }
+
+        @if (activeTab() === TAB.customFields) {
+          <div class="tab-content">
+            <app-entity-datatables
+              apptableName="m_savings_account"
+              [entityId]="accountId"
+            ></app-entity-datatables>
           </div>
         }
       </div>
@@ -664,12 +771,19 @@ import {
         opacity: 0.6;
         color: #7f8c8d;
       }
+      .reversed-marker {
+        color: #7f8c8d;
+        font-style: italic;
+      }
     `,
   ],
 })
 export class SavingsAccountViewComponent implements OnInit {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
-  readonly activeTab = signal('0');
+  /** Exposed so the template names its tabs instead of numbering them. */
+  protected readonly TAB = SAVINGS_TAB;
+
+  readonly activeTab = signal<SavingsTab>(SAVINGS_TAB.overview);
   private readonly savingsService = inject(SavingsAccountService);
   private readonly savingsTransactionsService = inject(SavingsAccountTransactionsService);
   private readonly route = inject(ActivatedRoute);
@@ -683,7 +797,7 @@ export class SavingsAccountViewComponent implements OnInit {
   readonly transactions = signal<SavingsAccountTransactionData[]>([]);
   readonly charges = signal<SavingsAccountChargeData[]>([]);
 
-  transactionColumns = ['id', 'date', 'type', 'amount', 'runningBalance'];
+  transactionColumns = ['id', 'date', 'type', 'amount', 'runningBalance', 'actions'];
   chargeColumns = ['name', 'amount', 'outstanding'];
 
   get formattedSubmittedDate(): string {
@@ -768,12 +882,12 @@ export class SavingsAccountViewComponent implements OnInit {
    * `reasonForBlock` drawn from a different code list per block type, which needs its own picker.
    */
   onSimpleCommand(command: string): void {
-    const titleKey = `SAVINGS.${command.replace(/([A-Z])/g, '_$1').toUpperCase()}`;
+    const titleKey = `SAVINGS.${command.replaceAll(/([A-Z])/g, '_$1').toUpperCase()}`;
     from(
       this.dialogService.confirm({
         title: this.translate.instant(titleKey),
         message: this.translate.instant(
-          `SAVINGS.CONFIRM_${command.replace(/([A-Z])/g, '_$1').toUpperCase()}`,
+          `SAVINGS.CONFIRM_${command.replaceAll(/([A-Z])/g, '_$1').toUpperCase()}`,
         ),
       }),
     ).subscribe((confirmed) => {
@@ -810,7 +924,7 @@ export class SavingsAccountViewComponent implements OnInit {
    * is passed in rather than guessed.
    */
   onDatedCommand(command: string, dateField: string): void {
-    const key = command.replace(/([A-Z])/g, '_$1').toUpperCase();
+    const key = command.replaceAll(/([A-Z])/g, '_$1').toUpperCase();
     from(
       this.dialogService.confirm({
         title: this.translate.instant(`SAVINGS.${key}`),
@@ -878,6 +992,85 @@ export class SavingsAccountViewComponent implements OnInit {
           error: () => this.commandFailed(),
         });
     });
+  }
+
+  /**
+   * Whether this row is a hold that still ties up money.
+   *
+   * A hold is `transactionType.amountHold`; once released, Fineract records the id of the
+   * releasing transaction on it. `releaseTransactionId` is `0` — not absent — while the hold
+   * stands, so the check is for a truthy id rather than for the key. Releasing twice is refused
+   * with `validation.msg.amount.is.not.on.hold`, and offering the button anyway would turn a
+   * settled claim into an error toast.
+   */
+  canRelease(transaction: SavingsAccountTransactionData): boolean {
+    const raw = transaction as unknown as Record<string, unknown>;
+    const type = raw['transactionType'] as Record<string, unknown> | undefined;
+    return Boolean(type?.['amountHold']) && !raw['releaseTransactionId'];
+  }
+
+  /**
+   * Whether this row can still be reversed.
+   *
+   * Holds and releases are excluded even though the platform accepts `undo` against them and
+   * answers `200`: a hold is unwound by releasing it, and an undo there reports success without
+   * freeing the money. Already-reversed rows are excluded for the same reason.
+   */
+  canUndo(transaction: SavingsAccountTransactionData): boolean {
+    const raw = transaction as unknown as Record<string, unknown>;
+    const type = raw['transactionType'] as Record<string, unknown> | undefined;
+    return !raw['reversed'] && !type?.['amountHold'] && !type?.['amountRelease'];
+  }
+
+  /**
+   * Frees a held amount.
+   *
+   * `releaseAmount` is addressed to the hold transaction itself, not to the account, and takes no
+   * body — the platform derives the amount from the transaction being released.
+   */
+  onReleaseAmount(transaction: SavingsAccountTransactionData): void {
+    void this.dialogService
+      .confirm({
+        title: this.translate.instant('ACTIONS.RELEASE_AMOUNT'),
+        message: this.translate.instant('ACTIONS.CONFIRM_RELEASE_AMOUNT'),
+      })
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.runTransactionCommand(Number(transaction.id), 'releaseAmount');
+      });
+  }
+
+  /**
+   * Reverses a transaction.
+   *
+   * The row stays in the list, struck through — Fineract marks it `reversed` rather than deleting
+   * it, and the ledger depends on that entry still being there.
+   */
+  onUndoTransaction(transaction: SavingsAccountTransactionData): void {
+    void this.dialogService
+      .confirm({
+        title: this.translate.instant('ACTIONS.UNDO_TRANSACTION'),
+        message: this.translate.instant('ACTIONS.CONFIRM_UNDO_TRANSACTION'),
+        destructive: true,
+      })
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.runTransactionCommand(Number(transaction.id), 'undo');
+      });
+  }
+
+  private runTransactionCommand(transactionId: number, command: string): void {
+    this.savingsTransactionsService
+      .postSavingsaccountsSavingsIdTransactionsTransactionId(
+        this.accountId,
+        transactionId,
+        {},
+        command,
+      )
+      .subscribe({
+        next: () => this.afterCommand(),
+        error: () => this.commandFailed(),
+      });
   }
 
   private runCommand(command: string, payload: Record<string, unknown>): void {

@@ -40,6 +40,20 @@ import {
   DelinquencyBucketResponse,
 } from '../../../api';
 
+/**
+ * The tabs on this screen, named.
+ *
+ * They were positional strings — '0', '7' — which say nothing at the point of use and shift
+ * meaning whenever a tab is inserted in the middle. The values are still strings because
+ * `ion-segment` compares them as such.
+ */
+export const DELINQUENCY_TAB = {
+  ranges: 'ranges',
+  buckets: 'buckets',
+} as const;
+
+export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_TAB];
+
 @Component({
   selector: 'app-delinquency-management',
   standalone: true,
@@ -59,15 +73,15 @@ import {
   template: `
     <div class="management-container">
       <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
-        <ion-segment-button value="0">
+        <ion-segment-button [value]="TAB.ranges">
           <ion-label>{{ 'SYSTEM.DELINQUENCY_RANGES' | translate }}</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="1">
+        <ion-segment-button [value]="TAB.buckets">
           <ion-label>{{ 'SYSTEM.DELINQUENCY_BUCKETS' | translate }}</ion-label>
         </ion-segment-button>
       </ion-segment>
 
-      @if (activeTab() === '0') {
+      @if (activeTab() === TAB.ranges) {
         <div class="tab-content">
           <app-data-table
             title="SYSTEM.DELINQUENCY_RANGES"
@@ -80,7 +94,7 @@ import {
               headerActions
               color="primary"
               [routerLink]="['ranges', 'create']"
-              *appHasPermission="'CREATE_DELINQUENCYRANGE'"
+              *appHasPermission="'CREATE_DELINQUENCY_RANGE'"
             >
               <ion-icon name="add-outline"></ion-icon>
               {{ 'SYSTEM.CREATE_RANGE' | translate }}
@@ -92,7 +106,8 @@ import {
                   fill="clear"
                   color="primary"
                   [routerLink]="['ranges', 'edit', row.id]"
-                  *appHasPermission="'UPDATE_DELINQUENCYRANGE'"
+                  *appHasPermission="'UPDATE_DELINQUENCY_RANGE'"
+                  [attr.aria-label]="'COMMON.EDIT' | translate"
                   [appTooltip]="'COMMON.EDIT' | translate"
                 >
                   <ion-icon name="create-outline"></ion-icon>
@@ -101,7 +116,8 @@ import {
                   fill="clear"
                   color="danger"
                   (click)="onDeleteRange(row.id)"
-                  *appHasPermission="'DELETE_DELINQUENCYRANGE'"
+                  *appHasPermission="'DELETE_DELINQUENCY_RANGE'"
+                  [attr.aria-label]="'COMMON.DELETE' | translate"
                   [appTooltip]="'COMMON.DELETE' | translate"
                 >
                   <ion-icon name="trash-outline"></ion-icon>
@@ -111,7 +127,7 @@ import {
           </app-data-table>
         </div>
       }
-      @if (activeTab() === '1') {
+      @if (activeTab() === TAB.buckets) {
         <div class="tab-content">
           <app-data-table
             title="SYSTEM.DELINQUENCY_BUCKETS"
@@ -124,7 +140,7 @@ import {
               headerActions
               color="primary"
               [routerLink]="['buckets', 'create']"
-              *appHasPermission="'CREATE_DELINQUENCYBUCKET'"
+              *appHasPermission="'CREATE_DELINQUENCY_BUCKET'"
             >
               <ion-icon name="add-outline"></ion-icon>
               {{ 'SYSTEM.CREATE_BUCKET' | translate }}
@@ -142,7 +158,8 @@ import {
                   fill="clear"
                   color="primary"
                   [routerLink]="['buckets', 'edit', row.id]"
-                  *appHasPermission="'UPDATE_DELINQUENCYBUCKET'"
+                  *appHasPermission="'UPDATE_DELINQUENCY_BUCKET'"
+                  [attr.aria-label]="'COMMON.EDIT' | translate"
                   [appTooltip]="'COMMON.EDIT' | translate"
                 >
                   <ion-icon name="create-outline"></ion-icon>
@@ -151,7 +168,8 @@ import {
                   fill="clear"
                   color="danger"
                   (click)="onDeleteBucket(row.id)"
-                  *appHasPermission="'DELETE_DELINQUENCYBUCKET'"
+                  *appHasPermission="'DELETE_DELINQUENCY_BUCKET'"
+                  [attr.aria-label]="'COMMON.DELETE' | translate"
                   [appTooltip]="'COMMON.DELETE' | translate"
                 >
                   <ion-icon name="trash-outline"></ion-icon>
@@ -180,7 +198,10 @@ import {
 })
 export class DelinquencyManagementComponent implements OnInit {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
-  readonly activeTab = signal('0');
+  /** Exposed so the template names its tabs instead of numbering them. */
+  protected readonly TAB = DELINQUENCY_TAB;
+
+  readonly activeTab = signal<DelinquencyTab>(DELINQUENCY_TAB.ranges);
   private readonly delinquencyService = inject(DelinquencyRangeAndBucketsManagementService);
 
   readonly ranges = signal<DelinquencyRangeData[]>([]);

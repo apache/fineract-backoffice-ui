@@ -17,6 +17,8 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const CALENDARS_ROUTES: Routes = [
@@ -27,14 +29,20 @@ export const CALENDARS_ROUTES: Routes = [
   },
   {
     path: ':entityType/:entityId',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_CALENDAR' },
     loadComponent: () => import('./calendars-list.component').then((m) => m.CalendarsListComponent),
   },
   {
     path: ':entityType/:entityId/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_CALENDAR' },
     loadComponent: () => import('./calendar-form.component').then((m) => m.CalendarFormComponent),
   },
   {
     path: ':entityType/:entityId/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_CALENDAR' },
     loadComponent: () => import('./calendar-form.component').then((m) => m.CalendarFormComponent),
   },
 ];

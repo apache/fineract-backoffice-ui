@@ -87,7 +87,13 @@ import {
                 <ion-item>
                   <span>{{ step.stepName }}</span>
                   <span matListItemMeta>
-                    <ion-button fill="clear" type="button" [disabled]="i === 0" (click)="moveUp(i)">
+                    <ion-button
+                      fill="clear"
+                      type="button"
+                      [disabled]="i === 0"
+                      (click)="moveUp(i)"
+                      [attr.aria-label]="'COMMON.MOVE_UP' | translate"
+                    >
                       <ion-icon name="arrow-up-outline"></ion-icon>
                     </ion-button>
                     <ion-button
@@ -95,6 +101,7 @@ import {
                       type="button"
                       [disabled]="i === steps().length - 1"
                       (click)="moveDown(i)"
+                      [attr.aria-label]="'COMMON.MOVE_DOWN' | translate"
                     >
                       <ion-icon name="arrow-down-outline"></ion-icon>
                     </ion-button>

@@ -18,12 +18,14 @@
  */
 
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { SearchAPIService, GetSearchResponse } from '../../api';
-import { NavigationConfigService, NavSearchResult } from '../../core/services/navigation-config.service';
+import {
+  NavigationConfigService,
+  NavSearchResult,
+} from '../../core/services/navigation-config.service';
 import { CdkTableModule } from '@angular/cdk/table';
 import {
   IonButton,

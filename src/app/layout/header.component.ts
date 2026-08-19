@@ -37,8 +37,7 @@ import { TooltipDirective } from '../shared/directives/tooltip.directive';
 
 /** Combined header search result — entity records or navigation shortcuts. */
 type HeaderSearchResult =
-  | { kind: 'entity'; entity: GetSearchResponse }
-  | { kind: 'nav'; nav: NavSearchResult };
+  { kind: 'entity'; entity: GetSearchResponse } | { kind: 'nav'; nav: NavSearchResult };
 
 /**
  * Top-level application header component.
@@ -428,9 +427,9 @@ export class HeaderComponent implements OnInit {
         distinctUntilChanged(),
         switchMap((query) => {
           if (!query || query.length < 2) return of([]);
-          const navResults = this.navigationConfig.searchRoutes(query, 8).map(
-            (nav): HeaderSearchResult => ({ kind: 'nav', nav }),
-          );
+          const navResults = this.navigationConfig
+            .searchRoutes(query, 8)
+            .map((nav): HeaderSearchResult => ({ kind: 'nav', nav }));
           return this.searchService.getSearch(query, 'clients,loans,savings').pipe(
             map((entities) => [
               ...navResults,
@@ -462,7 +461,7 @@ export class HeaderComponent implements OnInit {
       );
     };
     updateTime();
-    setInterval(updateTime, 60000);
+    setInterval(updateTime, 60_000);
   }
 
   onSearchInput(event: Event) {
@@ -490,12 +489,25 @@ export class HeaderComponent implements OnInit {
     }
 
     const entity = result.entity;
-    if (entity.entityType === 'CLIENT') {
-      this.router.navigate(['/clients/view', entity.entityId]);
-    } else if (entity.entityType === 'LOAN') {
-      this.router.navigate(['/loans/view', entity.entityId]);
-    } else if (entity.entityType === 'SAVINGSACCOUNT') {
-      this.router.navigate(['/savings/view', entity.entityId]);
+    switch (entity.entityType) {
+      case 'CLIENT': {
+        this.router.navigate(['/clients/view', entity.entityId]);
+
+        break;
+      }
+      case 'LOAN': {
+        this.router.navigate(['/loans/view', entity.entityId]);
+
+        break;
+      }
+      case 'SAVINGSACCOUNT': {
+        // Savings accounts are routed under products; there is no top-level /savings,
+        // so the old target fell through to the wildcard and showed Not Found.
+        this.router.navigate(['/products/savings-accounts/view', entity.entityId]);
+
+        break;
+      }
+      // No default
     }
   }
 
@@ -506,8 +518,10 @@ export class HeaderComponent implements OnInit {
   }
 
   resultTestId(result: HeaderSearchResult): string {
+    // Slugged rather than raw: a route is full of slashes, and a testid containing them
+    // is awkward to select on from a spec.
     return result.kind === 'nav'
-      ? `search-result-nav-${result.nav.route}`
+      ? `search-result-nav-${result.nav.route.replaceAll('/', '-').replace(/^-/, '')}`
       : `search-result-${result.entity.entityId}`;
   }
 

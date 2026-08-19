@@ -140,7 +140,7 @@ export class BatchOperationsComponent {
     try {
       parsed = JSON.parse(this.batchInput);
       if (!Array.isArray(parsed)) {
-        throw new Error('Input must be a JSON array');
+        throw new TypeError('Input must be a JSON array');
       }
     } catch (e: unknown) {
       this.error.set(e instanceof Error ? e.message : 'Invalid JSON');

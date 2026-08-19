@@ -74,10 +74,20 @@ import {
           <ng-container cdkColumnDef="actions">
             <th cdk-header-cell *cdkHeaderCellDef></th>
             <td cdk-cell *cdkCellDef="let row">
-              <ion-button fill="clear" color="primary" (click)="onEdit(row)">
+              <ion-button
+                fill="clear"
+                color="primary"
+                (click)="onEdit(row)"
+                [attr.aria-label]="'COMMON.EDIT' | translate"
+              >
                 <ion-icon name="create-outline"></ion-icon>
               </ion-button>
-              <ion-button fill="clear" color="danger" (click)="onDelete(row)">
+              <ion-button
+                fill="clear"
+                color="danger"
+                (click)="onDelete(row)"
+                [attr.aria-label]="'COMMON.DELETE' | translate"
+              >
                 <ion-icon name="trash-outline"></ion-icon>
               </ion-button>
             </td>

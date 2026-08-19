@@ -32,7 +32,7 @@
  *   npx playwright test e2e/loan-product-accounting.spec.ts --project=backend --workers=1
  */
 
-import { test, expect, Page } from './fixtures';
+import { test, expect, Page, recordingTimeout } from './fixtures';
 import { login, uniqueSuffix } from './utils/fineract-login';
 import { captureJson } from './utils/capture-response';
 import { ionSelect } from './utils/ionic-locators';
@@ -91,7 +91,7 @@ test.describe('Loan product accounting', () => {
   test('a cash-accounting product is configured, round-trips on edit, and posts to the ledger', async ({
     page,
   }) => {
-    test.setTimeout(480000);
+    test.setTimeout(recordingTimeout(480000));
     await login(page);
 
     const suffix = uniqueSuffix();
@@ -137,6 +137,25 @@ test.describe('Loan product accounting', () => {
     for (const slot of CASH_SLOTS) {
       await selectOption(page, slot.label, accounts[slot.accountClass]);
     }
+
+    // --- One payment channel routed to its own fund source ------------------------------------
+    //
+    // Without this override every collection lands in the same fund source, and a till cannot be
+    // reconciled at close of day. The two charge tables are not exercised here: this form has no
+    // charge picker, so a product it creates carries none, and the tables correctly say so.
+    await expect(page.getByTestId('payment-channel-add')).toBeVisible();
+    await page.getByTestId('payment-channel-add').click();
+    await page.getByTestId('payment-channel-type-0').click();
+    await page.locator('ion-popover ion-radio, ion-popover ion-select-option').first().click();
+    // Both this row and the base slot are labelled "Fund source", so the row is scoped by its
+    // own test id rather than by the label text.
+    await page.getByTestId('payment-channel-account-0').click();
+    await page
+      .locator('ion-popover ion-radio')
+      .filter({ hasText: accounts['Asset'] })
+      .first()
+      .click();
+    await page.keyboard.press('Escape');
 
     const created = await captureJson<{ resourceId: number }>(page, /\/loanproducts$/, 'POST', () =>
       page.getByRole('button', { name: /^save$/i }).click(),

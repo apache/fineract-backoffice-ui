@@ -85,7 +85,6 @@
     "provisioningCriteria": "대손충당금 기준",
     "provisioningEntries": "대손충당금 분개",
     "runAccruals": "미수수익 계산 실행",
-    "cashierJournals": "출납원 저널",
     "hooks": "훅",
     "adhocQuery": "임의 쿼리",
     "sms": "SMS 메시지",
@@ -105,11 +104,8 @@
     "fieldConfiguration": "엔티티 필드 설정",
     "loanProductDetails": "대출 상품 상세",
     "creditBureauConfig": "신용정보기관 설정",
-    "spmMix": "SPM & MIX",
+    "spm": "SPM",
     "spmSurveys": "SPM 설문조사",
-    "mixMapping": "MIX 매핑",
-    "mixReport": "MIX 보고서",
-    "mixTaxonomy": "MIX 분류체계",
     "povertyLine": "빈곤선",
     "likelihood": "가능성",
     "notifications": "알림",
@@ -119,7 +115,11 @@
     "codes": "코드",
     "businessDates": "영업일",
     "accountNumberFormats": "계좌 번호 형식",
-    "templates": "템플릿"
+    "templates": "템플릿",
+    "frequentPostings": "자주 쓰는 분개",
+    "openingBalances": "기초 잔액",
+    "reportDefinitions": "보고서 정의",
+    "workQueues": "승인 대기열"
   },
   "DASHBOARD": {
     "SYSTEM_STATUS": "시스템 운영 상태",
@@ -208,7 +208,9 @@
     "ACTION": "동작",
     "ENTITY": "엔티티",
     "DATE": "날짜",
-    "SELECT_PAGE": "페이지 선택"
+    "SELECT_PAGE": "페이지 선택",
+    "ACCOUNTS": "계좌",
+    "DETAILS": "상세"
   },
   "ACTIONS": {
     "NEW_ACCOUNT": "새 계좌",
@@ -303,7 +305,11 @@
     "CLIENTS_CONTRACTS_DESC": "등록된 모든 고객과 그들의 계약을 조회하고 관리합니다.",
     "LOAN_CHARGES_DESC": "이 대출 계좌에 적용된 수수료 및 비용을 조회하고 관리합니다.",
     "OFFICES_DESC": "지점 및 그 계층 구조를 설정하고 관리합니다.",
-    "TASKS_DESC": "승인 대기 중인 메이커-체커 작업을 검토하고 승인하거나 반려합니다."
+    "TASKS_DESC": "승인 대기 중인 메이커-체커 작업을 검토하고 승인하거나 반려합니다.",
+    "OPENING_BALANCES_DESC": "이전 원장의 잔액을 이 원장으로 옮깁니다. 해당 사무소에 첫 분개가 기표되기 전에만 가능합니다.",
+    "FREQUENT_POSTINGS_DESC": "저장된 회계 규칙에서 분개를 기표하여 반복 기표에 금액과 날짜만 입력하도록 합니다.",
+    "REPORT_DEFINITIONS_DESC": "보고 섹션의 기반 목록: 각 보고서가 실행하는 SQL, 받는 매개변수, 사용자에게 제공할지 여부입니다.",
+    "WORK_QUEUES_DESC": "지점이 함께 처리하는 승인 업무: 대기 중인 대출, 실행 대기 대출, 대기 중인 고객, 일정 변경 요청. 각 작업은 하나의 배치로 전송되며 플랫폼이 거부한 항목은 이름으로 표시됩니다."
   },
   "MODULES": {
     "CLIENTS_CONTRACTS": "고객 및 계약",
@@ -370,5 +376,150 @@
     "RESULTS": "보고서 결과",
     "DOWNLOAD_CSV": "CSV 다운로드",
     "DOWNLOAD_RESULTS_CSV": "결과를 CSV로 다운로드"
+  },
+  "ACCESS_DENIED": {
+    "TITLE": "접근이 거부되었습니다",
+    "MESSAGE": "이 페이지를 열 권한이 없습니다.",
+    "HINT": "접근 권한이 있어야 한다고 생각되면 관리자에게 역할 권한을 검토해 달라고 요청하십시오.",
+    "BACK_TO_DASHBOARD": "대시보드로 돌아가기",
+    "REQUIRES": "이 페이지에 필요한 권한:"
+  },
+  "PERMISSIONS": {
+    "REQUIRES": "{{codes}} 권한이 필요합니다 — {{summary}}",
+    "JOIN_ANY": " 또는 ",
+    "JOIN_ALL": " 및 "
+  },
+  "OIDC_CONFIG": {
+    "PROVIDER_TYPE": "공급자 유형",
+    "JWKS_URI": "JWKS URI",
+    "USERNAME_CLAIM": "사용자 이름 클레임",
+    "SCOPES": "스코프",
+    "POST_LOGOUT_URI": "로그아웃 후 리디렉션 URI",
+    "SECRET_HINT": "클라이언트 시크릿은 플랫폼에 저장되며 반환되지 않습니다. 기존 값을 유지하려면 비워 두십시오.",
+    "SECRET_UNCHANGED": "변경 없음",
+    "SAVED": "OIDC 구성이 저장되었습니다",
+    "DELETED": "OIDC 구성이 삭제되었습니다",
+    "LOAD_FAILED": "OIDC 구성을 불러오지 못했습니다",
+    "DELETE_TITLE": "OIDC 구성 삭제",
+    "DELETE_MESSAGE": "이 테넌트에서 해당 ID 공급자를 통한 로그인이 중단됩니다. 되돌릴 수 없습니다.",
+    "JWKS_HINT": "선택 사항입니다. 비워 두면 플랫폼이 발급자의 /.well-known/openid-configuration에서 검색합니다."
+  },
+  "login": {
+    "twoFactor": {
+      "title": "2단계 인증",
+      "chooseLede": "일회용 코드를 받을 방법을 선택하십시오.",
+      "loadingMethods": "연락 방법을 확인하는 중…",
+      "noMethods": "계정에 구성된 전송 방법이 없습니다. 로그인하려면 관리자에게 추가를 요청하십시오.",
+      "sentTo": "{{target}}(으)로 일회용 코드를 보냈습니다.",
+      "codeLabel": "일회용 코드",
+      "verify": "확인",
+      "verifying": "확인 중…",
+      "resend": "코드 다시 보내기",
+      "cancel": "로그인으로 돌아가기",
+      "invalidCode": "코드가 승인되지 않았습니다. 새 코드를 요청한 뒤 다시 시도하십시오.",
+      "requestFailed": "코드를 보내지 못했습니다. 다른 방법을 사용하거나 관리자에게 문의하십시오."
+    }
+  },
+  "JOURNAL_ENTRIES": {
+    "TRANSACTION": "거래",
+    "ACCOUNT": "계정",
+    "ENTRY_TYPE": "분개 유형",
+    "MANUAL": "수동 분개",
+    "SYSTEM_GENERATED": "시스템 생성",
+    "CREATED_BY": "작성자",
+    "PAYMENT_TYPE": "결제 수단",
+    "REVERSE": "거래 취소",
+    "REVERSE_CONFIRM": "상계 거래를 기표합니다. 원래 분개는 취소 표시와 함께 원장에 남습니다.",
+    "REVERSED": "취소됨",
+    "REVERSED_SUCCESS": "거래가 취소되었습니다",
+    "SYSTEM_ENTRY_NOT_REVERSIBLE": "이 분개는 포트폴리오 거래에서 시스템이 생성했습니다. 대신 해당 거래를 취소하세요.",
+    "NOT_FOUND": "해당 분개를 찾을 수 없습니다."
+  },
+  "OPENING_BALANCES": {
+    "TITLE": "기초 잔액 정의",
+    "CONTRA_NOT_MAPPED": "기초 잔액에는 기초잔액 상대 재무활동에 연결된 자본 계정이 필요합니다. 먼저 재무활동 매핑에서 설정하세요.",
+    "LOAD_FAILED": "해당 사무소와 통화의 기초 잔액을 불러오지 못했습니다.",
+    "SAVED": "기초 잔액이 저장되었습니다"
+  },
+  "FREQUENT_POSTINGS": {
+    "TITLE": "자주 쓰는 분개",
+    "RULE": "회계 규칙",
+    "NO_RULES": "정의된 회계 규칙이 없습니다. 여기서 기표하려면 먼저 규칙을 만드세요.",
+    "WILL_POST": "기표 내용",
+    "POST": "분개 기표",
+    "POSTED": "분개가 기표되었습니다",
+    "MULTI_ACCOUNT_RULE": "이 규칙은 한쪽에 여러 계정을 지정합니다. 금액을 각각 지정하려면 전체 분개 양식을 사용하세요."
+  },
+  "REPORT_DEFINITIONS": {
+    "CREATE": "보고서 만들기",
+    "EDIT": "보고서 편집",
+    "CATEGORY": "분류",
+    "SUB_TYPE": "차트 유형",
+    "SQL": "보고서 SQL",
+    "IN_USE": "사용 중",
+    "CORE": "기본",
+    "TENANT": "테넌트",
+    "CORE_NOT_DELETABLE": "기본 보고서는 삭제할 수 없습니다.",
+    "CORE_READ_ONLY": "기본 보고서입니다. 플랫폼은 \"사용 중\" 설정만 변경할 수 있으며, 나머지 정의는 참고용으로 표시됩니다.",
+    "DELETE_CONFIRM": "보고서 정의를 삭제합니다. 이미 실행한 보고서에는 영향이 없습니다.",
+    "DELETED": "보고서 정의가 삭제되었습니다",
+    "SAVED": "보고서 정의가 저장되었습니다"
+  },
+  "OFFICES": {
+    "STAFF": "직원",
+    "HIERARCHY": "조직 계층",
+    "NO_STAFF": "이 사무소에 배정된 직원이 없습니다.",
+    "NOT_FOUND": "해당 사무소를 찾을 수 없습니다."
+  },
+  "NOTES": {
+    "ADD": "메모 추가",
+    "CONFIRM_DELETE": "이 메모를 삭제할까요? 메모는 감사 기록이므로 삭제하면 내용이 남지 않습니다."
+  },
+  "DOCUMENTS": {
+    "SELECT_FILE": "파일 선택",
+    "NO_FILE_SELECTED": "선택된 파일 없음",
+    "UPLOAD": "업로드",
+    "NONE": "첨부된 문서가 없습니다.",
+    "FILE_NAME": "파일 이름",
+    "CONFIRM_DELETE": "이 문서를 삭제할까요? 첨부 파일도 함께 삭제됩니다."
+  },
+  "SAVINGS": {
+    "NOTES": "메모",
+    "DOCUMENTS": "문서",
+    "STANDING_INSTRUCTIONS": "자동이체 지시",
+    "NO_STANDING_INSTRUCTIONS": "이 계좌에서 이체되는 자동이체 지시가 없습니다.",
+    "TRANSFER_IN": "이 계좌로",
+    "TRANSFER_OUT": "이 계좌에서"
+  },
+  "GROUPS": {
+    "LOAN_ACCOUNTS": "대출 계좌",
+    "SAVINGS_ACCOUNTS": "저축 계좌",
+    "NO_LOAN_ACCOUNTS": "이 그룹에는 대출 계좌가 없습니다.",
+    "NO_SAVINGS_ACCOUNTS": "이 그룹에는 저축 계좌가 없습니다."
+  },
+  "CLIENTS": {
+    "DEPOSIT_ACCOUNTS": "예금",
+    "SHARE_ACCOUNTS": "출자금",
+    "FIXED_DEPOSITS": "정기 예금",
+    "RECURRING_DEPOSITS": "적립식 예금",
+    "NO_FIXED_DEPOSITS": "이 고객에게 정기 예금이 없습니다.",
+    "NO_RECURRING_DEPOSITS": "이 고객에게 적립식 예금이 없습니다.",
+    "NO_SHARE_ACCOUNTS": "이 고객에게 출자금 계좌가 없습니다."
+  },
+  "WORK_QUEUES": {
+    "TITLE": "승인 대기열",
+    "LOAN_APPROVAL": "대출 승인",
+    "LOAN_DISBURSAL": "대출 실행",
+    "CLIENT_ACTIVATION": "고객 활성화",
+    "RESCHEDULE_APPROVAL": "일정 변경 요청",
+    "EMPTY": "이 대기열에는 대기 중인 항목이 없습니다.",
+    "SELECT_ALL": "전체 선택",
+    "SELECTED": "선택됨",
+    "APPROVE_SELECTED": "선택 항목 승인",
+    "DISBURSE_SELECTED": "선택 항목 실행",
+    "ACTIVATE_SELECTED": "선택 항목 활성화",
+    "CONFIRM": "{{count}}건에 대해 한 번의 요청으로 처리합니다.",
+    "ALL_SUCCEEDED": "{{count}}건이 성공적으로 처리되었습니다.",
+    "PARTIAL": "{{total}}건 중 {{succeeded}}건 성공. 거부된 항목: {{names}}"
   }
 }

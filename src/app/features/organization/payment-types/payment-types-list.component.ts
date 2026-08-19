@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.paymentTypes"
       helpTextKey="HELP.PAYMENT_TYPES_DESC"
       createButtonLabel="PAYMENT_TYPES.CREATE"
+      createPermission="CREATE_PAYMENTTYPE"
       [columns]="columns"
       [data]="paymentTypes()"
       [totalRecords]="paymentTypes().length"

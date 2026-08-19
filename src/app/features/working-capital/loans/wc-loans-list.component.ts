@@ -59,6 +59,7 @@ interface WcLoanRow {
       title="nav.wcLoans"
       helpTextKey="HELP.WC_LOANS_DESC"
       createButtonLabel="WC_LOANS.CREATE"
+      createPermission="CREATE_WORKINGCAPITALLOAN"
       [columns]="columns"
       [data]="loans()"
       [totalRecords]="loans().length"

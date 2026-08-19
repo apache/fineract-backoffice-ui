@@ -34,7 +34,7 @@ export interface GetProvisioningCriteriaCriteriaIdResponse {
     createdBy?: string;
     criteriaId?: number;
     criteriaName?: string;
+    definitions?: Array<ProvisioningCriteriaDefinitionData>;
     loanProducts?: Array<LoanProductData>;
-    provisioningcriteria?: Array<ProvisioningCriteriaDefinitionData>;
 }
 

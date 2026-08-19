@@ -39,6 +39,7 @@ import { SavingsProductService, GetSavingsProductsResponse } from '../../api';
       title="nav.savingsProducts"
       helpTextKey="HELP.SAVINGS_PRODUCTS_DESC"
       createButtonLabel="PRODUCTS.CREATE_SAVINGS_PRODUCT"
+      createPermission="CREATE_SAVINGSPRODUCT"
       [columns]="columns"
       [data]="products()"
       [totalRecords]="products().length"

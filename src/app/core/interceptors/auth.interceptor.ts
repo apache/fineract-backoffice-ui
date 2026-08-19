@@ -68,8 +68,9 @@ export function isApiRequest(url: string, apiUrl: string): boolean {
 /**
  * Functional HTTP Interceptor that handles authentication and multi-tenancy.
  *
- * Injects the mandatory `Fineract-Platform-TenantId` header and the
- * `Authorization` header (if an active session exists) into every outgoing request.
+ * Injects the mandatory `Fineract-Platform-TenantId` header, the `Authorization` header (if an
+ * active session exists) and the `Fineract-Platform-TFA-Token` header (if a second factor has been
+ * validated) into every outgoing request.
  *
  * Requests that already specify tenant headers are left unchanged for those headers so
  * login can send the tenant from the form before `currentTenantId` is updated.
@@ -108,6 +109,19 @@ export const authInterceptor: HttpInterceptorFn = (
     authReq = authReq.clone({
       setHeaders: {
         Authorization: `Basic ${token}`,
+      },
+    });
+  }
+
+  // Where the platform runs with two-factor authentication, the Basic credential alone opens only
+  // the `/twofactor` endpoints; everything else answers 403 until this accompanies it. Absent on
+  // deployments that do not use it, and during the window between the password being accepted and
+  // the one-time token being validated.
+  const tfaToken = authService.getTfaToken();
+  if (tfaToken) {
+    authReq = authReq.clone({
+      setHeaders: {
+        'Fineract-Platform-TFA-Token': tfaToken,
       },
     });
   }

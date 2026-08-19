@@ -37,6 +37,7 @@ import { TaxGroupService, GetTaxesGroupResponse } from '../../../api';
       title="nav.taxGroups"
       helpTextKey="HELP.TAX_GROUPS_DESC"
       createButtonLabel="TAX_GROUPS.CREATE"
+      createPermission="CREATE_TAXGROUP"
       [columns]="columns"
       [data]="groups()"
       [totalRecords]="groups().length"

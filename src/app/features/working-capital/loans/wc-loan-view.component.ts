@@ -55,6 +55,24 @@ import {
  * summary plus read-only tabs for charges, transactions, delinquency actions,
  * delinquency range schedule and breach schedule, each backed by its own GET.
  */
+/**
+ * The tabs on this screen, named.
+ *
+ * They were positional strings — '0', '7' — which say nothing at the point of use and shift
+ * meaning whenever a tab is inserted in the middle. The values are still strings because
+ * `ion-segment` compares them as such.
+ */
+export const WC_LOAN_TAB = {
+  details: 'details',
+  charges: 'charges',
+  transactions: 'transactions',
+  delinquencyActions: 'delinquencyActions',
+  delinquencyRangeSchedule: 'delinquencyRangeSchedule',
+  breachSchedule: 'breachSchedule',
+} as const;
+
+export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
+
 @Component({
   selector: 'app-wc-loan-view',
   standalone: true,
@@ -171,27 +189,27 @@ import {
       </ion-card>
 
       <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
-        <ion-segment-button value="0">
+        <ion-segment-button [value]="TAB.details">
           <ion-label>{{ 'WC_LOANS.TABS.DETAILS' | translate }}</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="1">
+        <ion-segment-button [value]="TAB.charges">
           <ion-label>{{ 'WC_LOANS.TABS.CHARGES' | translate }}</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="2">
+        <ion-segment-button [value]="TAB.transactions">
           <ion-label>{{ 'WC_LOANS.TABS.TRANSACTIONS' | translate }}</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="3">
+        <ion-segment-button [value]="TAB.delinquencyActions">
           <ion-label>{{ 'WC_LOANS.TABS.DELINQUENCY_ACTIONS' | translate }}</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="4">
+        <ion-segment-button [value]="TAB.delinquencyRangeSchedule">
           <ion-label>{{ 'WC_LOANS.TABS.DELINQUENCY_RANGE_SCHEDULE' | translate }}</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="5">
+        <ion-segment-button [value]="TAB.breachSchedule">
           <ion-label>{{ 'WC_LOANS.TABS.BREACH_SCHEDULE' | translate }}</ion-label>
         </ion-segment-button>
       </ion-segment>
 
-      @if (activeTab() === '0') {
+      @if (activeTab() === TAB.details) {
         <div class="tab-content">
           <ion-card class="info-card">
             <ion-card-content class="details-list">
@@ -233,7 +251,7 @@ import {
           </ion-card>
         </div>
       }
-      @if (activeTab() === '1') {
+      @if (activeTab() === TAB.charges) {
         <div class="tab-content">
           <ion-card class="table-card">
             <ion-card-content>
@@ -272,7 +290,7 @@ import {
           </ion-card>
         </div>
       }
-      @if (activeTab() === '2') {
+      @if (activeTab() === TAB.transactions) {
         <div class="tab-content">
           <ion-card class="table-card">
             <ion-card-content>
@@ -309,7 +327,7 @@ import {
           </ion-card>
         </div>
       }
-      @if (activeTab() === '3') {
+      @if (activeTab() === TAB.delinquencyActions) {
         <div class="tab-content">
           <ion-card class="table-card">
             <ion-card-content>
@@ -344,7 +362,7 @@ import {
           </ion-card>
         </div>
       }
-      @if (activeTab() === '4') {
+      @if (activeTab() === TAB.delinquencyRangeSchedule) {
         <div class="tab-content">
           <ion-card class="table-card">
             <ion-card-content>
@@ -387,7 +405,7 @@ import {
           </ion-card>
         </div>
       }
-      @if (activeTab() === '5') {
+      @if (activeTab() === TAB.breachSchedule) {
         <div class="tab-content">
           <ion-card class="table-card">
             <ion-card-content>
@@ -548,7 +566,10 @@ import {
 })
 export class WcLoanViewComponent implements OnInit {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
-  readonly activeTab = signal('0');
+  /** Exposed so the template names its tabs instead of numbering them. */
+  protected readonly TAB = WC_LOAN_TAB;
+
+  readonly activeTab = signal<WcLoanTab>(WC_LOAN_TAB.details);
   private readonly loansService = inject(WorkingCapitalLoansService);
   private readonly chargesService = inject(WorkingCapitalLoanChargesService);
   private readonly transactionsService = inject(WorkingCapitalLoanTransactionsService);

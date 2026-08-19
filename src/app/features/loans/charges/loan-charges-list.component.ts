@@ -47,6 +47,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="LOAN_CHARGES.TITLE"
       helpTextKey="HELP.LOAN_CHARGES_DESC"
       createButtonLabel="LOAN_CHARGES.ADD_TITLE"
+      createPermission="CREATE_LOANCHARGE"
       [columns]="columns"
       [data]="charges()"
       [totalRecords]="charges().length"

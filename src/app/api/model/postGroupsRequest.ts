@@ -29,8 +29,13 @@
  * PostGroupsRequest
  */
 export interface PostGroupsRequest { 
+    activationDate?: string;
     active?: boolean;
+    dateFormat?: string;
+    externalId?: string;
+    locale?: string;
     name?: string;
     officeId?: number;
+    submittedOnDate?: string;
 }
 

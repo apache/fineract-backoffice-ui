@@ -134,6 +134,7 @@ interface ShareAccountTemplateResponse {
                       color="primary"
                       type="button"
                       (click)="onCreateClient()"
+                      [attr.aria-label]="'SHARE_ACCOUNTS.CREATE_CLIENT' | translate"
                     >
                       <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
                     </ion-button>
@@ -171,6 +172,7 @@ interface ShareAccountTemplateResponse {
                       type="button"
                       (click)="onCreateProduct()"
                       [disabled]="isEditMode()"
+                      [attr.aria-label]="'SHARE_ACCOUNTS.CREATE_PRODUCT' | translate"
                     >
                       <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
                     </ion-button>

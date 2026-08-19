@@ -279,7 +279,7 @@ export class RoleFormComponent implements OnInit {
     const groups: Record<string, Record<string, unknown>[]> = {};
     this.permissions().forEach((p) => {
       const code = p['code'] as string;
-      const prefix = code.split('_')[1] || 'GENERAL';
+      const prefix = code.split('_', 2)[1] || 'GENERAL';
       if (!groups[prefix]) groups[prefix] = [];
       groups[prefix].push(p);
     });

@@ -65,6 +65,17 @@ export interface AppConfig {
   /** Institution type to assume when the user has not selected one. */
   institutionType: InstitutionType;
   /**
+   * Exposes the screens that drive Fineract's `/v1/internal/**` endpoints — COB tools, the
+   * progressive-loan schedule model, the internal external-event log, and the loan account
+   * locks.
+   *
+   * Off by default, and it should stay off anywhere real. Those endpoints are served only when
+   * the backend runs with its `test` Spring profile, which upstream states must not be enabled
+   * in production; on a normal deployment every one of them answers 404. Enabling this on a test
+   * instance is the supported way to reach them.
+   */
+  developerToolsEnabled?: boolean;
+  /**
    * Absolute API origins this deployment permits, beyond its own.
    *
    * The endpoint override exists so an operator can point the app at their own Fineract. It is
@@ -92,6 +103,7 @@ const DEFAULT_CONFIG: AppConfig = {
   defaultTenant: 'default',
   rbacEnabled: true,
   institutionType: 'universal',
+  developerToolsEnabled: false,
 };
 
 /**
@@ -154,8 +166,16 @@ export class ConfigService {
   /** Whether permission and institution gating applies. See {@link AppConfig.rbacEnabled}. */
   readonly rbacEnabled = computed(() => this._config().rbacEnabled);
 
+  /**
+   * Whether the `/v1/internal/**` screens are exposed. See {@link AppConfig.developerToolsEnabled}.
+   *
+   * Deliberately defaults to `false` when the key is absent, so an existing `config.json` that
+   * predates this flag keeps the tools hidden rather than inheriting them.
+   */
+  readonly developerToolsEnabled = computed(() => this._config().developerToolsEnabled === true);
+
   /** Navigation entries this deployment hides, as a set of `labelKey`s. */
-  readonly hiddenNavKeys = computed(() => new Set(this._config().nav?.hidden ?? []));
+  readonly hiddenNavKeys = computed(() => new Set(this._config().nav?.hidden));
 
   /**
    * Loads configuration from the public `config.json` at runtime.
@@ -167,7 +187,7 @@ export class ConfigService {
   async loadConfig(): Promise<void> {
     try {
       const loaded = await firstValueFrom(
-        this.http.get<Partial<AppConfig>>(`config.json?cb=${new Date().getTime()}`, {
+        this.http.get<Partial<AppConfig>>(`config.json?cb=${Date.now()}`, {
           // This runs before the app renders: there is no progress bar to drive yet, and no
           // route on which to show a toast. The catch below is the reporting.
           context: skipLoading(skipErrorToast()),

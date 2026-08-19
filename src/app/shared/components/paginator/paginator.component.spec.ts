@@ -30,7 +30,7 @@ describe('PaginatorComponent', () => {
     fixture.nativeElement
       .querySelector('[data-testid="paginator-range-label"]')
       .textContent.trim()
-      .replace(/\s+/g, ' ');
+      .replaceAll(/\s+/g, ' ');
 
   const setInputs = (inputs: Record<string, unknown>): void => {
     Object.entries(inputs).forEach(([key, value]) => fixture.componentRef.setInput(key, value));

@@ -46,6 +46,7 @@ export interface GetClientsClientIdResponse {
     officeName?: string;
     savingsProductId?: number;
     savingsProductName?: string;
+    staffId?: number;
     status?: GetClientsClientIdStatus;
     timeline?: GetClientsTimeline;
 }

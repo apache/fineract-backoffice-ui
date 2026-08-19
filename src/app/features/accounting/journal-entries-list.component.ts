@@ -26,6 +26,8 @@ import { catchError, map, startWith, switchMap, tap } from 'rxjs/operators';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../shared';
 import { JournalEntriesService, JournalEntryTransactionItem } from '../../api';
 import { PageEvent, SortEvent } from '../../shared/models/table.model';
+import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { TranslatePipe } from '../../core/adapters';
 
 /**
  * Component for listing accounting journal entries.
@@ -42,6 +44,9 @@ import { PageEvent, SortEvent } from '../../shared/models/table.model';
     DatePipe,
     DecimalPipe,
     NgClass,
+    TranslatePipe,
+    IonButton,
+    IonIcon,
   ],
   template: `
     <app-data-table
@@ -50,6 +55,7 @@ import { PageEvent, SortEvent } from '../../shared/models/table.model';
       title="nav.journalEntries"
       helpTextKey="HELP.JOURNAL_ENTRIES_DESC"
       createButtonLabel="JOURNAL_ENTRIES.CREATE"
+      createPermission="CREATE_JOURNALENTRY"
       [columns]="columns"
       [data]="entries()"
       [totalRecords]="totalRecords"
@@ -71,6 +77,18 @@ import { PageEvent, SortEvent } from '../../shared/models/table.model';
 
       <ng-template appCellTemplate="amount" let-entry>
         {{ entry.amount | number: '1.2-2' }}
+      </ng-template>
+
+      <ng-template appCellTemplate="actions" let-entry>
+        <ion-button
+          fill="clear"
+          data-testid="journal-entry-view"
+          [title]="'COMMON.VIEW' | appTranslate"
+          [attr.aria-label]="'COMMON.VIEW' | appTranslate"
+          (click)="onViewEntry(entry)"
+        >
+          <ion-icon name="eye-outline"></ion-icon>
+        </ion-button>
       </ng-template>
     </app-data-table>
   `,
@@ -104,6 +122,7 @@ export class JournalEntriesListComponent {
     { key: 'glAccountName', label: 'Ledger Account', sortable: true },
     { key: 'entryType', label: 'Type', sortable: true },
     { key: 'amount', label: 'Amount', sortable: true },
+    { key: 'actions', label: 'Actions', sortable: false },
   ];
 
   readonly entries = signal<JournalEntryTransactionItem[]>([]);
@@ -186,6 +205,10 @@ export class JournalEntriesListComponent {
     this.currentPage = event;
     this.pageIndex.set(event.pageIndex);
     this.pageSubject.next(event);
+  }
+
+  onViewEntry(entry: JournalEntryTransactionItem) {
+    void this.router.navigate(['/accounting/journal-entries/view', entry.id]);
   }
 
   onCreateEntry() {

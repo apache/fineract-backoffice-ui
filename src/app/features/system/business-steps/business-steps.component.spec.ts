@@ -83,4 +83,20 @@ describe('BusinessStepsComponent', () => {
     component.onSave();
     expect(serviceSpy.putJobsJobNameSteps).toHaveBeenCalled();
   });
+
+  it('gives the reorder buttons an accessible name', () => {
+    component.selectedJob = 'LOAN_CLOSE_OF_BUSINESS';
+    component.loadSteps();
+    fixture.detectChanges();
+
+    // The buttons are icon-only, so the icon is all a sighted user gets and an
+    // accessible name is all a screen reader gets. Without one, a row of these
+    // announces as "button, button".
+    const labels = Array.from(
+      fixture.nativeElement.querySelectorAll('ion-button') as NodeListOf<HTMLElement>,
+    ).map((button) => button.getAttribute('aria-label'));
+
+    expect(labels).toContain('COMMON.MOVE_UP');
+    expect(labels).toContain('COMMON.MOVE_DOWN');
+  });
 });

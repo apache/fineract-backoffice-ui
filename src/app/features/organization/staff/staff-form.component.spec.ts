@@ -74,6 +74,18 @@ describe('StaffFormComponent', () => {
     expect(officesServiceSpy.getOffices).toHaveBeenCalled();
   });
 
+  it('should format the joining date returned by the API', () => {
+    staffServiceSpy.getStaffStaffId.and.returnValue(
+      of({ joiningDate: [2026, 1, 5] }) as unknown as ReturnType<StaffService['getStaffStaffId']>,
+    );
+    component.staffId = 7;
+
+    component.loadStaffData();
+
+    expect(staffServiceSpy.getStaffStaffId).toHaveBeenCalledWith(7);
+    expect(component.joiningDate()).toBe('2026-01-05');
+  });
+
   it('should create staff with a StaffCreateRequest payload on submit', () => {
     staffServiceSpy.postStaff.and.returnValue(
       of({}) as unknown as ReturnType<StaffService['postStaff']>,

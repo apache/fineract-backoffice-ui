@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { GetCentersGroupMembers } from './getCentersGroupMembers';
 import { GetCentersStatus } from './getCentersStatus';
 
 
@@ -31,11 +32,17 @@ import { GetCentersStatus } from './getCentersStatus';
  */
 export interface GetCentersCenterIdResponse { 
     active?: boolean;
+    externalId?: string;
+    /**
+     * Returned when the groupMembers association is requested
+     */
+    groupMembers?: Array<GetCentersGroupMembers>;
     hierarchy?: string;
     id?: number;
     name?: string;
     officeId?: number;
     officeName?: string;
+    staffId?: number;
     status?: GetCentersStatus;
 }
 

@@ -196,6 +196,7 @@ import { toIsoDate } from '../../core/utils/date-formatter';
                     type="button"
                     (click)="removeDebit($index)"
                     [disabled]="debits.length === 1"
+                    [attr.aria-label]="'JOURNAL_ENTRIES.REMOVE_DEBIT' | translate"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>
@@ -242,6 +243,7 @@ import { toIsoDate } from '../../core/utils/date-formatter';
                     type="button"
                     (click)="removeCredit($index)"
                     [disabled]="credits.length === 1"
+                    [attr.aria-label]="'JOURNAL_ENTRIES.REMOVE_CREDIT' | translate"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>

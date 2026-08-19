@@ -17,15 +17,21 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const REPORTING_ROUTES: Routes = [
   {
     path: '',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_REPORT' },
     loadComponent: () => import('./reports-list.component').then((m) => m.ReportsListComponent),
   },
   {
     path: 'run/:reportName',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_REPORT' },
     loadComponent: () => import('./run-report.component').then((m) => m.RunReportComponent),
   },
 ];

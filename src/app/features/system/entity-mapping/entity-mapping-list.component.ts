@@ -58,6 +58,7 @@ interface EntityToEntityMapping {
       title="nav.entityMapping"
       helpTextKey="HELP.ENTITY_MAPPING_DESC"
       createButtonLabel="ENTITY_MAPPING.CREATE"
+      createPermission="CREATE_ENTITYMAPPING"
       [columns]="columns"
       [data]="mappings()"
       [totalRecords]="mappings().length"

@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.entityDataTableChecks"
       helpTextKey="HELP.ENTITY_DATA_TABLE_CHECKS_DESC"
       createButtonLabel="ENTITY_DATA_TABLE_CHECKS.CREATE"
+      createPermission="CREATE_ENTITY_DATATABLE_CHECK"
       [columns]="columns"
       [data]="checks()"
       [totalRecords]="checks().length"

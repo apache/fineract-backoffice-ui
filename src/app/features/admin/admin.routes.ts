@@ -17,11 +17,16 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
+import { developerToolsGuard } from '../../core/guards/developer-tools.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
     path: 'batch-operations',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'ALL_FUNCTIONS' },
     loadComponent: () =>
       import('./batch-operations/batch-operations.component').then(
         (m) => m.BatchOperationsComponent,
@@ -29,25 +34,39 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'inline-job',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'EXECUTEJOB_SCHEDULER' },
     loadComponent: () =>
       import('./inline-job/inline-job.component').then((m) => m.InlineJobComponent),
   },
   {
     path: 'cob-tools',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'EXECUTEJOB_SCHEDULER' },
+    canMatch: [developerToolsGuard],
     loadComponent: () => import('./cob-tools/cob-tools.component').then((m) => m.CobToolsComponent),
   },
   {
     path: 'wc-cob-tools',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'EXECUTEJOB_SCHEDULER' },
+    canMatch: [developerToolsGuard],
     loadComponent: () =>
       import('./wc-cob-tools/wc-cob-tools.component').then((m) => m.WcCobToolsComponent),
   },
   {
     path: 'external-events',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_EXTERNAL_EVENT_CONFIGURATION' },
+    canMatch: [developerToolsGuard],
     loadComponent: () =>
       import('./external-events/external-events.component').then((m) => m.ExternalEventsComponent),
   },
   {
     path: 'progressive-loan',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_LOANPRODUCT' },
+    canMatch: [developerToolsGuard],
     loadComponent: () =>
       import('./progressive-loan/progressive-loan-model.component').then(
         (m) => m.ProgressiveLoanModelComponent,

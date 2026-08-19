@@ -169,7 +169,7 @@ export class CreateOfficeDialogComponent implements OnInit {
     const detail = (event as CustomEvent<{ value?: string }>).detail;
     const value = detail?.value ?? (event.target as HTMLInputElement)?.value;
     // ion-datetime yields a full ISO timestamp; the API wants the date part only.
-    if (value) this.openingDate = value.split('T')[0];
+    if (value) this.openingDate = value.split('T', 1)[0];
   }
 
   onSubmit() {

@@ -47,6 +47,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="CLIENT_CHARGES.TITLE"
       helpTextKey="HELP.CLIENT_CHARGES_DESC"
       createButtonLabel="CLIENT_CHARGES.CREATE"
+      createPermission="CREATE_CLIENTCHARGE"
       [columns]="columns"
       [data]="charges()"
       [totalRecords]="charges().length"

@@ -127,6 +127,7 @@ import {
             fill="clear"
             color="primary"
             (click)="onDownloadResult(row['importDocumentId'])"
+            [attr.aria-label]="'SYSTEM.DOWNLOAD_RESULT' | translate"
             [appTooltip]="'SYSTEM.DOWNLOAD_RESULT' | translate"
           >
             <ion-icon name="download-outline"></ion-icon>

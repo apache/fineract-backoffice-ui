@@ -49,6 +49,7 @@ import {
   formatDateToFineract,
   FINERACT_DATE_FORMAT,
   FINERACT_LOCALE,
+  formatArrayDate,
   toIsoDate,
 } from '../../core/utils/date-formatter';
 
@@ -549,8 +550,7 @@ export class StandingInstructionFormComponent implements OnInit {
 
   private populateDates(data: GetStandingInstructionsStandingInstructionIdResponse): void {
     if (data.validFrom) {
-      const vf = data.validFrom as unknown as number[];
-      this.validFrom = toIsoDate(new Date(vf[0], vf[1] - 1, vf[2]));
+      this.validFrom = formatArrayDate(data.validFrom);
     }
     const rawData = data as unknown as Record<string, unknown>;
     if (rawData['validTill']) {

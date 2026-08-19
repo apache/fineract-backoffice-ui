@@ -20,7 +20,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { LoanViewComponent } from './loan-view.component';
+import { LOAN_TAB, LoanViewComponent } from './loan-view.component';
 import {
   LoansService,
   LoanBuyDownFeesService,
@@ -164,10 +164,10 @@ describe('LoanViewComponent', () => {
     });
 
     it('falls back to the overview if such a tab is somehow selected', () => {
-      component.activeTab.set('7');
+      component.activeTab.set(LOAN_TAB.buyDownFees);
       fixture.detectChanges();
 
-      expect(component.activeTab()).toBe('0');
+      expect(component.activeTab()).toBe(LOAN_TAB.overview);
     });
   });
 
@@ -207,10 +207,10 @@ describe('LoanViewComponent', () => {
         enableBuyDownFee: true,
       });
 
-      component.activeTab.set('7');
+      component.activeTab.set(LOAN_TAB.buyDownFees);
       fixture.detectChanges();
 
-      expect(component.activeTab()).toBe('7');
+      expect(component.activeTab()).toBe(LOAN_TAB.buyDownFees);
     });
 
     it('still skips the request when the loan has no external id to fetch by', async () => {

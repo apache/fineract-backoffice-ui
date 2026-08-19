@@ -102,6 +102,7 @@ import {
           <ion-button
             fill="clear"
             color="secondary"
+            [attr.aria-label]="'LOANS.APPROVE' | translate"
             [appTooltip]="'LOANS.APPROVE' | translate"
             (click)="onApprove(account)"
             *appHasPermission="'APPROVE_SAVINGSACCOUNT'"

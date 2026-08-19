@@ -18,8 +18,8 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
 import { HelpIconComponent } from './help-icon.component';
+import { provideFakeAdapters } from '../../../testing/adapters';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
 
 const HELP_KEY = 'TEST.HELP_KEY';
@@ -30,8 +30,8 @@ describe('HelpIconComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HelpIconComponent, TranslateModule.forRoot()],
-      providers: [provideIonicTesting()],
+      imports: [HelpIconComponent],
+      providers: [provideIonicTesting(), ...provideFakeAdapters().providers],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HelpIconComponent);

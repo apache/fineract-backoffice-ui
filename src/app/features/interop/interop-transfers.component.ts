@@ -44,6 +44,21 @@ import {
 
 const ERROR_OCCURRED = 'Error occurred';
 
+/**
+ * The tabs on this screen, named.
+ *
+ * They were positional strings — '0', '7' — which say nothing at the point of use and shift
+ * meaning whenever a tab is inserted in the middle. The values are still strings because
+ * `ion-segment` compares them as such.
+ */
+export const INTEROP_TAB = {
+  load: 'load',
+  create: 'create',
+  result: 'result',
+} as const;
+
+export type InteropTab = (typeof INTEROP_TAB)[keyof typeof INTEROP_TAB];
+
 @Component({
   selector: 'app-interop-transfers',
   standalone: true,
@@ -72,18 +87,18 @@ const ERROR_OCCURRED = 'Error occurred';
       </ion-card-header>
       <ion-card-content>
         <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
-          <ion-segment-button value="0">
+          <ion-segment-button [value]="TAB.load">
             <ion-label>{{ 'INTEROP.LOAD_TRANSFER' | translate }}</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="1">
+          <ion-segment-button [value]="TAB.create">
             <ion-label>{{ 'INTEROP.CREATE_TRANSFER' | translate }}</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="2">
+          <ion-segment-button [value]="TAB.result">
             <ion-label>Disburse / Repay</ion-label>
           </ion-segment-button>
         </ion-segment>
 
-        @if (activeTab() === '0') {
+        @if (activeTab() === TAB.load) {
           <div class="tab-content">
             <ion-item fill="outline">
               <ion-label position="stacked">{{ 'INTEROP.TRANSACTION_CODE' | translate }}</ion-label>
@@ -114,7 +129,7 @@ const ERROR_OCCURRED = 'Error occurred';
             }
           </div>
         }
-        @if (activeTab() === '1') {
+        @if (activeTab() === TAB.create) {
           <div class="tab-content">
             <ion-item fill="outline" class="full-width">
               <ion-label position="stacked">{{ 'INTEROP.TRANSFER_BODY' | translate }}</ion-label>
@@ -146,7 +161,7 @@ const ERROR_OCCURRED = 'Error occurred';
             }
           </div>
         }
-        @if (activeTab() === '2') {
+        @if (activeTab() === TAB.result) {
           <div class="tab-content">
             <ion-item fill="outline">
               <ion-label position="stacked">{{ 'INTEROP.ACCOUNT_ID' | translate }}</ion-label>
@@ -206,7 +221,10 @@ const ERROR_OCCURRED = 'Error occurred';
 })
 export class InteropTransfersComponent {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
-  readonly activeTab = signal('0');
+  /** Exposed so the template names its tabs instead of numbering them. */
+  protected readonly TAB = INTEROP_TAB;
+
+  readonly activeTab = signal<InteropTab>(INTEROP_TAB.load);
   private interopService = inject(InterOperationService);
   private notifications = inject(NotificationService);
 

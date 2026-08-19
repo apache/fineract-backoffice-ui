@@ -25,6 +25,9 @@ import {
   ACCOUNTING_RULE,
   GlAccountOptions,
   LOAN_ACCOUNTING_FIELDS,
+  SHARE_ACCOUNTING_FIELDS,
+  SHARE_ACCOUNTING_RULES,
+  fieldsForRule,
   mappingsForRule,
   mappingsFromResponse,
 } from './product-accounting.model';
@@ -208,5 +211,69 @@ describe('product accounting payload', () => {
 
   it('reads an unconfigured product as no mappings rather than throwing', () => {
     expect(mappingsFromResponse(LOAN_ACCOUNTING_FIELDS, undefined)).toEqual({});
+  });
+});
+
+/**
+ * Share products, which differ from the other four families in three ways that all bite.
+ */
+describe('share product accounting', () => {
+  it('maps four slots under cash, including the only equity slot in the application', () => {
+    const fields = fieldsForRule(SHARE_ACCOUNTING_FIELDS, ACCOUNTING_RULE.CASH);
+
+    expect(fields.map((field) => field.key)).toEqual([
+      'shareReferenceId',
+      'shareSuspenseId',
+      'shareEquityId',
+      'incomeFromFeeAccountId',
+    ]);
+    // Pointing this at a liability is refused with 403 validation.msg.domain.rule.violation.
+    expect(fields.find((field) => field.key === 'shareEquityId')?.accountType).toBe('equity');
+  });
+
+  it('maps nothing under none', () => {
+    expect(fieldsForRule(SHARE_ACCOUNTING_FIELDS, ACCOUNTING_RULE.NONE)).toEqual([]);
+  });
+
+  /**
+   * The platform's validator accepts 1, 2 and 3, but a share product created under rule 3 asks
+   * for no mappings and reads back with `accountingMappings: {}` — configured-looking and
+   * posting nothing. Only the rules that mean what they say are offered.
+   */
+  it('offers none and cash only', () => {
+    expect(SHARE_ACCOUNTING_RULES).toEqual([ACCOUNTING_RULE.NONE, ACCOUNTING_RULE.CASH]);
+    expect(SHARE_ACCOUNTING_RULES).not.toContain(ACCOUNTING_RULE.ACCRUAL_PERIODIC);
+  });
+
+  /**
+   * Share products read back under the same keys they are written with; every other family drops
+   * the `Id` suffix on the way out.
+   */
+  it('reads a configured product back from identically named keys', () => {
+    const mappings = mappingsFromResponse(SHARE_ACCOUNTING_FIELDS, {
+      shareReferenceId: { id: 7, name: 'Share reference' },
+      shareSuspenseId: { id: 8, name: 'Share suspense' },
+      shareEquityId: { id: 27, name: 'Share equity' },
+      incomeFromFeeAccountId: { id: 9, name: 'Fee income' },
+    });
+
+    expect(mappings).toEqual({
+      shareReferenceId: 7,
+      shareSuspenseId: 8,
+      shareEquityId: 27,
+      incomeFromFeeAccountId: 9,
+    });
+  });
+
+  it('sends the four ids under cash and none under none', () => {
+    const chosen = {
+      shareReferenceId: 7,
+      shareSuspenseId: 8,
+      shareEquityId: 27,
+      incomeFromFeeAccountId: 9,
+    };
+
+    expect(mappingsForRule(SHARE_ACCOUNTING_FIELDS, ACCOUNTING_RULE.CASH, chosen)).toEqual(chosen);
+    expect(mappingsForRule(SHARE_ACCOUNTING_FIELDS, ACCOUNTING_RULE.NONE, chosen)).toEqual({});
   });
 });

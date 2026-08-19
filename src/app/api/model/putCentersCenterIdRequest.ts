@@ -29,6 +29,8 @@
  * PutCentersCenterIdRequest
  */
 export interface PutCentersCenterIdRequest { 
+    externalId?: string;
     name?: string;
+    staffId?: number;
 }
 

@@ -280,3 +280,28 @@ ion-segment-button ion-label {
     width: 100%;
   }
 }
+
+/*
+ * A control the current role cannot use.
+ *
+ * Applied by `appRequiresPermission`, which disables the control rather than removing it: the
+ * action belongs to the record on screen, so its absence would read as a missing feature. The
+ * lock says the opposite — the feature is there, this role is not allowed it — and the
+ * directive's tooltip and accessible name carry the permission to ask for.
+ *
+ * The glyph is a pseudo-element so it needs no slot in the host component's template, and it
+ * is decorative: the accessible name the directive sets already says "Requires …".
+ */
+.app-requires-permission {
+  position: relative;
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.app-requires-permission::after {
+  content: '🔒';
+  margin-inline-start: 6px;
+  font-size: 0.85em;
+  line-height: 1;
+  vertical-align: middle;
+}

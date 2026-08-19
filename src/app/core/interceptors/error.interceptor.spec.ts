@@ -252,6 +252,7 @@ describe('errorInterceptor', () => {
   });
 
   describe('403', () => {
+    const FORBIDDEN_MESSAGE = 'COMMON.ERRORS.FORBIDDEN';
     it("should report a permission failure in the user's terms, keeping the session", () => {
       httpClient.get(testUrl, authorized).subscribe({ error: () => expect().nothing() });
 
@@ -262,7 +263,7 @@ describe('errorInterceptor', () => {
           { status: 403, statusText: 'Forbidden' },
         );
 
-      expect(notificationsSpy.error).toHaveBeenCalledWith('COMMON.ERRORS.FORBIDDEN');
+      expect(notificationsSpy.error).toHaveBeenCalledWith(FORBIDDEN_MESSAGE);
       // A 403 means the user is known but unauthorized — logging them out would be wrong.
       expect(authSpy.logout).not.toHaveBeenCalled();
       expect(routerSpy.navigate).not.toHaveBeenCalled();
@@ -278,6 +279,65 @@ describe('errorInterceptor', () => {
         .flush(null, { status: 403, statusText: 'Forbidden' });
 
       expect(notificationsSpy.error).not.toHaveBeenCalled();
+    });
+
+    it("should report a business rule in the platform's words, not as a permission problem", () => {
+      // Fineract answers 403 for "the rules say no" as well as for "you may not". Closing a
+      // group that still has members is the first, and the reason exists only in this body —
+      // reporting it as a permission failure sends the user to an administrator to ask for a
+      // right they already hold, and leaves the actual remedy unsaid.
+      httpClient.get(testUrl, authorized).subscribe({ error: () => expect().nothing() });
+
+      httpTestingController.expectOne(testUrl).flush(
+        {
+          userMessageGlobalisationCode: 'validation.msg.domain.rule.violation',
+          defaultUserMessage: 'Errors contain reason for domain rule violation.',
+          errors: [
+            {
+              defaultUserMessage:
+                'Group cannot be closed because of active clients associated with it.',
+              userMessageGlobalisationCode: 'error.msg.Group.close.active.clients.exist',
+              parameterName: 'id',
+            },
+          ],
+        },
+        { status: 403, statusText: 'Forbidden' },
+      );
+
+      const [message] = notificationsSpy.error.calls.mostRecent().args as [string];
+      expect(message).toContain('Group cannot be closed because of active clients');
+      expect(message).not.toContain(FORBIDDEN_MESSAGE);
+    });
+
+    it('should recognise a domain-rule violation by its errors array alone', () => {
+      // Not every state-machine refusal carries the globalisation code, but they all populate
+      // `errors[]` — and an authorization refusal has nothing to put in it.
+      httpClient.get(testUrl, authorized).subscribe({ error: () => expect().nothing() });
+
+      httpTestingController.expectOne(testUrl).flush(
+        {
+          errors: [{ defaultUserMessage: 'Loan is not in a state where it can be disbursed.' }],
+        },
+        { status: 403, statusText: 'Forbidden' },
+      );
+
+      const [message] = notificationsSpy.error.calls.mostRecent().args as [string];
+      expect(message).toContain('Loan is not in a state where it can be disbursed.');
+    });
+
+    it('should keep the permission message when the errors array is empty', () => {
+      // Deliberately conservative: anything that is not recognisably a domain-rule violation
+      // behaves exactly as it did before.
+      httpClient.get(testUrl, authorized).subscribe({ error: () => expect().nothing() });
+
+      httpTestingController
+        .expectOne(testUrl)
+        .flush(
+          { developerMessage: 'NOT_ALLOWED', errors: [] },
+          { status: 403, statusText: 'Forbidden' },
+        );
+
+      expect(notificationsSpy.error).toHaveBeenCalledWith(FORBIDDEN_MESSAGE);
     });
   });
 });

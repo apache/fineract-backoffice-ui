@@ -96,7 +96,7 @@ describe('date-formatter', () => {
       // The guarantee that actually matters: day and month are fixed-width, matching 'dd'.
       expect(FINERACT_DATE_FORMAT).toBe('dd MMMM yyyy');
       for (let day = 1; day <= 28; day++) {
-        expect(formatDateToFineract(new Date(2026, 0, day)).split(' ')[0]).toHaveSize(2);
+        expect(formatDateToFineract(new Date(2026, 0, day)).split(' ', 1)[0]).toHaveSize(2);
       }
     });
 

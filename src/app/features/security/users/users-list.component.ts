@@ -37,6 +37,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       title="nav.users"
       helpTextKey="HELP.USERS_DESC"
       createButtonLabel="USERS.CREATE"
+      createPermission="CREATE_USER"
       [columns]="columns"
       [data]="users()"
       [totalRecords]="users().length"

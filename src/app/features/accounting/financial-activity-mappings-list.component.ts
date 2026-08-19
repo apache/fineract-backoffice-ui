@@ -20,6 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
+import { TranslatePipe } from '../../core/adapters';
 import { MappingFinancialActivitiesToAccountsService } from '../../api/api/mappingFinancialActivitiesToAccounts.service';
 import { GetFinancialActivityAccountsResponse } from '../../api/model/models';
 import {
@@ -32,7 +33,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
 @Component({
   selector: 'app-financial-activity-mappings-list',
   standalone: true,
-  imports: [DataTableComponent, CellTemplateDirective, IonIcon, IonButton],
+  imports: [DataTableComponent, CellTemplateDirective, TranslatePipe, IonIcon, IonButton],
   template: `
     <div class="container">
       <app-data-table
@@ -41,6 +42,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
         [columns]="columns"
         [localLogic]="true"
         createButtonLabel="ACCOUNTING.DEFINE_MAPPING"
+        createPermission="CREATE_FINANCIALACTIVITYACCOUNT"
         (create)="onCreate()"
       >
         <ng-template appCellTemplate="financialActivity" let-row>
@@ -53,10 +55,20 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
           {{ row.glAccountData?.glCode || '' }}
         </ng-template>
         <ng-template appCellTemplate="actions" let-row>
-          <ion-button fill="clear" color="primary" (click)="onEdit(row)">
+          <ion-button
+            fill="clear"
+            color="primary"
+            (click)="onEdit(row)"
+            [attr.aria-label]="'COMMON.EDIT' | appTranslate"
+          >
             <ion-icon name="create-outline"></ion-icon>
           </ion-button>
-          <ion-button fill="clear" color="danger" (click)="onDelete(row)">
+          <ion-button
+            fill="clear"
+            color="danger"
+            (click)="onDelete(row)"
+            [attr.aria-label]="'COMMON.DELETE' | appTranslate"
+          >
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
         </ng-template>

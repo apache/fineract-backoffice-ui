@@ -144,7 +144,7 @@ async function expectNoBlockingAccessibilityViolations(
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
   const violations = results.violations
-    .filter((violation) => violation.impact !== null && BLOCKING_IMPACTS.has(violation.impact))
+    .filter((violation) => violation.impact != null && BLOCKING_IMPACTS.has(violation.impact))
     .map((violation) => ({
       ...violation,
       nodes: violation.nodes.filter(

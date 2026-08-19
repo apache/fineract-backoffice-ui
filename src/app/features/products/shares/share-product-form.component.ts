@@ -39,6 +39,17 @@ import {
   IonCol,
 } from '@ionic/angular/standalone';
 import { ProductsService, PostProductsTypeRequest } from '../../../api';
+import { I18N } from '../../../core/adapters';
+import { ProductAccountingSectionComponent } from '../accounting/product-accounting-section.component';
+import {
+  ACCOUNTING_RULE,
+  AccountingMappings,
+  GlAccountOptions,
+  SHARE_ACCOUNTING_FIELDS,
+  SHARE_ACCOUNTING_RULES,
+  mappingsForRule,
+  mappingsFromResponse,
+} from '../accounting/product-accounting.model';
 
 const DEFAULT_CURRENCY = 'USD';
 const DEFAULT_LOCALE = 'en';
@@ -51,6 +62,7 @@ const PRODUCT_TYPE = 'share';
   imports: [
     FormsModule,
     TranslateModule,
+    ProductAccountingSectionComponent,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -205,6 +217,16 @@ const PRODUCT_TYPE = 'share';
               </ion-row>
             </ion-grid>
 
+            <app-product-accounting-section
+              [fields]="accountingFields"
+              [accountOptions]="accountOptions()"
+              [ruleOptions]="ruleOptions"
+              [accountingRule]="product().accountingRule ?? 1"
+              (accountingRuleChange)="product().accountingRule = $event"
+              [mappings]="accountingMappings()"
+              (mappingsChange)="accountingMappings.set($event)"
+            ></app-product-accounting-section>
+
             <div class="form-actions">
               <ion-button
                 id="share-product-cancel-btn"
@@ -263,6 +285,7 @@ const PRODUCT_TYPE = 'share';
 })
 export class ShareProductFormComponent implements OnInit {
   private readonly productService = inject(ProductsService);
+  private readonly i18n = inject(I18N);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -272,6 +295,26 @@ export class ShareProductFormComponent implements OnInit {
   readonly isEditMode = signal(false);
   readonly isSaving = signal(false);
 
+  protected readonly accountingFields = SHARE_ACCOUNTING_FIELDS;
+  readonly accountOptions = signal<GlAccountOptions>({});
+  readonly accountingMappings = signal<AccountingMappings>({});
+
+  /**
+   * The rule selector's options.
+   *
+   * Every other product family reads these from `accountingRuleOptions` on its template. The
+   * share template does not carry that key, so the two rules a share product can meaningfully
+   * hold are named here — see {@link SHARE_ACCOUNTING_RULES} for why accrual is not among them.
+   */
+  readonly ruleOptions = SHARE_ACCOUNTING_RULES.map((id) => ({
+    id,
+    value: this.i18n.translate(
+      id === ACCOUNTING_RULE.NONE
+        ? 'PRODUCTS.ACCOUNTING.RULE_NONE'
+        : 'PRODUCTS.ACCOUNTING.RULE_CASH',
+    ),
+  }));
+
   readonly product = signal<PostProductsTypeRequest>({
     currencyCode: DEFAULT_CURRENCY,
     digitsAfterDecimal: 2,
@@ -279,11 +322,12 @@ export class ShareProductFormComponent implements OnInit {
     totalShares: 1000,
     unitPrice: 1,
     nominalShares: 1,
-    accountingRule: 1,
+    accountingRule: ACCOUNTING_RULE.NONE,
     allowDividendCalculationForInactiveClients: false,
   });
 
   ngOnInit() {
+    this.loadTemplate();
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
@@ -291,6 +335,25 @@ export class ShareProductFormComponent implements OnInit {
         this.isEditMode.set(true);
         this.loadProductData();
       }
+    });
+  }
+
+  /**
+   * Reads the chart of accounts the mapping selects offer.
+   *
+   * The response is typed `string` by the document although it is JSON, hence the cast. Note
+   * that Fineract omits an option list entirely when the tenant holds no accounts of that class
+   * — a chart with no equity account returns no `equityAccountOptions` at all, rather than an
+   * empty array — so the section is written to tolerate any of them being absent.
+   */
+  private loadTemplate(): void {
+    this.productService.getProductsTypeTemplate(PRODUCT_TYPE).subscribe({
+      next: (template) => {
+        const options = (template as unknown as { accountingMappingOptions?: GlAccountOptions })
+          .accountingMappingOptions;
+        this.accountOptions.set(options ?? {});
+      },
+      error: () => this.accountOptions.set({}),
     });
   }
 
@@ -306,24 +369,50 @@ export class ShareProductFormComponent implements OnInit {
         totalShares: data.totalShares,
         unitPrice: data.unitPrice,
         nominalShares: data.nominalShares,
-        accountingRule: 1,
+        accountingRule: data.accountingRule?.id ?? ACCOUNTING_RULE.NONE,
       });
+      this.accountingMappings.set(
+        mappingsFromResponse(
+          this.accountingFields,
+          (data as unknown as { accountingMappings?: object }).accountingMappings,
+        ),
+      );
     });
+  }
+
+  /**
+   * The product plus the mapping ids the selected rule requires, and no others.
+   *
+   * `accountingRule` used to be pinned to `1` here and on load, so every share product this
+   * screen created was unaccounted and editing an accounted one silently reset it. Share capital
+   * is the members' stake in the institution; posting nothing against it is the one line on the
+   * balance sheet that cannot be reconstructed afterwards.
+   */
+  private buildRequest(): PostProductsTypeRequest {
+    return {
+      ...this.product(),
+      locale: DEFAULT_LOCALE,
+      ...mappingsForRule(
+        this.accountingFields,
+        this.product().accountingRule ?? ACCOUNTING_RULE.NONE,
+        this.accountingMappings(),
+      ),
+    };
   }
 
   onSubmit() {
     this.isSaving.set(true);
-    this.product().locale = DEFAULT_LOCALE;
+    const request = this.buildRequest();
 
     if (this.isEditMode() && this.productId) {
       this.productService
-        .putProductsTypeProductId(PRODUCT_TYPE, this.productId, this.product())
+        .putProductsTypeProductId(PRODUCT_TYPE, this.productId, request)
         .subscribe({
           next: () => this.router.navigate([REDIRECT_URL]),
           error: () => this.isSaving.set(false),
         });
     } else {
-      this.productService.postProductsType(PRODUCT_TYPE, this.product()).subscribe({
+      this.productService.postProductsType(PRODUCT_TYPE, request).subscribe({
         next: () => this.router.navigate([REDIRECT_URL]),
         error: () => this.isSaving.set(false),
       });

@@ -27,7 +27,7 @@
 
 export interface GetStatusStandingInstructionSwagger { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 

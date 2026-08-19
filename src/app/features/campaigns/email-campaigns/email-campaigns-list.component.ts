@@ -117,6 +117,7 @@ interface EmailCampaign {
                     color="primary"
                     [title]="'EMAIL_CAMPAIGNS.EDIT' | translate"
                     (click)="navigateToEdit(campaign.id)"
+                    [attr.aria-label]="'EMAIL_CAMPAIGNS.EDIT' | translate"
                   >
                     <ion-icon name="create-outline"></ion-icon>
                   </ion-button>
@@ -125,6 +126,7 @@ interface EmailCampaign {
                     color="secondary"
                     [title]="'EMAIL_CAMPAIGNS.ACTIVATE' | translate"
                     (click)="activate(campaign.id)"
+                    [attr.aria-label]="'EMAIL_CAMPAIGNS.ACTIVATE' | translate"
                   >
                     <ion-icon name="play-outline"></ion-icon>
                   </ion-button>
@@ -133,6 +135,7 @@ interface EmailCampaign {
                     color="danger"
                     [title]="'EMAIL_CAMPAIGNS.DEACTIVATE' | translate"
                     (click)="deactivate(campaign.id)"
+                    [attr.aria-label]="'EMAIL_CAMPAIGNS.DEACTIVATE' | translate"
                   >
                     <ion-icon name="pause-outline"></ion-icon>
                   </ion-button>
@@ -141,6 +144,7 @@ interface EmailCampaign {
                     color="danger"
                     [title]="'EMAIL_CAMPAIGNS.DELETE' | translate"
                     (click)="delete(campaign.id)"
+                    [attr.aria-label]="'EMAIL_CAMPAIGNS.DELETE' | translate"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>

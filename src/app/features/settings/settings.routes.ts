@@ -17,28 +17,40 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const SETTINGS_ROUTES: Routes = [
   {
     path: 'configurations',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_CONFIGURATION' },
     loadComponent: () =>
       import('./global-configurations.component').then((m) => m.GlobalConfigurationsListComponent),
   },
   {
     path: 'holidays',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_HOLIDAY' },
     loadComponent: () => import('./holidays-list.component').then((m) => m.HolidaysListComponent),
   },
   {
     path: 'holidays/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_HOLIDAY' },
     loadComponent: () => import('./holiday-form.component').then((m) => m.HolidayFormComponent),
   },
   {
     path: 'working-days',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_WORKINGDAYS' },
     loadComponent: () => import('./working-days.component').then((m) => m.WorkingDaysComponent),
   },
   {
     path: 'two-factor',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_TWOFACTOR_CONFIGURATION' },
     loadComponent: () =>
       import('./two-factor-config.component').then((m) => m.TwoFactorConfigComponent),
   },

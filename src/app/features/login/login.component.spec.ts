@@ -37,8 +37,15 @@ describe('LoginComponent', () => {
 
   /** Configures the TestBed with the query parameters the login route was reached with. */
   async function setup(queryParams: Record<string, string> = {}) {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['login', 'currentTenantId']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'login',
+      'currentTenantId',
+      'twoFactorPending',
+      'logout',
+    ]);
     authServiceSpy.currentTenantId.and.returnValue('default');
+    // No second factor: what every deployment without `fineract.security.2fa.enabled` sees.
+    authServiceSpy.twoFactorPending.and.returnValue(false);
 
     configServiceSpy = jasmine.createSpyObj('ConfigService', ['setApiUrl', 'isAllowedApiUrl'], {
       apiUrl: mockApiUrl,
@@ -88,7 +95,7 @@ describe('LoginComponent', () => {
       customUrl: '',
       tenantId: 'default',
       username: 'mifos',
-      // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- fixture for a form-submission test, not a credential
+      // A form-submission fixture, not a credential.
       password: 'password123',
     });
 
@@ -108,7 +115,7 @@ describe('LoginComponent', () => {
       customUrl: '',
       tenantId: 'default',
       username: 'mifos',
-      // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- fixture for a form-submission test, not a credential
+      // A form-submission fixture, not a credential.
       password: 'wrongpassword',
     });
 

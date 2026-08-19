@@ -17,8 +17,6 @@ api/businessDateManagement.service.ts
 api/businessStepConfiguration.service.ts
 api/cache.service.ts
 api/calendar.service.ts
-api/cashierJournals.service.ts
-api/cashiers.service.ts
 api/centers.service.ts
 api/charges.service.ts
 api/client.service.ts
@@ -89,9 +87,6 @@ api/loansPointInTime.service.ts
 api/makerCheckerOr4EyeFunctionality.service.ts
 api/mappingFinancialActivitiesToAccounts.service.ts
 api/meetings.service.ts
-api/mixMapping.service.ts
-api/mixReport.service.ts
-api/mixTaxonomy.service.ts
 api/notes.service.ts
 api/notification.service.ts
 api/offices.service.ts
@@ -423,6 +418,7 @@ model/getCentersCenterIdCurrency.ts
 model/getCentersCenterIdResponse.ts
 model/getCentersCenterIdStatus.ts
 model/getCentersDepositType.ts
+model/getCentersGroupMembers.ts
 model/getCentersOfficeOptions.ts
 model/getCentersPageItems.ts
 model/getCentersResponse.ts
@@ -579,6 +575,7 @@ model/getGroupsGroupIdAccountsSavingAccounts.ts
 model/getGroupsGroupIdAccountsSavingCurrency.ts
 model/getGroupsGroupIdAccountsSavingStatus.ts
 model/getGroupsGroupIdAccountsStatus.ts
+model/getGroupsGroupIdClientMembers.ts
 model/getGroupsGroupIdResponse.ts
 model/getGroupsGroupIdTimeline.ts
 model/getGroupsPageItems.ts
@@ -1080,10 +1077,6 @@ model/meetingDeleteResponse.ts
 model/meetingUpdateRequest.ts
 model/meetingUpdateResponse.ts
 model/minimumPaymentPeriodAndRule.ts
-model/mixTaxonomyData.ts
-model/mixTaxonomyMappingData.ts
-model/mixTaxonomyMappingUpdateRequest.ts
-model/mixTaxonomyMappingUpdateResponse.ts
 model/models.ts
 model/monetaryCurrency.ts
 model/money.ts
@@ -1140,6 +1133,7 @@ model/postAdhocQuerySearchRequest.ts
 model/postAllowAttributeOverrides.ts
 model/postAuthenticationRequest.ts
 model/postAuthenticationResponse.ts
+model/postCentersCenterIdChanges.ts
 model/postCentersCenterIdRequest.ts
 model/postCentersCenterIdResponse.ts
 model/postCentersRequest.ts
@@ -1148,6 +1142,7 @@ model/postChargeOffReasonToExpenseAccountMappings.ts
 model/postChargesResponse.ts
 model/postClassificationToIncomeAccountMappings.ts
 model/postClientClientIdAddressesResponse.ts
+model/postClientsClientIdChanges.ts
 model/postClientsClientIdChargesChargeIdRequest.ts
 model/postClientsClientIdChargesChargeIdResponse.ts
 model/postClientsClientIdChargesRequest.ts
@@ -1198,6 +1193,7 @@ model/postGLAccountsRequest.ts
 model/postGLAccountsResponse.ts
 model/postGlClosuresRequest.ts
 model/postGlClosuresResponse.ts
+model/postGroupsGroupIdChanges.ts
 model/postGroupsGroupIdClients.ts
 model/postGroupsGroupIdCommandUnassignStaffRequest.ts
 model/postGroupsGroupIdCommandUnassignStaffResponse.ts
@@ -1230,6 +1226,7 @@ model/postLoansLoanIdChargesRequest.ts
 model/postLoansLoanIdChargesResponse.ts
 model/postLoansLoanIdCollateralsResponse.ts
 model/postLoansLoanIdDisbursementData.ts
+model/postLoansLoanIdGlimApprovalData.ts
 model/postLoansLoanIdOriginatorData.ts
 model/postLoansLoanIdRequest.ts
 model/postLoansLoanIdResponse.ts
@@ -1567,8 +1564,6 @@ model/taxGroup.ts
 model/taxGroupData.ts
 model/taxGroupMappings.ts
 model/taxGroupMappingsData.ts
-model/tellerJournalData.ts
-model/tellerTransactionData.ts
 model/templateCreateRequest.ts
 model/templateCreateResponse.ts
 model/templateData.ts

@@ -17,39 +17,61 @@
  * under the License.
  */
 
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
 
 export const ORGANIZATION_ROUTES: Routes = [
   {
     path: 'offices',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_OFFICE' },
     loadComponent: () =>
       import('./offices/offices-list.component').then((m) => m.OfficesListComponent),
   },
   {
     path: 'offices/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_OFFICE' },
     loadComponent: () =>
       import('./offices/office-form.component').then((m) => m.OfficeFormComponent),
   },
   {
     path: 'offices/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_OFFICE' },
     loadComponent: () =>
       import('./offices/office-form.component').then((m) => m.OfficeFormComponent),
   },
   {
+    path: 'offices/view/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_OFFICE' },
+    loadComponent: () =>
+      import('./offices/office-view.component').then((m) => m.OfficeViewComponent),
+  },
+  {
     path: 'funds',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_FUND' },
     loadComponent: () => import('./funds/funds-list.component').then((m) => m.FundsListComponent),
   },
   {
     path: 'funds/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_FUND' },
     loadComponent: () => import('./funds/fund-form.component').then((m) => m.FundFormComponent),
   },
   {
     path: 'funds/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_FUND' },
     loadComponent: () => import('./funds/fund-form.component').then((m) => m.FundFormComponent),
   },
   {
     path: 'payment-types',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_PAYMENTTYPE' },
     loadComponent: () =>
       import('./payment-types/payment-types-list.component').then(
         (m) => m.PaymentTypesListComponent,
@@ -57,55 +79,69 @@ export const ORGANIZATION_ROUTES: Routes = [
   },
   {
     path: 'payment-types/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_PAYMENTTYPE' },
     loadComponent: () =>
       import('./payment-types/payment-type-form.component').then((m) => m.PaymentTypeFormComponent),
   },
   {
     path: 'payment-types/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_PAYMENTTYPE' },
     loadComponent: () =>
       import('./payment-types/payment-type-form.component').then((m) => m.PaymentTypeFormComponent),
   },
   {
     path: 'staff',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_STAFF' },
     loadComponent: () => import('./staff/staff-list.component').then((m) => m.StaffListComponent),
   },
   {
     path: 'staff/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_STAFF' },
     loadComponent: () => import('./staff/staff-form.component').then((m) => m.StaffFormComponent),
   },
   {
     path: 'staff/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_STAFF' },
     loadComponent: () => import('./staff/staff-form.component').then((m) => m.StaffFormComponent),
   },
   {
     path: 'currencies',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_CURRENCY' },
     loadComponent: () =>
       import('./currencies/currencies.component').then((m) => m.CurrenciesComponent),
-    canActivate: [authGuard],
   },
   {
     path: 'account-number-formats',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_ACCOUNTNUMBERFORMAT' },
     loadComponent: () =>
       import('./account-number-formats/account-number-formats-list.component').then(
         (m) => m.AccountNumberFormatsListComponent,
       ),
-    canActivate: [authGuard],
   },
   {
     path: 'account-number-formats/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_ACCOUNTNUMBERFORMAT' },
     loadComponent: () =>
       import('./account-number-formats/account-number-format-form.component').then(
         (m) => m.AccountNumberFormatFormComponent,
       ),
-    canActivate: [authGuard],
   },
   {
     path: 'account-number-formats/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_ACCOUNTNUMBERFORMAT' },
     loadComponent: () =>
       import('./account-number-formats/account-number-format-form.component').then(
         (m) => m.AccountNumberFormatFormComponent,
       ),
-    canActivate: [authGuard],
   },
   {
     path: 'group-levels',
@@ -114,6 +150,8 @@ export const ORGANIZATION_ROUTES: Routes = [
   },
   {
     path: 'office-transactions',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_OFFICETRANSACTION' },
     loadComponent: () =>
       import('./office-transactions/office-transactions-list.component').then(
         (m) => m.OfficeTransactionsListComponent,
@@ -121,6 +159,8 @@ export const ORGANIZATION_ROUTES: Routes = [
   },
   {
     path: 'office-transactions/create',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'CREATE_OFFICETRANSACTION' },
     loadComponent: () =>
       import('./office-transactions/office-transaction-form.component').then(
         (m) => m.OfficeTransactionFormComponent,

@@ -61,6 +61,50 @@ export interface NavItemConfig {
   children?: NavItemConfig[];
   /** Marks a purely visual separator between sibling items; no other field applies. */
   divider?: boolean;
+  /**
+   * Drives Fineract's `/v1/internal/**` endpoints, which exist only under the backend's `test`
+   * profile. Hidden unless the deployment sets `developerToolsEnabled`.
+   */
+  developerTool?: boolean;
+}
+
+/** A permission-filtered navigation leaf suitable for global search. */
+export interface NavSearchResult {
+  route: string;
+  label: string;
+  groupLabel?: string;
+  icon?: string;
+}
+
+/**
+ * Flattens a navigation tree into searchable leaf routes, carrying the parent
+ * group's label key for display context (e.g. "Organization › Offices").
+ */
+export function flattenNavRoutes(
+  items: readonly NavItemConfig[],
+  groupLabelKey?: string,
+): { route: string; labelKey: string; groupLabelKey?: string; icon?: string }[] {
+  return items.flatMap((item) => {
+    if (item.divider) {
+      return [];
+    }
+    if (item.children) {
+      return flattenNavRoutes(item.children, item.labelKey);
+    }
+    if (!item.route) {
+      return [];
+    }
+    // `icon` is omitted rather than set to undefined so a leaf without one has the shape
+    // its callers and specs describe, instead of a key that is present but empty.
+    return [
+      {
+        route: item.route,
+        labelKey: item.labelKey,
+        groupLabelKey,
+        ...(item.icon ? { icon: item.icon } : {}),
+      },
+    ];
+  });
 }
 
 /** A permission-filtered navigation leaf suitable for global search. */
@@ -103,35 +147,73 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
   { route: '/notifications', labelKey: 'nav.notifications', icon: 'notifications-outline' },
   { route: '/search', labelKey: 'SIDEBAR.SEARCH', icon: 'search-outline' },
   { route: '/profile', labelKey: 'SIDEBAR.PROFILE', icon: 'person-circle-outline' },
-  { route: '/clients', labelKey: 'nav.clients', icon: ICON_PEOPLE_OUTLINE },
-  { route: '/clients/search', labelKey: 'nav.clientSearchV2', icon: 'search-circle-outline' },
-  { route: '/groups', labelKey: 'nav.groups', icon: ICON_PEOPLE_OUTLINE, featureFlag: 'groups' },
-  { route: '/centers', labelKey: 'nav.centers', icon: 'location-outline', featureFlag: 'centers' },
+  {
+    route: '/clients',
+    requiredPermissions: 'READ_CLIENT',
+    labelKey: 'nav.clients',
+    icon: ICON_PEOPLE_OUTLINE,
+  },
+  {
+    route: '/clients/search',
+    requiredPermissions: 'READ_CLIENT',
+    labelKey: 'nav.clientSearchV2',
+    icon: 'search-circle-outline',
+  },
+  {
+    route: '/groups',
+    requiredPermissions: 'READ_GROUP',
+    labelKey: 'nav.groups',
+    icon: ICON_PEOPLE_OUTLINE,
+    featureFlag: 'groups',
+  },
+  {
+    route: '/centers',
+    requiredPermissions: 'READ_CENTER',
+    labelKey: 'nav.centers',
+    icon: 'location-outline',
+    featureFlag: 'centers',
+  },
   {
     route: '/collection-sheet',
+    requiredPermissions: 'READ_COLLECTIONSHEET',
     labelKey: 'nav.collectionSheet',
     icon: ICON_RECEIPT_OUTLINE,
     featureFlag: 'collection_sheet',
   },
-  { route: '/loans', labelKey: 'nav.loans', icon: 'cash-outline' },
+  {
+    route: '/loans',
+    requiredPermissions: 'READ_LOAN',
+    labelKey: 'nav.loans',
+    icon: 'cash-outline',
+  },
   {
     route: '/loans/bulk-reassignment',
+    requiredPermissions: 'BULKREASSIGN_LOAN',
     labelKey: 'nav.bulkReassignment',
     icon: ICON_SWAP_HORIZONTAL_OUTLINE,
   },
-  { route: '/loans/point-in-time', labelKey: 'nav.loansPointInTime', icon: ICON_TIME_OUTLINE },
+  {
+    route: '/loans/point-in-time',
+    requiredPermissions: 'READ_LOAN',
+    labelKey: 'nav.loansPointInTime',
+    icon: ICON_TIME_OUTLINE,
+  },
   {
     route: '/loans/account-locks',
+    requiredPermissions: 'READ_LOAN',
     labelKey: 'LOAN_ACCOUNT_LOCK.TITLE',
     icon: ICON_LOCK_CLOSED_OUTLINE,
+    developerTool: true,
   },
   {
     route: '/loans/cob-catchup',
+    requiredPermissions: 'EXECUTEJOB_SCHEDULER',
     labelKey: 'LOAN_COB_CATCHUP.TITLE',
     icon: 'refresh-circle-outline',
   },
   {
     route: '/loans/schedule-modify',
+    requiredPermissions: 'UPDATE_LOAN',
     labelKey: 'LOAN_SCHEDULE_MODIFY.TITLE',
     icon: 'calendar-number-outline',
   },
@@ -142,7 +224,8 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
         route: '/transfers/account-transfer',
         labelKey: 'nav.accountTransfer',
         icon: ICON_SWAP_HORIZONTAL_OUTLINE,
-        requiredPermissions: 'READ_ACCOUNTTRANSFER',
+        // The screen is a transfer form, not a transfer list; making one is what it needs.
+        requiredPermissions: 'CREATE_ACCOUNTTRANSFER',
       },
       {
         route: '/transfers/standing-instructions',
@@ -156,37 +239,66 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
         icon: ICON_TIME_OUTLINE,
         requiredPermissions: 'READ_STANDINGINSTRUCTION',
       },
-      { route: '/transfers/history', labelKey: 'nav.transferHistory', icon: ICON_TIME_OUTLINE },
+      {
+        route: '/transfers/history',
+        requiredPermissions: 'READ_ACCOUNTTRANSFER',
+        labelKey: 'nav.transferHistory',
+        icon: ICON_TIME_OUTLINE,
+      },
     ],
   },
   {
     labelKey: 'nav.products',
     children: [
-      { route: '/products/loan', labelKey: 'nav.loanProducts', icon: ICON_SWAP_HORIZONTAL_OUTLINE },
-      { route: '/products/savings', labelKey: 'nav.savingsProducts', icon: ICON_WALLET_OUTLINE },
+      {
+        route: '/products/loan',
+        requiredPermissions: 'READ_LOANPRODUCT',
+        labelKey: 'nav.loanProducts',
+        icon: ICON_SWAP_HORIZONTAL_OUTLINE,
+      },
+      {
+        route: '/products/savings',
+        requiredPermissions: 'READ_SAVINGSPRODUCT',
+        labelKey: 'nav.savingsProducts',
+        icon: ICON_WALLET_OUTLINE,
+      },
       {
         route: '/products/fixed',
+        requiredPermissions: 'READ_FIXEDDEPOSITPRODUCT',
         labelKey: 'nav.fixedDepositProducts',
         icon: ICON_BUSINESS_OUTLINE,
       },
       {
         route: '/products/recurring',
+        requiredPermissions: 'READ_RECURRINGDEPOSITPRODUCT',
         labelKey: 'nav.recurringDepositProducts',
         icon: 'refresh-outline',
       },
       { route: '/products/share', labelKey: 'nav.shareProducts', icon: 'pie-chart-outline' },
       {
         route: '/products/tax-components',
+        requiredPermissions: 'READ_TAXCOMPONENT',
         labelKey: 'nav.taxComponents',
         icon: ICON_CALCULATOR_OUTLINE,
       },
-      { route: '/products/tax-groups', labelKey: 'nav.taxGroups', icon: ICON_RECEIPT_OUTLINE },
+      {
+        route: '/products/tax-groups',
+        requiredPermissions: 'READ_TAXGROUP',
+        labelKey: 'nav.taxGroups',
+        icon: ICON_RECEIPT_OUTLINE,
+      },
       {
         route: '/products/floating-rates',
+        requiredPermissions: 'READ_FLOATINGRATE',
         labelKey: 'nav.floatingRates',
         icon: ICON_TRENDING_UP_OUTLINE,
       },
-      { route: '/products/rates', labelKey: 'nav.rates', icon: ICON_CALCULATOR_OUTLINE },
+      {
+        route: '/products/rates',
+        requiredPermissions: 'READ_RATE',
+        labelKey: 'nav.rates',
+        icon: ICON_CALCULATOR_OUTLINE,
+      },
       {
         route: '/products/interest-rate-charts',
         labelKey: 'nav.interestRateCharts',
@@ -194,6 +306,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       },
       {
         route: '/products/loan-originators',
+        requiredPermissions: 'READ_LOAN_ORIGINATOR',
         labelKey: 'nav.loanOriginators',
         icon: 'people-circle-outline',
       },
@@ -205,16 +318,19 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       { labelKey: '', divider: true },
       {
         route: '/products/savings-accounts',
+        requiredPermissions: 'READ_SAVINGSACCOUNT',
         labelKey: 'nav.savingsAccounts',
         icon: ICON_WALLET_OUTLINE,
       },
       {
         route: '/products/fixed-deposits',
+        requiredPermissions: 'READ_FIXEDDEPOSITACCOUNT',
         labelKey: 'nav.fixedDeposits',
         icon: ICON_LOCK_CLOSED_OUTLINE,
       },
       {
         route: '/products/recurring-deposits',
+        requiredPermissions: 'READ_RECURRINGDEPOSITACCOUNT',
         labelKey: 'nav.recurringDeposits',
         icon: ICON_TIME_OUTLINE,
       },
@@ -250,26 +366,37 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       },
       {
         route: '/working-capital/loans/account-locks',
+        requiredPermissions: 'READ_WORKINGCAPITALLOAN',
         labelKey: 'WC_LOAN_ACCOUNT_LOCK.TITLE',
         icon: ICON_LOCK_CLOSED_OUTLINE,
+        developerTool: true,
       },
       {
         route: '/working-capital/loans/cob-catchup',
+        requiredPermissions: 'EXECUTEJOB_SCHEDULER',
         labelKey: 'WC_LOAN_COB_CATCHUP.TITLE',
         icon: 'refresh-circle-outline',
       },
-      { route: '/admin/wc-cob-tools', labelKey: 'WC_COB_TOOLS.TITLE', icon: ICON_OPTIONS_OUTLINE },
+      {
+        route: '/admin/wc-cob-tools',
+        requiredPermissions: 'EXECUTEJOB_SCHEDULER',
+        labelKey: 'WC_COB_TOOLS.TITLE',
+        icon: ICON_OPTIONS_OUTLINE,
+        developerTool: true,
+      },
     ],
   },
   {
-    labelKey: 'nav.spmMix',
+    labelKey: 'nav.spm',
     children: [
       { route: '/spm/surveys', labelKey: 'nav.spmSurveys', icon: 'bar-chart-outline' },
       { route: '/spm/poverty-line', labelKey: 'nav.povertyLine', icon: 'trending-down-outline' },
-      { route: '/spm/likelihood', labelKey: 'nav.likelihood', icon: 'analytics-outline' },
-      { route: '/mix/mapping', labelKey: 'nav.mixMapping', icon: 'link-outline' },
-      { route: '/mix/report', labelKey: 'nav.mixReport', icon: ICON_DOCUMENT_TEXT_OUTLINE },
-      { route: '/mix/taxonomy', labelKey: 'nav.mixTaxonomy', icon: ICON_GIT_NETWORK_OUTLINE },
+      {
+        route: '/spm/likelihood',
+        requiredPermissions: 'UPDATE_LIKELIHOOD',
+        labelKey: 'nav.likelihood',
+        icon: 'analytics-outline',
+      },
       {
         route: '/spm/survey-responses',
         labelKey: 'SURVEY_RESPONSES.TITLE',
@@ -294,6 +421,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       },
       {
         route: '/campaigns/email-messages',
+        requiredPermissions: 'READ_EMAIL_CAMPAIGN',
         labelKey: 'EMAIL_MESSAGES.TITLE',
         icon: 'mail-outline',
       },
@@ -310,6 +438,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       },
       {
         route: '/interop/accounts',
+        requiredPermissions: 'READ_INTERID',
         labelKey: 'INTEROP.ACCOUNT_TITLE',
         icon: ICON_BUSINESS_OUTLINE,
       },
@@ -325,7 +454,12 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
         icon: ICON_SWAP_HORIZONTAL_OUTLINE,
         requiredPermissions: 'READ_INTERTRANSFER',
       },
-      { route: '/interop/health', labelKey: 'INTEROP.HEALTH_TITLE', icon: 'pulse-outline' },
+      {
+        route: '/interop/health',
+        requiredPermissions: 'READ_INTERID',
+        labelKey: 'INTEROP.HEALTH_TITLE',
+        icon: 'pulse-outline',
+      },
     ],
   },
   {
@@ -334,21 +468,43 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
     children: [
       {
         route: '/admin/batch-operations',
+        requiredPermissions: 'ALL_FUNCTIONS',
         labelKey: 'BATCH_OPERATIONS.TITLE',
         icon: 'layers-outline',
       },
-      { route: '/admin/inline-job', labelKey: 'INLINE_JOB.TITLE', icon: 'play-circle-outline' },
-      { route: '/admin/cob-tools', labelKey: 'COB_TOOLS.TITLE', icon: 'construct-outline' },
-      { route: '/admin/wc-cob-tools', labelKey: 'WC_COB_TOOLS.TITLE', icon: 'build-outline' },
+      {
+        route: '/admin/inline-job',
+        requiredPermissions: 'EXECUTEJOB_SCHEDULER',
+        labelKey: 'INLINE_JOB.TITLE',
+        icon: 'play-circle-outline',
+      },
+      {
+        route: '/admin/cob-tools',
+        requiredPermissions: 'EXECUTEJOB_SCHEDULER',
+        labelKey: 'COB_TOOLS.TITLE',
+        icon: 'construct-outline',
+        developerTool: true,
+      },
+      {
+        route: '/admin/wc-cob-tools',
+        requiredPermissions: 'EXECUTEJOB_SCHEDULER',
+        labelKey: 'WC_COB_TOOLS.TITLE',
+        icon: 'build-outline',
+        developerTool: true,
+      },
       {
         route: '/admin/external-events',
+        requiredPermissions: 'READ_EXTERNAL_EVENT_CONFIGURATION',
         labelKey: 'EXTERNAL_EVENTS.TITLE',
         icon: ICON_CALENDAR_OUTLINE,
+        developerTool: true,
       },
       {
         route: '/admin/progressive-loan',
+        requiredPermissions: 'READ_LOANPRODUCT',
         labelKey: 'PROGRESSIVE_LOAN.TITLE',
         icon: ICON_TRENDING_UP_OUTLINE,
+        developerTool: true,
       },
     ],
   },
@@ -368,26 +524,52 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
     children: [
       {
         route: '/accounting/chart-of-accounts',
+        requiredPermissions: 'READ_GLACCOUNT',
         labelKey: 'nav.chartOfAccounts',
         icon: ICON_GIT_NETWORK_OUTLINE,
       },
       {
         route: '/accounting/journal-entries',
+        requiredPermissions: 'READ_JOURNALENTRY',
         labelKey: 'nav.journalEntries',
         icon: 'book-outline',
       },
       {
+        route: '/accounting/frequent-postings',
+        requiredPermissions: 'CREATE_JOURNALENTRY',
+        labelKey: 'nav.frequentPostings',
+        icon: 'flash-outline',
+      },
+      {
+        route: '/accounting/opening-balances',
+        requiredPermissions: 'DEFINEOPENINGBALANCE_JOURNALENTRY',
+        labelKey: 'nav.openingBalances',
+        icon: 'play-outline',
+      },
+      {
         route: '/accounting/closures',
+        requiredPermissions: 'READ_GLCLOSURE',
         labelKey: 'nav.accountingClosures',
         icon: 'clipboard-outline',
       },
-      { route: '/accounting/rules', labelKey: 'nav.accountingRules', icon: 'hammer-outline' },
+      {
+        route: '/accounting/rules',
+        requiredPermissions: 'READ_ACCOUNTINGRULE',
+        labelKey: 'nav.accountingRules',
+        icon: 'hammer-outline',
+      },
       {
         route: '/accounting/financial-activity-mappings',
+        requiredPermissions: 'READ_FINANCIALACTIVITYACCOUNT',
         labelKey: 'nav.financialActivityMappings',
         icon: ICON_SWAP_HORIZONTAL_OUTLINE,
       },
-      { route: '/accounting/charges', labelKey: 'nav.charges', icon: ICON_CALCULATOR_OUTLINE },
+      {
+        route: '/accounting/charges',
+        requiredPermissions: 'READ_CHARGE',
+        labelKey: 'nav.charges',
+        icon: ICON_CALCULATOR_OUTLINE,
+      },
       {
         route: '/accounting/provisioning-categories',
         labelKey: 'nav.provisioningCategories',
@@ -405,6 +587,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       },
       {
         route: '/accounting/run-accruals',
+        requiredPermissions: 'EXECUTEJOB_SCHEDULER',
         labelKey: 'nav.runAccruals',
         icon: ICON_CALCULATOR_OUTLINE,
       },
@@ -413,21 +596,54 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
   {
     labelKey: 'nav.tasks',
     children: [
-      { route: '/tasks/checker-inbox', labelKey: 'nav.checker_inbox', icon: 'file-tray-outline' },
+      {
+        route: '/tasks/work-queues',
+        requiredPermissions: ['READ_LOAN', 'READ_CLIENT'],
+        labelKey: 'nav.workQueues',
+        icon: 'checkmark-done-outline',
+      },
+      {
+        route: '/tasks/checker-inbox',
+        requiredPermissions: 'READ_AUDIT',
+        labelKey: 'nav.checker_inbox',
+        icon: 'file-tray-outline',
+      },
     ],
   },
   {
     labelKey: 'nav.security',
     requiredPermissions: ['READ_USER', 'READ_ROLE', 'READ_AUDIT'],
     children: [
-      { route: '/security/users', labelKey: 'nav.users', icon: 'person-outline' },
-      { route: '/security/roles', labelKey: 'nav.roles', icon: 'person-circle-outline' },
-      { route: '/security/audits', labelKey: 'nav.audits', icon: 'git-commit-outline' },
+      {
+        route: '/security/users',
+        requiredPermissions: 'READ_USER',
+        labelKey: 'nav.users',
+        icon: 'person-outline',
+      },
+      {
+        route: '/security/roles',
+        requiredPermissions: 'READ_ROLE',
+        labelKey: 'nav.roles',
+        icon: 'person-circle-outline',
+      },
+      {
+        route: '/security/audits',
+        requiredPermissions: 'READ_AUDIT',
+        labelKey: 'nav.audits',
+        icon: 'git-commit-outline',
+      },
     ],
   },
   {
     labelKey: 'nav.reporting',
-    children: [{ route: '/reporting', labelKey: 'nav.reports', icon: 'bar-chart-outline' }],
+    children: [
+      {
+        route: '/reporting',
+        requiredPermissions: 'READ_REPORT',
+        labelKey: 'nav.reports',
+        icon: 'bar-chart-outline',
+      },
+    ],
   },
   {
     labelKey: 'nav.settings',
@@ -435,13 +651,25 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
     children: [
       {
         route: '/settings/configurations',
+        requiredPermissions: 'READ_CONFIGURATION',
         labelKey: 'nav.globalConfigurations',
         icon: ICON_OPTIONS_OUTLINE,
       },
-      { route: '/settings/holidays', labelKey: 'nav.holidays', icon: 'calendar-clear-outline' },
-      { route: '/settings/working-days', labelKey: 'nav.workingDays', icon: ICON_CALENDAR_OUTLINE },
+      {
+        route: '/settings/holidays',
+        requiredPermissions: 'READ_HOLIDAY',
+        labelKey: 'nav.holidays',
+        icon: 'calendar-clear-outline',
+      },
+      {
+        route: '/settings/working-days',
+        requiredPermissions: 'READ_WORKINGDAYS',
+        labelKey: 'nav.workingDays',
+        icon: ICON_CALENDAR_OUTLINE,
+      },
       {
         route: '/settings/two-factor',
+        requiredPermissions: 'READ_TWOFACTOR_CONFIGURATION',
         labelKey: 'TWO_FACTOR_CONFIG.TITLE',
         icon: 'shield-outline',
       },
@@ -454,23 +682,32 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
   },
   {
     labelKey: 'nav.tellerOperations',
-    children: [
-      { route: '/tellers', labelKey: 'nav.tellers', icon: 'storefront-outline' },
-      {
-        route: '/tellers/cashier-journals',
-        labelKey: 'nav.cashierJournals',
-        icon: 'book-outline',
-      },
-    ],
+    children: [{ route: '/tellers', labelKey: 'nav.tellers', icon: 'storefront-outline' }],
   },
   {
     labelKey: 'nav.organization',
     children: [
-      { route: '/organization/offices', labelKey: 'nav.offices', icon: ICON_BUSINESS_OUTLINE },
-      { route: '/organization/staff', labelKey: 'nav.staff', icon: 'id-card-outline' },
-      { route: '/organization/funds', labelKey: 'nav.funds', icon: ICON_WALLET_OUTLINE },
+      {
+        route: '/organization/offices',
+        requiredPermissions: 'READ_OFFICE',
+        labelKey: 'nav.offices',
+        icon: ICON_BUSINESS_OUTLINE,
+      },
+      {
+        route: '/organization/staff',
+        requiredPermissions: 'READ_STAFF',
+        labelKey: 'nav.staff',
+        icon: 'id-card-outline',
+      },
+      {
+        route: '/organization/funds',
+        requiredPermissions: 'READ_FUND',
+        labelKey: 'nav.funds',
+        icon: ICON_WALLET_OUTLINE,
+      },
       {
         route: '/organization/payment-types',
+        requiredPermissions: 'READ_PAYMENTTYPE',
         labelKey: 'nav.paymentTypes',
         icon: 'cash-outline',
       },
@@ -481,16 +718,19 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       },
       {
         route: '/organization/currencies',
+        requiredPermissions: 'READ_CURRENCY',
         labelKey: 'nav.currencies',
         icon: ICON_SWAP_HORIZONTAL_OUTLINE,
       },
       {
         route: '/organization/account-number-formats',
+        requiredPermissions: 'READ_ACCOUNTNUMBERFORMAT',
         labelKey: 'nav.accountNumberFormats',
         icon: 'list-outline',
       },
       {
         route: '/organization/office-transactions',
+        requiredPermissions: 'READ_OFFICETRANSACTION',
         labelKey: 'OFFICE_TRANSACTIONS.TITLE',
         icon: ICON_SWAP_HORIZONTAL_OUTLINE,
       },
@@ -500,24 +740,58 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
     labelKey: 'nav.system',
     requiredPermissions: ['READ_DATATABLE', 'READ_HOOK'],
     children: [
-      { route: '/system/data-tables', labelKey: 'nav.dataTables', icon: ICON_GRID_OUTLINE },
-      { route: '/system/bulk-import', labelKey: 'nav.bulkImport', icon: 'cloud-upload-outline' },
-      { route: '/system/delinquency', labelKey: 'nav.delinquency', icon: 'hammer-outline' },
-      { route: '/system/hooks', labelKey: 'nav.hooks', icon: ICON_GIT_NETWORK_OUTLINE },
+      {
+        route: '/system/data-tables',
+        requiredPermissions: 'READ_DATATABLE',
+        labelKey: 'nav.dataTables',
+        icon: ICON_GRID_OUTLINE,
+      },
+      {
+        route: '/system/bulk-import',
+        requiredPermissions: 'READ_IMPORT',
+        labelKey: 'nav.bulkImport',
+        icon: 'cloud-upload-outline',
+      },
+      {
+        route: '/system/delinquency',
+        requiredPermissions: 'READ_DELINQUENCY_BUCKET',
+        labelKey: 'nav.delinquency',
+        icon: 'hammer-outline',
+      },
+      {
+        route: '/system/hooks',
+        requiredPermissions: 'READ_HOOK',
+        labelKey: 'nav.hooks',
+        icon: ICON_GIT_NETWORK_OUTLINE,
+      },
       {
         route: '/system/credit-bureau-config',
+        requiredPermissions: 'UPDATE_CREDITBUREAU_CONFIGURATION',
         labelKey: 'nav.creditBureauConfig',
         icon: 'card-outline',
       },
       { route: '/system/adhoc-query', labelKey: 'nav.adhocQuery', icon: 'analytics-outline' },
-      { route: '/system/sms', labelKey: 'nav.sms', icon: 'chatbubble-outline' },
+      {
+        route: '/system/sms',
+        requiredPermissions: 'READ_SMS',
+        labelKey: 'nav.sms',
+        icon: 'chatbubble-outline',
+      },
+      {
+        route: '/system/report-definitions',
+        requiredPermissions: 'READ_REPORT',
+        labelKey: 'nav.reportDefinitions',
+        icon: 'document-text-outline',
+      },
       {
         route: '/system/report-mailing-jobs',
+        requiredPermissions: 'READ_REPORTMAILINGJOB',
         labelKey: 'nav.reportMailingJobs',
         icon: 'mail-open-outline',
       },
       {
         route: '/system/entity-data-table-checks',
+        requiredPermissions: 'READ_ENTITY_DATATABLE_CHECK',
         labelKey: 'nav.entityDataTableChecks',
         icon: 'checkbox-outline',
       },
@@ -528,37 +802,49 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       },
       {
         route: '/system/scheduler-jobs',
+        requiredPermissions: 'READ_SCHEDULER',
         labelKey: 'nav.schedulerJobs',
         icon: ICON_TIME_OUTLINE,
       },
       {
         route: '/system/permissions',
+        requiredPermissions: 'READ_PERMISSION',
         labelKey: 'nav.permissions',
         icon: 'shield-checkmark-outline',
       },
       {
         route: '/system/business-steps',
+        requiredPermissions: 'UPDATE_BATCH_BUSINESS_STEP',
         labelKey: 'nav.businessSteps',
         icon: ICON_OPTIONS_OUTLINE,
       },
-      { route: '/system/cache', labelKey: 'nav.cache', icon: 'hardware-chip-outline' },
+      {
+        route: '/system/cache',
+        requiredPermissions: 'READ_CACHE',
+        labelKey: 'nav.cache',
+        icon: 'hardware-chip-outline',
+      },
       {
         route: '/system/external-events',
+        requiredPermissions: 'READ_EXTERNAL_EVENT_CONFIGURATION',
         labelKey: 'nav.externalEvents',
         icon: ICON_CALENDAR_OUTLINE,
       },
       {
         route: '/system/external-services',
+        requiredPermissions: 'UPDATE_EXTERNALSERVICES',
         labelKey: 'nav.externalServices',
         icon: 'cloud-outline',
       },
       {
         route: '/system/password-preferences',
+        requiredPermissions: 'READ_PASSWORD_PREFERENCES',
         labelKey: 'nav.passwordPreferences',
         icon: 'key-outline',
       },
       {
         route: '/system/notifications-config',
+        requiredPermissions: 'READ_EMAIL_CONFIGURATION',
         labelKey: 'nav.notificationsConfig',
         icon: 'notifications-outline',
       },
@@ -578,13 +864,24 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
         labelKey: 'nav.loanProductDetails',
         icon: ICON_DOCUMENT_TEXT_OUTLINE,
       },
-      { route: '/system/codes', labelKey: 'nav.codes', icon: 'code-slash-outline' },
+      {
+        route: '/system/codes',
+        requiredPermissions: 'READ_CODE',
+        labelKey: 'nav.codes',
+        icon: 'code-slash-outline',
+      },
       {
         route: '/system/business-dates',
+        requiredPermissions: 'READ_BUSINESS_DATE',
         labelKey: 'nav.businessDates',
         icon: 'today-outline',
       },
-      { route: '/system/templates', labelKey: 'nav.templates', icon: ICON_DOCUMENT_TEXT_OUTLINE },
+      {
+        route: '/system/templates',
+        requiredPermissions: 'READ_TEMPLATE',
+        labelKey: 'nav.templates',
+        icon: ICON_DOCUMENT_TEXT_OUTLINE,
+      },
     ],
   },
 ];
@@ -661,7 +958,7 @@ export class NavigationConfigService {
   readonly navConfig: readonly NavItemConfig[] = NAV_CONFIG;
 
   /** `labelKey`s this deployment hides outright, whatever the user's permissions. */
-  private readonly hidden = computed(() => new Set(this.overrides().hidden ?? []));
+  private readonly hidden = computed(() => new Set(this.overrides().hidden));
 
   /**
    * Reactive, filtered navigation tree — recomputed whenever the current
@@ -672,6 +969,7 @@ export class NavigationConfigService {
     this.authService.currentUser();
     this.institutionConfig.institutionType();
     this.config.rbacEnabled();
+    this.config.developerToolsEnabled();
     this.hidden();
     return filterNavItems(NAV_CONFIG, (item) => this.isItemVisible(item));
   });
@@ -680,6 +978,13 @@ export class NavigationConfigService {
     // Checked before the RBAC short-circuit: hiding an entry is what this deployment offers,
     // which is a separate question from what this user is allowed to reach.
     if (this.hidden().has(item.labelKey)) {
+      return false;
+    }
+
+    // Checked before the RBAC short-circuit, and for the same reason the `hidden` check is:
+    // turning RBAC off means "show this user everything they may reach", not "expose endpoints
+    // this deployment cannot serve". A developer tool stays hidden either way.
+    if (item.developerTool && !this.config.developerToolsEnabled()) {
       return false;
     }
 
@@ -714,18 +1019,29 @@ export class NavigationConfigService {
       return [];
     }
 
-    return flattenNavRoutes(this.filteredNavItems())
+    const candidates = flattenNavRoutes(this.filteredNavItems())
       .filter((entry) => entry.route !== '/search')
       .map((entry) => ({
         route: entry.route,
         label: this.i18n.translate(entry.labelKey),
         groupLabel: entry.groupLabelKey ? this.i18n.translate(entry.groupLabelKey) : undefined,
         icon: entry.icon,
-      }))
-      .filter((result) => {
-        const haystack = [result.label, result.groupLabel].filter(Boolean).join(' ').toLowerCase();
-        return haystack.includes(normalizedQuery);
-      })
-      .slice(0, limit);
+      }));
+
+    // Partitioned rather than scored and sorted, because the only ordering that matters is
+    // this one: a page whose own name matches comes before a page matched only through its
+    // section. Ranking them together would let "organization" fill the whole result list
+    // with every leaf beneath Organization — and in the header, where the limit is small,
+    // that pushes the entity hits off the bottom.
+    const named = candidates.filter((result) =>
+      result.label.toLowerCase().includes(normalizedQuery),
+    );
+    const bySection = candidates.filter(
+      (result) =>
+        !result.label.toLowerCase().includes(normalizedQuery) &&
+        result.groupLabel?.toLowerCase().includes(normalizedQuery),
+    );
+
+    return [...named, ...bySection].slice(0, limit);
   }
 }

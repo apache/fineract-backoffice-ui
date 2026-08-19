@@ -75,7 +75,7 @@ describe('BrowserDownloadAdapter', () => {
 
     it('reduces a server-supplied path to its basename', () => {
       expect(savedNameFor('../../etc/passwd')).toBe('passwd');
-      expect(savedNameFor('C:\\Windows\\System32\\drivers\\etc\\hosts')).toBe('hosts');
+      expect(savedNameFor(String.raw`C:\Windows\System32\drivers\etc\hosts`)).toBe('hosts');
     });
 
     it('keeps spaces, which are a legitimate part of a filename', () => {

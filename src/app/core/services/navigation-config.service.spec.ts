@@ -30,6 +30,7 @@ import {
 } from './navigation-config.service';
 import type { AppConfig } from './config.service';
 import { provideTestConfig } from '../../testing/config';
+import { provideFakeAdapters } from '../../testing/adapters';
 
 describe('filterNavItems (pure function)', () => {
   const alwaysVisible = () => true;
@@ -126,7 +127,10 @@ describe('flattenNavRoutes (pure function)', () => {
   it('skips dividers and group headers without routes', () => {
     const items: NavItemConfig[] = [
       { labelKey: '', divider: true },
-      { labelKey: 'nav.products', children: [{ route: '/products/loan', labelKey: 'nav.loanProducts' }] },
+      {
+        labelKey: 'nav.products',
+        children: [{ route: '/products/loan', labelKey: 'nav.loanProducts' }],
+      },
     ];
 
     expect(flattenNavRoutes(items)).toEqual([
@@ -166,8 +170,11 @@ describe('NavigationConfigService', () => {
       (item) => item.route === route || (item.children && findRoute(item.children, route)),
     );
 
+  const COB_TOOLS_ROUTE = '/admin/cob-tools';
+  const PLACE_LOCK_ROUTE = '/working-capital/loans/account-locks';
   const SECURITY_USERS_ROUTE = '/security/users';
   const ACCOUNTING_CHART_ROUTE = '/accounting/chart-of-accounts';
+  const TRANSFER_HISTORY_ROUTE = '/transfers/history';
 
   /** Configures the TestBed with the deployment configuration under test. */
   function configure(config: Partial<AppConfig> = {}): void {
@@ -179,6 +186,9 @@ describe('NavigationConfigService', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestConfig({ rbacEnabled: true, ...config }),
+        // searchRoutes matches on the translated label, because that is what the user
+        // typed; the fake adapter echoes the key, which is enough to exercise the match.
+        ...provideFakeAdapters().providers,
       ],
     });
     service = TestBed.inject(NavigationConfigService);
@@ -223,11 +233,14 @@ describe('NavigationConfigService', () => {
     expect(findRoute(items, '/dashboard')).toBeTrue();
   });
 
-  it('shows a permission-gated group once the user has any of its required permissions', () => {
+  it('shows the entries a permission covers, and only those, within a gated group', () => {
     setPermissions(['READ_USER']);
     const items = service.filteredNavItems();
     expect(findRoute(items, SECURITY_USERS_ROUTE)).toBeTrue();
-    expect(findRoute(items, '/security/roles')).toBeTrue();
+    // Every entry now carries the permission its own route declares, so a sibling the user
+    // cannot open stays hidden rather than riding in on a group-level gate.
+    expect(findRoute(items, '/security/roles')).toBeFalse();
+    expect(findRoute(items, '/security/audits')).toBeFalse();
     // other gated groups the user lacks permissions for stay hidden
     expect(findRoute(items, ACCOUNTING_CHART_ROUTE)).toBeFalse();
   });
@@ -307,14 +320,18 @@ describe('NavigationConfigService', () => {
       expect(findRoute(items, STANDING_INSTRUCTIONS_ROUTE)).toBeFalse();
       expect(findRoute(items, STANDING_INSTRUCTIONS_HISTORY_ROUTE)).toBeFalse();
 
-      // ungated siblings within the same groups remain visible
-      expect(findRoute(items, '/interop/accounts')).toBeTrue();
-      expect(findRoute(items, '/interop/health')).toBeTrue();
-      expect(findRoute(items, '/campaigns/email-messages')).toBeTrue();
-      expect(findRoute(items, '/working-capital/loans/account-locks')).toBeTrue();
-      expect(findRoute(items, '/working-capital/loans/cob-catchup')).toBeTrue();
-      expect(findRoute(items, '/admin/wc-cob-tools')).toBeTrue();
-      expect(findRoute(items, '/transfers/history')).toBeTrue();
+      // These were the ungated siblings when this test was written. Every routed entry now
+      // carries its route's permission, so a user with none of them sees none of these either.
+      expect(findRoute(items, '/interop/accounts')).toBeFalse();
+      expect(findRoute(items, '/interop/health')).toBeFalse();
+      expect(findRoute(items, '/campaigns/email-messages')).toBeFalse();
+      expect(findRoute(items, '/working-capital/loans/cob-catchup')).toBeFalse();
+      expect(findRoute(items, TRANSFER_HISTORY_ROUTE)).toBeFalse();
+
+      // Hidden for a different reason than the twelve above: these drive Fineract's
+      // /v1/internal endpoints and are gated by `developerToolsEnabled`, not by permission.
+      expect(findRoute(items, '/working-capital/loans/account-locks')).toBeFalse();
+      expect(findRoute(items, '/admin/wc-cob-tools')).toBeFalse();
     });
 
     it('shows only the specific interop routes the user has permission for', () => {
@@ -341,13 +358,20 @@ describe('NavigationConfigService', () => {
       expect(findRoute(items, WC_NEAR_BREACH_ROUTE)).toBeFalse();
     });
 
-    it('shows Account Transfer once the user has READ_ACCOUNTTRANSFER, without granting sibling gates', () => {
+    it('separates reading transfers from making one', () => {
+      // The Account Transfer screen is a form that posts a transfer, so it needs
+      // CREATE_ACCOUNTTRANSFER. READ_ACCOUNTTRANSFER opens the history and nothing else —
+      // offering the form to a user who can only read would lead straight to a refusal.
       setPermissions(['READ_ACCOUNTTRANSFER']);
-      const items = service.filteredNavItems();
-      expect(findRoute(items, ACCOUNT_TRANSFER_ROUTE)).toBeTrue();
+      let items = service.filteredNavItems();
+      expect(findRoute(items, TRANSFER_HISTORY_ROUTE)).toBeTrue();
+      expect(findRoute(items, ACCOUNT_TRANSFER_ROUTE)).toBeFalse();
       expect(findRoute(items, STANDING_INSTRUCTIONS_ROUTE)).toBeFalse();
-      // ungated sibling still visible regardless
-      expect(findRoute(items, '/transfers/history')).toBeTrue();
+
+      setPermissions(['CREATE_ACCOUNTTRANSFER']);
+      items = service.filteredNavItems();
+      expect(findRoute(items, ACCOUNT_TRANSFER_ROUTE)).toBeTrue();
+      expect(findRoute(items, TRANSFER_HISTORY_ROUTE)).toBeFalse();
     });
 
     it('shows both Standing Instructions routes once the user has READ_STANDINGINSTRUCTION', () => {
@@ -373,6 +397,59 @@ describe('NavigationConfigService', () => {
       expect(findRoute(items, ACCOUNT_TRANSFER_ROUTE)).toBeTrue();
       expect(findRoute(items, STANDING_INSTRUCTIONS_ROUTE)).toBeTrue();
       expect(findRoute(items, STANDING_INSTRUCTIONS_HISTORY_ROUTE)).toBeTrue();
+    });
+  });
+
+  describe('route permission parity', () => {
+    it('shows a read-only user the lists and none of the forms', () => {
+      // ALL_FUNCTIONS_READ admits a request only when every required code is a READ_* one, so
+      // gating list and form routes on different codes is what makes this distinction work.
+      setPermissions(['ALL_FUNCTIONS_READ']);
+      const items = service.filteredNavItems();
+      expect(findRoute(items, '/clients')).toBeTrue();
+      expect(findRoute(items, '/loans')).toBeTrue();
+      expect(findRoute(items, ACCOUNTING_CHART_ROUTE)).toBeTrue();
+      // Write-only entries: no READ_* code covers them, so the read-only shortcut does not apply.
+      expect(findRoute(items, '/transfers/account-transfer')).toBeFalse();
+      expect(findRoute(items, '/loans/schedule-modify')).toBeFalse();
+      expect(findRoute(items, '/system/external-services')).toBeFalse();
+    });
+
+    it('hides a whole group when the user holds none of its entries permissions', () => {
+      setPermissions(['READ_CLIENT']);
+      const items = service.filteredNavItems();
+      expect(findRoute(items, '/clients')).toBeTrue();
+      // filterNavItems drops a group once every child is filtered out; with only READ_CLIENT
+      // the accounting group has nothing left to show.
+      expect(items.some((item) => item.labelKey === 'nav.accounting')).toBeFalse();
+      expect(items.some((item) => item.labelKey === 'nav.security')).toBeFalse();
+    });
+
+    it('does not let one permission leak a sibling entry in the same group', () => {
+      setPermissions(['READ_OFFICE']);
+      const items = service.filteredNavItems();
+      expect(findRoute(items, '/organization/offices')).toBeTrue();
+      expect(findRoute(items, '/organization/staff')).toBeFalse();
+      expect(findRoute(items, '/organization/funds')).toBeFalse();
+      expect(findRoute(items, '/organization/payment-types')).toBeFalse();
+    });
+
+    it('leaves the self-service entries reachable to a user with no permissions at all', () => {
+      // These carry no gate by design; a user refused everywhere else must still land
+      // somewhere and be able to reach their own profile.
+      setPermissions([]);
+      const items = service.filteredNavItems();
+      expect(findRoute(items, '/dashboard')).toBeTrue();
+      expect(findRoute(items, '/profile')).toBeTrue();
+      expect(findRoute(items, '/search')).toBeTrue();
+      expect(findRoute(items, '/notifications')).toBeTrue();
+    });
+
+    it('never treats an unknown permission code as a wildcard', () => {
+      setPermissions(['NOT_A_REAL_PERMISSION']);
+      const items = service.filteredNavItems();
+      expect(findRoute(items, '/clients')).toBeFalse();
+      expect(findRoute(items, ACCOUNTING_CHART_ROUTE)).toBeFalse();
     });
   });
 
@@ -427,6 +504,42 @@ describe('NavigationConfigService', () => {
     });
   });
 
+  describe('developer tools', () => {
+    /**
+     * These screens drive Fineract's /v1/internal endpoints, which the backend serves only under
+     * its test Spring profile and which answer 404 on a normal deployment.
+     */
+    it('hides the internal-endpoint screens by default', () => {
+      TestBed.resetTestingModule();
+      configure();
+      setPermissions(['ALL_FUNCTIONS']);
+
+      expect(findRoute(service.filteredNavItems(), COB_TOOLS_ROUTE)).toBeFalse();
+      expect(findRoute(service.filteredNavItems(), PLACE_LOCK_ROUTE)).toBeFalse();
+    });
+
+    it('shows them when the deployment opts in', () => {
+      TestBed.resetTestingModule();
+      configure({ developerToolsEnabled: true });
+      setPermissions(['ALL_FUNCTIONS']);
+
+      expect(findRoute(service.filteredNavItems(), COB_TOOLS_ROUTE)).toBeTrue();
+      expect(findRoute(service.filteredNavItems(), PLACE_LOCK_ROUTE)).toBeTrue();
+    });
+
+    /**
+     * Turning RBAC off means "show this user everything they may reach", not "expose endpoints
+     * this deployment cannot serve" — so the developer-tool check sits before that short-circuit.
+     */
+    it('keeps them hidden even when RBAC is disabled', () => {
+      TestBed.resetTestingModule();
+      configure({ rbacEnabled: false });
+
+      expect(findRoute(service.filteredNavItems(), COB_TOOLS_ROUTE)).toBeFalse();
+      expect(findRoute(service.filteredNavItems(), SECURITY_USERS_ROUTE)).toBeTrue();
+    });
+  });
+
   describe('searchRoutes', () => {
     it('returns matching navigation shortcuts from the filtered tree', () => {
       setPermissions(['ALL_FUNCTIONS']);
@@ -445,6 +558,31 @@ describe('NavigationConfigService', () => {
       setPermissions(['ALL_FUNCTIONS']);
       const results = service.searchRoutes('search');
       expect(results.some((result) => result.route === '/search')).toBeFalse();
+    });
+
+    /**
+     * Matching the section name is useful — typing "organization" should surface that
+     * section's pages — but it must never outrank a page named for the query itself,
+     * or a small limit gets filled with siblings before the page the user asked for.
+     */
+    it('ranks a page whose own name matches above one matched by its section', () => {
+      setPermissions(['ALL_FUNCTIONS']);
+
+      const results = service.searchRoutes('offices');
+      const officesIndex = results.findIndex((result) => result.route === '/organization/offices');
+      const siblingIndex = results.findIndex(
+        (result) => result.groupLabel && !result.label.toLowerCase().includes('offices'),
+      );
+
+      expect(officesIndex).toBe(0);
+      if (siblingIndex !== -1) {
+        expect(officesIndex).toBeLessThan(siblingIndex);
+      }
+    });
+
+    it('honours the limit', () => {
+      setPermissions(['ALL_FUNCTIONS']);
+      expect(service.searchRoutes('a', 3).length).toBeLessThanOrEqual(3);
     });
   });
 });

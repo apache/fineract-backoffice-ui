@@ -51,6 +51,7 @@ import { DialogService } from '../../../core/services/dialog.service';
     <app-data-table
       [title]="codeName()"
       createButtonLabel="CODE_VALUES.ADD"
+      createPermission="CREATE_CODEVALUE"
       [columns]="columns"
       [data]="codeValues()"
       [totalRecords]="codeValues().length"

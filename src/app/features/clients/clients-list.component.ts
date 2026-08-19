@@ -93,9 +93,7 @@ import {
             [(ngModel)]="activeFilters.status"
             (ionChange)="onFilterChange()"
           >
-            <ion-select-option [value]="undefined">{{
-              'COMMON.ALL' | translate
-            }}</ion-select-option>
+            <ion-select-option value="">{{ 'COMMON.ALL' | translate }}</ion-select-option>
             <ion-select-option value="active">{{ 'COMMON.ACTIVE' | translate }}</ion-select-option>
             <ion-select-option value="pending">{{
               'COMMON.PENDING' | translate
@@ -178,7 +176,10 @@ export class ClientsListComponent {
   readonly clients = signal<GetClientsPageItemsResponse[]>([]);
   readonly totalRecords = signal(0);
 
-  activeFilters: { status?: string } = {};
+  // Empty string, not `undefined`, so it round-trips through `<ion-select>`'s ngModel
+  // binding as a real match for the "All" option's own `value=""` rather than leaving the
+  // select showing nothing selected.
+  activeFilters: { status?: string } = { status: '' };
 
   private searchSubject = new Subject<string>();
   private sortSubject = new Subject<SortEvent>();
@@ -211,7 +212,10 @@ export class ClientsListComponent {
             : undefined;
 
           const displayName = this.currentFilter ? `%${this.currentFilter}%` : undefined;
-          const status = this.activeFilters.status;
+          // Fineract's /clients endpoint rejects `status=` and `status=All` outright (a 400,
+          // "The Status value '...' is not supported") — the param must be omitted entirely
+          // to mean "any status", so the "All" sentinel is never forwarded as-is.
+          const status = this.activeFilters.status || undefined;
 
           return this.clientService
             .getClients(

@@ -24,18 +24,25 @@
  */
 
 import { GetGroupsGroupIdTimeline } from './getGroupsGroupIdTimeline';
+import { GetGroupsGroupIdClientMembers } from './getGroupsGroupIdClientMembers';
 
 
 /**
  * GetGroupsGroupIdResponse
  */
 export interface GetGroupsGroupIdResponse { 
+    active?: boolean;
+    /**
+     * Returned when the clientMembers association is requested
+     */
+    clientMembers?: Set<GetGroupsGroupIdClientMembers>;
     externalId?: string;
     hierarchy?: string;
     id?: number;
     name?: string;
     officeId?: number;
     officeName?: string;
+    staffId?: number;
     timeline?: GetGroupsGroupIdTimeline;
 }
 

@@ -2,6 +2,7 @@
   "license": "Apache-2.0",
   "app": {
     "title": "Fineract Backoffice UI",
+    "shortTitle": "Fineract",
     "welcome": "Welcome to Fineract Backoffice UI!",
     "logout": "Logout",
     "language": {
@@ -85,7 +86,6 @@
     "provisioningCriteria": "Provisioning Criteria",
     "provisioningEntries": "Provisioning Entries",
     "runAccruals": "Run Accruals",
-    "cashierJournals": "Cashier Journals",
     "hooks": "Hooks",
     "adhocQuery": "Ad-Hoc Query",
     "sms": "SMS Messages",
@@ -105,11 +105,8 @@
     "fieldConfiguration": "Entity Field Configuration",
     "loanProductDetails": "Loan Product Details",
     "creditBureauConfig": "Credit Bureau Config",
-    "spmMix": "SPM & MIX",
+    "spm": "SPM",
     "spmSurveys": "SPM Surveys",
-    "mixMapping": "MIX Mapping",
-    "mixReport": "MIX Report",
-    "mixTaxonomy": "MIX Taxonomy",
     "povertyLine": "Poverty Line",
     "likelihood": "Likelihood",
     "notifications": "Notifications",
@@ -119,7 +116,11 @@
     "codes": "Codes",
     "businessDates": "Business Dates",
     "accountNumberFormats": "Account Number Formats",
-    "templates": "Templates"
+    "templates": "Templates",
+    "frequentPostings": "Frequent Postings",
+    "openingBalances": "Opening Balances",
+    "reportDefinitions": "Report Definitions",
+    "workQueues": "Approval Queues"
   },
   "SIDEBAR": {
     "SEARCH": "Search",
@@ -217,6 +218,8 @@
     "MATURITY_AMOUNT": "Maturity Amount",
     "MOBILE_NO": "Mobile No",
     "MONTHS": "Months",
+    "MOVE_DOWN": "Move down",
+    "MOVE_UP": "Move up",
     "NAME": "Name",
     "NEXT_PAGE": "Next page",
     "NO": "No",
@@ -239,6 +242,7 @@
     "REQUIRED": "This field is required",
     "RESET": "Reset",
     "RETRY": "Try again",
+    "REVERSED": "Reversed",
     "RUN": "Run",
     "RUNNING_BALANCE": "Running Balance",
     "SAVE": "Save",
@@ -265,7 +269,12 @@
     "VIEW_DETAILS": "View Details",
     "WEEKS": "Weeks",
     "YEARS": "Years",
-    "YES": "Yes"
+    "YES": "Yes",
+    "GENERAL": "General",
+    "NOTES": "Notes",
+    "DATA_TABLES": "Data Tables",
+    "UNASSIGNED": "Unassigned",
+    "ACCOUNTS": "Accounts"
   },
   "ACTIONS": {
     "ACCOUNT_TRANSFER": "Account Transfer",
@@ -291,7 +300,9 @@
     "CONFIRM_POST_INTEREST": "Post the interest accrued on this account?",
     "CONFIRM_PREMATURE_CLOSE": "Close this account before its maturity date and pay out the balance? A pre-closure penalty may apply.",
     "CONFIRM_REJECT": "Reject this account? The application is closed and cannot be approved afterwards.",
+    "CONFIRM_RELEASE_AMOUNT": "Release the amount held against this transaction? The funds become available immediately.",
     "CONFIRM_UNDO_APPROVAL": "Return this account to pending approval?",
+    "CONFIRM_UNDO_TRANSACTION": "Reverse this transaction? It stays on the account marked as reversed.",
     "CONFIRM_WITHDRAWN_BY_CLIENT": "Record that the client withdrew this application?",
     "DISBURSEMENT_DATE": "Disbursement Date",
     "DISBURSE_FUNDS": "Disburse Funds",
@@ -309,16 +320,19 @@
     "REJECTION_DATE": "Rejection Date",
     "REJECTION_REASON": "Rejection Reason",
     "REJECT_CLIENT": "Reject Client",
+    "RELEASE_AMOUNT": "Release Held Amount",
     "SAVINGS_ACCOUNT": "Savings Account",
     "UNASSIGNMENT_DATE": "Unassignment Date",
     "UNASSIGN_LOAN_OFFICER": "Unassign Loan Officer",
     "UNDO_APPROVAL": "Undo approval",
     "UNDO_REJECT_CLIENT": "Undo Reject",
+    "UNDO_TRANSACTION": "Undo Transaction",
     "UNDO_WITHDRAW_CLIENT": "Undo Withdraw",
     "WITHDRAWAL_DATE": "Withdrawal Date",
     "WITHDRAWAL_REASON": "Withdrawal Reason",
     "WITHDRAWN_BY_CLIENT": "Withdrawn by client",
-    "WITHDRAW_CLIENT": "Withdraw Client"
+    "WITHDRAW_CLIENT": "Withdraw Client",
+    "ACCOUNT_ACTION": "Account Action"
   },
   "PRODUCTS": {
     "LOAN_PRODUCTS": "Loan Products",
@@ -408,7 +422,13 @@
     "ENABLE_ACCRUAL_ACTIVITY_POSTING": "Post accrual activity entries",
     "INTEREST_CALC_PERIOD_LOCKED_NOTE": "Fixed to Daily because interest recalculation is on — Fineract only supports the two together. Turn recalculation off to choose a different period.",
     "ACCOUNTING": {
+      "ADD_MAPPING": "Add Mapping",
+      "ADVANCED_HINT": "Optional. Route individual payment channels and charges to their own accounts, overriding the mappings above.",
+      "ADVANCED_TITLE": "Advanced Accounting Rules",
+      "FEE": "Fee",
+      "FEE_INCOME_TITLE": "Map Fees to Specific Income Accounts",
       "FUND_SOURCE": "Fund source",
+      "INCOME_ACCOUNT": "Income Account",
       "INCOME_FROM_FEES": "Income from fees",
       "INCOME_FROM_INTEREST": "Income from interest",
       "INCOME_FROM_PENALTIES": "Income from penalties",
@@ -419,15 +439,25 @@
       "LOAN_PORTFOLIO": "Loan portfolio",
       "LOSSES_WRITTEN_OFF": "Losses written off",
       "NO_ACCOUNTS_OF_TYPE": "No general ledger accounts of this type exist yet. Create them under Accounting > Chart of Accounts before configuring this product.",
+      "NO_CHARGES_ON_PRODUCT": "Attach a charge to this product before it can be mapped to its own account.",
       "OVERDRAFT_PORTFOLIO": "Overdraft portfolio control",
       "OVERPAYMENT_LIABILITY": "Overpayment liability",
+      "PAYMENT_CHANNEL_TITLE": "Configure Fund Sources for Payment Channels",
+      "PAYMENT_TYPE": "Payment Type",
+      "PENALTY": "Penalty",
+      "PENALTY_INCOME_TITLE": "Map Penalties to Specific Income Accounts",
       "RECEIVABLE_FEE": "Fees receivable",
       "RECEIVABLE_INTEREST": "Interest receivable",
       "RECEIVABLE_PENALTY": "Penalties receivable",
       "RULE": "Accounting rule",
+      "RULE_CASH": "Cash",
+      "RULE_NONE": "None",
       "SAVINGS_CONTROL": "Savings control",
       "SAVINGS_REFERENCE": "Savings reference",
       "SELECT_ACCOUNT": "Select an account",
+      "SHARE_EQUITY": "Share Equity",
+      "SHARE_REFERENCE": "Share Reference",
+      "SHARE_SUSPENSE": "Share Suspense Control",
       "TITLE": "Accounting",
       "TRANSFERS_IN_SUSPENSE": "Transfers in suspense"
     },
@@ -586,6 +616,7 @@
     "UNRECOGNIZED_AMOUNT": "Unrecognized Amount",
     "NOTES": "Notes",
     "ADD_NOTE": "Add a note",
+    "DELETE_NOTE": "Delete note",
     "NO_NOTES": "No notes recorded for this loan yet.",
     "CONFIRM_DELETE_NOTE": "Are you sure you want to delete this note? This action cannot be undone.",
     "DOCUMENTS": "Documents",
@@ -795,7 +826,14 @@
     "CONFIRM_REJECT_TRANSFER": "The transfer will be refused and the client placed on hold at their current office.",
     "CONFIRM_WITHDRAW_TRANSFER": "The transfer will be cancelled and the client returned to active at their current office.",
     "CONFIRM_UNASSIGN_STAFF": "This client will no longer be assigned to a member of staff.",
-    "SAVINGS_ACCOUNT": "Savings Account"
+    "SAVINGS_ACCOUNT": "Savings Account",
+    "DEPOSIT_ACCOUNTS": "Deposits",
+    "SHARE_ACCOUNTS": "Shares",
+    "FIXED_DEPOSITS": "Fixed Deposits",
+    "RECURRING_DEPOSITS": "Recurring Deposits",
+    "NO_FIXED_DEPOSITS": "This client holds no fixed deposits.",
+    "NO_RECURRING_DEPOSITS": "This client holds no recurring deposits.",
+    "NO_SHARE_ACCOUNTS": "This client holds no share accounts."
   },
   "SAVINGS": {
     "CREATE_ACCOUNT": "Create Savings Account",
@@ -850,7 +888,15 @@
     "CONFIRM_WITHDRAWN_BY_APPLICANT": "Record that the applicant withdrew this application? Use Decline instead if the institution turned it down.",
     "CONFIRM_ASSIGN_OFFICER": "Choose the officer who will look after this account.",
     "CONFIRM_UNASSIGN_SAVINGS_OFFICER": "Remove the officer from this account? It will be unassigned until someone else takes it on.",
-    "CONFIRM_HOLD_AMOUNT": "Hold part of the balance so it cannot be withdrawn — for a disputed transaction or a court order. The rest of the account keeps working normally, unlike freezing it."
+    "CONFIRM_HOLD_AMOUNT": "Hold part of the balance so it cannot be withdrawn — for a disputed transaction or a court order. The rest of the account keeps working normally, unlike freezing it.",
+    "NOTES": "Notes",
+    "DOCUMENTS": "Documents",
+    "STANDING_INSTRUCTIONS": "Standing Instructions",
+    "NO_STANDING_INSTRUCTIONS": "No standing instructions transfer from this account.",
+    "TRANSFER_IN": "Into this account",
+    "TRANSFER_OUT": "Out of this account",
+    "ACCOUNT_DETAILS": "Savings Account Details",
+    "TRANSACTION": "Savings Transaction"
   },
   "USERS": {
     "CREATE": "Create User",
@@ -881,6 +927,7 @@
     "MULTI_ROW": "Multi Row",
     "COLUMNS": "Columns",
     "ADD_COLUMN": "Add Column",
+    "REMOVE_COLUMN": "Remove column",
     "LENGTH": "Length",
     "CODE": "Code",
     "MANDATORY": "Mandatory",
@@ -1103,7 +1150,11 @@
     "FIXED_LENGTH_DESC": "Force every loan on this product to run for the same number of periods, regardless of the amount borrowed. Leave empty for a term set per loan.",
     "ACCRUAL_ACTIVITY_POSTING_DESC": "Post an accounting entry each time interest or fees accrue, rather than only when they are charged or paid. Gives finance a running view at the cost of more journal entries.",
     "CHARGE_OFF_DESC": "Charging off moves the outstanding balance out of performing assets for reporting, while the institution carries on trying to collect. It is not the same as a write-off, which means giving up on recovery. A charged-off loan stays active.",
-    "CHARGE_OFF_REASON_DESC": "Why the loan is being charged off. Recorded against the transaction for audit and reporting. Optional, and only offered when your institution has configured reasons."
+    "CHARGE_OFF_REASON_DESC": "Why the loan is being charged off. Recorded against the transaction for audit and reporting. Optional, and only offered when your institution has configured reasons.",
+    "OPENING_BALANCES_DESC": "Carry the balances from your previous ledger into this one. Only available before the first journal entry is posted for the office.",
+    "FREQUENT_POSTINGS_DESC": "Post a journal entry from a saved accounting rule, so recurring postings need only an amount and a date.",
+    "REPORT_DEFINITIONS_DESC": "The catalogue behind the Reporting section: the SQL each report runs, the parameters it takes, and whether it is offered to users.",
+    "WORK_QUEUES_DESC": "The approvals a branch works through together: pending loans, loans awaiting disbursal, pending clients and reschedule requests. Each action is sent as one batch, and any record the platform refuses is named."
   },
   "REPORTS": {
     "NAME": "Report Name",
@@ -1117,7 +1168,11 @@
     "PARAMETERS_LOADING": "Loading report parameters...",
     "PARAMETERS_LOAD_FAILED": "This report cannot be run because its parameters could not be loaded.",
     "PARAMETERS_UNSUPPORTED": "This report cannot be run because these parameters use unsupported control types",
-    "PARAMETERS_INCOMPLETE": "Complete every report parameter before running the report."
+    "PARAMETERS_INCOMPLETE": "Complete every report parameter before running the report.",
+    "PARAMETER_SELECT_PARENT_FIRST": "Choose {{parameter}} first.",
+    "PARAMETER_OPTIONS_LOADING": "Loading options...",
+    "PARAMETER_OPTIONS_FAILED": "The options for this parameter could not be loaded.",
+    "CHART_UNAVAILABLE": "This report is defined as a chart, but its results contain no numeric column to plot. Showing the results as a table instead."
   },
   "SETTINGS": {
     "CONFIG_NAME": "Configuration Name",
@@ -1146,12 +1201,27 @@
   "JOURNAL_ENTRIES": {
     "CREATE": "Add Journal Entry",
     "DEBITS": "Debits",
+    "REMOVE_DEBIT": "Remove debit line",
     "CREDITS": "Credits",
+    "REMOVE_CREDIT": "Remove credit line",
     "TRANSACTION_DATE": "Transaction Date",
     "REFERENCE_NUMBER": "Reference Number",
     "OFFICE": "Office",
     "CURRENCY": "Currency",
-    "BALANCED_ERROR": "Total debits must equal total credits."
+    "BALANCED_ERROR": "Total debits must equal total credits.",
+    "TRANSACTION": "Transaction",
+    "ACCOUNT": "Account",
+    "ENTRY_TYPE": "Entry Type",
+    "MANUAL": "Manual entry",
+    "SYSTEM_GENERATED": "System generated",
+    "CREATED_BY": "Created By",
+    "PAYMENT_TYPE": "Payment Type",
+    "REVERSE": "Reverse Transaction",
+    "REVERSE_CONFIRM": "This posts an offsetting transaction. The original entries stay on the ledger, marked as reversed.",
+    "REVERSED": "Reversed",
+    "REVERSED_SUCCESS": "Transaction reversed",
+    "SYSTEM_ENTRY_NOT_REVERSIBLE": "This entry was created by the platform from a portfolio transaction. Reverse the transaction that produced it instead.",
+    "NOT_FOUND": "That journal entry could not be found."
   },
   "OFFICES": {
     "CREATE_OFFICE": "Create Office",
@@ -1159,12 +1229,43 @@
     "NAME": "Office Name",
     "PARENT": "Parent Office",
     "EXTERNAL_ID": "External ID",
-    "OPENING_DATE": "Opening Date"
+    "OPENING_DATE": "Opening Date",
+    "STAFF": "Staff",
+    "HIERARCHY": "Hierarchy",
+    "NO_STAFF": "No staff are assigned to this office.",
+    "NOT_FOUND": "That office could not be found."
   },
   "CENTERS": {
     "CREATE_CENTER": "Create Center",
     "EDIT_CENTER": "Edit Center",
-    "NAME": "Center Name"
+    "NAME": "Center Name",
+    "ACTIVATE": "Activate Center",
+    "CLOSE": "Close Center",
+    "ACTIVATION_DATE": "Activation Date",
+    "CLOSURE_DATE": "Closure Date",
+    "CLOSURE_REASON": "Closure Reason",
+    "NO_CLOSURE_REASONS": "No closure reasons have been configured, so this center cannot be closed. Add values to the CenterClosureReason code first.",
+    "ASSIGN_STAFF": "Assign Staff",
+    "UNASSIGN_STAFF": "Unassign Staff",
+    "CONFIRM_UNASSIGN_STAFF": "Unassign the member of staff currently responsible for this center?",
+    "NO_STAFF_IN_OFFICE": "No staff are available in this center’s office.",
+    "ATTACH_GROUPS": "Attach Groups",
+    "DETACH_GROUPS": "Detach Groups",
+    "SEARCH_GROUPS": "Search groups",
+    "NO_GROUPS_FOUND": "No unattached groups were found in this office.",
+    "NO_GROUPS": "This center has no groups.",
+    "GROUPS": "Groups",
+    "GROUP_COUNT": "Groups",
+    "LOAD_FAILED": "This center could not be loaded.",
+    "MEETING": "Meeting",
+    "ATTACH_MEETING": "Attach Meeting",
+    "EDIT_MEETING": "Edit Meeting",
+    "MEETING_TITLE": "Meeting Title",
+    "MEETING_START": "Starts On",
+    "MEETING_FREQUENCY": "Repeats",
+    "MEETING_INTERVAL": "Every",
+    "MEETING_TYPE": "Meeting Type",
+    "MEETING_DAY": "Repeats On"
   },
   "GROUPS": {
     "ACTIVATE": "Activate Group",
@@ -1194,6 +1295,7 @@
     "EDIT_NOTE": "Edit Note",
     "EXTERNAL_ID": "External Id",
     "GENERAL": "General",
+    "GROUP_DETAILS": "Group Details",
     "LOAD_FAILED": "The group could not be loaded.",
     "MEMBER": "Member",
     "MEMBERS": "Members",
@@ -1214,7 +1316,11 @@
     "SUMMARY": "Group Summary",
     "UNASSIGNED": "Unassigned",
     "UNASSIGN_ROLE": "Unassign Role",
-    "UNASSIGN_STAFF": "Unassign Staff"
+    "UNASSIGN_STAFF": "Unassign Staff",
+    "LOAN_ACCOUNTS": "Loan Accounts",
+    "SAVINGS_ACCOUNTS": "Savings Accounts",
+    "NO_LOAN_ACCOUNTS": "This group has no loan accounts.",
+    "NO_SAVINGS_ACCOUNTS": "This group has no savings accounts."
   },
   "ACCOUNT_NUMBER_FORMATS": {
     "TITLE": "Account Number Formats",
@@ -1224,7 +1330,9 @@
     "PREFIX_TYPE": "Prefix Type",
     "SAVE": "Save",
     "CANCEL": "Cancel",
-    "DELETE_CONFIRM": "Are you sure you want to delete this format?"
+    "DELETE": "Delete",
+    "DELETE_CONFIRM": "Are you sure you want to delete this format?",
+    "CONFIRM_DELETE": "Delete the account number format for “{{name}}”? Already issued identifiers keep their current shape."
   },
   "ACCOUNTING": {
     "CREATE_GL_ACCOUNT": "Create GL Account",
@@ -1252,6 +1360,8 @@
     "APPLICATION_DATE": "Application Date",
     "APPLY_SHARES": "Apply for more shares",
     "CREATE": "Create Share Account",
+    "CREATE_CLIENT": "Create client",
+    "CREATE_PRODUCT": "Create share product",
     "DIVIDENDS": "Dividends",
     "EDIT": "Edit Share Account",
     "LINKED_SAVINGS": "Linked savings account",
@@ -1273,18 +1383,21 @@
     "SHARES": "Shares",
     "SHARES_HELD": "Shares held",
     "TOTAL_SHARES": "Total Shares",
-    "UNIT_PRICE": "Unit price"
+    "UNIT_PRICE": "Unit price",
+    "ACCOUNT_DETAILS": "Share Account Details"
   },
   "RECURRING_DEPOSITS": {
     "CREATE": "Create Recurring Deposit Account",
     "EDIT": "Edit Recurring Deposit Account",
     "INHERIT_CALENDAR": "Inherit Calendar",
     "RECURRING_FREQUENCY": "Recurring Frequency",
-    "FREQUENCY_TYPE": "Frequency Type"
+    "FREQUENCY_TYPE": "Frequency Type",
+    "ACCOUNT_DETAILS": "Recurring Deposit Account Details"
   },
   "FIXED_DEPOSITS": {
     "CREATE": "Create Fixed Deposit Account",
-    "EDIT": "Edit Fixed Deposit Account"
+    "EDIT": "Edit Fixed Deposit Account",
+    "ACCOUNT_DETAILS": "Fixed Deposit Account Details"
   },
   "GUIDE": {
     "DASHBOARD_WELCOME_TITLE": "Welcome to Fineract Backoffice",
@@ -1358,6 +1471,20 @@
     "customOption": "Custom URL…",
     "errors": {
       "endpointNotAllowed": "That API endpoint is not permitted by this deployment. Ask your administrator to add it to the allowed list."
+    },
+    "twoFactor": {
+      "title": "Two-step verification",
+      "chooseLede": "Choose where to send your one-time code.",
+      "loadingMethods": "Looking up how to reach you…",
+      "noMethods": "No delivery method is configured for your account. Ask an administrator to add one before you can sign in.",
+      "sentTo": "We sent a one-time code to {{target}}.",
+      "codeLabel": "One-time code",
+      "verify": "Verify",
+      "verifying": "Verifying…",
+      "resend": "Send another code",
+      "cancel": "Back to sign in",
+      "invalidCode": "That code was not accepted. Request another and try again.",
+      "requestFailed": "The code could not be sent. Try another method, or contact an administrator."
     }
   },
   "idle": {
@@ -1380,7 +1507,9 @@
     "FREQUENCY": "Frequency",
     "FREQUENCY_TYPE": "Frequency Type",
     "CREATE": "Create Breach Definition",
-    "EDIT": "Edit Breach Definition"
+    "EDIT": "Edit Breach Definition",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete breach definition “{{name}}”?"
   },
   "WC_NEAR_BREACH": {
     "NAME": "Name",
@@ -1388,7 +1517,9 @@
     "FREQUENCY": "Frequency",
     "FREQUENCY_TYPE": "Frequency Type",
     "CREATE": "Create Near-Breach Definition",
-    "EDIT": "Edit Near-Breach Definition"
+    "EDIT": "Edit Near-Breach Definition",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete near-breach definition “{{name}}”?"
   },
   "WC_LOAN_PRODUCTS": {
     "CREATE": "Create Loan Product",
@@ -1416,7 +1547,9 @@
     "FUND": "Fund",
     "START_DATE": "Start Date",
     "CLOSE_DATE": "Close Date",
-    "EXTERNAL_ID": "External ID"
+    "EXTERNAL_ID": "External ID",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete working-capital loan product “{{name}}”?"
   },
   "WC_LOANS": {
     "CREATE": "Create Working Capital Loan",
@@ -1713,9 +1846,11 @@
     "PERIOD_END_DATE": "Period End Date"
   },
   "FIXED_DEPOSIT_TRANSACTIONS": {
-    "TITLE": "Fixed Deposit Transactions",
-    "DATE": "Date",
     "AMOUNT": "Amount",
+    "DATE": "Date",
+    "DEPOSIT": "Deposit",
+    "PAYMENT_TYPE": "Payment Type",
+    "TITLE": "Fixed Deposit Transactions",
     "TYPE": "Type"
   },
   "RECURRING_DEPOSIT_TRANSACTIONS": {
@@ -1735,14 +1870,18 @@
     "CREATE": "Create Provisioning Category",
     "EDIT": "Edit Provisioning Category",
     "NAME": "Category Name",
-    "DESCRIPTION": "Description"
+    "DESCRIPTION": "Description",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete provisioning category “{{name}}”?"
   },
   "PROVISIONING_CRITERIA": {
     "CREATE": "Create Provisioning Criteria",
     "EDIT": "Edit Provisioning Criteria",
     "NAME": "Criteria Name",
     "CREATED_BY": "Created By",
-    "DEFINITIONS_NOTE": "Per-category provisioning definitions and loan-product mappings are managed through the API and are preserved when editing the criteria name."
+    "DEFINITIONS_NOTE": "Per-category provisioning definitions and loan-product mappings are managed through the API and are preserved when editing the criteria name.",
+    "DELETE": "Delete",
+    "CONFIRM_DELETE": "Delete provisioning criteria “{{name}}”?"
   },
   "PROVISIONING_ENTRIES": {
     "CREATE": "Create Entry",
@@ -1832,6 +1971,9 @@
     "JOB": "Job",
     "NO_STEPS": "No steps configured for this job."
   },
+  "CHECKER_INBOX": {
+    "VIEW_PAYLOAD": "View payload"
+  },
   "BUSINESS_DATES": {
     "TITLE": "Business Date Management",
     "BUSINESS_DATE_LABEL": "Business Date",
@@ -1884,7 +2026,10 @@
     "CODE": "Code",
     "ENTITY": "Entity",
     "ACTION": "Action",
-    "MAKER_CHECKER": "Maker-Checker Enabled"
+    "MAKER_CHECKER": "Maker-Checker Enabled",
+    "REQUIRES": "Requires {{codes}} — {{summary}}",
+    "JOIN_ANY": " or ",
+    "JOIN_ALL": " and "
   },
   "OIDC_CONFIG": {
     "TITLE": "Tenant OIDC Configuration",
@@ -1893,9 +2038,19 @@
     "ISSUER": "Issuer",
     "CLIENT_ID": "Client ID",
     "CLIENT_SECRET": "Client Secret",
-    "AUTH_ENDPOINT": "Authorization Endpoint",
-    "TOKEN_ENDPOINT": "Token Endpoint",
-    "JWKS_URL": "JWKS URL"
+    "PROVIDER_TYPE": "Provider type",
+    "JWKS_URI": "JWKS URI",
+    "USERNAME_CLAIM": "Username claim",
+    "SCOPES": "Scopes",
+    "POST_LOGOUT_URI": "Post-logout redirect URI",
+    "SECRET_HINT": "The client secret is stored by the platform and never sent back. Leave it blank to keep the current one.",
+    "SECRET_UNCHANGED": "Unchanged",
+    "SAVED": "OIDC configuration saved",
+    "DELETED": "OIDC configuration deleted",
+    "LOAD_FAILED": "Could not load the OIDC configuration",
+    "DELETE_TITLE": "Delete OIDC configuration",
+    "DELETE_MESSAGE": "Sign-in through this identity provider will stop working for the tenant. This cannot be undone.",
+    "JWKS_HINT": "Optional. Left blank, the platform discovers it from the issuer at /.well-known/openid-configuration."
   },
   "FIELD_CONFIG": {
     "TITLE": "Entity Field Configuration",
@@ -2306,5 +2461,70 @@
     "BODY_PLACEHOLDER": "Optional JSON body, e.g. {}",
     "SUBMIT": "Submit",
     "RESPONSE": "Response"
+  },
+  "ACCESS_DENIED": {
+    "TITLE": "Access denied",
+    "MESSAGE": "You do not have permission to open this page.",
+    "HINT": "If you believe you should have access, ask an administrator to review the permissions on your role.",
+    "BACK_TO_DASHBOARD": "Back to dashboard",
+    "REQUIRES": "This page requires:"
+  },
+  "OPENING_BALANCES": {
+    "TITLE": "Define Opening Balances",
+    "CONTRA_NOT_MAPPED": "Opening balances need an equity account mapped to the opening-balances contra financial activity. Set that up under Financial Activity Mappings first.",
+    "LOAD_FAILED": "Opening balances could not be loaded for that office and currency.",
+    "SAVED": "Opening balances saved"
+  },
+  "FREQUENT_POSTINGS": {
+    "TITLE": "Frequent Postings",
+    "RULE": "Accounting Rule",
+    "NO_RULES": "No accounting rules have been defined yet. Create one to post from it here.",
+    "WILL_POST": "This will post",
+    "POST": "Post Entry",
+    "POSTED": "Journal entry posted",
+    "MULTI_ACCOUNT_RULE": "This rule names more than one account on a side. Use the full journal entry form so you can set each amount."
+  },
+  "REPORT_DEFINITIONS": {
+    "CREATE": "Create Report",
+    "EDIT": "Edit Report",
+    "CATEGORY": "Category",
+    "SUB_TYPE": "Chart Type",
+    "SQL": "Report SQL",
+    "IN_USE": "In Use",
+    "CORE": "Core",
+    "TENANT": "Tenant",
+    "CORE_NOT_DELETABLE": "Core reports cannot be deleted.",
+    "CORE_READ_ONLY": "This is a core report. The platform allows only the \"In Use\" setting to change; the rest of the definition is shown for reference.",
+    "DELETE_CONFIRM": "This removes the report definition. Reports already run from it are not affected.",
+    "DELETED": "Report definition deleted",
+    "SAVED": "Report definition saved"
+  },
+  "NOTES": {
+    "ADD": "Add a note",
+    "CONFIRM_DELETE": "Delete this note? Notes are an audit trail, so removing one leaves no trace of what it said."
+  },
+  "DOCUMENTS": {
+    "SELECT_FILE": "Select File",
+    "NO_FILE_SELECTED": "No file selected",
+    "UPLOAD": "Upload",
+    "NONE": "No documents attached.",
+    "FILE_NAME": "File Name",
+    "CONFIRM_DELETE": "Delete this document? The attached file is removed with it."
+  },
+  "WORK_QUEUES": {
+    "TITLE": "Approval Queues",
+    "LOAN_APPROVAL": "Loan Approval",
+    "LOAN_DISBURSAL": "Loan Disbursal",
+    "CLIENT_ACTIVATION": "Client Activation",
+    "RESCHEDULE_APPROVAL": "Reschedule Requests",
+    "EMPTY": "Nothing is waiting in this queue.",
+    "SELECT_ALL": "Select all",
+    "SELECTED": "Selected",
+    "APPROVE_SELECTED": "Approve Selected",
+    "DISBURSE_SELECTED": "Disburse Selected",
+    "ACTIVATE_SELECTED": "Activate Selected",
+    "CONFIRM": "This applies the action to {{count}} record(s) in one request.",
+    "ALL_SUCCEEDED": "{{count}} record(s) processed successfully.",
+    "PARTIAL": "{{succeeded}} of {{total}} succeeded. These were refused: {{names}}"
   }
 }

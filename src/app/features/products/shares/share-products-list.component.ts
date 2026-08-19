@@ -44,6 +44,7 @@ import { ProductsService, GetProductsTypeResponse, GetProductsPageItems } from '
       (retry)="onRetry()"
       title="nav.shares"
       createButtonLabel="PRODUCTS.CREATE_SHARE_PRODUCT"
+      createPermission="CREATE_SHAREPRODUCT"
       [columns]="columns"
       [data]="products()"
       [showSearch]="true"

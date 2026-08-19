@@ -1,3 +1,0 @@
-[submodule "fineract"]
-	path = fineract
-	url = https://github.com/apache/fineract.git

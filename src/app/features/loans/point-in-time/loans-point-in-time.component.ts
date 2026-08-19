@@ -225,7 +225,7 @@ export class LoansPointInTimeComponent {
       .split(',')
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
-      .map((s) => Number(s))
+      .map(Number)
       .filter((n) => !isNaN(n));
 
     const dateStr = formatDateToFineract(this.searchDate);

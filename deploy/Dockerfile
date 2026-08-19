@@ -15,42 +15,52 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Stage 1: Build the Angular application
-FROM node:24-alpine as build
+# Both bases are pinned by digest, not by tag. A tag moves; a release image that cannot be
+# rebuilt from its own Dockerfile a year later is not much of a release artifact, and the SBOM
+# published beside it would describe a build nobody can reproduce. The tag is kept in the comment
+# so a human can see what the digest was when it was pinned.
 
-# Set working directory
+# ---------------------------------------------------------------------------------------------
+# Stage 1 — build the Angular application
+# ---------------------------------------------------------------------------------------------
+FROM node:24-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS build
+
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm install
+# `npm ci`, not `npm install`. `install` is free to resolve a transitive dependency to a version
+# the lockfile does not name, so the image would not be reproducible from the lockfile the SBOM
+# and the licence scan both describe. CI has a whole job (Dependency Integrity) enforcing this for
+# the build; the image had been exempt from it, which is the one place it matters most.
+RUN npm ci
 
-# Copy the rest of the application code
 COPY . .
 
-# Build the application for production
 RUN npm run build -- --configuration production
 
-# Stage 2: Serve the application with Nginx
-FROM nginx:stable-alpine
+# ---------------------------------------------------------------------------------------------
+# Stage 2 — serve it
+# ---------------------------------------------------------------------------------------------
+FROM nginx:stable-alpine@sha256:97d490c12ba55b4946b01546d1c3ed324e8d41ab1c9fcb2a616aa470620e5b46
 
-# Copy the build output to the Nginx html directory
+# Only the built output crosses the stage boundary: no node_modules, no sources, no git history.
 COPY --from=build /app/dist/fineract-backoffice-ui/browser /usr/share/nginx/html
 
-# Copy custom Nginx configuration
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+# A template rather than a finished config. The upstream Fineract is not known until the container
+# starts, and the whole point of the proxy is that the browser only ever talks to this origin.
+COPY deploy/nginx.conf.template /etc/nginx/templates/default.conf.template
 
-# Copy entrypoint script
 COPY deploy/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose port 80
 EXPOSE 80
 
-# Use entrypoint to inject environment variables into config.json
+# Answers from nginx itself, so it reports whether *this* container is serving — not whether
+# Fineract is up, which is a different question with a different answer and its own healthcheck.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost/index.html || exit 1
+
 ENTRYPOINT ["/entrypoint.sh"]
 
-# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

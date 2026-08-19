@@ -30,7 +30,16 @@ import { PostGroupsGroupIdClients } from './postGroupsGroupIdClients';
  * PostGroupsGroupIdRequest
  */
 export interface PostGroupsGroupIdRequest { 
+    activationDate?: string;
+    /**
+     * List of client ids to associate with or disassociate from the group
+     */
+    clientMembers?: Array<number>;
     clients?: Set<PostGroupsGroupIdClients>;
+    dateFormat?: string;
     destinationGroupId?: number;
+    inheritStaffForClientAccounts?: boolean;
+    locale?: string;
+    staffId?: number;
 }
 

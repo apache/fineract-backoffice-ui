@@ -46,6 +46,7 @@ yarn-error.log
 # Playwright
 /playwright-report
 /test-results
+/demo-recordings
 /playwright-results.json
 
 # Miscellaneous

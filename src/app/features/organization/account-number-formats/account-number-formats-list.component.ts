@@ -19,12 +19,13 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { AccountNumberFormatService, GetAccountNumberFormatsIdResponse } from '../../../api';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { DialogService } from '../../../core/services/dialog.service';
 
 @Component({
   selector: 'app-account-number-formats-list',
@@ -41,6 +42,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
     <app-data-table
       [title]="'ACCOUNT_NUMBER_FORMATS.TITLE' | translate"
       createButtonLabel="ACCOUNT_NUMBER_FORMATS.TITLE"
+      createPermission="CREATE_ACCOUNTNUMBERFORMAT"
       [columns]="columns"
       [data]="formats()"
       [totalRecords]="formats().length"
@@ -81,6 +83,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 export class AccountNumberFormatsListComponent implements OnInit {
   private readonly accountNumberFormatService = inject(AccountNumberFormatService);
   private readonly router = inject(Router);
+  private readonly dialogService = inject(DialogService);
+  private readonly translate = inject(TranslateService);
 
   readonly columns: ColumnDef[] = [
     { key: 'accountType', label: 'ACCOUNT_NUMBER_FORMATS.ACCOUNT_TYPE', sortable: true },
@@ -115,19 +119,26 @@ export class AccountNumberFormatsListComponent implements OnInit {
 
   onDelete(row: GetAccountNumberFormatsIdResponse): void {
     if (!row.id) return;
-    const confirmed = window.confirm(
-      `Delete account number format for "${row.accountType?.value ?? row.id}"?`,
-    );
-    if (!confirmed) return;
-    this.accountNumberFormatService
-      .deleteAccountnumberformatsAccountNumberFormatId(row.id)
-      .subscribe({
-        next: () => {
-          this.formats.set(this.formats().filter((f) => f.id !== row.id));
-        },
-        error: (err: unknown) => {
-          console.error('Failed to delete account number format', err);
-        },
+    void this.dialogService
+      .confirm({
+        title: this.translate.instant('ACCOUNT_NUMBER_FORMATS.DELETE'),
+        message: this.translate.instant('ACCOUNT_NUMBER_FORMATS.CONFIRM_DELETE', {
+          name: row.accountType?.value ?? row.id,
+        }),
+        destructive: true,
+      })
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.accountNumberFormatService
+          .deleteAccountnumberformatsAccountNumberFormatId(row.id!)
+          .subscribe({
+            next: () => {
+              this.formats.set(this.formats().filter((f) => f.id !== row.id));
+            },
+            error: (err: unknown) => {
+              console.error('Failed to delete account number format', err);
+            },
+          });
       });
   }
 }

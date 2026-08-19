@@ -53,6 +53,20 @@ export interface UserSession {
   permissions: string[];
   /** Optional list of roles assigned to the user */
   roles?: UserRole[];
+  /**
+   * Whether Fineract wants a second factor before it will serve anything.
+   *
+   * Present only when the platform runs with `fineract.security.2fa.enabled`. When it is true,
+   * `authenticated` is *also* true — the password was accepted — but every subsequent request is
+   * refused until a one-time token has been validated. Treating `authenticated` as the end of the
+   * flow is what leaves a user on a dashboard where nothing loads.
+   */
+  isTwoFactorAuthenticationRequired?: boolean;
+  /**
+   * The validated second-factor token, added by this application rather than returned by
+   * `/authentication`. Travels on every later request as `Fineract-Platform-TFA-Token`.
+   */
+  tfaToken?: string;
 }
 
 /**
@@ -72,8 +86,24 @@ export class AuthService {
   /** Signal containing the current user session or null if not authenticated */
   readonly currentUser = signal<UserSession | null>(this.getStoredSession());
 
-  /** Signal indicating whether a user is currently authenticated */
-  readonly isAuthenticated = signal<boolean>(!!this.currentUser());
+  /**
+   * Whether the user may be let into the application.
+   *
+   * Deliberately not "did the password work". With two-factor authentication enabled the password
+   * working is only the first half: until the one-time token is validated Fineract refuses every
+   * request, so admitting the user here would drop them on a dashboard of 403s.
+   */
+  readonly isAuthenticated = signal<boolean>(this.isSessionComplete(this.currentUser()));
+
+  /**
+   * Whether a second factor is outstanding for the session in progress.
+   *
+   * The password has been accepted and the `/v1/twofactor` endpoints will answer, but nothing
+   * else will. The login screen shows its second step while this holds.
+   */
+  readonly twoFactorPending = signal<boolean>(
+    !!this.currentUser() && !this.isSessionComplete(this.currentUser()),
+  );
 
   /**
    * Signal containing the currently active Tenant ID.
@@ -130,9 +160,24 @@ export class AuthService {
     // `fineract_runtime_config` is deliberately left alone: it is device-scoped operator
     // intent (see `ConfigService`), and clearing it would silently move the next sign-in
     // back to the default server.
+    // Ends the second factor at the platform rather than only forgetting it here; the token
+    // otherwise stays valid for its full life (24 hours by default) after the user signs out.
+    // Fire-and-forget: a failure here must not keep someone signed in.
+    const tfaToken = this.currentUser()?.tfaToken;
+    if (tfaToken) {
+      this.http
+        .post(
+          `${this.configService.apiUrl}/twofactor/invalidate`,
+          { token: tfaToken },
+          { context: skipErrorToast() },
+        )
+        .subscribe({ error: () => undefined });
+    }
+
     this.storage.clearScope('session');
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
+    this.twoFactorPending.set(false);
   }
 
   /**
@@ -151,11 +196,55 @@ export class AuthService {
   private setSession(session: UserSession): void {
     const normalized: UserSession = {
       ...session,
-      permissions: this.normalizePermissions(session.permissions),
+      // `?? []` for the same reason `getStoredSession` has it: a response without the field is
+      // a user with no permissions, not a crash. Without it a truncated or malformed session
+      // throws inside `login()` and the user cannot sign in at all.
+      permissions: this.normalizePermissions(session.permissions ?? []),
     };
     this.storage.write('session', normalized);
     this.currentUser.set(normalized);
+
+    const complete = this.isSessionComplete(normalized);
+    this.isAuthenticated.set(complete);
+    this.twoFactorPending.set(!complete);
+  }
+
+  /**
+   * Whether this session can actually be used, as opposed to merely having a correct password.
+   *
+   * A session needs a second factor when Fineract asked for one and none has been validated yet.
+   * Everything else — including every deployment with two-factor authentication switched off,
+   * where the flag is absent entirely — is complete on arrival.
+   */
+  private isSessionComplete(session: UserSession | null): boolean {
+    if (!session) return false;
+    return !session.isTwoFactorAuthenticationRequired || !!session.tfaToken;
+  }
+
+  /**
+   * Records the validated second-factor token and lets the user in.
+   *
+   * @param tfaToken - the token `POST /v1/twofactor/validate` returned
+   */
+  completeTwoFactorAuthentication(tfaToken: string): void {
+    const session = this.currentUser();
+    if (!session) return;
+    const completed: UserSession = { ...session, tfaToken };
+    this.storage.write('session', completed);
+    this.currentUser.set(completed);
     this.isAuthenticated.set(true);
+    this.twoFactorPending.set(false);
+  }
+
+  /**
+   * The second-factor token for the interceptor to attach, or null when there is none.
+   *
+   * Null covers both a deployment without two-factor authentication and the window during login
+   * where the password has been accepted but the token has not yet been validated — in which the
+   * `/v1/twofactor` endpoints are reachable on the Basic credential alone.
+   */
+  getTfaToken(): string | null {
+    return this.currentUser()?.tfaToken ?? null;
   }
 
   /**

@@ -45,6 +45,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.hooks"
       helpTextKey="HELP.HOOKS_DESC"
       createButtonLabel="HOOKS.CREATE"
+      createPermission="CREATE_HOOK"
       [columns]="columns"
       [data]="hooks()"
       [totalRecords]="hooks().length"

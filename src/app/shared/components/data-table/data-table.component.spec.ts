@@ -19,11 +19,15 @@
 
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { DataTableComponent, ColumnDef } from './data-table.component';
 import { CellTemplateDirective } from './cell-template.directive';
 import { PageEvent, SortEvent } from '../../models/table.model';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
+import { provideTestConfig } from '../../../testing/config';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface TestData {
   id: number;
@@ -63,7 +67,14 @@ describe('DataTableComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DataTableComponent, TranslateModule.forRoot()],
-      providers: [provideIonicTesting()],
+      providers: [
+        provideIonicTesting(),
+        // The create button is now gated by `*appHasPermission`, which reads both the session
+        // and the deployment's `rbacEnabled`; neither has a usable default in a bare TestBed.
+        provideTestConfig(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent<DataTableComponent<TestData>>(DataTableComponent);
@@ -276,6 +287,55 @@ describe('DataTableComponent', () => {
       component.onPage({ pageIndex: 1, pageSize: 25, length: 250 });
 
       expect(component.effectivePageSize).toBe(25);
+    });
+  });
+
+  describe('create button permission', () => {
+    const createButton = (): HTMLElement | null =>
+      fixture.nativeElement.querySelector('[data-testid="data-table-create"]');
+
+    /** Signs a permission set in, so `*appHasPermission` has something to evaluate. */
+    const signIn = (permissions: string[]): void => {
+      TestBed.inject(AuthService).currentUser.set({
+        username: 'tester',
+        base64EncodedAuthenticationKey: 'key',
+        authenticated: true,
+        officeId: 1,
+        officeName: 'Head Office',
+        userId: 1,
+        permissions,
+      });
+      fixture.detectChanges();
+    };
+
+    it('shows the button to everyone when no permission is named', () => {
+      signIn([]);
+      setInputs({ createButtonLabel: 'CREATE' });
+      expect(createButton()).toBeTruthy();
+    });
+
+    it('shows the button to a user who holds the permission', () => {
+      signIn(['CREATE_CLIENT']);
+      setInputs({ createButtonLabel: 'CREATE', createPermission: 'CREATE_CLIENT' });
+      expect(createButton()).toBeTruthy();
+    });
+
+    it('withholds the button from a user who does not', () => {
+      signIn(['READ_CLIENT']);
+      setInputs({ createButtonLabel: 'CREATE', createPermission: 'CREATE_CLIENT' });
+      expect(createButton()).toBeNull();
+    });
+
+    it('withholds it from a read-only user, whose create route would refuse them anyway', () => {
+      signIn(['ALL_FUNCTIONS_READ']);
+      setInputs({ createButtonLabel: 'CREATE', createPermission: 'CREATE_CLIENT' });
+      expect(createButton()).toBeNull();
+    });
+
+    it('shows it to a superuser', () => {
+      signIn(['ALL_FUNCTIONS']);
+      setInputs({ createButtonLabel: 'CREATE', createPermission: 'CREATE_CLIENT' });
+      expect(createButton()).toBeTruthy();
     });
   });
 

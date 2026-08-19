@@ -23,12 +23,14 @@
  * Do not edit the class manually.
  */
 
+import { PostClientsClientIdChanges } from './postClientsClientIdChanges';
 
 
 /**
  * PostClientsClientIdResponse
  */
 export interface PostClientsClientIdResponse { 
+    changes?: PostClientsClientIdChanges;
     clientId?: number;
     officeId?: number;
     resourceExternalId?: string;

@@ -28,12 +28,15 @@ import { provideTestConfig } from '../../testing/config';
 describe('authInterceptor', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   const testUrl = '/test';
+  const MOCK_TOKEN = 'mock-token';
+  const BASIC_HEADER = `Basic ${MOCK_TOKEN}`;
+  const TFA_HEADER = 'Fineract-Platform-TFA-Token';
   const testTenant = 'test-tenant';
   const foreignUrl = 'https://vendor.example.com/collect';
   const TENANT_HEADER = 'Fineract-Platform-TenantId';
 
   beforeEach(() => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['getAuthToken'], {
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['getAuthToken', 'getTfaToken'], {
       currentTenantId: signal(testTenant),
     });
 
@@ -43,6 +46,7 @@ describe('authInterceptor', () => {
   });
 
   it('should add tenant headers to all requests', (done) => {
+    authServiceSpy.getTfaToken.and.returnValue(null);
     authServiceSpy.getAuthToken.and.returnValue(null);
     const request = new HttpRequest('GET', testUrl);
     const next: HttpHandlerFn = (req) => {
@@ -57,10 +61,10 @@ describe('authInterceptor', () => {
   });
 
   it('should add Authorization header when token is present', (done) => {
-    authServiceSpy.getAuthToken.and.returnValue('mock-token');
+    authServiceSpy.getAuthToken.and.returnValue(MOCK_TOKEN);
     const request = new HttpRequest('GET', testUrl);
     const next: HttpHandlerFn = (req) => {
-      expect(req.headers.get('Authorization')).toBe('Basic mock-token');
+      expect(req.headers.get('Authorization')).toBe(BASIC_HEADER);
       return of(new HttpResponse({ status: 200 }));
     };
 
@@ -99,6 +103,58 @@ describe('authInterceptor', () => {
    * today, which is why this is cheap now: the first analytics pixel or vendor SDK sharing this
    * `HttpClient` would otherwise ship a Basic header carrying banking credentials to it.
    */
+  describe('two-factor token', () => {
+    it('attaches it once a second factor has been validated', (done) => {
+      authServiceSpy.getAuthToken.and.returnValue(MOCK_TOKEN);
+      authServiceSpy.getTfaToken.and.returnValue('tfa-abc');
+
+      const next: HttpHandlerFn = (req) => {
+        expect(req.headers.get(TFA_HEADER)).toBe('tfa-abc');
+        // Alongside the Basic credential, not instead of it: Fineract wants both.
+        expect(req.headers.get('Authorization')).toBe(BASIC_HEADER);
+        return of(new HttpResponse({ status: 200 }));
+      };
+
+      TestBed.runInInjectionContext(() => {
+        authInterceptor(new HttpRequest('GET', testUrl), next).subscribe(() => done());
+      });
+    });
+
+    it('omits it where there is none', (done) => {
+      authServiceSpy.getAuthToken.and.returnValue(MOCK_TOKEN);
+      authServiceSpy.getTfaToken.and.returnValue(null);
+
+      const next: HttpHandlerFn = (req) => {
+        expect(req.headers.has(TFA_HEADER)).toBeFalse();
+        return of(new HttpResponse({ status: 200 }));
+      };
+
+      TestBed.runInInjectionContext(() => {
+        authInterceptor(new HttpRequest('GET', testUrl), next).subscribe(() => done());
+      });
+    });
+
+    it('does not send it to a foreign origin', (done) => {
+      // Same rule as the Basic credential: a second-factor token is a session credential and
+      // must not leave the API's origin.
+      authServiceSpy.getAuthToken.and.returnValue(MOCK_TOKEN);
+      authServiceSpy.getTfaToken.and.returnValue('tfa-abc');
+
+      const next: HttpHandlerFn = (req) => {
+        expect(req.headers.has(TFA_HEADER)).toBeFalse();
+        expect(req.headers.has('Authorization')).toBeFalse();
+        return of(new HttpResponse({ status: 200 }));
+      };
+
+      TestBed.runInInjectionContext(() => {
+        authInterceptor(
+          new HttpRequest('GET', 'https://analytics.example.com/collect'),
+          next,
+        ).subscribe(() => done());
+      });
+    });
+  });
+
   describe('destination scoping', () => {
     // Deliberately not base64-shaped. A realistic-looking encoded credential here trips secret
     // scanners, and the assertions only care that the header echoes whatever the service returned.

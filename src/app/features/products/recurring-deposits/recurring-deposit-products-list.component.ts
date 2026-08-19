@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       (retry)="onRetry()"
       title="nav.recurringDeposits"
       createButtonLabel="PRODUCTS.CREATE_RECURRING_DEPOSIT_PRODUCT"
+      createPermission="CREATE_RECURRINGDEPOSITPRODUCT"
       [columns]="columns"
       [data]="products()"
       [showSearch]="true"
@@ -61,6 +62,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
         <ion-button
           fill="clear"
           color="primary"
+          [attr.aria-label]="'COMMON.EDIT' | translate"
           [appTooltip]="'COMMON.EDIT' | translate"
           (click)="onEdit(product)"
         >

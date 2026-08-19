@@ -17,9 +17,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# e2e is included so new Playwright specs cannot ship without a header. Apache RAT
-# excludes e2e/ (.rat-excludes), so without this nothing enforces it there at all.
-FILES=$(find src deploy .github scripts e2e -type f \( -name "*.ts" -o -name "*.html" -o -name "*.scss" -o -name "*.yml" -o -name "*.sh" -o -name "Dockerfile" -o -name "nginx.conf" -o -name "eslint.config.js" -o -name ".prettierignore" \) -not -path "src/app/api/*")
+# e2e is included so new Playwright specs cannot ship without a header. RAT now covers e2e/
+# as well, so this is a second, independent check rather than the only one.
+#
+# The header is verified in three places, not one. Six e2e specs once shipped with a header
+# whose body had been spliced -- "with the License.  See the NOTICE file BASIS, WITHOUT" --
+# losing the grant sentence, the licence URL and the "AS IS" clause. It still opened with the
+# ASF phrase, so a check that looked only for that phrase passed all six.
+FILES=$(find src deploy .github scripts e2e -type f \( -name "*.ts" -o -name "*.html" -o -name "*.scss" -o -name "*.yml" -o -name "*.sh" -o -name "Dockerfile" -o -name "nginx.conf" -o -name "nginx.conf.template" -o -name "eslint.config.js" -o -name ".prettierignore" \) -not -path "src/app/api/*")
 
 MISSING_HEADERS=0
 
@@ -30,6 +35,12 @@ for FILE in $FILES; do
 
   if ! grep -q "Licensed to the Apache Software Foundation" "$FILE"; then
     echo "Missing Apache License header in $FILE"
+    MISSING_HEADERS=$((MISSING_HEADERS + 1))
+  elif ! grep -q "http://www.apache.org/licenses/LICENSE-2.0" "$FILE"; then
+    echo "Incomplete Apache License header (no licence URL) in $FILE"
+    MISSING_HEADERS=$((MISSING_HEADERS + 1))
+  elif ! grep -q "AS IS\" BASIS" "$FILE"; then
+    echo "Incomplete Apache License header (no \"AS IS\" clause) in $FILE"
     MISSING_HEADERS=$((MISSING_HEADERS + 1))
   fi
 done
@@ -50,6 +61,15 @@ for FILE in $JSON_FILES; do
   fi
   if ! grep -i -q "Apache-2.0" "$FILE" && ! grep -q "Apache License" "$FILE"; then
     echo "Missing Apache license reference in $FILE"
+    MISSING_HEADERS=$((MISSING_HEADERS + 1))
+  fi
+done
+
+# ASF release policy requires both files in every distribution. The repository had no NOTICE
+# at all until this was added, and no check would have noticed.
+for REQUIRED in LICENSE NOTICE; do
+  if [ ! -f "$REQUIRED" ]; then
+    echo "Required ASF file missing from the repository root: $REQUIRED"
     MISSING_HEADERS=$((MISSING_HEADERS + 1))
   fi
 done

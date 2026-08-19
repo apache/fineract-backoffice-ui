@@ -33,6 +33,17 @@ import { Page, Route, expect } from '@playwright/test';
  * is ever given it, so navigation cannot take it away. The response is passed
  * through unchanged, so the app behaves exactly as it would without the intercept.
  */
+/**
+ * How long to wait for the intercepted response.
+ *
+ * Under `DEMO_RECORD=1` every action carries a pause and the browser is doing more work per
+ * frame, so a window sized for a full-speed run is not the same window while filming — a fixed
+ * budget here fails the flow for reasons that have nothing to do with the application.
+ */
+function captureTimeout(): number {
+  return process.env.DEMO_RECORD === '1' ? 60000 : 20000;
+}
+
 export async function captureJson<T>(
   page: Page,
   urlPattern: RegExp,
@@ -59,7 +70,7 @@ export async function captureJson<T>(
   await page.route(urlPattern, handler);
   try {
     await action();
-    await expect.poll(() => captured, { timeout: 20000 }).toBeDefined();
+    await expect.poll(() => captured, { timeout: captureTimeout() }).toBeDefined();
   } finally {
     await page.unroute(urlPattern, handler);
   }

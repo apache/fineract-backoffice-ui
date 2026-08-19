@@ -46,6 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="GUARANTORS.TITLE"
       helpTextKey="HELP.GUARANTORS_DESC"
       createButtonLabel="GUARANTORS.CREATE"
+      createPermission="CREATE_GUARANTOR"
       [columns]="columns"
       [data]="guarantors()"
       [totalRecords]="guarantors().length"

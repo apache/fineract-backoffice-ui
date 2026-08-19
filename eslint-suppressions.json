@@ -19,6 +19,11 @@
       "count": 1
     }
   },
+  "src/app/core/interceptors/correlation-id.interceptor.ts": {
+    "unicorn/number-literal-case": {
+      "count": 3
+    }
+  },
   "src/app/core/services/auth.service.spec.ts": {
     "no-restricted-globals": {
       "count": 4
@@ -32,6 +37,11 @@
   "src/app/core/services/navigation-config.service.spec.ts": {
     "no-restricted-globals": {
       "count": 4
+    }
+  },
+  "src/app/core/utils/date-formatter.ts": {
+    "unicorn/prefer-number-properties": {
+      "count": 2
     }
   },
   "src/app/features/accounting/accounting-closure-form.component.spec.ts": {
@@ -569,17 +579,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/loan-documents-tab.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
   "src/app/features/loans/loan-form.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/loans/loan-notes-tab.component.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -611,6 +611,9 @@
   },
   "src/app/features/loans/point-in-time/loans-point-in-time.component.ts": {
     "no-restricted-imports": {
+      "count": 1
+    },
+    "unicorn/prefer-number-properties": {
       "count": 1
     }
   },
@@ -675,36 +678,6 @@
     }
   },
   "src/app/features/meetings/meetings-list.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/mix/mapping/mix-mapping.component.spec.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/mix/mapping/mix-mapping.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/mix/report/mix-report.component.spec.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/mix/report/mix-report.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/mix/taxonomy/mix-taxonomy.component.spec.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/mix/taxonomy/mix-taxonomy.component.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -839,6 +812,11 @@
       "count": 1
     }
   },
+  "src/app/features/products/accounting/product-accounting-section.component.spec.ts": {
+    "unicorn/no-array-sort": {
+      "count": 4
+    }
+  },
   "src/app/features/products/collateral-management/collateral-management-form.component.spec.ts": {
     "no-restricted-imports": {
       "count": 1
@@ -856,6 +834,11 @@
   },
   "src/app/features/products/collateral-management/collateral-management-list.component.ts": {
     "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/features/products/deposit-account-view.component.spec.ts": {
+    "unicorn/no-object-as-default-parameter": {
       "count": 1
     }
   },
@@ -1164,6 +1147,11 @@
       "count": 1
     }
   },
+  "src/app/features/products/shares/share-account-view.component.spec.ts": {
+    "unicorn/no-object-as-default-parameter": {
+      "count": 1
+    }
+  },
   "src/app/features/products/shares/share-accounts-list.component.spec.ts": {
     "no-restricted-imports": {
       "count": 1
@@ -1234,6 +1222,11 @@
       "count": 1
     }
   },
+  "src/app/features/reporting/report-execution.service.spec.ts": {
+    "unicorn/no-array-sort": {
+      "count": 1
+    }
+  },
   "src/app/features/reporting/reports-list.component.ts": {
     "no-restricted-imports": {
       "count": 1
@@ -1241,6 +1234,9 @@
   },
   "src/app/features/reporting/run-report.component.spec.ts": {
     "no-restricted-imports": {
+      "count": 1
+    },
+    "unicorn/no-object-as-default-parameter": {
       "count": 1
     }
   },
@@ -1262,10 +1258,19 @@
   "src/app/features/security/audit-logs/audit-logs-list.component.ts": {
     "no-restricted-imports": {
       "count": 1
+    },
+    "unicorn/prefer-logical-operator-over-ternary": {
+      "count": 1
+    },
+    "unicorn/require-module-specifiers": {
+      "count": 1
     }
   },
   "src/app/features/security/roles/role-form.component.ts": {
     "no-restricted-imports": {
+      "count": 1
+    },
+    "unicorn/no-array-sort": {
       "count": 1
     }
   },
@@ -1431,6 +1436,9 @@
   },
   "src/app/features/system/business-steps/business-steps.component.ts": {
     "no-restricted-imports": {
+      "count": 1
+    },
+    "unicorn/no-array-sort": {
       "count": 1
     }
   },
@@ -1729,16 +1737,6 @@
       "count": 1
     }
   },
-  "src/app/features/tellers/cashier-journals/cashier-journals-list.component.spec.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/tellers/cashier-journals/cashier-journals-list.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
   "src/app/features/tellers/cashiers/cashier-form.component.ts": {
     "no-restricted-imports": {
       "count": 1
@@ -1972,11 +1970,20 @@
   "src/app/shared/components/data-table/data-table.component.spec.ts": {
     "no-restricted-imports": {
       "count": 1
+    },
+    "unicorn/better-dom-traversing": {
+      "count": 1
+    },
+    "unicorn/no-array-sort": {
+      "count": 3
     }
   },
   "src/app/shared/components/data-table/data-table.component.ts": {
     "no-restricted-imports": {
       "count": 1
+    },
+    "unicorn/no-array-sort": {
+      "count": 5
     }
   },
   "src/app/shared/components/datatable-entry-dialog/datatable-entry-dialog.component.ts": {
@@ -2000,16 +2007,6 @@
     }
   },
   "src/app/shared/components/guidance-tour/guidance-tour.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/shared/components/help-icon/help-icon.component.spec.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/shared/components/help-icon/help-icon.component.ts": {
     "no-restricted-imports": {
       "count": 1
     }

@@ -82,6 +82,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
             color="primary"
             [routerLink]="['edit', row.id]"
             *appHasPermission="'UPDATE_STAFF'"
+            [attr.aria-label]="'COMMON.EDIT' | translate"
             [appTooltip]="'COMMON.EDIT' | translate"
           >
             <ion-icon name="create-outline"></ion-icon>

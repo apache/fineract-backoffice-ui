@@ -28,6 +28,7 @@ const TEST_CONFIG: AppConfig = {
   defaultTenant: 'default',
   rbacEnabled: true,
   institutionType: 'universal',
+  developerToolsEnabled: false,
 };
 
 /**
@@ -66,7 +67,10 @@ export function provideTestConfig(overrides: Partial<AppConfig> = {}): Provider 
     useValue: {
       config: config.asReadonly(),
       rbacEnabled: computed(() => config().rbacEnabled),
-      hiddenNavKeys: computed(() => new Set(config().nav?.hidden ?? [])),
+      // Same defaulting as the real service: absent means off, so a spec that does not mention
+      // developer tools gets the production behaviour.
+      developerToolsEnabled: computed(() => config().developerToolsEnabled === true),
+      hiddenNavKeys: computed(() => new Set(config().nav?.hidden)),
       get apiUrl() {
         return config().fineractApiUrl;
       },

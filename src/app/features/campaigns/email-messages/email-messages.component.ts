@@ -47,6 +47,23 @@ interface EmailMessage {
 
 const SUCCESS_MSG = 'EMAIL_MESSAGES.SUCCESS';
 
+/**
+ * The tabs on this screen, named.
+ *
+ * They were positional strings — '0', '7' — which say nothing at the point of use and shift
+ * meaning whenever a tab is inserted in the middle. The values are still strings because
+ * `ion-segment` compares them as such.
+ */
+export const EMAIL_TAB = {
+  messages: 'messages',
+  pending: 'pending',
+  sent: 'sent',
+  failed: 'failed',
+  configuration: 'configuration',
+} as const;
+
+export type EmailTab = (typeof EMAIL_TAB)[keyof typeof EMAIL_TAB];
+
 @Component({
   selector: 'app-email-messages',
   standalone: true,
@@ -74,25 +91,25 @@ const SUCCESS_MSG = 'EMAIL_MESSAGES.SUCCESS';
           <ion-card-title>{{ 'EMAIL_MESSAGES.TITLE' | translate }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <ion-segment [value]="activeTab()" (ionChange)="onTabChange(+$any($event).detail.value)">
-            <ion-segment-button value="0">
+          <ion-segment [value]="activeTab()" (ionChange)="onTabChange($any($event).detail.value)">
+            <ion-segment-button [value]="TAB.messages">
               <ion-label>{{ 'EMAIL_MESSAGES.MESSAGES_TAB' | translate }}</ion-label>
             </ion-segment-button>
-            <ion-segment-button value="1">
+            <ion-segment-button [value]="TAB.pending">
               <ion-label>{{ 'EMAIL_MESSAGES.PENDING_TAB' | translate }}</ion-label>
             </ion-segment-button>
-            <ion-segment-button value="2">
+            <ion-segment-button [value]="TAB.sent">
               <ion-label>{{ 'EMAIL_MESSAGES.SENT_TAB' | translate }}</ion-label>
             </ion-segment-button>
-            <ion-segment-button value="3">
+            <ion-segment-button [value]="TAB.failed">
               <ion-label>{{ 'EMAIL_MESSAGES.FAILED_TAB' | translate }}</ion-label>
             </ion-segment-button>
-            <ion-segment-button value="4">
+            <ion-segment-button [value]="TAB.configuration">
               <ion-label>{{ 'EMAIL_MESSAGES.CONFIG_TAB' | translate }}</ion-label>
             </ion-segment-button>
           </ion-segment>
 
-          @if (activeTab() === '0') {
+          @if (activeTab() === TAB.messages) {
             <div class="tab-content">
               <ion-button color="primary" (click)="showCreateForm.set(!showCreateForm())">
                 {{ 'EMAIL_MESSAGES.CREATE' | translate }}
@@ -175,7 +192,7 @@ const SUCCESS_MSG = 'EMAIL_MESSAGES.SUCCESS';
               </cdk-table>
             </div>
           }
-          @if (activeTab() === '1') {
+          @if (activeTab() === TAB.pending) {
             <div class="tab-content">
               <cdk-table [dataSource]="pending()" class="full-width">
                 <ng-container cdkColumnDef="id">
@@ -205,7 +222,7 @@ const SUCCESS_MSG = 'EMAIL_MESSAGES.SUCCESS';
               </cdk-table>
             </div>
           }
-          @if (activeTab() === '2') {
+          @if (activeTab() === TAB.sent) {
             <div class="tab-content">
               <cdk-table [dataSource]="sent()" class="full-width">
                 <ng-container cdkColumnDef="id">
@@ -235,7 +252,7 @@ const SUCCESS_MSG = 'EMAIL_MESSAGES.SUCCESS';
               </cdk-table>
             </div>
           }
-          @if (activeTab() === '3') {
+          @if (activeTab() === TAB.failed) {
             <div class="tab-content">
               <cdk-table [dataSource]="failed()" class="full-width">
                 <ng-container cdkColumnDef="id">
@@ -265,7 +282,7 @@ const SUCCESS_MSG = 'EMAIL_MESSAGES.SUCCESS';
               </cdk-table>
             </div>
           }
-          @if (activeTab() === '4') {
+          @if (activeTab() === TAB.configuration) {
             <div class="tab-content">
               <ion-item fill="outline" class="full-width">
                 <ion-label position="stacked">Configuration JSON</ion-label>
@@ -312,7 +329,10 @@ const SUCCESS_MSG = 'EMAIL_MESSAGES.SUCCESS';
 })
 export class EmailMessagesComponent implements OnInit {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
-  readonly activeTab = signal('0');
+  /** Exposed so the template names its tabs instead of numbering them. */
+  protected readonly TAB = EMAIL_TAB;
+
+  readonly activeTab = signal<EmailTab>(EMAIL_TAB.messages);
   private defaultService = inject(DefaultService);
   private notifications = inject(NotificationService);
 
@@ -343,22 +363,22 @@ export class EmailMessagesComponent implements OnInit {
     }
   }
 
-  onTabChange(index: number): void {
-    this.activeTab.set(String(index));
-    switch (index) {
-      case 0:
+  onTabChange(tab: EmailTab): void {
+    this.activeTab.set(tab);
+    switch (tab) {
+      case EMAIL_TAB.messages:
         this.loadMessages();
         break;
-      case 1:
+      case EMAIL_TAB.pending:
         this.loadPending();
         break;
-      case 2:
+      case EMAIL_TAB.sent:
         this.loadSent();
         break;
-      case 3:
+      case EMAIL_TAB.failed:
         this.loadFailed();
         break;
-      case 4:
+      case EMAIL_TAB.configuration:
         this.loadConfig();
         break;
     }

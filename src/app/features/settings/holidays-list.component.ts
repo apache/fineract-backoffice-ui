@@ -105,6 +105,7 @@ export class ConfirmDialogComponent {
       title="nav.holidays"
       helpTextKey="HELP.HOLIDAYS_DESC"
       createButtonLabel="SETTINGS.CREATE_HOLIDAY"
+      createPermission="CREATE_HOLIDAY"
       [columns]="columns"
       [data]="holidays()"
       [totalRecords]="holidays().length"
@@ -146,6 +147,7 @@ export class ConfirmDialogComponent {
           <ion-button
             fill="clear"
             color="primary"
+            [attr.aria-label]="'HOLIDAYS.ACTIVATE' | translate"
             [appTooltip]="'HOLIDAYS.ACTIVATE' | translate"
             (click)="onActivateHoliday(holiday)"
           >

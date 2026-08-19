@@ -1903,64 +1903,6 @@
         "tags": ["Cache"]
       }
     },
-    "/v1/cashiers": {
-      "get": {
-        "operationId": "retrieveAllCashiers",
-        "parameters": [
-          { "in": "query", "name": "officeId", "schema": { "type": "integer", "format": "int64" } },
-          { "in": "query", "name": "tellerId", "schema": { "type": "integer", "format": "int64" } },
-          { "in": "query", "name": "staffId", "schema": { "type": "integer", "format": "int64" } },
-          { "in": "query", "name": "date", "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/CashierData" }
-                }
-              }
-            },
-            "description": "default response"
-          }
-        },
-        "summary": "List Cashiers",
-        "tags": ["Cashiers"],
-        "x-alternative-operation-id": "getCashierData"
-      }
-    },
-    "/v1/cashiersjournal": {
-      "get": {
-        "operationId": "retrieveAllCashierJournals",
-        "parameters": [
-          { "in": "query", "name": "officeId", "schema": { "type": "integer", "format": "int64" } },
-          { "in": "query", "name": "tellerId", "schema": { "type": "integer", "format": "int64" } },
-          {
-            "in": "query",
-            "name": "cashierId",
-            "schema": { "type": "integer", "format": "int64" }
-          },
-          { "in": "query", "name": "dateRange", "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/TellerJournalData" }
-                }
-              }
-            },
-            "description": "default response"
-          }
-        },
-        "summary": "List Cashier Journals",
-        "tags": ["Cashier Journals"],
-        "x-alternative-operation-id": "getJournalData_1"
-      }
-    },
     "/v1/centers": {
       "get": {
         "description": "The default implementation supports pagination and sorting with the default pagination size set to 200 records. The parameter limit with description -1 will return all entries.\n\nExample Requests:\n\n\n\ncenters\n\n\n\ncenters?fields=name,officeName,joinedDate\n\n\n\ncenters?offset=10&limit=50\n\n\n\ncenters?orderBy=name&sortOrder=DESC",
@@ -17813,95 +17755,6 @@
         "tags": ["Maker Checker (or 4-eye) functionality"]
       }
     },
-    "/v1/mixmapping": {
-      "get": {
-        "operationId": "retrieveMixTaxonomyMapping",
-        "responses": {
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/MixTaxonomyMappingData" }
-              }
-            },
-            "description": "default response"
-          }
-        },
-        "summary": "Retrieve Mix Taxonomy Mapping",
-        "tags": ["Mix Mapping"],
-        "x-alternative-operation-id": "retrieveTaxonomyMapping"
-      },
-      "put": {
-        "operationId": "updateMixTaxonomyMapping",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/MixTaxonomyMappingUpdateRequest" }
-            }
-          }
-        },
-        "responses": {
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/MixTaxonomyMappingUpdateResponse" }
-              }
-            },
-            "description": "default response"
-          }
-        },
-        "summary": "Update Mix Taxonomy Mapping",
-        "tags": ["Mix Mapping"],
-        "x-alternative-operation-id": "updateTaxonomyMapping"
-      }
-    },
-    "/v1/mixreport": {
-      "get": {
-        "operationId": "retrieveMixReport",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "startDate",
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          {
-            "in": "query",
-            "name": "endDate",
-            "schema": { "type": "string", "format": "date-time" }
-          },
-          { "in": "query", "name": "currency", "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "default": {
-            "content": { "application/xml": { "schema": { "type": "string" } } },
-            "description": "default response"
-          }
-        },
-        "summary": "Retrieve Mix XBRL report",
-        "tags": ["Mix Report"],
-        "x-alternative-operation-id": "retrieveXBRLReport"
-      }
-    },
-    "/v1/mixtaxonomy": {
-      "get": {
-        "operationId": "retrieveAllMixTaxonomies",
-        "responses": {
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/MixTaxonomyData" }
-                }
-              }
-            },
-            "description": "default response"
-          }
-        },
-        "summary": "List Mix Taxonomies",
-        "tags": ["Mix Taxonomy"],
-        "x-alternative-operation-id": "retrieveAll_14"
-      }
-    },
     "/v1/notifications": {
       "get": {
         "description": "Returns a paginated list of notifications for the authenticated user, with optional filtering by read status.",
@@ -24983,118 +24836,6 @@
         "x-alternative-operation-id": "getCashierTxnTemplate"
       }
     },
-    "/v1/tellers/{tellerId}/journals": {
-      "get": {
-        "operationId": "retrieveAllJournalsForTeller",
-        "parameters": [
-          {
-            "description": "tellerId",
-            "in": "path",
-            "name": "tellerId",
-            "required": true,
-            "schema": { "type": "integer", "format": "int64" }
-          },
-          {
-            "description": "cashierId",
-            "in": "query",
-            "name": "cashierId",
-            "schema": { "type": "integer", "format": "int64" }
-          },
-          {
-            "description": "dateRange",
-            "in": "query",
-            "name": "dateRange",
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/TellerJournalData" }
-                }
-              }
-            },
-            "description": "default response"
-          }
-        },
-        "summary": "List Teller Journals",
-        "tags": ["Teller Cash Management"],
-        "x-alternative-operation-id": "getJournalData"
-      }
-    },
-    "/v1/tellers/{tellerId}/transactions": {
-      "get": {
-        "operationId": "retrieveAllTransactionsForTeller",
-        "parameters": [
-          {
-            "description": "tellerId",
-            "in": "path",
-            "name": "tellerId",
-            "required": true,
-            "schema": { "type": "integer", "format": "int64" }
-          },
-          {
-            "description": "dateRange",
-            "in": "query",
-            "name": "dateRange",
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/TellerTransactionData" }
-                }
-              }
-            },
-            "description": "default response"
-          }
-        },
-        "summary": "List Teller Transactions",
-        "tags": ["Teller Cash Management"],
-        "x-alternative-operation-id": "getTransactionData"
-      }
-    },
-    "/v1/tellers/{tellerId}/transactions/{transactionId}": {
-      "get": {
-        "operationId": "retrieveOneTransactionForTeller",
-        "parameters": [
-          {
-            "description": "tellerId",
-            "in": "path",
-            "name": "tellerId",
-            "required": true,
-            "schema": { "type": "integer", "format": "int64" }
-          },
-          {
-            "description": "transactionId",
-            "in": "path",
-            "name": "transactionId",
-            "required": true,
-            "schema": { "type": "integer", "format": "int64" }
-          }
-        ],
-        "responses": {
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/TellerTransactionData" }
-              }
-            },
-            "description": "default response"
-          }
-        },
-        "summary": "Retrieve Teller Transaction",
-        "tags": ["Teller Cash Management"],
-        "x-alternative-operation-id": "findTransactionData"
-      }
-    },
     "/v1/templates": {
       "get": {
         "description": "It is possible to get specific UGDs by entity and type:\n\ntemplates?type=0&entity=0\n\nEntity ID:\n\n- client: 0\n- loan: 1\n\nType ID:\n\n- Document: 0\n- E-Mail (not yet): 1\n- SMS: 2",
@@ -30978,6 +30719,7 @@
           "longitude": { "type": "number" },
           "postalCode": { "type": "string" },
           "stateProvinceId": { "type": "integer", "format": "int64" },
+          "street": { "type": "string" },
           "townVillage": { "type": "string" },
           "updatedBy": { "type": "string" },
           "updatedOn": { "type": "string" }
@@ -33432,11 +33174,18 @@
         "description": "GetCentersCenterIdResponse",
         "properties": {
           "active": { "type": "boolean", "example": false },
+          "externalId": { "type": "string", "example": "externalId1" },
+          "groupMembers": {
+            "type": "array",
+            "description": "Returned when the groupMembers association is requested",
+            "items": { "$ref": "#/components/schemas/GetCentersGroupMembers" }
+          },
           "hierarchy": { "type": "string", "example": ".8." },
           "id": { "type": "integer", "format": "int64", "example": 8 },
           "name": { "type": "string", "example": "First Center (No groups)" },
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
           "officeName": { "type": "string", "example": "Head Office" },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 },
           "status": { "$ref": "#/components/schemas/GetCentersStatus" }
         }
       },
@@ -33466,6 +33215,14 @@
           "code": { "type": "string", "example": "depositAccountType.savingsDeposit" },
           "description": { "type": "string", "example": "Savings" },
           "id": { "type": "integer", "format": "int64", "example": 100 }
+        }
+      },
+      "GetCentersGroupMembers": {
+        "type": "object",
+        "description": "Returned when the groupMembers association is requested",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "example": 4 },
+          "name": { "type": "string", "example": "AnotherGroup" }
         }
       },
       "GetCentersOfficeOptions": {
@@ -33861,6 +33618,7 @@
           "officeName": { "type": "string", "example": "Head Office" },
           "savingsProductId": { "type": "integer", "format": "int64", "example": 4 },
           "savingsProductName": { "type": "string", "example": "account overdraft" },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 },
           "status": { "$ref": "#/components/schemas/GetClientsClientIdStatus" },
           "timeline": { "$ref": "#/components/schemas/GetClientsTimeline" }
         }
@@ -35128,24 +34886,24 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountType.savings" },
-          "description": { "type": "string", "example": "Savings Account" },
-          "id": { "type": "integer", "format": "int64", "example": 2 }
+          "id": { "type": "integer", "format": "int64", "example": 2 },
+          "value": { "type": "string", "example": "Savings Account" }
         }
       },
       "GetFromAccountTypeResponseStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountType.savings" },
-          "description": { "type": "string", "example": "Savings Account" },
-          "id": { "type": "integer", "format": "int64", "example": 2 }
+          "id": { "type": "integer", "format": "int64", "example": 2 },
+          "value": { "type": "string", "example": "Savings Account" }
         }
       },
       "GetFromAccountTypeStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountType.savings" },
-          "description": { "type": "string", "example": "Savings Account" },
-          "id": { "type": "integer", "format": "int32", "example": 2 }
+          "id": { "type": "integer", "format": "int32", "example": 2 },
+          "value": { "type": "string", "example": "Savings Account" }
         }
       },
       "GetFromClientOptionsResponseStandingInstructionSwagger": {
@@ -35475,16 +35233,32 @@
           "waitingForDisbursal": { "type": "boolean", "example": false }
         }
       },
+      "GetGroupsGroupIdClientMembers": {
+        "type": "object",
+        "description": "Returned when the clientMembers association is requested",
+        "properties": {
+          "displayName": { "type": "string", "example": "Sangamesh MB" },
+          "id": { "type": "integer", "format": "int64", "example": 1 }
+        }
+      },
       "GetGroupsGroupIdResponse": {
         "type": "object",
         "description": "GetGroupsGroupIdResponse",
         "properties": {
+          "active": { "type": "boolean", "example": true },
+          "clientMembers": {
+            "type": "array",
+            "description": "Returned when the clientMembers association is requested",
+            "items": { "$ref": "#/components/schemas/GetGroupsGroupIdClientMembers" },
+            "uniqueItems": true
+          },
           "externalId": { "type": "string", "example": "000-1A" },
           "hierarchy": { "type": "string", "example": ".1." },
           "id": { "type": "integer", "format": "int64", "example": 1 },
           "name": { "type": "string", "example": "First Group" },
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
           "officeName": { "type": "string", "example": "Head Office" },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 },
           "timeline": { "$ref": "#/components/schemas/GetGroupsGroupIdTimeline" }
         }
       },
@@ -35642,16 +35416,16 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "standingInstructionType.fixed" },
-          "description": { "type": "string", "example": "Fixed" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Fixed" }
         }
       },
       "GetInstructionTypeStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "standingInstructionType.fixed" },
-          "description": { "type": "string", "example": "Fixed" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Fixed" }
         }
       },
       "GetInterestRateChartsChartSlabs": {
@@ -38225,16 +37999,16 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "standingInstructionPriority.urgent" },
-          "description": { "type": "string", "example": "Urgent Priority" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Urgent Priority" }
         }
       },
       "GetPriorityStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "standingInstructionPriority.medium" },
-          "description": { "type": "string", "example": "Medium Priority" },
-          "id": { "type": "integer", "format": "int32", "example": 3 }
+          "id": { "type": "integer", "format": "int32", "example": 3 },
+          "value": { "type": "string", "example": "Medium Priority" }
         }
       },
       "GetProductsAccountingMappingOptions": {
@@ -38496,13 +38270,13 @@
           "createdBy": { "type": "string", "example": "mifos" },
           "criteriaId": { "type": "integer", "format": "int64", "example": 1 },
           "criteriaName": { "type": "string", "example": "High Risk Products Criteria" },
+          "definitions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProvisioningCriteriaDefinitionData" }
+          },
           "loanProducts": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/LoanProductData" }
-          },
-          "provisioningcriteria": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProvisioningCriteriaDefinitionData" }
           }
         }
       },
@@ -38519,32 +38293,32 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "frequencyperiodFrequencyType.days" },
-          "description": { "type": "string", "example": "Days" },
-          "id": { "type": "integer", "format": "int32", "example": 0 }
+          "id": { "type": "integer", "format": "int32", "example": 0 },
+          "value": { "type": "string", "example": "Days" }
         }
       },
       "GetRecurrenceFrequencyStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "frequencyperiodFrequencyType.months" },
-          "description": { "type": "string", "example": "Months" },
-          "id": { "type": "integer", "format": "int32", "example": 2 }
+          "id": { "type": "integer", "format": "int32", "example": 2 },
+          "value": { "type": "string", "example": "Months" }
         }
       },
       "GetRecurrenceTypeOptionsResponseStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountTransferRecurrenceType.periodic" },
-          "description": { "type": "string", "example": "Periodic Recurrence" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Periodic Recurrence" }
         }
       },
       "GetRecurrenceTypeStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountTransferRecurrenceType.periodic" },
-          "description": { "type": "string", "example": "Periodic Recurrence" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Periodic Recurrence" }
         }
       },
       "GetRecurringCurrency": {
@@ -40561,16 +40335,16 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "standingInstructionStatus.active" },
-          "description": { "type": "string", "example": "Active" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Active" }
         }
       },
       "GetStatusStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "standingInstructionStatus.deleted" },
-          "description": { "type": "string", "example": "Deleted" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Deleted" }
         }
       },
       "GetSurveyResponse": {
@@ -40786,16 +40560,16 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountType.loan" },
-          "description": { "type": "string", "example": "Loan Account" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Loan Account" }
         }
       },
       "GetToAccountTypeStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountType.savings" },
-          "description": { "type": "string", "example": "Savings Account" },
-          "id": { "type": "integer", "format": "int32", "example": 2 }
+          "id": { "type": "integer", "format": "int32", "example": 2 },
+          "value": { "type": "string", "example": "Savings Account" }
         }
       },
       "GetToClientStandingInstructionSwagger": {
@@ -40874,16 +40648,16 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountTransferType.account.transfer" },
-          "description": { "type": "string", "example": "Account Transfer" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Account Transfer" }
         }
       },
       "GetTransferTypeStandingInstructionSwagger": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "accountTransferType.account.transfer" },
-          "description": { "type": "string", "example": "Account Transfer" },
-          "id": { "type": "integer", "format": "int32", "example": 1 }
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "Account Transfer" }
         }
       },
       "GetUserDetailsResponse": {
@@ -44550,38 +44324,6 @@
           "minimumPaymentType": { "type": "string" }
         }
       },
-      "MixTaxonomyData": {
-        "type": "object",
-        "properties": {
-          "description": { "type": "string" },
-          "dimension": { "type": "string" },
-          "id": { "type": "integer", "format": "int64" },
-          "name": { "type": "string" },
-          "namespace": { "type": "string" },
-          "type": { "type": "integer", "format": "int32" }
-        }
-      },
-      "MixTaxonomyMappingData": {
-        "type": "object",
-        "properties": {
-          "config": { "type": "string" },
-          "currency": { "type": "string" },
-          "identifier": { "type": "string" }
-        }
-      },
-      "MixTaxonomyMappingUpdateRequest": {
-        "type": "object",
-        "properties": {
-          "config": { "type": "string" },
-          "currency": { "type": "string" },
-          "id": { "type": "integer", "format": "int64" },
-          "identifier": { "type": "string" }
-        }
-      },
-      "MixTaxonomyMappingUpdateResponse": {
-        "type": "object",
-        "properties": { "entityId": { "type": "integer", "format": "int64" } }
-      },
       "MonetaryCurrency": {
         "type": "object",
         "properties": {
@@ -45232,6 +44974,19 @@
           "username": { "type": "string", "example": "mifos" }
         }
       },
+      "PostCentersCenterIdChanges": {
+        "type": "object",
+        "properties": {
+          "groupMembers": {
+            "type": "array",
+            "description": "Ids of the groups associated or disassociated by the command",
+            "items": {
+              "type": "string",
+              "description": "Ids of the groups associated or disassociated by the command"
+            }
+          }
+        }
+      },
       "PostCentersCenterIdRequest": {
         "type": "object",
         "description": "PostCentersCenterIdRequest",
@@ -45239,21 +44994,49 @@
           "closureDate": { "type": "string", "example": "05 May 2014" },
           "closureReasonId": { "type": "integer", "format": "int64", "example": 32 },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "groupMembers": {
+            "type": "array",
+            "description": "List of group ids to associate with or disassociate from the center",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "description": "List of group ids to associate with or disassociate from the center"
+            }
+          },
           "locale": { "type": "string", "example": "en" }
         }
       },
       "PostCentersCenterIdResponse": {
         "type": "object",
         "description": "PostCentersCenterIdResponse",
-        "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 1 } }
+        "properties": {
+          "changes": { "$ref": "#/components/schemas/PostCentersCenterIdChanges" },
+          "groupId": { "type": "integer", "format": "int64", "example": 1 },
+          "officeId": { "type": "integer", "format": "int64", "example": 1 },
+          "resourceId": { "type": "integer", "format": "int64", "example": 1 }
+        }
       },
       "PostCentersRequest": {
         "type": "object",
         "description": "PostCentersRequest",
         "properties": {
+          "activationDate": { "type": "string", "example": "04 March 2011" },
           "active": { "type": "boolean", "example": false },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "externalId": { "type": "string", "example": "externalId1" },
+          "groupMembers": {
+            "type": "array",
+            "description": "List of group ids to associate at creation",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "description": "List of group ids to associate at creation"
+            }
+          },
+          "locale": { "type": "string", "example": "en" },
           "name": { "type": "string", "example": "First Center (No groups)" },
-          "officeId": { "type": "integer", "format": "int64", "example": 1 }
+          "officeId": { "type": "integer", "format": "int64", "example": 1 },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
       "PostCentersResponse": {
@@ -45288,6 +45071,10 @@
         "type": "object",
         "description": "PostClientClientIdAddressesResponse",
         "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 15 } }
+      },
+      "PostClientsClientIdChanges": {
+        "type": "object",
+        "properties": { "staffId": { "type": "integer", "format": "int64", "example": 1 } }
       },
       "PostClientsClientIdChargesChargeIdRequest": {
         "type": "object",
@@ -45362,6 +45149,7 @@
           "rejectionDate": { "type": "string", "example": "03 August 2021" },
           "rejectionReasonId": { "type": "integer", "format": "int64", "example": 1 },
           "reopenedDate": { "type": "string", "example": "03 August 2021" },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 },
           "withdrawalDate": { "type": "string", "example": "03 August 2021" },
           "withdrawalReasonId": { "type": "integer", "format": "int64", "example": 1 }
         }
@@ -45370,6 +45158,7 @@
         "type": "object",
         "description": "PostClientsClientIdResponse",
         "properties": {
+          "changes": { "$ref": "#/components/schemas/PostClientsClientIdChanges" },
           "clientId": { "type": "integer", "format": "int64", "example": 2 },
           "officeId": { "type": "integer", "format": "int64", "example": 2 },
           "resourceExternalId": { "type": "string", "example": "123-456" },
@@ -45851,6 +45640,20 @@
           "resourceId": { "type": "integer", "format": "int64", "example": 9 }
         }
       },
+      "PostGroupsGroupIdChanges": {
+        "type": "object",
+        "properties": {
+          "clientMembers": {
+            "type": "array",
+            "description": "Ids of the clients associated or disassociated by the command",
+            "items": {
+              "type": "string",
+              "description": "Ids of the clients associated or disassociated by the command"
+            }
+          },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 }
+        }
+      },
       "PostGroupsGroupIdClients": {
         "type": "object",
         "properties": { "id": { "type": "integer", "format": "int64", "example": 1 } }
@@ -45877,26 +45680,50 @@
         "type": "object",
         "description": "PostGroupsGroupIdRequest",
         "properties": {
+          "activationDate": { "type": "string", "example": "04 March 2011" },
+          "clientMembers": {
+            "type": "array",
+            "description": "List of client ids to associate with or disassociate from the group",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "description": "List of client ids to associate with or disassociate from the group"
+            }
+          },
           "clients": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/PostGroupsGroupIdClients" },
             "uniqueItems": true
           },
-          "destinationGroupId": { "type": "integer", "format": "int64", "example": 2 }
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "destinationGroupId": { "type": "integer", "format": "int64", "example": 2 },
+          "inheritStaffForClientAccounts": { "type": "boolean", "example": false },
+          "locale": { "type": "string", "example": "en" },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
       "PostGroupsGroupIdResponse": {
         "type": "object",
         "description": "PostGroupsGroupIdResponse",
-        "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 1 } }
+        "properties": {
+          "changes": { "$ref": "#/components/schemas/PostGroupsGroupIdChanges" },
+          "groupId": { "type": "integer", "format": "int64", "example": 1 },
+          "officeId": { "type": "integer", "format": "int64", "example": 1 },
+          "resourceId": { "type": "integer", "format": "int64", "example": 1 }
+        }
       },
       "PostGroupsRequest": {
         "type": "object",
         "description": "PostGroupsRequest",
         "properties": {
+          "activationDate": { "type": "string", "example": "04 March 2011" },
           "active": { "type": "boolean", "example": false },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "externalId": { "type": "string", "example": "externalId1" },
+          "locale": { "type": "string", "example": "en" },
           "name": { "type": "string", "example": "Pending Group" },
-          "officeId": { "type": "integer", "format": "int64", "example": 1 }
+          "officeId": { "type": "integer", "format": "int64", "example": 1 },
+          "submittedOnDate": { "type": "string", "example": "04 March 2011" }
         }
       },
       "PostGroupsResponse": {
@@ -46445,6 +46272,16 @@
           "principal": { "type": "number", "example": 22000 }
         }
       },
+      "PostLoansLoanIdGlimApprovalData": {
+        "type": "object",
+        "description": "Approve GLIM Application only: the per-child-loan approval details",
+        "properties": {
+          "approvedOnDate": { "type": "string", "example": "28 June 2022" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "loanId": { "type": "integer", "format": "int64", "example": 1 },
+          "locale": { "type": "string", "example": "en" }
+        }
+      },
       "PostLoansLoanIdOriginatorData": {
         "type": "object",
         "description": "Originator data for loan disbursement request",
@@ -46485,6 +46322,11 @@
         "properties": {
           "actualDisbursementDate": { "type": "string", "example": "28 June 2022" },
           "adjustRepaymentDate": { "type": "string", "example": "28 July 2022" },
+          "approvalFormData": {
+            "type": "array",
+            "description": "Approve GLIM Application only: the per-child-loan approval details",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdGlimApprovalData" }
+          },
           "approvedLoanAmount": { "type": "number", "example": 1000 },
           "approvedOnDate": { "type": "string", "example": "28 June 2022" },
           "assignmentDate": { "type": "string", "example": "02 September 2014" },
@@ -46498,6 +46340,11 @@
           "externalId": { "type": "string", "example": "3e7791ce-aa10-11ec-b909-0242ac120002" },
           "fixedEmiAmount": { "type": "number", "example": 500.0 },
           "fromLoanOfficerId": { "type": "integer", "format": "int64" },
+          "glimPrincipal": {
+            "type": "number",
+            "description": "Approve GLIM Application only: the approved principal of the parent GLIM account",
+            "example": 1000
+          },
           "locale": { "type": "string", "example": "en" },
           "note": { "type": "string", "example": "Description of disbursement details." },
           "originators": {
@@ -46786,12 +46633,23 @@
           "graceOnInterestCharged": { "type": "integer", "format": "int32", "example": 1 },
           "graceOnInterestPayment": { "type": "integer", "format": "int32", "example": 1 },
           "graceOnPrincipalPayment": { "type": "integer", "format": "int32", "example": 1 },
+          "groupId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Mandatory for group and GLIM loans",
+            "example": 1
+          },
           "inArrearsTolerance": { "type": "number", "example": 10 },
           "interestCalculationPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestRateFrequencyType": { "type": "integer", "format": "int32", "example": 3 },
           "interestRatePerPeriod": { "type": "number", "example": 2 },
           "interestRecognitionOnDisbursementDate": { "type": "boolean", "example": false },
           "interestType": { "type": "integer", "format": "int32", "example": 0 },
+          "isParentAccount": {
+            "type": "boolean",
+            "description": "GLIM loans only: marks this application as the GLIM parent account",
+            "example": true
+          },
           "linkAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "loanScheduleProcessingType": { "type": "string", "example": "HORIZONTAL" },
           "loanTermFrequency": { "type": "integer", "format": "int32", "example": 12 },
@@ -46815,6 +46673,11 @@
           "repaymentStartDateType": { "type": "integer", "format": "int32", "example": 1 },
           "repaymentsStartingFromDate": { "type": "string", "format": "date" },
           "submittedOnDate": { "type": "string", "example": "20 September 2011" },
+          "totalLoan": {
+            "type": "number",
+            "description": "GLIM loans only: the total principal of the parent GLIM account",
+            "example": 10000
+          },
           "transactionProcessingStrategyCode": {
             "type": "string",
             "example": "mifos-standard-strategy"
@@ -46834,6 +46697,12 @@
         "properties": {
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "currency": { "$ref": "#/components/schemas/GetLoansLoanIdCurrency" },
+          "glimId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Returned for GLIM loans: the id of the parent GLIM account",
+            "example": 1
+          },
           "loanId": { "type": "integer", "format": "int64", "example": 1 },
           "loanTermInDays": { "type": "integer", "format": "int32", "example": 366 },
           "officeId": { "type": "integer", "format": "int64", "example": 2 },
@@ -46996,13 +46865,13 @@
         "description": "PostProvisioningCriteriaRequest",
         "properties": {
           "criteriaName": { "type": "string", "example": "High Risk Products Criteria" },
+          "definitions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProvisioningCriteriaDefinitionData" }
+          },
           "loanProducts": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/LoanProductData" }
-          },
-          "provisioningcriteria": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProvisioningCriteriaDefinitionData" }
           }
         }
       },
@@ -47935,6 +47804,11 @@
             "description": "Minimum payment type: PERCENTAGE, FLAT (required together with minimumPayment)",
             "example": "PERCENTAGE"
           },
+          "restartPeriodFromResetDate": {
+            "type": "boolean",
+            "description": "Optional reset flag. If true for action=reset, starts a new breach period from the reset date",
+            "example": true
+          },
           "startDate": {
             "type": "string",
             "description": "For pause: start date of the pause period. For resume/disable/enable: the action date, which must be the current business date",
@@ -48574,7 +48448,11 @@
       "PutCentersCenterIdRequest": {
         "type": "object",
         "description": "PutCentersCenterIdRequest",
-        "properties": { "name": { "type": "string", "example": "First Center (No groups)" } }
+        "properties": {
+          "externalId": { "type": "string", "example": "externalId1" },
+          "name": { "type": "string", "example": "First Center (No groups)" },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 }
+        }
       },
       "PutCentersCenterIdResponse": {
         "type": "object",
@@ -48589,7 +48467,9 @@
       "PutCentersChanges": {
         "type": "object",
         "properties": {
-          "name": { "type": "string", "example": "First Center (No groups) - modified" }
+          "externalId": { "type": "string", "example": "externalId1" },
+          "name": { "type": "string", "example": "First Center (No groups) - modified" },
+          "staffId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
       "PutChargeTransactionChangesRequest": {
@@ -49680,13 +49560,13 @@
         "description": "PutProvisioningCriteriaRequest",
         "properties": {
           "criteriaName": { "type": "string", "example": "High Risk Products Criteria" },
+          "definitions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProvisioningCriteriaDefinitionData" }
+          },
           "loanProducts": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/LoanProductData" }
-          },
-          "provisioningcriteria": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ProvisioningCriteriaDefinitionData" }
           }
         }
       },
@@ -50315,6 +50195,12 @@
         "type": "object",
         "description": "Request for updating period payment rate on an active Working Capital Loan",
         "properties": {
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "effectiveDate": {
+            "type": "string",
+            "description": "Date the new rate takes effect. Mandatory. May be backdated or set in the future, but not before the disbursement date.",
+            "example": "01 July 2022"
+          },
           "locale": { "type": "string", "example": "en_GB" },
           "note": { "type": "string", "example": "Rate change note" },
           "periodPaymentRate": {
@@ -50322,7 +50208,8 @@
             "description": "New period payment rate",
             "example": 0.17
           }
-        }
+        },
+        "required": ["effectiveDate"]
       },
       "PutWorkingCapitalLoansLoanIdRequest": {
         "type": "object",
@@ -51840,32 +51727,6 @@
           "id": { "type": "integer", "format": "int64" },
           "startDate": { "type": "string", "format": "date" },
           "taxComponent": { "$ref": "#/components/schemas/TaxComponentData" }
-        }
-      },
-      "TellerJournalData": {
-        "type": "object",
-        "properties": {
-          "closingBalance": { "type": "number", "format": "double" },
-          "day": { "type": "string", "format": "date" },
-          "officeId": { "type": "integer", "format": "int64" },
-          "openingBalance": { "type": "number", "format": "double" },
-          "settledBalance": { "type": "number", "format": "double" },
-          "sumPayments": { "type": "number", "format": "double" },
-          "sumReceipts": { "type": "number", "format": "double" },
-          "tellerId": { "type": "integer", "format": "int64" }
-        }
-      },
-      "TellerTransactionData": {
-        "type": "object",
-        "properties": {
-          "amount": { "type": "number", "format": "double" },
-          "cashierId": { "type": "integer", "format": "int64" },
-          "clientId": { "type": "integer", "format": "int64" },
-          "id": { "type": "integer", "format": "int64" },
-          "officeId": { "type": "integer", "format": "int64" },
-          "postingDate": { "type": "string", "format": "date" },
-          "tellerId": { "type": "integer", "format": "int64" },
-          "type": { "$ref": "#/components/schemas/EnumOptionData" }
         }
       },
       "TemplateCreateRequest": {

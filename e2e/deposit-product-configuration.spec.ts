@@ -33,7 +33,7 @@
  *   npx playwright test e2e/deposit-product-configuration.spec.ts --project=backend --workers=1
  */
 
-import { test, expect, Page } from './fixtures';
+import { test, expect, Page, recordingTimeout } from './fixtures';
 import { login, uniqueSuffix } from './utils/fineract-login';
 import { ionSelect } from './utils/ionic-locators';
 import { selectOption } from './utils/select-option';
@@ -53,7 +53,7 @@ test.describe('Deposit product configuration', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('a fixed deposit product survives being edited', async ({ page }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
 
     const suffix = uniqueSuffix();
@@ -85,7 +85,7 @@ test.describe('Deposit product configuration', () => {
   });
 
   test('a recurring deposit product can be created at all', async ({ page }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
 
     const suffix = uniqueSuffix();
@@ -102,7 +102,7 @@ test.describe('Deposit product configuration', () => {
   });
 
   test('a savings product carries its accounting configuration', async ({ page }) => {
-    test.setTimeout(240000);
+    test.setTimeout(recordingTimeout(240000));
     await login(page);
 
     const suffix = uniqueSuffix();

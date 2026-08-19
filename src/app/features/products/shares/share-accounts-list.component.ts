@@ -52,6 +52,7 @@ import { PageEvent } from '../../../shared/models/table.model';
       title="Share Accounts"
       helpTextKey="HELP.SHARE_ACCOUNTS_DESC"
       createButtonLabel="SHARE_ACCOUNTS.CREATE"
+      createPermission="CREATE_SHAREACCOUNT"
       [columns]="columns"
       [data]="accounts()"
       [totalRecords]="totalRecords()"

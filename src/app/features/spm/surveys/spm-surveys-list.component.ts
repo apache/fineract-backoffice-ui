@@ -47,6 +47,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       title="nav.spmSurveys"
       helpTextKey="HELP.SPM_SURVEYS_DESC"
       createButtonLabel="SPM_SURVEYS.CREATE"
+      createPermission="REGISTER_SURVEY"
       [columns]="columns"
       [data]="surveys()"
       [totalRecords]="surveys().length"

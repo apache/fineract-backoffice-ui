@@ -73,12 +73,14 @@ function* sources(dir = 'src') {
 // ---------------------------------------------------------------------------------------------
 // Gate 1 — HTTP security headers
 //
-// `deploy/nginx.conf` sets none. For a core-banking UI the missing `frame-ancestors` is the
-// sharp end: without it the whole application is frameable, and a clickjacked "Approve loan"
-// is a real transaction.
+// `deploy/nginx.conf.template` is the file that defines the server block — the container renders
+// it at startup, substituting only the proxy upstream. For a core-banking UI the missing
+// `frame-ancestors` is the sharp end: without it the whole application is frameable, and a
+// clickjacked "Approve loan" is a real transaction.
 // ---------------------------------------------------------------------------------------------
 {
-  const conf = read('deploy/nginx.conf');
+  const NGINX_CONF = 'deploy/nginx.conf.template';
+  const conf = read(NGINX_CONF);
   const required = [
     ['Content-Security-Policy', /add_header\s+Content-Security-Policy/i],
     ['X-Content-Type-Options', /add_header\s+X-Content-Type-Options/i],
@@ -96,11 +98,11 @@ function* sources(dir = 'src') {
 
   if (!conf) {
     record('headers', 'NGINX sets HTTP security headers', 'unknown', {
-      detail: 'deploy/nginx.conf not found — cannot determine what the deployment sends.',
+      detail: `${NGINX_CONF} not found — cannot determine what the deployment sends.`,
     });
   } else if (missing.length > 0) {
     record('headers', 'NGINX sets HTTP security headers', 'fail', {
-      detail: `deploy/nginx.conf is missing: ${missing.join(', ')}.`,
+      detail: `${NGINX_CONF} is missing: ${missing.join(', ')}.`,
       reference: 'security.md §4',
     });
   } else {
@@ -308,6 +310,72 @@ function* sources(dir = 'src') {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Gate 5 — no external webfont dependency
+//
+// The UI once pulled Inter from `fonts.googleapis.com` via a <link> in `src/index.html`. That
+// cost more than it looked: Angular's font inlining fetched the stylesheet at *build* time and
+// failed the entire build when it was unreachable, and at *runtime* the browser fetched the
+// binaries from `fonts.gstatic.com` — which `deploy/nginx.conf.template`'s `font-src 'self' data:`
+// blocked, so the deployed UI silently rendered in the fallback stack. Inter is now bundled
+// from `@fontsource-variable/inter` and served from this origin.
+//
+// This gate keeps it that way. It matches host references that carry a scheme or a
+// protocol-relative prefix, so prose in a code comment does not trip it but a real <link>,
+// @import or url() does. `audit/` and `DOCS/` are not scanned: they document this history and
+// necessarily name the hosts.
+// ---------------------------------------------------------------------------------------------
+{
+  const FONT_HOSTS = /(?:https?:)?\/\/fonts\.(?:googleapis|gstatic)\.com/i;
+  const SCANNED_EXTENSIONS = ['.html', '.css', '.scss', '.sass', '.ts', '.js', '.json'];
+
+  /** Walks a directory yielding files worth scanning; missing directories yield nothing. */
+  function* scannable(dir) {
+    if (!existsSync(dir)) return;
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) yield* scannable(full);
+      else if (SCANNED_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) yield full;
+    }
+  }
+
+  const offenders = [];
+
+  // Application and build inputs — what a developer would edit to reintroduce the dependency.
+  for (const dir of ['src', 'public', 'projects', 'deploy']) {
+    for (const file of scannable(dir)) {
+      if (FONT_HOSTS.test(read(file))) offenders.push(file);
+    }
+  }
+  for (const file of ['angular.json', 'index.html']) {
+    if (existsSync(file) && FONT_HOSTS.test(read(file))) offenders.push(file);
+  }
+
+  // The built artifact, when one is present. A clean source tree that still emits a Google URL
+  // would mean the build itself put it there, which is exactly what used to happen.
+  let artifactChecked = false;
+  for (const built of scannable('dist')) {
+    artifactChecked = true;
+    if (FONT_HOSTS.test(read(built))) offenders.push(built);
+  }
+
+  if (offenders.length > 0) {
+    record('external-fonts', 'No external webfont dependency', 'fail', {
+      detail:
+        `Reference to fonts.googleapis.com or fonts.gstatic.com in: ${offenders.join(', ')}.\n` +
+        'Fonts must be bundled and served from this origin — the deployment CSP blocks ' +
+        'third-party font hosts, and the build must not depend on a network fetch.',
+      reference: 'DOCS/FONTS.md',
+    });
+  } else {
+    record('external-fonts', 'No external webfont dependency', 'pass', {
+      detail: artifactChecked
+        ? 'Source and built artifact are both clean.'
+        : 'Source is clean; no dist/ present, so the artifact was not checked.',
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------------------------
 
@@ -334,4 +402,10 @@ if (JSON_OUTPUT) {
   );
 }
 
-process.exit(results.some((r) => r.status === 'fail' && r.blocking) ? 1 : 0);
+// An undetermined blocking gate fails alongside an outright failure. `unknown` means the check
+// could not read what it needed — a renamed file, a moved config — and the honest reading of "I
+// could not tell" is not "yes". This repository has already had a release gate that existed and
+// never ran; a gate that silently stops checking is the same failure wearing a green tick.
+process.exit(
+  results.some((r) => r.blocking && (r.status === 'fail' || r.status === 'unknown')) ? 1 : 0,
+);

@@ -25,6 +25,7 @@
 
 import { PostLoansLoanIdDisbursementData } from './postLoansLoanIdDisbursementData';
 import { PostLoansLoanIdOriginatorData } from './postLoansLoanIdOriginatorData';
+import { PostLoansLoanIdGlimApprovalData } from './postLoansLoanIdGlimApprovalData';
 
 
 /**
@@ -33,6 +34,10 @@ import { PostLoansLoanIdOriginatorData } from './postLoansLoanIdOriginatorData';
 export interface PostLoansLoanIdRequest { 
     actualDisbursementDate?: string;
     adjustRepaymentDate?: string;
+    /**
+     * Approve GLIM Application only: the per-child-loan approval details
+     */
+    approvalFormData?: Array<PostLoansLoanIdGlimApprovalData>;
     approvedLoanAmount?: number;
     approvedOnDate?: string;
     assignmentDate?: string;
@@ -45,6 +50,10 @@ export interface PostLoansLoanIdRequest {
     externalId?: string;
     fixedEmiAmount?: number;
     fromLoanOfficerId?: number;
+    /**
+     * Approve GLIM Application only: the approved principal of the parent GLIM account
+     */
+    glimPrincipal?: number;
     locale?: string;
     note?: string;
     /**

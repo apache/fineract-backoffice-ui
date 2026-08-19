@@ -1,0 +1,11 @@
+{
+  "license": "Apache-2.0",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc/e2e",
+    "types": ["node"],
+    "noEmit": true,
+    "noPropertyAccessFromIndexSignature": false
+  },
+  "include": ["e2e/**/*.ts", "playwright.config.ts"]
+}

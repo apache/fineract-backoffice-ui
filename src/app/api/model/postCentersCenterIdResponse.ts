@@ -23,12 +23,16 @@
  * Do not edit the class manually.
  */
 
+import { PostCentersCenterIdChanges } from './postCentersCenterIdChanges';
 
 
 /**
  * PostCentersCenterIdResponse
  */
 export interface PostCentersCenterIdResponse { 
+    changes?: PostCentersCenterIdChanges;
+    groupId?: number;
+    officeId?: number;
     resourceId?: number;
 }
 

@@ -21,7 +21,22 @@
 const eslint = require('@eslint/js');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
-const sonarjs = require('eslint-plugin-sonarjs');
+// Published as ESM; under CommonJS the plugin arrives behind `.default`.
+const unicorn = require('eslint-plugin-unicorn').default;
+const security = require('eslint-plugin-security');
+const importPlugin = require('eslint-plugin-import');
+const cognitiveComplexity = require('./eslint-rules/cognitive-complexity.js');
+
+/**
+ * Rules written for this repository, kept here rather than published.
+ *
+ * `cognitive-complexity` replaces the rule of the same name that used to arrive with
+ * `eslint-plugin-sonarjs`. That plugin is LGPL-3.0-only — Apache Category X — so it was removed;
+ * see DOCS/LINT_POLICY.md for what took over each of its rules and what has no replacement.
+ */
+const local = {
+  rules: { 'cognitive-complexity': cognitiveComplexity },
+};
 
 module.exports = tseslint.config(
   {
@@ -45,10 +60,67 @@ module.exports = tseslint.config(
       ...tseslint.configs.recommended,
       ...tseslint.configs.stylistic,
       ...angular.configs.tsRecommended,
-      sonarjs.configs.recommended,
+      // `unopinionated` rather than `recommended`: unicorn's recommended set carries a large
+      // stylistic component (filename casing, abbreviation expansion, `for…of` over `.forEach`)
+      // that would rewrite a great deal of working code to no benefit. The unopinionated set is
+      // the correctness half — the rules that catch a bug rather than a preference.
+      unicorn.configs.unopinionated,
+      // Apache-2.0, and it covers most of what the removed plugin's security rules did:
+      // eval, unsafe regex, non-literal fs paths, timing-unsafe comparison, pseudo-random.
+      security.configs.recommended,
+      // Import correctness only. The resolver is configured below; without it every
+      // `@angular/*` import reads as unresolved.
+      importPlugin.flatConfigs.recommended,
+      importPlugin.flatConfigs.typescript,
     ],
+    plugins: { local },
     processor: angular.processInlineTemplates,
+    settings: {
+      'import/resolver': {
+        typescript: { alwaysTryTypes: true, project: ['tsconfig.json'] },
+      },
+    },
     rules: {
+      // Replaces sonarjs/cognitive-complexity at the same threshold it enforced, so this is a
+      // like-for-like swap rather than a quiet relaxation. See eslint-rules/.
+      'local/cognitive-complexity': ['error', { threshold: 15 }],
+
+      // --- rules switched off from the sets above, each for a reason -------------------------
+      //
+      // Off because enforcing it would defeat `no-restricted-globals` below. That rule names
+      // `localStorage` and `sessionStorage`, and it matches a bare global — `globalThis.localStorage`
+      // sails past it. The adapter boundary is a trust boundary (security.md §4), so a style rule
+      // does not get to open a hole in it. `window` is also the more honest name here: this is a
+      // browser application and nothing in it runs in a worker or on the server.
+      'unicorn/prefer-global-this': 'off',
+      // Off because it reports every `obj[key]` where the key is not a literal, which in a typed
+      // codebase is the normal way to read a keyed option map. All 35 reports were of that shape.
+      // Leaving it on trains reviewers to skim warnings, which costs more than the rule returns.
+      'security/detect-object-injection': 'off',
+      // Off: `.forEach` is not a defect, and rewriting 11 call sites to `for…of` would change
+      // working code to satisfy a preference.
+      'unicorn/no-array-for-each': 'off',
+      // Off: whether `if (!a)` or `if (a)` reads better depends on which branch is the common
+      // case, which a rule cannot know.
+      'unicorn/no-negated-condition': 'off',
+      // Off: `signal<T | undefined>(undefined)` and an explicit `return undefined` are how this
+      // codebase states "absent" in a typed signature. Removing them makes the type read as an
+      // accident rather than a decision.
+      'unicorn/no-useless-undefined': 'off',
+      // Off: top-level await changes a module's evaluation semantics, and the two reports are in
+      // `main.ts` and `bootstrap.ts`, where native-federation controls the bootstrap order. That
+      // is a deliberate change to make on its own, not a lint autofix.
+      'unicorn/prefer-top-level-await': 'off',
+      // Off because its autofix does not compile here. It rewrites `.filter(p).pop()` to
+      // `.findLast(p)`, which needs lib ES2023; tsconfig targets ES2022, so the fix produces
+      // TS2550. Caught by `npm run build` — ESLint does not type-check, so lint stayed green on
+      // code the compiler rejects. Reconsider when the target moves.
+      'unicorn/prefer-array-find': 'off',
+      // Off for the same reason, from the other direction: it rewrites
+      // `setAttribute('data-theme', …)` to `dataset.theme`, and `noPropertyAccessFromIndexSignature`
+      // is on, so the fix produces TS4111. `DOMStringMap` is an index signature and this project
+      // has deliberately chosen to require bracket access on those.
+      'unicorn/dom-node-dataset': 'off',
       '@angular-eslint/directive-selector': [
         'error',
         {
@@ -65,7 +137,6 @@ module.exports = tseslint.config(
           style: 'kebab-case',
         },
       ],
-      'sonarjs/no-duplicate-string': 'error',
       // The three rules below are on globally with every current violation recorded in
       // eslint-suppressions.json. That file only shrinks: CI runs --prune-suppressions, so a
       // fixed violation cannot be re-introduced, and anything new fails immediately. Turning

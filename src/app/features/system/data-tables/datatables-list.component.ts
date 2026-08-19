@@ -68,6 +68,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
             color="primary"
             [routerLink]="['edit', row.registeredTableName]"
             *appHasPermission="'UPDATE_DATATABLE'"
+            [attr.aria-label]="'COMMON.EDIT' | translate"
             [appTooltip]="'COMMON.EDIT' | translate"
           >
             <ion-icon name="create-outline"></ion-icon>
@@ -77,6 +78,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
             color="danger"
             (click)="onDelete(row.registeredTableName)"
             *appHasPermission="'DELETE_DATATABLE'"
+            [attr.aria-label]="'COMMON.DELETE' | translate"
             [appTooltip]="'COMMON.DELETE' | translate"
           >
             <ion-icon name="trash-outline"></ion-icon>

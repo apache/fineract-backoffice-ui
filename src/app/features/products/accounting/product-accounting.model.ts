@@ -64,7 +64,7 @@ export const ACCRUAL_RULES: readonly AccountingRuleId[] = [
  * maps to the account Probe INC of type INCOME, the expected account type was ASSET" — so the
  * class each slot expects is what makes the picker able to only offer accounts that will work.
  */
-export type GlAccountType = 'asset' | 'liability' | 'income' | 'expense';
+export type GlAccountType = 'asset' | 'liability' | 'equity' | 'income' | 'expense';
 
 /** A GL account as the product template offers it. */
 export interface GlAccountOption {
@@ -84,6 +84,7 @@ export interface GlAccountOption {
 export interface GlAccountOptions {
   assetAccountOptions?: Iterable<GlAccountOption>;
   liabilityAccountOptions?: Iterable<GlAccountOption>;
+  equityAccountOptions?: Iterable<GlAccountOption>;
   incomeAccountOptions?: Iterable<GlAccountOption>;
   expenseAccountOptions?: Iterable<GlAccountOption>;
 }
@@ -124,6 +125,8 @@ export type AccountingMappings = Record<string, number | undefined>;
  *
  *     POST /loanproducts  {"accountingRule": 2, …no mapping ids…}
  */
+const INCOME_FROM_FEES_LABEL = 'PRODUCTS.ACCOUNTING.INCOME_FROM_FEES';
+
 export const LOAN_ACCOUNTING_FIELDS: readonly AccountingMappingField[] = [
   {
     key: 'fundSourceAccountId',
@@ -178,7 +181,7 @@ export const LOAN_ACCOUNTING_FIELDS: readonly AccountingMappingField[] = [
     key: 'incomeFromFeeAccountId',
     responseKey: 'incomeFromFeeAccount',
     accountType: 'income',
-    label: 'PRODUCTS.ACCOUNTING.INCOME_FROM_FEES',
+    label: INCOME_FROM_FEES_LABEL,
     rules: ACCOUNTING_RULES_WITH_MAPPINGS,
   },
   {
@@ -336,7 +339,7 @@ export const SAVINGS_ACCOUNTING_FIELDS: readonly AccountingMappingField[] = [
     key: 'incomeFromFeeAccountId',
     responseKey: 'incomeFromFeeAccount',
     accountType: 'income',
-    label: 'PRODUCTS.ACCOUNTING.INCOME_FROM_FEES',
+    label: INCOME_FROM_FEES_LABEL,
     rules: ACCOUNTING_RULES_WITH_MAPPINGS,
   },
   {
@@ -384,3 +387,197 @@ export const TERM_DEPOSIT_ACCOUNTING_FIELDS: readonly AccountingMappingField[] =
         field.key,
       ),
   );
+
+/**
+ * The rules a **share product** may carry.
+ *
+ * The share template is the one product template that returns no `accountingRuleOptions`, so
+ * unlike the other families this list cannot come from the platform and is stated here.
+ *
+ * `NONE` and `CASH` only, and the omission of accrual is deliberate rather than conservative.
+ * The platform's validator accepts 1, 2 and 3 — a 4 is refused with
+ * `validation.msg.shareproduct.accountingRule.is.not.within.expected.range`, "must be between 1
+ * and 3" — but a share product created with rule 3 asks for no mappings at all and reads back
+ * with `accountingMappings: {}`. That is a product labelled ACCRUAL PERIODIC which posts nothing,
+ * which is worse than one labelled NONE: it looks configured. Only the two rules that mean what
+ * they say are offered.
+ */
+export const SHARE_ACCOUNTING_RULES: readonly AccountingRuleId[] = [
+  ACCOUNTING_RULE.NONE,
+  ACCOUNTING_RULE.CASH,
+];
+
+/**
+ * The slots a **share product** maps.
+ *
+ * Enumerated from the platform the same way as the other families, and it names four rather than
+ * the three the equity story suggests:
+ *
+ *     POST /products/share  {"accountingRule": 2, …no mapping ids…}
+ *     → shareReferenceId, shareSuspenseId, incomeFromFeeAccountId, shareEquityId
+ *
+ * `shareEquityId` is the members' stake itself and is the only slot in the application that takes
+ * an **equity** account. That matters twice over: pointing it at a liability is refused with
+ * `403 validation.msg.domain.rule.violation`, and the share template omits
+ * `equityAccountOptions` entirely until the tenant has at least one equity account — Fineract
+ * drops an option list rather than sending it empty. A fresh chart of accounts therefore offers
+ * nothing here, which {@link ProductAccountingSectionComponent} says out loud.
+ *
+ * Note the `responseKey`s: share products read back under the **same** keys they were written
+ * with, `Id` suffix and all. Every other family drops the suffix — `fundSourceAccountId` in,
+ * `fundSourceAccount` out — so this is the one field list where the two spellings coincide.
+ */
+export const SHARE_ACCOUNTING_FIELDS: readonly AccountingMappingField[] = [
+  {
+    key: 'shareReferenceId',
+    responseKey: 'shareReferenceId',
+    accountType: 'asset',
+    label: 'PRODUCTS.ACCOUNTING.SHARE_REFERENCE',
+    rules: [ACCOUNTING_RULE.CASH],
+  },
+  {
+    key: 'shareSuspenseId',
+    responseKey: 'shareSuspenseId',
+    accountType: 'liability',
+    label: 'PRODUCTS.ACCOUNTING.SHARE_SUSPENSE',
+    rules: [ACCOUNTING_RULE.CASH],
+  },
+  {
+    key: 'shareEquityId',
+    responseKey: 'shareEquityId',
+    accountType: 'equity',
+    label: 'PRODUCTS.ACCOUNTING.SHARE_EQUITY',
+    rules: [ACCOUNTING_RULE.CASH],
+  },
+  {
+    key: 'incomeFromFeeAccountId',
+    responseKey: 'incomeFromFeeAccountId',
+    accountType: 'income',
+    label: INCOME_FROM_FEES_LABEL,
+    rules: [ACCOUNTING_RULE.CASH],
+  },
+];
+
+// --- Advanced mappings ------------------------------------------------------------------------
+//
+// The base slots above send every payment to one fund source and every fee to one income
+// account. These three tables override that per payment channel and per charge, which is what
+// makes a till reconcilable at close of day and a fee line reportable on its own.
+
+/** One payment channel routed to its own fund source. */
+export interface PaymentChannelMapping {
+  paymentTypeId?: number;
+  fundSourceAccountId?: number;
+}
+
+/** One charge routed to its own income account. Used for both fees and penalties. */
+export interface ChargeToIncomeMapping {
+  chargeId?: number;
+  incomeAccountId?: number;
+}
+
+/** The three advanced tables a product form holds. */
+export interface AdvancedAccountingMappings {
+  paymentChannelToFundSourceMappings: PaymentChannelMapping[];
+  feeToIncomeAccountMappings: ChargeToIncomeMapping[];
+  penaltyToIncomeAccountMappings: ChargeToIncomeMapping[];
+}
+
+/** An empty set of advanced tables. */
+export function emptyAdvancedMappings(): AdvancedAccountingMappings {
+  return {
+    paymentChannelToFundSourceMappings: [],
+    feeToIncomeAccountMappings: [],
+    penaltyToIncomeAccountMappings: [],
+  };
+}
+
+/** A row is worth sending only once both halves are chosen. */
+function isCompletePaymentChannel(row: PaymentChannelMapping): boolean {
+  return row.paymentTypeId != null && row.fundSourceAccountId != null;
+}
+
+function isCompleteChargeMapping(row: ChargeToIncomeMapping): boolean {
+  return row.chargeId != null && row.incomeAccountId != null;
+}
+
+/**
+ * The advanced tables as the create/update request carries them.
+ *
+ * Half-filled rows are dropped rather than sent: the tables are edited in place, so a user who
+ * adds a row and then picks nothing would otherwise post `{}` into an array the platform reads
+ * positionally.
+ *
+ * Empty tables produce **no key at all**. Both spellings are in fact accepted here — a loan
+ * product posts identically with `[]` and with the key absent — but omitting keeps the request
+ * to what the user actually configured, and matches how {@link mappingsForRule} treats the base
+ * slots.
+ *
+ * A rule with no mappings gets nothing, for the same reason the base slots do.
+ */
+export function advancedMappingsForRequest(
+  rule: number | undefined,
+  mappings: AdvancedAccountingMappings,
+): Record<string, unknown> {
+  if (!ACCOUNTING_RULES_WITH_MAPPINGS.includes(rule as AccountingRuleId)) return {};
+
+  const request: Record<string, unknown> = {};
+
+  const channels = mappings.paymentChannelToFundSourceMappings.filter(isCompletePaymentChannel);
+  if (channels.length) request['paymentChannelToFundSourceMappings'] = channels;
+
+  const fees = mappings.feeToIncomeAccountMappings.filter(isCompleteChargeMapping);
+  if (fees.length) request['feeToIncomeAccountMappings'] = fees;
+
+  const penalties = mappings.penaltyToIncomeAccountMappings.filter(isCompleteChargeMapping);
+  if (penalties.length) request['penaltyToIncomeAccountMappings'] = penalties;
+
+  return request;
+}
+
+/** The response shape, which does not match the request shape. */
+interface AdvancedMappingResponse {
+  paymentChannelToFundSourceMappings?: {
+    paymentType?: { id?: number };
+    fundSourceAccount?: { id?: number };
+  }[];
+  feeToIncomeAccountMappings?: { charge?: { id?: number }; incomeAccount?: { id?: number } }[];
+  penaltyToIncomeAccountMappings?: { charge?: { id?: number }; incomeAccount?: { id?: number } }[];
+}
+
+/**
+ * The advanced tables a loaded product already has.
+ *
+ * The request and the response disagree about every key, which is the trap this exists for. A
+ * product is written with `{paymentTypeId, fundSourceAccountId}` and reads back as
+ * `{paymentType: {id}, fundSourceAccount: {id}}`; fees and penalties are written with
+ * `{chargeId, incomeAccountId}` and read back as `{charge: {id}, incomeAccount: {id}}`. A form
+ * that fed the response straight back into its model would show empty selects on a configured
+ * product and then blank the mappings on save.
+ */
+export function advancedMappingsFromResponse(
+  product: object | undefined,
+): AdvancedAccountingMappings {
+  const mappings = emptyAdvancedMappings();
+  if (!product) return mappings;
+
+  const source = product as AdvancedMappingResponse;
+
+  mappings.paymentChannelToFundSourceMappings = (
+    source.paymentChannelToFundSourceMappings ?? []
+  ).map((row) => ({
+    paymentTypeId: row.paymentType?.id,
+    fundSourceAccountId: row.fundSourceAccount?.id,
+  }));
+
+  mappings.feeToIncomeAccountMappings = (source.feeToIncomeAccountMappings ?? []).map((row) => ({
+    chargeId: row.charge?.id,
+    incomeAccountId: row.incomeAccount?.id,
+  }));
+
+  mappings.penaltyToIncomeAccountMappings = (source.penaltyToIncomeAccountMappings ?? []).map(
+    (row) => ({ chargeId: row.charge?.id, incomeAccountId: row.incomeAccount?.id }),
+  );
+
+  return mappings;
+}

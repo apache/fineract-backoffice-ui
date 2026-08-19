@@ -18,7 +18,8 @@
  */
 
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { IdleService } from './idle.service';
 import { AuthService } from './auth.service';
 import { DialogService } from './dialog.service';
@@ -28,11 +29,16 @@ describe('IdleService', () => {
   let service: IdleService;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let routerEvents: Subject<unknown>;
   let overlay: FakeOverlayAdapter;
 
   beforeEach(() => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['logout', 'isAuthenticated']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerEvents = new Subject<unknown>();
+    // `Router.events` is a real Observable, not a spied method — the constructor subscribes
+    // to it directly, so the double has to supply one rather than leave it undefined.
+    (routerSpy as unknown as { events: Subject<unknown> }).events = routerEvents;
     const fakes = provideFakeAdapters();
     overlay = fakes.overlay;
 
@@ -89,6 +95,72 @@ describe('IdleService', () => {
 
     expect(authServiceSpy.logout).toHaveBeenCalled();
     expect(routerSpy.navigate).toHaveBeenCalled();
+
+    service.ngOnDestroy();
+  }));
+
+  it('keeps the hard logout timer running when activity is reported while the warning is still being presented', fakeAsync(() => {
+    authServiceSpy.isAuthenticated.and.returnValue(true);
+
+    // Simulates the window between the warning timer firing and `dialogService.present()`
+    // actually resolving — the exact gap in which `dialogRef` used to sit unset, making the
+    // "don't reset while a warning is up" guard ineffective: an activity event landing here
+    // used to call `resetTimer()`, which clears the hard logout timer `showInactivityWarning()`
+    // had just set and reschedules a fresh 13-minute wait, leaving the visible warning up with
+    // nothing left to time it out.
+    let resolvePresent!: (handle: {
+      result: Promise<unknown>;
+      dismiss: () => Promise<void>;
+    }) => void;
+    spyOn(overlay, 'presentModal').and.returnValue(
+      new Promise((resolve) => {
+        resolvePresent = resolve;
+      }),
+    );
+
+    service = TestBed.inject(IdleService);
+
+    tick(13 * 60 * 1000 + 1000);
+    expect(overlay.presentModal).toHaveBeenCalledTimes(1);
+
+    // An activity event lands before the modal has actually presented.
+    window.dispatchEvent(new Event('mousemove'));
+    tick(1);
+
+    // The modal now presents, and the user never answers it.
+    resolvePresent({ result: new Promise(() => undefined), dismiss: () => Promise.resolve() });
+    tick();
+
+    // If the stray activity event had reset the timer, this would not be enough time to
+    // reach the hard logout — it would take another ~13 minutes instead.
+    tick(2 * 60 * 1000 + 1000);
+
+    expect(authServiceSpy.logout).toHaveBeenCalled();
+    expect(overlay.presentModal).toHaveBeenCalledTimes(1);
+
+    service.ngOnDestroy();
+  }));
+
+  it('closes the warning dialog once navigation actually lands on the login page', fakeAsync(() => {
+    authServiceSpy.isAuthenticated.and.returnValue(true);
+    // The user never answers, so nothing else would close this dialog before the hard
+    // logout timer does — the router subscription below has to be what closes it instead.
+    const dismissSpy = jasmine.createSpy('dismiss').and.resolveTo(undefined);
+    spyOn(overlay, 'presentModal').and.resolveTo({
+      result: new Promise(() => undefined),
+      dismiss: dismissSpy,
+    });
+
+    service = TestBed.inject(IdleService);
+
+    tick(13 * 60 * 1000 + 1000);
+    expect(overlay.presentModal).toHaveBeenCalled();
+    expect(dismissSpy).not.toHaveBeenCalled();
+
+    routerEvents.next(new NavigationEnd(1, '/login?reason=inactivity', '/login?reason=inactivity'));
+    tick();
+
+    expect(dismissSpy).toHaveBeenCalled();
 
     service.ngOnDestroy();
   }));

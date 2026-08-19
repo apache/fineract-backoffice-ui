@@ -18,6 +18,7 @@
  */
 
 import { inject, input, Directive, ElementRef, OnDestroy, Renderer2 } from '@angular/core';
+import { TooltipRegistryService } from './tooltip-registry.service';
 
 /** Distance between the host and the tooltip, in pixels. */
 const OFFSET = 8;
@@ -37,6 +38,8 @@ let nextId = 0;
  *
  * The tooltip is appended to the body rather than the host, so it is never clipped by a
  * card's overflow, and it is wired up with aria-describedby so screen readers announce it.
+ * {@link TooltipRegistryService} guarantees at most one instance of it is visible at once,
+ * even when hover and focus land on two different hosts in quick succession.
  *
  * Usage: `<ion-button [appTooltip]="'HELP.SEARCH_DESC' | translate">`
  */
@@ -55,6 +58,7 @@ let nextId = 0;
 export class TooltipDirective implements OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly renderer = inject(Renderer2);
+  private readonly registry = inject(TooltipRegistryService);
 
   private tooltip?: HTMLElement;
   private timer?: ReturnType<typeof setTimeout>;
@@ -69,9 +73,19 @@ export class TooltipDirective implements OnDestroy {
   readonly text = input('', { alias: 'appTooltip' });
 
   show(): void {
+    // `mouseenter` and `focusin` can both fire for the same interaction (e.g. clicking the
+    // host focuses it right after the pointer enters). Without clearing the previous timer
+    // here, the first one is orphaned: its callback still fires later, creates its own
+    // element, and overwrites `this.tooltip`'s reference to it — leaking a bubble that
+    // `hide()` can never find again, permanently stuck on `document.body`.
+    clearTimeout(this.timer);
     if (!this.text() || this.tooltip) return;
 
     this.timer = setTimeout(() => {
+      // Only one tooltip may be on screen at a time — showing this one dismisses whichever
+      // other host (hovered, then left focused by a stray tab-through) still had one up.
+      this.registry.activate(this);
+
       const el = this.renderer.createElement('div') as HTMLElement;
       this.id = `tooltip-${++nextId}`;
 
@@ -91,6 +105,8 @@ export class TooltipDirective implements OnDestroy {
 
   hide(): void {
     clearTimeout(this.timer);
+    this.timer = undefined;
+    this.registry.deactivate(this);
     if (!this.tooltip) return;
 
     this.renderer.removeChild(document.body, this.tooltip);

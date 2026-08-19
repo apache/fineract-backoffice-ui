@@ -87,9 +87,14 @@ export class ReportsListComponent implements OnInit {
     });
   }
 
+  /**
+   * The sub-type travels with the type because it is what separates a bar chart from a pie chart,
+   * and the run screen has no other way to learn it — the run endpoint returns the same generic
+   * resultset whatever the definition says.
+   */
   onRunReport(report: GetReportsResponse): void {
     this.router.navigate(['/reporting/run', report.reportName], {
-      queryParams: { type: report.reportType },
+      queryParams: { type: report.reportType, subType: report.reportSubType },
     });
   }
 }

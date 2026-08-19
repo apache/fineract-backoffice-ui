@@ -45,6 +45,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       title="LOANS.COLLATERAL"
       helpTextKey="HELP.COLLATERAL_DESC"
       createButtonLabel="LOANS.ADD_COLLATERAL"
+      createPermission="CREATE_COLLATERAL"
       [columns]="columns"
       [data]="collaterals()"
       [totalRecords]="collaterals().length"

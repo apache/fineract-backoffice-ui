@@ -52,6 +52,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
       title="CALENDARS.TITLE"
       helpTextKey="HELP.CALENDARS_DESC"
       createButtonLabel="CALENDARS.CREATE"
+      createPermission="CREATE_CALENDAR"
       [columns]="columns"
       [data]="calendars()"
       [totalRecords]="calendars().length"

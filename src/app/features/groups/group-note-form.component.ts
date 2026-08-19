@@ -132,6 +132,11 @@ export class GroupNoteFormComponent implements OnInit {
   private readonly i18n = inject(I18N);
 
   groupId!: number;
+  /**
+   * Where cancelling and saving return to. Centers reuse this form because their notes live under
+   * the groups resource, and returning them to a group view would be wrong.
+   */
+  basePath = '/groups';
   noteId?: number;
   isEditMode = false;
 
@@ -141,6 +146,7 @@ export class GroupNoteFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.groupId = Number(this.route.snapshot.paramMap.get('groupId'));
+    this.basePath = (this.route.snapshot.data['basePath'] as string) ?? '/groups';
     const noteId = this.route.snapshot.paramMap.get('id');
 
     if (noteId) {
@@ -188,6 +194,6 @@ export class GroupNoteFormComponent implements OnInit {
   }
 
   onCancel(): void {
-    void this.router.navigate(['/groups/view', this.groupId]);
+    void this.router.navigate([`${this.basePath}/view`, this.groupId]);
   }
 }
