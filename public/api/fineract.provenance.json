@@ -2,24 +2,24 @@
   "$comment": "Provenance for public/api/fineract.json. Written by .github/workflows/api-spec-sync.yml; do not edit by hand.",
   "license": "Apache-2.0",
   "schemaVersion": 1,
-  "fetchedAt": "2026-08-19T06:08:56.319Z",
+  "fetchedAt": "2026-08-20T16:07:32.263Z",
   "source": {
     "project": "apache/fineract",
     "method": "image",
     "url": "/app/resources/static/fineract.json",
     "image": {
       "requested": "apache/fineract:latest",
-      "ref": "apache/fineract@sha256:dd7721faf522eb60d129273f5167d121a4aeb51c2b5a85fe0a92162077dcd15d",
-      "digest": "sha256:dd7721faf522eb60d129273f5167d121a4aeb51c2b5a85fe0a92162077dcd15d"
+      "ref": "apache/fineract@sha256:6c331bbef3103344fae77ae06f243e2980a5c7e79cf6652826eeb04376adc827",
+      "digest": "sha256:6c331bbef3103344fae77ae06f243e2980a5c7e79cf6652826eeb04376adc827"
     },
     "commit": "unknown"
   },
   "spec": {
     "path": "public/api/fineract.json",
     "infoVersion": "1.16.0-SNAPSHOT",
-    "upstreamSha256": "6a41d671ea8786b91ad876ff9abf7f89655fe9a9f595e4aea0612638335bae23",
-    "committedSha256": "7042bff962ed439a742fe228958bba1091e046ee5fd25d7d7ad0aaa81557e766",
-    "committedBytes": 2105310,
+    "upstreamSha256": "3a3474008e1f64f7e7deece50e6d9a67a19fc78c3be02c0a5b88f41925bcd81a",
+    "committedSha256": "0268a2d26832c751f24e6ba6a42d9806861a8c26edee0370204480ed7fde5bfe",
+    "committedBytes": 2105672,
     "pathCount": 594,
     "operationCount": 958,
     "schemaCount": 1475
@@ -32,6 +32,6 @@
     "output": "src/app/api"
   },
   "workflow": {
-    "runUrl": "https://github.com/apache/fineract-backoffice-ui/actions/runs/32222063184"
+    "runUrl": "https://github.com/apache/fineract-backoffice-ui/actions/runs/32386393970"
   }
 }

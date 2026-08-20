@@ -345,16 +345,18 @@ export class DocumentsService extends BaseService {
      * @param entityId 
      * @param contentLength 
      * @param description 
+     * @param expiryDate 
      * @param file 
+     * @param issuanceDate 
      * @param name 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postEntityTypeEntityIdDocuments(entityType: string, entityId: number, contentLength?: number, description?: string, file?: FormDataBodyPart, name?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<DocumentCreateResponse>;
-    public postEntityTypeEntityIdDocuments(entityType: string, entityId: number, contentLength?: number, description?: string, file?: FormDataBodyPart, name?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DocumentCreateResponse>>;
-    public postEntityTypeEntityIdDocuments(entityType: string, entityId: number, contentLength?: number, description?: string, file?: FormDataBodyPart, name?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DocumentCreateResponse>>;
-    public postEntityTypeEntityIdDocuments(entityType: string, entityId: number, contentLength?: number, description?: string, file?: FormDataBodyPart, name?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postEntityTypeEntityIdDocuments(entityType: string, entityId: number, contentLength?: number, description?: string, expiryDate?: string, file?: FormDataBodyPart, issuanceDate?: string, name?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<DocumentCreateResponse>;
+    public postEntityTypeEntityIdDocuments(entityType: string, entityId: number, contentLength?: number, description?: string, expiryDate?: string, file?: FormDataBodyPart, issuanceDate?: string, name?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DocumentCreateResponse>>;
+    public postEntityTypeEntityIdDocuments(entityType: string, entityId: number, contentLength?: number, description?: string, expiryDate?: string, file?: FormDataBodyPart, issuanceDate?: string, name?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DocumentCreateResponse>>;
+    public postEntityTypeEntityIdDocuments(entityType: string, entityId: number, contentLength?: number, description?: string, expiryDate?: string, file?: FormDataBodyPart, issuanceDate?: string, name?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (entityType === null || entityType === undefined) {
             throw new Error('Required parameter entityType was null or undefined when calling postEntityTypeEntityIdDocuments.');
         }
@@ -403,8 +405,14 @@ export class DocumentsService extends BaseService {
         if (description !== undefined) {
             localVarFormParams = localVarFormParams.append('description', <any>description) as any || localVarFormParams;
         }
+        if (expiryDate !== undefined) {
+            localVarFormParams = localVarFormParams.append('expiryDate', <any>expiryDate) as any || localVarFormParams;
+        }
         if (file !== undefined) {
             localVarFormParams = localVarFormParams.append('file', localVarUseForm ? new Blob([JSON.stringify(file)], {type: 'application/json'}) : <any>file) as any || localVarFormParams;
+        }
+        if (issuanceDate !== undefined) {
+            localVarFormParams = localVarFormParams.append('issuanceDate', <any>issuanceDate) as any || localVarFormParams;
         }
         if (name !== undefined) {
             localVarFormParams = localVarFormParams.append('name', <any>name) as any || localVarFormParams;
@@ -446,16 +454,18 @@ export class DocumentsService extends BaseService {
      * @param documentId 
      * @param contentLength 
      * @param description 
+     * @param expiryDate 
      * @param file 
+     * @param issuanceDate 
      * @param name 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putEntityTypeEntityIdDocumentsDocumentId(entityType: string, entityId: number, documentId: number, contentLength?: number, description?: string, file?: FormDataBodyPart, name?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<DocumentUpdateResponse>;
-    public putEntityTypeEntityIdDocumentsDocumentId(entityType: string, entityId: number, documentId: number, contentLength?: number, description?: string, file?: FormDataBodyPart, name?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DocumentUpdateResponse>>;
-    public putEntityTypeEntityIdDocumentsDocumentId(entityType: string, entityId: number, documentId: number, contentLength?: number, description?: string, file?: FormDataBodyPart, name?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DocumentUpdateResponse>>;
-    public putEntityTypeEntityIdDocumentsDocumentId(entityType: string, entityId: number, documentId: number, contentLength?: number, description?: string, file?: FormDataBodyPart, name?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putEntityTypeEntityIdDocumentsDocumentId(entityType: string, entityId: number, documentId: number, contentLength?: number, description?: string, expiryDate?: string, file?: FormDataBodyPart, issuanceDate?: string, name?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<DocumentUpdateResponse>;
+    public putEntityTypeEntityIdDocumentsDocumentId(entityType: string, entityId: number, documentId: number, contentLength?: number, description?: string, expiryDate?: string, file?: FormDataBodyPart, issuanceDate?: string, name?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DocumentUpdateResponse>>;
+    public putEntityTypeEntityIdDocumentsDocumentId(entityType: string, entityId: number, documentId: number, contentLength?: number, description?: string, expiryDate?: string, file?: FormDataBodyPart, issuanceDate?: string, name?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DocumentUpdateResponse>>;
+    public putEntityTypeEntityIdDocumentsDocumentId(entityType: string, entityId: number, documentId: number, contentLength?: number, description?: string, expiryDate?: string, file?: FormDataBodyPart, issuanceDate?: string, name?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (entityType === null || entityType === undefined) {
             throw new Error('Required parameter entityType was null or undefined when calling putEntityTypeEntityIdDocumentsDocumentId.');
         }
@@ -507,8 +517,14 @@ export class DocumentsService extends BaseService {
         if (description !== undefined) {
             localVarFormParams = localVarFormParams.append('description', <any>description) as any || localVarFormParams;
         }
+        if (expiryDate !== undefined) {
+            localVarFormParams = localVarFormParams.append('expiryDate', <any>expiryDate) as any || localVarFormParams;
+        }
         if (file !== undefined) {
             localVarFormParams = localVarFormParams.append('file', localVarUseForm ? new Blob([JSON.stringify(file)], {type: 'application/json'}) : <any>file) as any || localVarFormParams;
+        }
+        if (issuanceDate !== undefined) {
+            localVarFormParams = localVarFormParams.append('issuanceDate', <any>issuanceDate) as any || localVarFormParams;
         }
         if (name !== undefined) {
             localVarFormParams = localVarFormParams.append('name', <any>name) as any || localVarFormParams;

@@ -27,8 +27,10 @@
 
 export interface DocumentData { 
     description?: string;
+    expiryDate?: string;
     fileName?: string;
     id?: number;
+    issuanceDate?: string;
     location?: string;
     name?: string;
     parentEntityId?: number;

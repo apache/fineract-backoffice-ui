@@ -28904,7 +28904,9 @@
                 "type": "object",
                 "properties": {
                   "description": { "type": "string" },
+                  "expiryDate": { "type": "string" },
                   "file": { "$ref": "#/components/schemas/FormDataBodyPart" },
+                  "issuanceDate": { "type": "string" },
                   "name": { "type": "string" }
                 }
               }
@@ -29013,7 +29015,9 @@
                 "type": "object",
                 "properties": {
                   "description": { "type": "string" },
+                  "expiryDate": { "type": "string" },
                   "file": { "$ref": "#/components/schemas/FormDataBodyPart" },
+                  "issuanceDate": { "type": "string" },
                   "name": { "type": "string" }
                 }
               }
@@ -31833,8 +31837,10 @@
         "type": "object",
         "properties": {
           "description": { "type": "string" },
+          "expiryDate": { "type": "string", "format": "date-time" },
           "fileName": { "type": "string" },
           "id": { "type": "integer", "format": "int64" },
+          "issuanceDate": { "type": "string", "format": "date-time" },
           "location": { "type": "string" },
           "name": { "type": "string" },
           "parentEntityId": { "type": "integer", "format": "int64" },
@@ -44454,7 +44460,7 @@
       },
       "NoteCreateRequest": {
         "type": "object",
-        "properties": { "note": { "type": "string", "maxLength": 1000, "minLength": 0 } },
+        "properties": { "note": { "type": "string", "maxLength": 65535, "minLength": 0 } },
         "required": ["note"]
       },
       "NoteCreateResponse": {
@@ -44491,7 +44497,7 @@
       },
       "NoteUpdateRequest": {
         "type": "object",
-        "properties": { "note": { "type": "string", "maxLength": 1000, "minLength": 0 } },
+        "properties": { "note": { "type": "string", "maxLength": 65535, "minLength": 0 } },
         "required": ["note"]
       },
       "NoteUpdateResponse": {
