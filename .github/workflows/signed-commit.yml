@@ -51,6 +51,11 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          # Git reports SSH signatures as %G?=N unless allowedSignersFile is set.
+          # An empty file is enough for U (present, validity unknown). This script
+          # treats that as signed; GitHub's Verified badge covers the key itself.
+          touch "$RUNNER_TEMP/allowed_signers"
+          git config gpg.ssh.allowedSignersFile "$RUNNER_TEMP/allowed_signers"
           ./scripts/verify-signed-commits.sh \
             --base-ref "origin/$BASE_REF" \
             --head-ref "$HEAD_SHA" \

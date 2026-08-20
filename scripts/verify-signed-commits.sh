@@ -63,26 +63,41 @@ fi
 
 UNSIGNED_COUNT=0
 
-# ponytail: only %G? == N (no signature) fails. A runner has no contributor public
-# keys, so E/U/B would flag every signed commit as broken — GitHub's own
-# verification covers key validity.
+# A commit is signed when git reports any %G? other than N, OR when the object
+# carries a gpgsig / gpgsig-sha256 header. The second check is required for SSH
+# signatures: GitHub Actions runners have no gpg.ssh.allowedSignersFile, and git
+# then reports SSH-signed commits as N even though the payload is on the object.
+# Validity of the key is GitHub's job (Verified badge), not this script's.
+commit_has_signature_payload() {
+    git cat-file -p "$1" | grep -E -q '^(gpgsig|gpgsig-sha256) '
+}
+
 while IFS=$'\x1f' read -r HASH SIG_STATUS AUTHOR SUBJECT; do
     [ -z "$HASH" ] && continue
     SHORT_HASH="${HASH:0:7}"
 
+    signed=false
     case "$SIG_STATUS" in
         N)
-            UNSIGNED_COUNT=$((UNSIGNED_COUNT + 1))
-            if [ -n "$GITHUB_ACTIONS" ]; then
-                echo "::error title=Unsigned Commit::Commit $SHORT_HASH by $AUTHOR is not signed."
-            else
-                echo "❌ Unsigned: $SHORT_HASH - $SUBJECT ($AUTHOR)"
+            if commit_has_signature_payload "$HASH"; then
+                signed=true
             fi
             ;;
         *)
-            echo "✅ Signed: $SHORT_HASH - $SUBJECT"
+            signed=true
             ;;
     esac
+
+    if [ "$signed" = true ]; then
+        echo "✅ Signed: $SHORT_HASH - $SUBJECT"
+    else
+        UNSIGNED_COUNT=$((UNSIGNED_COUNT + 1))
+        if [ -n "$GITHUB_ACTIONS" ]; then
+            echo "::error title=Unsigned Commit::Commit $SHORT_HASH by $AUTHOR is not signed."
+        else
+            echo "❌ Unsigned: $SHORT_HASH - $SUBJECT ($AUTHOR)"
+        fi
+    fi
 done <<< "$COMMITS"
 
 echo ""
