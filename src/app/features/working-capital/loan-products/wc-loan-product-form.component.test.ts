@@ -17,29 +17,30 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WcLoanProductFormComponent } from './wc-loan-product-form.component';
 import { WorkingCapitalLoanProductsService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('WcLoanProductFormComponent', () => {
   let component: WcLoanProductFormComponent;
   let fixture: ComponentFixture<WcLoanProductFormComponent>;
-  let serviceSpy: jasmine.SpyObj<WorkingCapitalLoanProductsService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<WorkingCapitalLoanProductsService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('WorkingCapitalLoanProductsService', [
+    serviceSpy = createSpyObj([
       'getWorkingCapitalLoanProductsTemplate',
       'getWorkingCapitalLoanProductsProductId',
       'postWorkingCapitalLoanProducts',
       'putWorkingCapitalLoanProductsProductId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    serviceSpy.getWorkingCapitalLoanProductsTemplate.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    serviceSpy.getWorkingCapitalLoanProductsTemplate.mockReturnValue(
       of({
         currencyOptions: [{ code: 'USD', name: 'US Dollar' }],
         amortizationTypeOptions: [{ id: '1', code: 'FLAT', value: 'Flat' }],
@@ -50,7 +51,7 @@ describe('WcLoanProductFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [WcLoanProductFormComponent, TranslateModule.forRoot()],
+      imports: [WcLoanProductFormComponent, provideTranslateTesting()],
       providers: [
         { provide: WorkingCapitalLoanProductsService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
@@ -67,13 +68,13 @@ describe('WcLoanProductFormComponent', () => {
   it('should load template options on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getWorkingCapitalLoanProductsTemplate).toHaveBeenCalled();
-    expect(component.currencyOptions()).toHaveSize(1);
-    expect(component.amortizationTypeOptions()).toHaveSize(1);
-    expect(component.repaymentFrequencyTypeOptions()).toHaveSize(1);
+    expect(component.currencyOptions()).toHaveLength(1);
+    expect(component.amortizationTypeOptions()).toHaveLength(1);
+    expect(component.repaymentFrequencyTypeOptions()).toHaveLength(1);
   });
 
   it('should post on create and navigate to the list', () => {
-    serviceSpy.postWorkingCapitalLoanProducts.and.returnValue(
+    serviceSpy.postWorkingCapitalLoanProducts.mockReturnValue(
       of({}) as unknown as ReturnType<
         WorkingCapitalLoanProductsService['postWorkingCapitalLoanProducts']
       >,

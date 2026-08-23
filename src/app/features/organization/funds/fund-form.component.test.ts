@@ -17,56 +17,61 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FundsListComponent } from './funds-list.component';
+import { FundFormComponent } from './fund-form.component';
 import { FundsService } from '../../../api';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
-describe('FundsListComponent', () => {
-  let component: FundsListComponent;
-  let fixture: ComponentFixture<FundsListComponent>;
-  let fundsServiceSpy: jasmine.SpyObj<FundsService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+describe('FundFormComponent', () => {
+  let component: FundFormComponent;
+  let fixture: ComponentFixture<FundFormComponent>;
+  let fundsServiceSpy: SpyObj<FundsService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    fundsServiceSpy = jasmine.createSpyObj('FundsService', ['getFunds']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    fundsServiceSpy.getFunds.and.returnValue(
-      of([{ id: 1, name: 'Donor Fund', externalId: 'F-1' }]) as unknown as ReturnType<
-        FundsService['getFunds']
-      >,
-    );
+    fundsServiceSpy = createSpyObj([
+      'getFundsFundId',
+      'postFunds',
+      'putFundsFundId',
+    ]);
+    routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [FundsListComponent, TranslateModule.forRoot()],
+      imports: [FundFormComponent, provideTranslateTesting()],
       providers: [
         { provide: FundsService, useValue: fundsServiceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },
         provideNoopAnimations(),
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(FundsListComponent);
+    fixture = TestBed.createComponent(FundFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should load funds on init', () => {
+  it('should create in add mode', () => {
     expect(component).toBeTruthy();
-    expect(fundsServiceSpy.getFunds).toHaveBeenCalled();
-    expect(component.funds()).toHaveSize(1);
+    expect(component.isEditMode()).toBe(false);
   });
 
-  it('should navigate to create', () => {
-    component.onCreate();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/organization/funds/create']);
-  });
+  it('should post a new fund on submit', () => {
+    fundsServiceSpy.postFunds.mockReturnValue(
+      of({}) as unknown as ReturnType<FundsService['postFunds']>,
+    );
+    component.fund.set({ name: 'Relief Fund', externalId: 'RF-9' });
 
-  it('should navigate to edit with the fund id', () => {
-    component.onEdit({ id: 7, name: 'F' });
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/organization/funds/edit', 7]);
+    component.onSubmit();
+
+    expect(fundsServiceSpy.postFunds).toHaveBeenCalledWith({
+      name: 'Relief Fund',
+      externalId: 'RF-9',
+    });
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/organization/funds']);
   });
 });

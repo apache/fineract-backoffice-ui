@@ -17,24 +17,25 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WcLoansListComponent } from './wc-loans-list.component';
 import { WorkingCapitalLoansService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('WcLoansListComponent', () => {
   let component: WcLoansListComponent;
   let fixture: ComponentFixture<WcLoansListComponent>;
-  let serviceSpy: jasmine.SpyObj<WorkingCapitalLoansService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<WorkingCapitalLoansService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('WorkingCapitalLoansService', ['getWorkingCapitalLoans']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    serviceSpy.getWorkingCapitalLoans.and.returnValue(
+    serviceSpy = createSpyObj(['getWorkingCapitalLoans']);
+    routerSpy = createSpyObj(['navigate']);
+    serviceSpy.getWorkingCapitalLoans.mockReturnValue(
       of({
         content: [
           {
@@ -50,7 +51,7 @@ describe('WcLoansListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [WcLoansListComponent, TranslateModule.forRoot()],
+      imports: [WcLoansListComponent, provideTranslateTesting()],
       providers: [
         { provide: WorkingCapitalLoansService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
@@ -66,7 +67,7 @@ describe('WcLoansListComponent', () => {
   it('should load and flatten loans on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getWorkingCapitalLoans).toHaveBeenCalled();
-    expect(component.loans()).toHaveSize(1);
+    expect(component.loans()).toHaveLength(1);
     expect(component.loans()[0].clientName).toBe('Acme Ltd');
     expect(component.loans()[0].principal).toBe(5000);
   });

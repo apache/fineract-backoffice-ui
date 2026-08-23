@@ -17,12 +17,13 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { StaffFormComponent } from './staff-form.component';
 import { StaffService, OfficesService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import {
   formatDateToFineract,
@@ -33,25 +34,25 @@ import {
 describe('StaffFormComponent', () => {
   let component: StaffFormComponent;
   let fixture: ComponentFixture<StaffFormComponent>;
-  let staffServiceSpy: jasmine.SpyObj<StaffService>;
-  let officesServiceSpy: jasmine.SpyObj<OfficesService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let staffServiceSpy: SpyObj<StaffService>;
+  let officesServiceSpy: SpyObj<OfficesService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    staffServiceSpy = jasmine.createSpyObj('StaffService', [
+    staffServiceSpy = createSpyObj([
       'getStaffStaffId',
       'putStaffStaffId',
       'postStaff',
     ]);
-    officesServiceSpy = jasmine.createSpyObj('OfficesService', ['getOffices']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    officesServiceSpy = createSpyObj(['getOffices']);
+    routerSpy = createSpyObj(['navigate']);
 
-    officesServiceSpy.getOffices.and.returnValue(
+    officesServiceSpy.getOffices.mockReturnValue(
       of([]) as unknown as ReturnType<OfficesService['getOffices']>,
     );
 
     await TestBed.configureTestingModule({
-      imports: [StaffFormComponent, TranslateModule.forRoot()],
+      imports: [StaffFormComponent, provideTranslateTesting()],
       providers: [
         { provide: StaffService, useValue: staffServiceSpy },
         { provide: OfficesService, useValue: officesServiceSpy },
@@ -75,7 +76,7 @@ describe('StaffFormComponent', () => {
   });
 
   it('should format the joining date returned by the API', () => {
-    staffServiceSpy.getStaffStaffId.and.returnValue(
+    staffServiceSpy.getStaffStaffId.mockReturnValue(
       of({ joiningDate: [2026, 1, 5] }) as unknown as ReturnType<StaffService['getStaffStaffId']>,
     );
     component.staffId = 7;
@@ -87,7 +88,7 @@ describe('StaffFormComponent', () => {
   });
 
   it('should create staff with a StaffCreateRequest payload on submit', () => {
-    staffServiceSpy.postStaff.and.returnValue(
+    staffServiceSpy.postStaff.mockReturnValue(
       of({}) as unknown as ReturnType<StaffService['postStaff']>,
     );
     component.staff.set({
@@ -101,7 +102,7 @@ describe('StaffFormComponent', () => {
     component.onSubmit();
 
     expect(staffServiceSpy.postStaff).toHaveBeenCalledWith(
-      jasmine.objectContaining({
+      expect.objectContaining({
         officeId: 1,
         firstname: 'Ada',
         lastname: 'Lovelace',
@@ -114,7 +115,7 @@ describe('StaffFormComponent', () => {
   });
 
   it('omits optional fields the user left blank', () => {
-    staffServiceSpy.postStaff.and.returnValue(
+    staffServiceSpy.postStaff.mockReturnValue(
       of({}) as unknown as ReturnType<StaffService['postStaff']>,
     );
     // The form seeds these to '' so the inputs bind. Sending the empty string made Fineract
@@ -132,7 +133,7 @@ describe('StaffFormComponent', () => {
 
     component.onSubmit();
 
-    const payload = staffServiceSpy.postStaff.calls.mostRecent().args[0] as unknown as Record<
+    const payload = staffServiceSpy.postStaff.mock.lastCall![0] as unknown as Record<
       string,
       unknown
     >;

@@ -17,27 +17,28 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WcLoanFormComponent } from './wc-loan-form.component';
 import { WorkingCapitalLoansService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('WcLoanFormComponent', () => {
   let component: WcLoanFormComponent;
   let fixture: ComponentFixture<WcLoanFormComponent>;
-  let serviceSpy: jasmine.SpyObj<WorkingCapitalLoansService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<WorkingCapitalLoansService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('WorkingCapitalLoansService', [
+    serviceSpy = createSpyObj([
       'getWorkingCapitalLoansTemplate',
       'postWorkingCapitalLoans',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    serviceSpy.getWorkingCapitalLoansTemplate.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    serviceSpy.getWorkingCapitalLoansTemplate.mockReturnValue(
       of({
         productOptions: [{ id: 1, name: 'WC Product' }],
         breachOptions: [{ id: 2, name: 'Covenant A' }],
@@ -46,7 +47,7 @@ describe('WcLoanFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [WcLoanFormComponent, TranslateModule.forRoot()],
+      imports: [WcLoanFormComponent, provideTranslateTesting()],
       providers: [
         { provide: WorkingCapitalLoansService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
@@ -62,13 +63,13 @@ describe('WcLoanFormComponent', () => {
   it('should load template options on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getWorkingCapitalLoansTemplate).toHaveBeenCalled();
-    expect(component.productOptions()).toHaveSize(1);
-    expect(component.breachOptions()).toHaveSize(1);
-    expect(component.repaymentFrequencyTypeOptions()).toHaveSize(1);
+    expect(component.productOptions()).toHaveLength(1);
+    expect(component.breachOptions()).toHaveLength(1);
+    expect(component.repaymentFrequencyTypeOptions()).toHaveLength(1);
   });
 
   it('should post on submit and navigate to the list', () => {
-    serviceSpy.postWorkingCapitalLoans.and.returnValue(
+    serviceSpy.postWorkingCapitalLoans.mockReturnValue(
       of({}) as unknown as ReturnType<WorkingCapitalLoansService['postWorkingCapitalLoans']>,
     );
     component.loan = { clientId: 7, productId: 1, principalAmount: 5000 };
@@ -78,13 +79,13 @@ describe('WcLoanFormComponent', () => {
   });
 
   it('should format provided dates into the request', () => {
-    serviceSpy.postWorkingCapitalLoans.and.returnValue(
+    serviceSpy.postWorkingCapitalLoans.mockReturnValue(
       of({}) as unknown as ReturnType<WorkingCapitalLoansService['postWorkingCapitalLoans']>,
     );
     component.loan = { clientId: 7, productId: 1, principalAmount: 5000 };
     component.submittedOnDate = '2026-01-15';
     component.onSubmit();
-    const arg = serviceSpy.postWorkingCapitalLoans.calls.mostRecent().args[0];
+    const arg = serviceSpy.postWorkingCapitalLoans.mock.lastCall![0];
     expect(arg.submittedOnDate).toBe('15 January 2026');
     expect(arg.locale).toBe('en');
   });

@@ -17,20 +17,21 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { OfficeFormComponent } from './office-form.component';
 import { OfficesService } from '../../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError, Observable } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { asyncOf, renderComponent } from '../../../testing/render';
 
 describe('OfficeFormComponent', () => {
   let component: OfficeFormComponent;
   let fixture: ComponentFixture<OfficeFormComponent>;
-  let officesServiceSpy: jasmine.SpyObj<OfficesService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let officesServiceSpy: SpyObj<OfficesService>;
+  let routerSpy: SpyObj<Router>;
   let activatedRouteParams: Observable<unknown>;
 
   const OFFICES_PATH = '/organization/offices';
@@ -39,16 +40,16 @@ describe('OfficeFormComponent', () => {
   const TEST_OPENING_DATE = '2026-06-16';
 
   beforeEach(async () => {
-    officesServiceSpy = jasmine.createSpyObj('OfficesService', [
+    officesServiceSpy = createSpyObj([
       'getOffices',
       'getOfficesOfficeId',
       'putOfficesOfficeId',
       'postOffices',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerSpy = createSpyObj(['navigate']);
 
-    officesServiceSpy.getOffices.and.returnValue(of([]) as unknown as Observable<never>);
-    officesServiceSpy.getOfficesOfficeId.and.returnValue(
+    officesServiceSpy.getOffices.mockReturnValue(of([]) as unknown as Observable<never>);
+    officesServiceSpy.getOfficesOfficeId.mockReturnValue(
       of({
         id: 12,
         name: TEST_OFFICE,
@@ -62,7 +63,7 @@ describe('OfficeFormComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [OfficeFormComponent, TranslateModule.forRoot()],
+      imports: [OfficeFormComponent, provideTranslateTesting()],
       providers: [
         { provide: OfficesService, useValue: officesServiceSpy },
         { provide: Router, useValue: routerSpy },
@@ -87,11 +88,11 @@ describe('OfficeFormComponent', () => {
     it('should create and load offices', () => {
       expect(component).toBeTruthy();
       expect(officesServiceSpy.getOffices).toHaveBeenCalledWith(true);
-      expect(component.isEditMode()).toBeFalse();
+      expect(component.isEditMode()).toBe(false);
     });
 
     it('should submit form in create mode', () => {
-      officesServiceSpy.postOffices.and.returnValue(of({}) as unknown as Observable<never>);
+      officesServiceSpy.postOffices.mockReturnValue(of({}) as unknown as Observable<never>);
       component.office.set({
         name: NEW_OFFICE,
         parentId: 1,
@@ -101,7 +102,7 @@ describe('OfficeFormComponent', () => {
 
       component.onSubmit();
 
-      expect(component.isSaving()).toBeTrue();
+      expect(component.isSaving()).toBe(true);
       expect(officesServiceSpy.postOffices).toHaveBeenCalledWith({
         name: NEW_OFFICE,
         parentId: 1,
@@ -114,14 +115,14 @@ describe('OfficeFormComponent', () => {
     });
 
     it('should handle error in create mode', () => {
-      officesServiceSpy.postOffices.and.returnValue(
+      officesServiceSpy.postOffices.mockReturnValue(
         throwError(() => new Error('Error')) as unknown as Observable<never>,
       );
       component.office.set({
         name: NEW_OFFICE,
       });
       component.onSubmit();
-      expect(component.isSaving()).toBeFalse();
+      expect(component.isSaving()).toBe(false);
     });
 
     it('should navigate away on cancel', () => {
@@ -139,7 +140,7 @@ describe('OfficeFormComponent', () => {
     // emits a macrotask later like a real response does, so it fails if `offices` is assigned
     // without notifying Angular — the reason API-fed dropdowns render empty in the app.
     it('renders an option per office returned by the API', async () => {
-      officesServiceSpy.getOffices.and.returnValue(
+      officesServiceSpy.getOffices.mockReturnValue(
         asyncOf([
           { id: 1, name: 'Head Office' },
           { id: 2, name: 'Branch Office' },
@@ -147,7 +148,7 @@ describe('OfficeFormComponent', () => {
       );
 
       const rendered = await renderComponent(OfficeFormComponent, {
-        imports: [TranslateModule.forRoot()],
+        imports: [provideTranslateTesting()],
         providers: [
           { provide: OfficesService, useValue: officesServiceSpy },
           { provide: Router, useValue: routerSpy },
@@ -176,7 +177,7 @@ describe('OfficeFormComponent', () => {
       });
 
       await TestBed.configureTestingModule({
-        imports: [OfficeFormComponent, TranslateModule.forRoot()],
+        imports: [OfficeFormComponent, provideTranslateTesting()],
         providers: [
           { provide: OfficesService, useValue: officesServiceSpy },
           { provide: Router, useValue: routerSpy },
@@ -194,19 +195,19 @@ describe('OfficeFormComponent', () => {
       component = fixture.componentInstance;
       fixture.detectChanges();
 
-      expect(component.isEditMode()).toBeTrue();
+      expect(component.isEditMode()).toBe(true);
       expect(component.officeId).toBe(12);
       expect(officesServiceSpy.getOfficesOfficeId).toHaveBeenCalledWith(12);
       expect(component.office().name).toBe(TEST_OFFICE);
       expect(component.openingDate()).toBe(TEST_OPENING_DATE);
 
-      officesServiceSpy.putOfficesOfficeId.and.returnValue(of({}) as unknown as Observable<never>);
+      officesServiceSpy.putOfficesOfficeId.mockReturnValue(of({}) as unknown as Observable<never>);
       component.openingDate.set(TEST_OPENING_DATE);
       component.onSubmit();
 
       expect(officesServiceSpy.putOfficesOfficeId).toHaveBeenCalledWith(
         12,
-        jasmine.objectContaining({
+        expect.objectContaining({
           name: TEST_OFFICE,
           openingDate: TEST_OPENING_DATE,
         }),

@@ -17,25 +17,26 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { StaffListComponent } from './staff-list.component';
 import { StaffService, StaffData } from '../../../api';
 import { of, throwError, Observable } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { ActivatedRoute } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('StaffListComponent', () => {
   let component: StaffListComponent;
   let fixture: ComponentFixture<StaffListComponent>;
-  let staffServiceSpy: jasmine.SpyObj<StaffService>;
+  let staffServiceSpy: SpyObj<StaffService>;
 
   beforeEach(async () => {
-    staffServiceSpy = jasmine.createSpyObj('StaffService', ['getStaff']);
-    staffServiceSpy.getStaff.and.returnValue(of([]) as unknown as Observable<never>);
+    staffServiceSpy = createSpyObj(['getStaff']);
+    staffServiceSpy.getStaff.mockReturnValue(of([]) as unknown as Observable<never>);
 
     await TestBed.configureTestingModule({
-      imports: [StaffListComponent, TranslateModule.forRoot()],
+      imports: [StaffListComponent, provideTranslateTesting()],
       providers: [
         { provide: StaffService, useValue: staffServiceSpy },
         { provide: ActivatedRoute, useValue: {} },
@@ -64,25 +65,25 @@ describe('StaffListComponent', () => {
         isActive: false,
       },
     ];
-    staffServiceSpy.getStaff.and.returnValue(of(mockStaff) as unknown as Observable<never>);
+    staffServiceSpy.getStaff.mockReturnValue(of(mockStaff) as unknown as Observable<never>);
 
     fixture.detectChanges();
 
     expect(component).toBeTruthy();
     expect(staffServiceSpy.getStaff).toHaveBeenCalledWith(undefined, undefined, undefined, 'all');
     expect(component.staff()).toEqual(mockStaff as unknown as StaffData[]);
-    expect(component.isLoading()).toBeFalse();
+    expect(component.isLoading()).toBe(false);
   });
 
   it('should handle error when loading staff', () => {
-    staffServiceSpy.getStaff.and.returnValue(
+    staffServiceSpy.getStaff.mockReturnValue(
       throwError(() => new Error('Error loading staff')) as unknown as Observable<never>,
     );
-    spyOn(console, 'error');
+    vi.spyOn(console, 'error');
 
     fixture.detectChanges();
 
-    expect(component.isLoading()).toBeFalse();
-    expect(console.error).toHaveBeenCalledWith('Failed to load staff', jasmine.any(Error));
+    expect(component.isLoading()).toBe(false);
+    expect(console.error).toHaveBeenCalledWith('Failed to load staff', expect.any(Error));
   });
 });

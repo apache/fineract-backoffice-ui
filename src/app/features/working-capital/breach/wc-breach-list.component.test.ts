@@ -17,38 +17,39 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WcBreachListComponent } from './wc-breach-list.component';
 import { WorkingCapitalBreachService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DialogService } from '../../../core/services/dialog.service';
 
 describe('WcBreachListComponent', () => {
   let component: WcBreachListComponent;
   let fixture: ComponentFixture<WcBreachListComponent>;
-  let serviceSpy: jasmine.SpyObj<WorkingCapitalBreachService>;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let dialogService: jasmine.SpyObj<DialogService>;
+  let serviceSpy: SpyObj<WorkingCapitalBreachService>;
+  let routerSpy: SpyObj<Router>;
+  let dialogService: SpyObj<DialogService>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('WorkingCapitalBreachService', [
+    serviceSpy = createSpyObj([
       'getWorkingCapitalBreachBreaches',
       'deleteWorkingCapitalBreachBreachesBreachId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.getWorkingCapitalBreachBreaches.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    dialogService = createSpyObj(['confirm']);
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.getWorkingCapitalBreachBreaches.mockReturnValue(
       of([{ id: 1, name: 'Covenant A', breachAmount: 1000 }]) as unknown as ReturnType<
         WorkingCapitalBreachService['getWorkingCapitalBreachBreaches']
       >,
     );
 
     await TestBed.configureTestingModule({
-      imports: [WcBreachListComponent, TranslateModule.forRoot()],
+      imports: [WcBreachListComponent, provideTranslateTesting()],
       providers: [
         { provide: WorkingCapitalBreachService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
@@ -65,7 +66,7 @@ describe('WcBreachListComponent', () => {
   it('should load breaches on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getWorkingCapitalBreachBreaches).toHaveBeenCalled();
-    expect(component.breaches()).toHaveSize(1);
+    expect(component.breaches()).toHaveLength(1);
   });
 
   it('should navigate to edit with the breach id', () => {
@@ -74,8 +75,8 @@ describe('WcBreachListComponent', () => {
   });
 
   it('should delete after confirmation and reload', async () => {
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.deleteWorkingCapitalBreachBreachesBreachId.and.returnValue(
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.deleteWorkingCapitalBreachBreachesBreachId.mockReturnValue(
       of({}) as unknown as ReturnType<
         WorkingCapitalBreachService['deleteWorkingCapitalBreachBreachesBreachId']
       >,
@@ -89,7 +90,7 @@ describe('WcBreachListComponent', () => {
   });
 
   it('should not delete when cancelled', async () => {
-    dialogService.confirm.and.resolveTo(false);
+    dialogService.confirm.mockResolvedValue(false);
     component.onDelete({ id: 5, name: 'Y' });
     await fixture.whenStable();
     expect(serviceSpy.deleteWorkingCapitalBreachBreachesBreachId).not.toHaveBeenCalled();

@@ -17,21 +17,22 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GroupLevelsListComponent } from './group-levels-list.component';
 import { GroupsLevelService } from '../../../api';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('GroupLevelsListComponent', () => {
   let component: GroupLevelsListComponent;
   let fixture: ComponentFixture<GroupLevelsListComponent>;
-  let serviceSpy: jasmine.SpyObj<GroupsLevelService>;
+  let serviceSpy: SpyObj<GroupsLevelService>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('GroupsLevelService', ['getGrouplevels']);
-    serviceSpy.getGrouplevels.and.returnValue(
+    serviceSpy = createSpyObj(['getGrouplevels']);
+    serviceSpy.getGrouplevels.mockReturnValue(
       of([
         { levelId: 1, levelName: 'Center', canHaveClients: false },
         { levelId: 2, levelName: 'Group', canHaveClients: true },
@@ -39,7 +40,7 @@ describe('GroupLevelsListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [GroupLevelsListComponent, TranslateModule.forRoot()],
+      imports: [GroupLevelsListComponent, provideTranslateTesting()],
       providers: [{ provide: GroupsLevelService, useValue: serviceSpy }, provideNoopAnimations()],
     }).compileComponents();
 
@@ -51,6 +52,6 @@ describe('GroupLevelsListComponent', () => {
   it('should load group levels on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getGrouplevels).toHaveBeenCalled();
-    expect(component.groupLevels()).toHaveSize(2);
+    expect(component.groupLevels()).toHaveLength(2);
   });
 });

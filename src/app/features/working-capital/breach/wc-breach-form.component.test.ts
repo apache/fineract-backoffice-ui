@@ -17,29 +17,30 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WcBreachFormComponent } from './wc-breach-form.component';
 import { WorkingCapitalBreachService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('WcBreachFormComponent', () => {
   let component: WcBreachFormComponent;
   let fixture: ComponentFixture<WcBreachFormComponent>;
-  let serviceSpy: jasmine.SpyObj<WorkingCapitalBreachService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<WorkingCapitalBreachService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('WorkingCapitalBreachService', [
+    serviceSpy = createSpyObj([
       'getWorkingCapitalBreachTemplate',
       'getWorkingCapitalBreachBreachesBreachId',
       'postWorkingCapitalBreachBreaches',
       'putWorkingCapitalBreachBreachesBreachId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    serviceSpy.getWorkingCapitalBreachTemplate.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    serviceSpy.getWorkingCapitalBreachTemplate.mockReturnValue(
       of({
         breachAmountCalculationTypeOptions: [{ id: '1', code: 'flat', value: 'Flat' }],
         breachFrequencyTypeOptions: [{ id: '1', code: 'days', value: 'Days' }],
@@ -47,7 +48,7 @@ describe('WcBreachFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [WcBreachFormComponent, TranslateModule.forRoot()],
+      imports: [WcBreachFormComponent, provideTranslateTesting()],
       providers: [
         { provide: WorkingCapitalBreachService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
@@ -64,12 +65,12 @@ describe('WcBreachFormComponent', () => {
   it('should load template options on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getWorkingCapitalBreachTemplate).toHaveBeenCalled();
-    expect(component.calculationTypeOptions()).toHaveSize(1);
-    expect(component.frequencyTypeOptions()).toHaveSize(1);
+    expect(component.calculationTypeOptions()).toHaveLength(1);
+    expect(component.frequencyTypeOptions()).toHaveLength(1);
   });
 
   it('should post on create and navigate to the list', () => {
-    serviceSpy.postWorkingCapitalBreachBreaches.and.returnValue(
+    serviceSpy.postWorkingCapitalBreachBreaches.mockReturnValue(
       of({}) as unknown as ReturnType<
         WorkingCapitalBreachService['postWorkingCapitalBreachBreaches']
       >,

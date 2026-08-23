@@ -17,31 +17,32 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WcLoanProductsListComponent } from './wc-loan-products-list.component';
 import { WorkingCapitalLoanProductsService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DialogService } from '../../../core/services/dialog.service';
 
 describe('WcLoanProductsListComponent', () => {
   let component: WcLoanProductsListComponent;
   let fixture: ComponentFixture<WcLoanProductsListComponent>;
-  let serviceSpy: jasmine.SpyObj<WorkingCapitalLoanProductsService>;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let dialogService: jasmine.SpyObj<DialogService>;
+  let serviceSpy: SpyObj<WorkingCapitalLoanProductsService>;
+  let routerSpy: SpyObj<Router>;
+  let dialogService: SpyObj<DialogService>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('WorkingCapitalLoanProductsService', [
+    serviceSpy = createSpyObj([
       'getWorkingCapitalLoanProducts',
       'deleteWorkingCapitalLoanProductsProductId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.getWorkingCapitalLoanProducts.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    dialogService = createSpyObj(['confirm']);
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.getWorkingCapitalLoanProducts.mockReturnValue(
       of([
         { id: 1, name: 'WC Product A', shortName: 'WCA', principal: 5000 },
       ]) as unknown as ReturnType<
@@ -50,7 +51,7 @@ describe('WcLoanProductsListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [WcLoanProductsListComponent, TranslateModule.forRoot()],
+      imports: [WcLoanProductsListComponent, provideTranslateTesting()],
       providers: [
         { provide: WorkingCapitalLoanProductsService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
@@ -67,7 +68,7 @@ describe('WcLoanProductsListComponent', () => {
   it('should load loan products on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getWorkingCapitalLoanProducts).toHaveBeenCalled();
-    expect(component.products()).toHaveSize(1);
+    expect(component.products()).toHaveLength(1);
   });
 
   it('should navigate to edit with the product id', () => {
@@ -76,8 +77,8 @@ describe('WcLoanProductsListComponent', () => {
   });
 
   it('should delete after confirmation and reload', async () => {
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.deleteWorkingCapitalLoanProductsProductId.and.returnValue(
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.deleteWorkingCapitalLoanProductsProductId.mockReturnValue(
       of({}) as unknown as ReturnType<
         WorkingCapitalLoanProductsService['deleteWorkingCapitalLoanProductsProductId']
       >,
@@ -91,7 +92,7 @@ describe('WcLoanProductsListComponent', () => {
   });
 
   it('should not delete when cancelled', async () => {
-    dialogService.confirm.and.resolveTo(false);
+    dialogService.confirm.mockResolvedValue(false);
     component.onDelete({ id: 5, name: 'Y' });
     await fixture.whenStable();
     expect(serviceSpy.deleteWorkingCapitalLoanProductsProductId).not.toHaveBeenCalled();

@@ -17,28 +17,29 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { OfficesListComponent } from './offices-list.component';
 import { OfficesService, GetOfficesResponse } from '../../../api';
 import { Router } from '@angular/router';
 import { of, throwError, Observable } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('OfficesListComponent', () => {
   let component: OfficesListComponent;
   let fixture: ComponentFixture<OfficesListComponent>;
-  let officesServiceSpy: jasmine.SpyObj<OfficesService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let officesServiceSpy: SpyObj<OfficesService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    officesServiceSpy = jasmine.createSpyObj('OfficesService', ['getOffices']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    officesServiceSpy = createSpyObj(['getOffices']);
+    routerSpy = createSpyObj(['navigate']);
 
-    officesServiceSpy.getOffices.and.returnValue(of([]) as unknown as Observable<never>);
+    officesServiceSpy.getOffices.mockReturnValue(of([]) as unknown as Observable<never>);
 
     await TestBed.configureTestingModule({
-      imports: [OfficesListComponent, TranslateModule.forRoot()],
+      imports: [OfficesListComponent, provideTranslateTesting()],
       providers: [
         { provide: OfficesService, useValue: officesServiceSpy },
         { provide: Router, useValue: routerSpy },
@@ -65,7 +66,7 @@ describe('OfficesListComponent', () => {
         openingDate: [2026, 6, 17] as unknown as number[],
       },
     ];
-    officesServiceSpy.getOffices.and.returnValue(of(mockOffices) as unknown as Observable<never>);
+    officesServiceSpy.getOffices.mockReturnValue(of(mockOffices) as unknown as Observable<never>);
 
     fixture.detectChanges();
 
@@ -75,15 +76,15 @@ describe('OfficesListComponent', () => {
   });
 
   it('should handle error when loading offices', () => {
-    officesServiceSpy.getOffices.and.returnValue(
+    officesServiceSpy.getOffices.mockReturnValue(
       throwError(() => new Error('Error')) as unknown as Observable<never>,
     );
-    spyOn(console, 'error');
+    vi.spyOn(console, 'error');
 
     fixture.detectChanges();
 
     expect(component.offices()).toEqual([]);
-    expect(console.error).toHaveBeenCalledWith('Failed to load offices', jasmine.any(Error));
+    expect(console.error).toHaveBeenCalledWith('Failed to load offices', expect.any(Error));
   });
 
   it('should navigate to create office page', () => {

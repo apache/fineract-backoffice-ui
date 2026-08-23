@@ -17,52 +17,53 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WcLoanActionFormComponent } from './wc-loan-action-form.component';
 import { WorkingCapitalLoansService, WorkingCapitalLoanTransactionsService } from '../../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('WcLoanActionFormComponent', () => {
   let component: WcLoanActionFormComponent;
   let fixture: ComponentFixture<WcLoanActionFormComponent>;
-  let loansSpy: jasmine.SpyObj<WorkingCapitalLoansService>;
-  let txSpy: jasmine.SpyObj<WorkingCapitalLoanTransactionsService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let loansSpy: SpyObj<WorkingCapitalLoansService>;
+  let txSpy: SpyObj<WorkingCapitalLoanTransactionsService>;
+  let routerSpy: SpyObj<Router>;
 
   function createComponent(command: string) {
-    loansSpy = jasmine.createSpyObj('WorkingCapitalLoansService', [
+    loansSpy = createSpyObj([
       'postWorkingCapitalLoansLoanId',
       'putWorkingCapitalLoansLoanIdMarkAsFraud',
       'putWorkingCapitalLoansLoanIdDiscount',
       'putWorkingCapitalLoansLoanIdPaymentRate',
     ]);
-    txSpy = jasmine.createSpyObj('WorkingCapitalLoanTransactionsService', [
+    txSpy = createSpyObj([
       'postWorkingCapitalLoansLoanIdTransactions',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    loansSpy.postWorkingCapitalLoansLoanId.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    loansSpy.postWorkingCapitalLoansLoanId.mockReturnValue(
       of({}) as ReturnType<WorkingCapitalLoansService['postWorkingCapitalLoansLoanId']>,
     );
-    loansSpy.putWorkingCapitalLoansLoanIdMarkAsFraud.and.returnValue(
+    loansSpy.putWorkingCapitalLoansLoanIdMarkAsFraud.mockReturnValue(
       of({}) as ReturnType<WorkingCapitalLoansService['putWorkingCapitalLoansLoanIdMarkAsFraud']>,
     );
-    loansSpy.putWorkingCapitalLoansLoanIdDiscount.and.returnValue(
+    loansSpy.putWorkingCapitalLoansLoanIdDiscount.mockReturnValue(
       of({}) as ReturnType<WorkingCapitalLoansService['putWorkingCapitalLoansLoanIdDiscount']>,
     );
-    loansSpy.putWorkingCapitalLoansLoanIdPaymentRate.and.returnValue(
+    loansSpy.putWorkingCapitalLoansLoanIdPaymentRate.mockReturnValue(
       of({}) as ReturnType<WorkingCapitalLoansService['putWorkingCapitalLoansLoanIdPaymentRate']>,
     );
-    txSpy.postWorkingCapitalLoansLoanIdTransactions.and.returnValue(
+    txSpy.postWorkingCapitalLoansLoanIdTransactions.mockReturnValue(
       of({}) as ReturnType<
         WorkingCapitalLoanTransactionsService['postWorkingCapitalLoansLoanIdTransactions']
       >,
     );
 
     TestBed.configureTestingModule({
-      imports: [WcLoanActionFormComponent, TranslateModule.forRoot()],
+      imports: [WcLoanActionFormComponent, provideTranslateTesting()],
       providers: [
         { provide: WorkingCapitalLoansService, useValue: loansSpy },
         { provide: WorkingCapitalLoanTransactionsService, useValue: txSpy },
@@ -95,7 +96,7 @@ describe('WcLoanActionFormComponent', () => {
     expect(loansSpy.postWorkingCapitalLoansLoanId).toHaveBeenCalledWith(
       42,
       'approve',
-      jasmine.any(Object),
+      expect.any(Object),
     );
   });
 
@@ -107,7 +108,7 @@ describe('WcLoanActionFormComponent', () => {
     expect(loansSpy.postWorkingCapitalLoansLoanId).toHaveBeenCalledWith(
       42,
       'disburse',
-      jasmine.any(Object),
+      expect.any(Object),
     );
   });
 
@@ -119,7 +120,7 @@ describe('WcLoanActionFormComponent', () => {
     expect(txSpy.postWorkingCapitalLoansLoanIdTransactions).toHaveBeenCalledWith(
       42,
       'repayment',
-      jasmine.any(Object),
+      expect.any(Object),
     );
   });
 
@@ -139,7 +140,7 @@ describe('WcLoanActionFormComponent', () => {
     component.onSubmit();
     expect(loansSpy.putWorkingCapitalLoansLoanIdDiscount).toHaveBeenCalledWith(
       42,
-      jasmine.objectContaining({ discountAmount: 50 }),
+      expect.objectContaining({ discountAmount: 50 }),
     );
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/working-capital/loans/view/42']);
   });
@@ -151,7 +152,7 @@ describe('WcLoanActionFormComponent', () => {
     component.onSubmit();
     expect(loansSpy.putWorkingCapitalLoansLoanIdPaymentRate).toHaveBeenCalledWith(
       42,
-      jasmine.objectContaining({ periodPaymentRate: 8, effectiveDate: jasmine.any(String) }),
+      expect.objectContaining({ periodPaymentRate: 8, effectiveDate: expect.any(String) }),
     );
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/working-capital/loans/view/42'], {
       queryParams: { tab: 'rateChanges' },

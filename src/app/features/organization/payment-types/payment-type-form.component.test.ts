@@ -17,60 +17,66 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FundFormComponent } from './fund-form.component';
-import { FundsService } from '../../../api';
+import { PaymentTypeFormComponent } from './payment-type-form.component';
+import { PaymentTypeService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
-describe('FundFormComponent', () => {
-  let component: FundFormComponent;
-  let fixture: ComponentFixture<FundFormComponent>;
-  let fundsServiceSpy: jasmine.SpyObj<FundsService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+describe('PaymentTypeFormComponent', () => {
+  let component: PaymentTypeFormComponent;
+  let fixture: ComponentFixture<PaymentTypeFormComponent>;
+  let paymentTypeServiceSpy: SpyObj<PaymentTypeService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    fundsServiceSpy = jasmine.createSpyObj('FundsService', [
-      'getFundsFundId',
-      'postFunds',
-      'putFundsFundId',
+    paymentTypeServiceSpy = createSpyObj([
+      'getPaymenttypesPaymentTypeId',
+      'postPaymenttypes',
+      'putPaymenttypesPaymentTypeId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [FundFormComponent, TranslateModule.forRoot()],
+      imports: [PaymentTypeFormComponent, provideTranslateTesting()],
       providers: [
-        { provide: FundsService, useValue: fundsServiceSpy },
+        { provide: PaymentTypeService, useValue: paymentTypeServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },
         provideNoopAnimations(),
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(FundFormComponent);
+    fixture = TestBed.createComponent(PaymentTypeFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
   it('should create in add mode', () => {
     expect(component).toBeTruthy();
-    expect(component.isEditMode()).toBeFalse();
+    expect(component.isEditMode()).toBe(false);
   });
 
-  it('should post a new fund on submit', () => {
-    fundsServiceSpy.postFunds.and.returnValue(
-      of({}) as unknown as ReturnType<FundsService['postFunds']>,
+  it('should post a new payment type on submit', () => {
+    paymentTypeServiceSpy.postPaymenttypes.mockReturnValue(
+      of({}) as unknown as ReturnType<PaymentTypeService['postPaymenttypes']>,
     );
-    component.fund.set({ name: 'Relief Fund', externalId: 'RF-9' });
+    component.paymentType.set({
+      name: 'Mobile Money',
+      description: 'MoMo',
+      position: 3,
+      isCashPayment: false,
+      isSystemDefined: false,
+    });
 
     component.onSubmit();
 
-    expect(fundsServiceSpy.postFunds).toHaveBeenCalledWith({
-      name: 'Relief Fund',
-      externalId: 'RF-9',
-    });
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/organization/funds']);
+    expect(paymentTypeServiceSpy.postPaymenttypes).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Mobile Money', isSystemDefined: false }),
+    );
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/organization/payment-types']);
   });
 });

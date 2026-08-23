@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountNumberFormatsListComponent } from './account-number-formats-list.component';
 import { AccountNumberFormatService } from '../../../api';
@@ -29,19 +30,19 @@ import { provideTranslateTesting } from '../../../testing/i18n-testing';
 describe('AccountNumberFormatsListComponent', () => {
   let component: AccountNumberFormatsListComponent;
   let fixture: ComponentFixture<AccountNumberFormatsListComponent>;
-  let serviceSpy: jasmine.SpyObj<AccountNumberFormatService>;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let dialogService: jasmine.SpyObj<DialogService>;
+  let serviceSpy: SpyObj<AccountNumberFormatService>;
+  let routerSpy: SpyObj<Router>;
+  let dialogService: SpyObj<DialogService>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('AccountNumberFormatService', [
+    serviceSpy = createSpyObj([
       'getAccountnumberformats',
       'deleteAccountnumberformatsAccountNumberFormatId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.getAccountnumberformats.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    dialogService = createSpyObj(['confirm']);
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.getAccountnumberformats.mockReturnValue(
       of([
         { id: 1, accountType: { id: 1, value: 'CLIENT' }, prefixType: { id: 2, value: 'OFFICE' } },
       ]) as unknown as ReturnType<AccountNumberFormatService['getAccountnumberformats']>,
@@ -66,7 +67,7 @@ describe('AccountNumberFormatsListComponent', () => {
   it('should load formats on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getAccountnumberformats).toHaveBeenCalled();
-    expect(component.formats()).toHaveSize(1);
+    expect(component.formats()).toHaveLength(1);
   });
 
   it('should navigate to edit with the format id', () => {
@@ -78,8 +79,8 @@ describe('AccountNumberFormatsListComponent', () => {
   });
 
   it('should delete after confirmation and drop the row', async () => {
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.deleteAccountnumberformatsAccountNumberFormatId.and.returnValue(
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.deleteAccountnumberformatsAccountNumberFormatId.mockReturnValue(
       of({}) as unknown as ReturnType<
         AccountNumberFormatService['deleteAccountnumberformatsAccountNumberFormatId']
       >,
@@ -89,14 +90,14 @@ describe('AccountNumberFormatsListComponent', () => {
     await fixture.whenStable();
 
     expect(serviceSpy.deleteAccountnumberformatsAccountNumberFormatId).toHaveBeenCalledWith(1);
-    expect(component.formats()).toHaveSize(0);
+    expect(component.formats()).toHaveLength(0);
   });
 
   it('should not delete when cancelled', async () => {
-    dialogService.confirm.and.resolveTo(false);
+    dialogService.confirm.mockResolvedValue(false);
     component.onDelete({ id: 1, accountType: { id: 1, value: 'CLIENT' } });
     await fixture.whenStable();
     expect(serviceSpy.deleteAccountnumberformatsAccountNumberFormatId).not.toHaveBeenCalled();
-    expect(component.formats()).toHaveSize(1);
+    expect(component.formats()).toHaveLength(1);
   });
 });

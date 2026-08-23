@@ -17,30 +17,31 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WcNearBreachFormComponent } from './wc-near-breach-form.component';
 import { WorkingCapitalNearBreachService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('WcNearBreachFormComponent', () => {
   let component: WcNearBreachFormComponent;
   let fixture: ComponentFixture<WcNearBreachFormComponent>;
-  let serviceSpy: jasmine.SpyObj<WorkingCapitalNearBreachService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<WorkingCapitalNearBreachService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('WorkingCapitalNearBreachService', [
+    serviceSpy = createSpyObj([
       'getWorkingCapitalNearBreachBreachId',
       'postWorkingCapitalNearBreach',
       'putWorkingCapitalNearBreachBreachId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [WcNearBreachFormComponent, TranslateModule.forRoot()],
+      imports: [WcNearBreachFormComponent, provideTranslateTesting()],
       providers: [
         { provide: WorkingCapitalNearBreachService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
@@ -55,7 +56,7 @@ describe('WcNearBreachFormComponent', () => {
   });
 
   it('should post on create and navigate to the list', () => {
-    serviceSpy.postWorkingCapitalNearBreach.and.returnValue(
+    serviceSpy.postWorkingCapitalNearBreach.mockReturnValue(
       of({}) as unknown as ReturnType<
         WorkingCapitalNearBreachService['postWorkingCapitalNearBreach']
       >,
