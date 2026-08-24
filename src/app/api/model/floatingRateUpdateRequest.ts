@@ -23,12 +23,13 @@
  * Do not edit the class manually.
  */
 
+import { FloatingRatePeriodRequest } from './floatingRatePeriodRequest';
 
 
-export interface PostFloatingRatesRatePeriods { 
-    dateFormat?: string;
-    fromDate?: string;
-    interestRate?: number;
-    locale?: string;
+export interface FloatingRateUpdateRequest { 
+    isActive?: boolean;
+    isBaseLendingRate?: boolean;
+    name?: string;
+    ratePeriods?: Array<FloatingRatePeriodRequest>;
 }
 

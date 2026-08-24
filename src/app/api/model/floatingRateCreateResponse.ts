@@ -25,17 +25,7 @@
 
 
 
-/**
- * GetFloatingRatesResponse
- */
-export interface GetFloatingRatesResponse { 
-    createdBy?: string;
-    createdOn?: string;
-    id?: number;
-    isActive?: boolean;
-    isBaseLendingRate?: boolean;
-    modifiedBy?: string;
-    modifiedOn?: string;
-    name?: string;
+export interface FloatingRateCreateResponse { 
+    resourceId?: number;
 }
 

@@ -26,10 +26,10 @@
 import { FloatingRatePeriodRequest } from './floatingRatePeriodRequest';
 
 
-export interface FloatingRateRequest { 
+export interface FloatingRateCreateRequest { 
     isActive?: boolean;
     isBaseLendingRate?: boolean;
-    name?: string;
+    name: string;
     ratePeriods?: Array<FloatingRatePeriodRequest>;
 }
 

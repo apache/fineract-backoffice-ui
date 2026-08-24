@@ -23,14 +23,10 @@
  * Do not edit the class manually.
  */
 
-import { PutFloatingRatesChanges } from './putFloatingRatesChanges';
 
 
-/**
- * PutFloatingRatesFloatingRateIdResponse
- */
-export interface PutFloatingRatesFloatingRateIdResponse { 
-    changes?: PutFloatingRatesChanges;
+export interface FloatingRateUpdateResponse { 
+    changes?: { [key: string]: object; };
     resourceId?: number;
 }
 

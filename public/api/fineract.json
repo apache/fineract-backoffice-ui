@@ -8266,16 +8266,16 @@
         "description": "Lists Floating Rates",
         "operationId": "retrieveAllFloatingRates",
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/GetFloatingRatesResponse" }
+                  "items": { "$ref": "#/components/schemas/FloatingRateData" }
                 }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "List Floating Rates",
@@ -8287,18 +8287,20 @@
         "operationId": "createFloatingRate",
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/FloatingRateRequest" } }
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FloatingRateCreateRequest" }
+            }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PostFloatingRatesResponse" }
+                "schema": { "$ref": "#/components/schemas/FloatingRateCreateResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Create a new Floating Rate",
@@ -8344,18 +8346,20 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/FloatingRateRequest" } }
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FloatingRateUpdateRequest" }
+            }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PutFloatingRatesFloatingRateIdResponse" }
+                "schema": { "$ref": "#/components/schemas/FloatingRateUpdateResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Update Floating Rate",
@@ -32172,6 +32176,25 @@
         },
         "required": ["createdBy", "createdDate", "lastModifiedBy", "lastModifiedDate"]
       },
+      "FloatingRateCreateRequest": {
+        "type": "object",
+        "properties": {
+          "isActive": { "type": "boolean" },
+          "isBaseLendingRate": { "type": "boolean" },
+          "name": { "type": "string", "maxLength": 200, "minLength": 0 },
+          "ratePeriods": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FloatingRatePeriodRequest" },
+            "maxItems": 2147483647,
+            "minItems": 1
+          }
+        },
+        "required": ["name"]
+      },
+      "FloatingRateCreateResponse": {
+        "type": "object",
+        "properties": { "resourceId": { "type": "integer", "format": "int64" } }
+      },
       "FloatingRateData": {
         "type": "object",
         "properties": {
@@ -32228,22 +32251,32 @@
         "type": "object",
         "properties": {
           "dateFormat": { "type": "string" },
-          "fromDate": { "type": "string" },
-          "interestRate": { "type": "number" },
+          "fromDate": { "type": "string", "minLength": 1 },
+          "interestRate": { "type": "number", "minimum": 0 },
           "isDifferentialToBaseLendingRate": { "type": "boolean" },
           "locale": { "type": "string" }
-        }
+        },
+        "required": ["fromDate", "interestRate"]
       },
-      "FloatingRateRequest": {
+      "FloatingRateUpdateRequest": {
         "type": "object",
         "properties": {
           "isActive": { "type": "boolean" },
           "isBaseLendingRate": { "type": "boolean" },
-          "name": { "type": "string" },
+          "name": { "type": "string", "maxLength": 200, "minLength": 0, "pattern": ".*\\S.*" },
           "ratePeriods": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/FloatingRatePeriodRequest" }
+            "items": { "$ref": "#/components/schemas/FloatingRatePeriodRequest" },
+            "maxItems": 2147483647,
+            "minItems": 1
           }
+        }
+      },
+      "FloatingRateUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "changes": { "type": "object", "additionalProperties": { "type": "object" } },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "ForgotPasswordRequest": {
@@ -34879,20 +34912,6 @@
           "nominalAnnualInterestRate": { "type": "number", "format": "double", "example": 0 },
           "preClosurePenalApplicable": { "type": "boolean", "example": false },
           "shortName": { "type": "string", "example": "FD01" }
-        }
-      },
-      "GetFloatingRatesResponse": {
-        "type": "object",
-        "description": "GetFloatingRatesResponse",
-        "properties": {
-          "createdBy": { "type": "string", "example": "mifos" },
-          "createdOn": { "type": "string", "example": "Nov 18, 2015" },
-          "id": { "type": "integer", "format": "int64", "example": 1 },
-          "isActive": { "type": "boolean", "example": true },
-          "isBaseLendingRate": { "type": "boolean", "example": true },
-          "modifiedBy": { "type": "string", "example": "mifos" },
-          "modifiedOn": { "type": "string", "example": "Nov 18, 2015" },
-          "name": { "type": "string", "example": "Floating Rate 1" }
         }
       },
       "GetFromAccountStandingInstructionSwagger": {
@@ -45647,20 +45666,6 @@
         "description": "PostFixedDepositProductsResponse",
         "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 1 } }
       },
-      "PostFloatingRatesRatePeriods": {
-        "type": "object",
-        "properties": {
-          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
-          "fromDate": { "type": "string", "example": "19 November 2015" },
-          "interestRate": { "type": "number", "format": "double", "example": 10 },
-          "locale": { "type": "string", "example": "en" }
-        }
-      },
-      "PostFloatingRatesResponse": {
-        "type": "object",
-        "description": "PostFloatingRatesResponse",
-        "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 1 } }
-      },
       "PostFundsResponse": {
         "type": "object",
         "description": "PostFundsResponse",
@@ -48903,24 +48908,6 @@
         "description": "PutFixedDepositProductsProductIdResponse",
         "properties": {
           "changes": { "$ref": "#/components/schemas/PutFixedDepositProductsChanges" },
-          "resourceId": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
-      "PutFloatingRatesChanges": {
-        "type": "object",
-        "properties": {
-          "ratePeriods": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/PostFloatingRatesRatePeriods" },
-            "uniqueItems": true
-          }
-        }
-      },
-      "PutFloatingRatesFloatingRateIdResponse": {
-        "type": "object",
-        "description": "PutFloatingRatesFloatingRateIdResponse",
-        "properties": {
-          "changes": { "$ref": "#/components/schemas/PutFloatingRatesChanges" },
           "resourceId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
