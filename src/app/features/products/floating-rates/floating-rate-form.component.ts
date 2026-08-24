@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { FloatingRatesService, FloatingRateRequest } from '../../../api';
+import { FloatingRatesService } from '../../../api';
 import {
   IonButton,
   IonCard,
@@ -50,6 +50,18 @@ interface RatePeriodRow {
   interestRate: number | null;
   isDifferentialToBaseLendingRate: boolean;
 }
+
+interface FloatingRateFormValue {
+  name: string;
+  isBaseLendingRate: boolean;
+  isActive: boolean;
+}
+
+type RatePeriodWithInterestRate = RatePeriodRow & { interestRate: number };
+type FloatingRateCreatePayload = Parameters<FloatingRatesService['postFloatingrates']>[0];
+type FloatingRateUpdatePayload = Parameters<
+  FloatingRatesService['putFloatingratesFloatingRateId']
+>[1];
 
 /**
  * Create / edit form for a floating interest rate, including its dynamic list of rate periods.
@@ -231,7 +243,7 @@ export class FloatingRateFormComponent implements OnInit {
   readonly isEditMode = signal(false);
   readonly isSaving = signal(false);
 
-  readonly rate = signal<FloatingRateRequest>({
+  readonly rate = signal<FloatingRateFormValue>({
     name: '',
     isBaseLendingRate: false,
     isActive: true,
@@ -253,9 +265,9 @@ export class FloatingRateFormComponent implements OnInit {
     if (!this.rateId) return;
     this.floatingRatesService.getFloatingratesFloatingRateId(this.rateId).subscribe((data) => {
       this.rate.set({
-        name: data.name,
-        isBaseLendingRate: data.isBaseLendingRate,
-        isActive: data.isActive,
+        name: data.name ?? '',
+        isBaseLendingRate: data.isBaseLendingRate ?? false,
+        isActive: data.isActive ?? true,
       });
       this.periods.set(
         (data.ratePeriods || []).map((p) => {
@@ -287,13 +299,23 @@ export class FloatingRateFormComponent implements OnInit {
 
   onSubmit(): void {
     this.isSaving.set(true);
-    const payload: FloatingRateRequest = {
+
+    const periods = this.periods();
+    const periodsWithRates = periods.filter(
+      (period): period is RatePeriodWithInterestRate => period.interestRate !== null,
+    );
+    if (periodsWithRates.length !== periods.length) {
+      this.isSaving.set(false);
+      return;
+    }
+
+    const commonPayload = {
       name: this.rate().name,
       isBaseLendingRate: this.rate().isBaseLendingRate,
       isActive: this.rate().isActive,
-      ratePeriods: this.periods().map((p) => ({
+      ratePeriods: periodsWithRates.map((p) => ({
         fromDate: formatDateToFineract(p.fromDate),
-        interestRate: p.interestRate ?? undefined,
+        interestRate: p.interestRate,
         isDifferentialToBaseLendingRate: p.isDifferentialToBaseLendingRate,
         dateFormat: FINERACT_DATE_FORMAT,
         locale: FINERACT_LOCALE,
@@ -302,8 +324,13 @@ export class FloatingRateFormComponent implements OnInit {
 
     const request$ =
       this.isEditMode() && this.rateId
-        ? this.floatingRatesService.putFloatingratesFloatingRateId(this.rateId, payload)
-        : this.floatingRatesService.postFloatingrates(payload);
+        ? this.floatingRatesService.putFloatingratesFloatingRateId(
+            this.rateId,
+            commonPayload satisfies FloatingRateUpdatePayload,
+          )
+        : this.floatingRatesService.postFloatingrates(
+            commonPayload satisfies FloatingRateCreatePayload,
+          );
 
     request$.subscribe({
       next: () => this.router.navigate([this.LIST_PATH]),
