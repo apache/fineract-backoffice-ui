@@ -51,7 +51,7 @@ describe('LoanDisburseToSavingsDialogComponent', () => {
     await setup(1000);
 
     expect(component.amount()).toBe(1000);
-    expect(component.isValid()).toBeTrue();
+    expect(component.isValid()).toBe(true);
   });
 
   it('refuses to submit an amount of zero', async () => {
@@ -60,7 +60,7 @@ describe('LoanDisburseToSavingsDialogComponent', () => {
 
     // A disbursement of nothing is not a disbursement, and the platform would reject it after
     // a round trip. Better to not send it.
-    expect(component.isValid()).toBeFalse();
+    expect(component.isValid()).toBe(false);
     component.onConfirm();
     expect(overlay.dismissals).toEqual([]);
   });

@@ -19,6 +19,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LOAN_TAB, LoanViewComponent } from './loan-view.component';
 import {
@@ -44,11 +45,11 @@ const EXTERNAL_ID = 'ext-456';
 describe('LoanViewComponent', () => {
   let component: LoanViewComponent;
   let fixture: ComponentFixture<LoanViewComponent>;
-  let loansServiceSpy: jasmine.SpyObj<LoansService>;
-  let buyDownFeesSpy: jasmine.SpyObj<LoanBuyDownFeesService>;
-  let capitalizedIncomeSpy: jasmine.SpyObj<LoanCapitalizedIncomeService>;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let transactionsSpy: jasmine.SpyObj<LoanTransactionsService>;
+  let loansServiceSpy: SpyObj<LoansService>;
+  let buyDownFeesSpy: SpyObj<LoanBuyDownFeesService>;
+  let capitalizedIncomeSpy: SpyObj<LoanCapitalizedIncomeService>;
+  let routerSpy: SpyObj<Router>;
+  let transactionsSpy: SpyObj<LoanTransactionsService>;
 
   /** A cumulative loan, i.e. one that can carry none of the progressive-only features. */
   const cumulativeLoan = {
@@ -69,20 +70,15 @@ describe('LoanViewComponent', () => {
   async function setup(loanOverrides: Record<string, unknown> = {}): Promise<void> {
     TestBed.resetTestingModule();
 
-    loansServiceSpy = jasmine.createSpyObj('LoansService', ['getLoansLoanId']);
-    buyDownFeesSpy = jasmine.createSpyObj('LoanBuyDownFeesService', [
-      'getLoansExternalIdLoanExternalIdBuydownFees',
-    ]);
-    capitalizedIncomeSpy = jasmine.createSpyObj('LoanCapitalizedIncomeService', [
-      'getLoansExternalIdLoanExternalIdCapitalizedIncomes',
-    ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    transactionsSpy = jasmine.createSpyObj('LoanTransactionsService', [
-      'postLoansLoanIdTransactions',
-    ]);
-    transactionsSpy.postLoansLoanIdTransactions.and.returnValue(of({}) as any);
+    loansServiceSpy = createSpyObj(['getLoansLoanId']);
+    buyDownFeesSpy = createSpyObj(['getLoansExternalIdLoanExternalIdBuydownFees']);
+    capitalizedIncomeSpy = createSpyObj(['getLoansExternalIdLoanExternalIdCapitalizedIncomes']);
+    routerSpy = createSpyObj(['navigate']);
+    transactionsSpy = createSpyObj(['postLoansLoanIdTransactions']);
+    transactionsSpy.postLoansLoanIdTransactions.mockReturnValue(of({}) as any);
 
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission'], {
+    const authServiceSpy = {
+      ...createSpyObj(['hasPermission']),
       currentUser: signal({
         username: 'mifos',
         base64EncodedAuthenticationKey: 'key',
@@ -92,13 +88,13 @@ describe('LoanViewComponent', () => {
         userId: 1,
         permissions: ['ALL_FUNCTIONS'],
       }),
-    });
+    };
 
-    loansServiceSpy.getLoansLoanId.and.returnValue(
+    loansServiceSpy.getLoansLoanId.mockReturnValue(
       of({ ...cumulativeLoan, ...loanOverrides }) as any,
     );
-    buyDownFeesSpy.getLoansExternalIdLoanExternalIdBuydownFees.and.returnValue(of([]) as any);
-    capitalizedIncomeSpy.getLoansExternalIdLoanExternalIdCapitalizedIncomes.and.returnValue(
+    buyDownFeesSpy.getLoansExternalIdLoanExternalIdBuydownFees.mockReturnValue(of([]) as any);
+    capitalizedIncomeSpy.getLoansExternalIdLoanExternalIdCapitalizedIncomes.mockReturnValue(
       of([]) as any,
     );
 
@@ -148,8 +144,8 @@ describe('LoanViewComponent', () => {
    */
   describe('progressive-only tabs on a loan that cannot have them', () => {
     it('hides both tabs', () => {
-      expect(component.showBuyDownFees()).toBeFalse();
-      expect(component.showCapitalizedIncome()).toBeFalse();
+      expect(component.showBuyDownFees()).toBe(false);
+      expect(component.showCapitalizedIncome()).toBe(false);
 
       const labels = fixture.nativeElement.textContent as string;
       expect(labels).not.toContain('LOANS.BUY_DOWN_FEES');
@@ -178,8 +174,8 @@ describe('LoanViewComponent', () => {
         enableBuyDownFee: true,
       });
 
-      expect(component.showBuyDownFees()).toBeTrue();
-      expect(component.showCapitalizedIncome()).toBeFalse();
+      expect(component.showBuyDownFees()).toBe(true);
+      expect(component.showCapitalizedIncome()).toBe(false);
       expect(buyDownFeesSpy.getLoansExternalIdLoanExternalIdBuydownFees).toHaveBeenCalledWith(
         EXTERNAL_ID,
       );
@@ -194,8 +190,8 @@ describe('LoanViewComponent', () => {
         enableIncomeCapitalization: true,
       });
 
-      expect(component.showCapitalizedIncome()).toBeTrue();
-      expect(component.showBuyDownFees()).toBeFalse();
+      expect(component.showCapitalizedIncome()).toBe(true);
+      expect(component.showBuyDownFees()).toBe(false);
       expect(
         capitalizedIncomeSpy.getLoansExternalIdLoanExternalIdCapitalizedIncomes,
       ).toHaveBeenCalledWith(EXTERNAL_ID);
@@ -216,7 +212,7 @@ describe('LoanViewComponent', () => {
     it('still skips the request when the loan has no external id to fetch by', async () => {
       await setup({ enableBuyDownFee: true, externalId: undefined });
 
-      expect(component.showBuyDownFees()).toBeTrue();
+      expect(component.showBuyDownFees()).toBe(true);
       expect(buyDownFeesSpy.getLoansExternalIdLoanExternalIdBuydownFees).not.toHaveBeenCalled();
     });
   });
@@ -227,7 +223,7 @@ describe('LoanViewComponent', () => {
    */
   describe('charge-off', () => {
     it('offers charge-off on a loan that is not charged off', async () => {
-      expect(component.chargedOff()).toBeFalse();
+      expect(component.chargedOff()).toBe(false);
       expect(
         fixture.nativeElement.querySelector('[data-testid="loan-charged-off-chip"]'),
       ).toBeNull();
@@ -236,7 +232,7 @@ describe('LoanViewComponent', () => {
     it('shows that a charged-off loan is charged off', async () => {
       await setup({ chargedOff: true });
 
-      expect(component.chargedOff()).toBeTrue();
+      expect(component.chargedOff()).toBe(true);
       expect(
         fixture.nativeElement.querySelector('[data-testid="loan-charged-off-chip"]'),
       ).not.toBeNull();
@@ -245,7 +241,7 @@ describe('LoanViewComponent', () => {
     it('sends an empty body when undoing, which is what the command accepts', async () => {
       await setup({ chargedOff: true });
       const dialog = TestBed.inject(DialogService);
-      spyOn(dialog, 'confirm').and.returnValue(Promise.resolve(true));
+      vi.spyOn(dialog, 'confirm').mockReturnValue(Promise.resolve(true));
 
       component.onUndoChargeOff();
       await fixture.whenStable();
@@ -262,7 +258,7 @@ describe('LoanViewComponent', () => {
     it('does nothing when the confirmation is declined', async () => {
       await setup({ chargedOff: true });
       const dialog = TestBed.inject(DialogService);
-      spyOn(dialog, 'confirm').and.returnValue(Promise.resolve(false));
+      vi.spyOn(dialog, 'confirm').mockReturnValue(Promise.resolve(false));
 
       component.onUndoChargeOff();
       await fixture.whenStable();
@@ -284,8 +280,8 @@ describe('LoanViewComponent', () => {
    */
   describe('servicing actions by loan state', () => {
     it('treats a cumulative loan as ineligible for the progressive-only commands', () => {
-      expect(component.isProgressiveLoan()).toBeFalse();
-      expect(component.canTakeDownPayment()).toBeFalse();
+      expect(component.isProgressiveLoan()).toBe(false);
+      expect(component.canTakeDownPayment()).toBe(false);
     });
 
     it('allows the progressive-only commands on a progressive loan', async () => {
@@ -293,20 +289,20 @@ describe('LoanViewComponent', () => {
         loanScheduleType: { code: LOAN_SCHEDULE_TYPE.PROGRESSIVE, value: 'Progressive' },
       });
 
-      expect(component.isProgressiveLoan()).toBeTrue();
+      expect(component.isProgressiveLoan()).toBe(true);
     });
 
     it('allows a down payment only when the product enabled one', async () => {
       await setup({
         loanScheduleType: { code: LOAN_SCHEDULE_TYPE.PROGRESSIVE, value: 'Progressive' },
       });
-      expect(component.canTakeDownPayment()).toBeFalse();
+      expect(component.canTakeDownPayment()).toBe(false);
 
       await setup({
         loanScheduleType: { code: LOAN_SCHEDULE_TYPE.PROGRESSIVE, value: 'Progressive' },
         enableDownPayment: true,
       });
-      expect(component.canTakeDownPayment()).toBeTrue();
+      expect(component.canTakeDownPayment()).toBe(true);
     });
 
     it('requires a down payment product to be progressive as well', async () => {
@@ -315,23 +311,23 @@ describe('LoanViewComponent', () => {
         enableDownPayment: true,
       });
 
-      expect(component.canTakeDownPayment()).toBeFalse();
+      expect(component.canTakeDownPayment()).toBe(false);
     });
 
     it('recognises an overpaid loan, which is the only one with a balance to refund', async () => {
-      expect(component.isOverpaid()).toBeFalse();
+      expect(component.isOverpaid()).toBe(false);
 
       await setup({ status: { value: 'Overpaid', overpaid: true } });
 
-      expect(component.isOverpaid()).toBeTrue();
+      expect(component.isOverpaid()).toBe(true);
     });
 
     it('recognises a written-off loan, which recovery and undo both require', async () => {
-      expect(component.isWrittenOff()).toBeFalse();
+      expect(component.isWrittenOff()).toBe(false);
 
       await setup({ status: { value: 'Closed (written off)', closedWrittenOff: true } });
 
-      expect(component.isWrittenOff()).toBeTrue();
+      expect(component.isWrittenOff()).toBe(true);
     });
   });
 });

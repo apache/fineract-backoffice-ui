@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BulkReassignmentComponent } from './bulk-reassignment.component';
 import { BulkLoansService } from '../../../api';
@@ -28,16 +29,13 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 describe('BulkReassignmentComponent', () => {
   let component: BulkReassignmentComponent;
   let fixture: ComponentFixture<BulkReassignmentComponent>;
-  let serviceSpy: jasmine.SpyObj<BulkLoansService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<BulkLoansService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('BulkLoansService', [
-      'getLoansLoanreassignmentTemplate',
-      'postLoansLoanreassignment',
-    ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    serviceSpy.getLoansLoanreassignmentTemplate.and.returnValue(
+    serviceSpy = createSpyObj(['getLoansLoanreassignmentTemplate', 'postLoansLoanreassignment']);
+    routerSpy = createSpyObj(['navigate']);
+    serviceSpy.getLoansLoanreassignmentTemplate.mockReturnValue(
       of({
         officeOptions: [{ id: 1, name: 'Head Office' }],
         loanOfficerOptions: [
@@ -64,12 +62,12 @@ describe('BulkReassignmentComponent', () => {
   it('should load template options on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getLoansLoanreassignmentTemplate).toHaveBeenCalled();
-    expect(component.officeOptions()).toHaveSize(1);
-    expect(component.loanOfficerOptions()).toHaveSize(2);
+    expect(component.officeOptions()).toHaveLength(1);
+    expect(component.loanOfficerOptions()).toHaveLength(2);
   });
 
   it('should post the reassignment and navigate', () => {
-    serviceSpy.postLoansLoanreassignment.and.returnValue(
+    serviceSpy.postLoansLoanreassignment.mockReturnValue(
       of({}) as unknown as ReturnType<BulkLoansService['postLoansLoanreassignment']>,
     );
     component.officeId = 1;

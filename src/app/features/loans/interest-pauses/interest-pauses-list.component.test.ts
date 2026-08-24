@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InterestPausesListComponent } from './interest-pauses-list.component';
 import { LoanInterestPauseService } from '../../../api';
@@ -29,19 +30,19 @@ import { DialogService } from '../../../core/services/dialog.service';
 describe('InterestPausesListComponent', () => {
   let component: InterestPausesListComponent;
   let fixture: ComponentFixture<InterestPausesListComponent>;
-  let serviceSpy: jasmine.SpyObj<LoanInterestPauseService>;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let dialogService: jasmine.SpyObj<DialogService>;
+  let serviceSpy: SpyObj<LoanInterestPauseService>;
+  let routerSpy: SpyObj<Router>;
+  let dialogService: SpyObj<DialogService>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('LoanInterestPauseService', [
+    serviceSpy = createSpyObj([
       'getLoansLoanIdInterestPauses',
       'deleteLoansLoanIdInterestPausesVariationId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.getLoansLoanIdInterestPauses.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    dialogService = createSpyObj(['confirm']);
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.getLoansLoanIdInterestPauses.mockReturnValue(
       of([
         { id: 1, startDate: '1 January 2026', endDate: '1 February 2026' },
       ]) as unknown as ReturnType<LoanInterestPauseService['getLoansLoanIdInterestPauses']>,
@@ -70,7 +71,7 @@ describe('InterestPausesListComponent', () => {
     expect(component).toBeTruthy();
     expect(component.loanId).toBe(1);
     expect(serviceSpy.getLoansLoanIdInterestPauses).toHaveBeenCalledWith(1);
-    expect(component.pauses()).toHaveSize(1);
+    expect(component.pauses()).toHaveLength(1);
   });
 
   it('should navigate to create', () => {
@@ -79,7 +80,7 @@ describe('InterestPausesListComponent', () => {
   });
 
   it('should delete after confirmation and reload', async () => {
-    serviceSpy.deleteLoansLoanIdInterestPausesVariationId.and.returnValue(
+    serviceSpy.deleteLoansLoanIdInterestPausesVariationId.mockReturnValue(
       of({}) as unknown as ReturnType<
         LoanInterestPauseService['deleteLoansLoanIdInterestPausesVariationId']
       >,
@@ -93,7 +94,7 @@ describe('InterestPausesListComponent', () => {
   });
 
   it('should not delete when cancelled', async () => {
-    dialogService.confirm.and.resolveTo(false);
+    dialogService.confirm.mockResolvedValue(false);
     component.onDelete({ id: 5 });
     await fixture.whenStable();
     expect(serviceSpy.deleteLoansLoanIdInterestPausesVariationId).not.toHaveBeenCalled();

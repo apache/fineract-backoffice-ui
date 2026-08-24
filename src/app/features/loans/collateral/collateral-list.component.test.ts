@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CollateralListComponent } from './collateral-list.component';
 import {
@@ -33,15 +34,15 @@ import { HttpEvent } from '@angular/common/http';
 describe('CollateralListComponent', () => {
   let component: CollateralListComponent;
   let fixture: ComponentFixture<CollateralListComponent>;
-  let collateralServiceSpy: jasmine.SpyObj<LoanCollateralService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let collateralServiceSpy: SpyObj<LoanCollateralService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    collateralServiceSpy = jasmine.createSpyObj('LoanCollateralService', [
+    collateralServiceSpy = createSpyObj([
       'getLoansLoanIdCollaterals',
       'deleteLoansLoanIdCollateralsCollateralId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [CollateralListComponent, TranslateModule.forRoot()],
@@ -58,7 +59,7 @@ describe('CollateralListComponent', () => {
       ],
     }).compileComponents();
 
-    collateralServiceSpy.getLoansLoanIdCollaterals.and.returnValue(
+    collateralServiceSpy.getLoansLoanIdCollaterals.mockReturnValue(
       of([]) as unknown as Observable<HttpEvent<CollateralData[]>>,
     );
     fixture = TestBed.createComponent(CollateralListComponent);
@@ -87,8 +88,8 @@ describe('CollateralListComponent', () => {
   });
 
   it('should call delete and reload on onDeleteCollateral', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
-    collateralServiceSpy.deleteLoansLoanIdCollateralsCollateralId.and.returnValue(
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    collateralServiceSpy.deleteLoansLoanIdCollateralsCollateralId.mockReturnValue(
       of({}) as unknown as Observable<HttpEvent<DeleteLoansLoanIdCollateralsCollateralIdResponse>>,
     );
 

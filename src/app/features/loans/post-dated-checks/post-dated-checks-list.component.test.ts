@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PostDatedChecksListComponent } from './post-dated-checks-list.component';
 import { RepaymentWithPostDatedChecksService } from '../../../api';
@@ -29,19 +30,19 @@ import { DialogService } from '../../../core/services/dialog.service';
 describe('PostDatedChecksListComponent', () => {
   let component: PostDatedChecksListComponent;
   let fixture: ComponentFixture<PostDatedChecksListComponent>;
-  let serviceSpy: jasmine.SpyObj<RepaymentWithPostDatedChecksService>;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let dialogService: jasmine.SpyObj<DialogService>;
+  let serviceSpy: SpyObj<RepaymentWithPostDatedChecksService>;
+  let routerSpy: SpyObj<Router>;
+  let dialogService: SpyObj<DialogService>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('RepaymentWithPostDatedChecksService', [
+    serviceSpy = createSpyObj([
       'getLoansLoanIdPostdatedchecks',
       'deleteLoansLoanIdPostdatedchecksPostDatedCheckId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.getLoansLoanIdPostdatedchecks.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    dialogService = createSpyObj(['confirm']);
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.getLoansLoanIdPostdatedchecks.mockReturnValue(
       of([
         { id: 1, name: 'Check A', amount: 1000, accountNo: 12, date: '2026-01-01' },
       ]) as unknown as ReturnType<
@@ -72,7 +73,7 @@ describe('PostDatedChecksListComponent', () => {
     expect(component).toBeTruthy();
     expect(component.loanId).toBe(1);
     expect(serviceSpy.getLoansLoanIdPostdatedchecks).toHaveBeenCalledWith(1);
-    expect(component.checks()).toHaveSize(1);
+    expect(component.checks()).toHaveLength(1);
   });
 
   it('should navigate to edit with the check id', () => {
@@ -81,7 +82,7 @@ describe('PostDatedChecksListComponent', () => {
   });
 
   it('should delete after confirmation and reload', async () => {
-    serviceSpy.deleteLoansLoanIdPostdatedchecksPostDatedCheckId.and.returnValue(
+    serviceSpy.deleteLoansLoanIdPostdatedchecksPostDatedCheckId.mockReturnValue(
       of({}) as unknown as ReturnType<
         RepaymentWithPostDatedChecksService['deleteLoansLoanIdPostdatedchecksPostDatedCheckId']
       >,
@@ -95,7 +96,7 @@ describe('PostDatedChecksListComponent', () => {
   });
 
   it('should not delete when cancelled', async () => {
-    dialogService.confirm.and.resolveTo(false);
+    dialogService.confirm.mockResolvedValue(false);
     component.onDelete({ id: 5, name: 'Y' });
     await fixture.whenStable();
     expect(serviceSpy.deleteLoansLoanIdPostdatedchecksPostDatedCheckId).not.toHaveBeenCalled();

@@ -424,7 +424,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/bulk-reassignment/bulk-reassignment.component.spec.ts": {
+  "src/app/features/loans/bulk-reassignment/bulk-reassignment.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -449,7 +449,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/collateral/collateral-form.component.spec.ts": {
+  "src/app/features/loans/collateral/collateral-form.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -459,7 +459,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/collateral/collateral-list.component.spec.ts": {
+  "src/app/features/loans/collateral/collateral-list.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -469,7 +469,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/guarantors/guarantor-form.component.spec.ts": {
+  "src/app/features/loans/guarantors/guarantor-form.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -479,7 +479,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/guarantors/guarantors-list.component.spec.ts": {
+  "src/app/features/loans/guarantors/guarantors-list.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -489,7 +489,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/interest-pauses/interest-pause-form.component.spec.ts": {
+  "src/app/features/loans/interest-pauses/interest-pause-form.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -499,7 +499,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/interest-pauses/interest-pauses-list.component.spec.ts": {
+  "src/app/features/loans/interest-pauses/interest-pauses-list.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -529,7 +529,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/loan-view.component.spec.ts": {
+  "src/app/features/loans/loan-view.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -552,7 +552,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/post-dated-checks/post-dated-check-form.component.spec.ts": {
+  "src/app/features/loans/post-dated-checks/post-dated-check-form.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
@@ -562,7 +562,7 @@
       "count": 1
     }
   },
-  "src/app/features/loans/post-dated-checks/post-dated-checks-list.component.spec.ts": {
+  "src/app/features/loans/post-dated-checks/post-dated-checks-list.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }

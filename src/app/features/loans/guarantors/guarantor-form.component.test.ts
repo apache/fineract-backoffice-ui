@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GuarantorFormComponent } from './guarantor-form.component';
 import { GuarantorsService } from '../../../api';
@@ -28,18 +29,18 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 describe('GuarantorFormComponent', () => {
   let component: GuarantorFormComponent;
   let fixture: ComponentFixture<GuarantorFormComponent>;
-  let serviceSpy: jasmine.SpyObj<GuarantorsService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<GuarantorsService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('GuarantorsService', [
+    serviceSpy = createSpyObj([
       'getLoansLoanIdGuarantorsTemplate',
       'getLoansLoanIdGuarantorsGuarantorId',
       'postLoansLoanIdGuarantors',
       'putLoansLoanIdGuarantorsGuarantorId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    serviceSpy.getLoansLoanIdGuarantorsTemplate.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    serviceSpy.getLoansLoanIdGuarantorsTemplate.mockReturnValue(
       of({
         guarantorTypeOptions: [{ id: 1, code: 'customer', value: 'Customer' }],
       }) as unknown as ReturnType<GuarantorsService['getLoansLoanIdGuarantorsTemplate']>,
@@ -66,11 +67,11 @@ describe('GuarantorFormComponent', () => {
   it('should load template options on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getLoansLoanIdGuarantorsTemplate).toHaveBeenCalledWith(1);
-    expect(component.guarantorTypeOptions()).toHaveSize(1);
+    expect(component.guarantorTypeOptions()).toHaveLength(1);
   });
 
   it('should post on create and navigate to the list', () => {
-    serviceSpy.postLoansLoanIdGuarantors.and.returnValue(
+    serviceSpy.postLoansLoanIdGuarantors.mockReturnValue(
       of({}) as unknown as ReturnType<GuarantorsService['postLoansLoanIdGuarantors']>,
     );
     component.guarantor.set({ guarantorTypeId: 1, firstname: 'John', lastname: 'Doe' });

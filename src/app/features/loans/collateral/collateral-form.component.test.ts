@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CollateralFormComponent } from './collateral-form.component';
 import {
@@ -34,17 +35,17 @@ import { HttpEvent } from '@angular/common/http';
 describe('CollateralFormComponent', () => {
   let component: CollateralFormComponent;
   let fixture: ComponentFixture<CollateralFormComponent>;
-  let collateralServiceSpy: jasmine.SpyObj<LoanCollateralService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let collateralServiceSpy: SpyObj<LoanCollateralService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    collateralServiceSpy = jasmine.createSpyObj('LoanCollateralService', [
+    collateralServiceSpy = createSpyObj([
       'getLoansLoanIdCollateralsTemplate',
       'getLoansLoanIdCollateralsCollateralId',
       'postLoansLoanIdCollaterals',
       'putLoansLoanIdCollateralsCollateralId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [CollateralFormComponent, TranslateModule.forRoot()],
@@ -61,7 +62,7 @@ describe('CollateralFormComponent', () => {
       ],
     }).compileComponents();
 
-    collateralServiceSpy.getLoansLoanIdCollateralsTemplate.and.returnValue(
+    collateralServiceSpy.getLoansLoanIdCollateralsTemplate.mockReturnValue(
       of({ allowedCollateralTypes: [] }) as unknown as Observable<HttpEvent<CollateralData>>,
     );
     fixture = TestBed.createComponent(CollateralFormComponent);
@@ -78,7 +79,7 @@ describe('CollateralFormComponent', () => {
     component.collateralValue.set(5000);
     component.collateralDescription.set('Gold jewelry');
 
-    collateralServiceSpy.postLoansLoanIdCollaterals.and.returnValue(
+    collateralServiceSpy.postLoansLoanIdCollaterals.mockReturnValue(
       of({}) as unknown as Observable<HttpEvent<PostLoansLoanIdCollateralsResponse>>,
     );
 
@@ -86,7 +87,7 @@ describe('CollateralFormComponent', () => {
 
     expect(collateralServiceSpy.postLoansLoanIdCollaterals).toHaveBeenCalledWith(
       123,
-      jasmine.objectContaining({
+      expect.objectContaining({
         collateralTypeId: 1,
         value: 5000,
         description: 'Gold jewelry',

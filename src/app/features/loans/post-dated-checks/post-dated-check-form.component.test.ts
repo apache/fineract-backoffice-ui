@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PostDatedCheckFormComponent } from './post-dated-check-form.component';
 import { RepaymentWithPostDatedChecksService } from '../../../api';
@@ -28,16 +29,16 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 describe('PostDatedCheckFormComponent', () => {
   let component: PostDatedCheckFormComponent;
   let fixture: ComponentFixture<PostDatedCheckFormComponent>;
-  let serviceSpy: jasmine.SpyObj<RepaymentWithPostDatedChecksService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<RepaymentWithPostDatedChecksService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('RepaymentWithPostDatedChecksService', [
+    serviceSpy = createSpyObj([
       'getLoansLoanIdPostdatedchecks',
       'putLoansLoanIdPostdatedchecksPostDatedCheckId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    serviceSpy.getLoansLoanIdPostdatedchecks.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    serviceSpy.getLoansLoanIdPostdatedchecks.mockReturnValue(
       of([
         { id: 7, name: 'Check A', amount: 1000, accountNo: 12, date: '2026-01-01' },
       ]) as unknown as ReturnType<
@@ -75,7 +76,7 @@ describe('PostDatedCheckFormComponent', () => {
   });
 
   it('should put the updated check and navigate to the list', () => {
-    serviceSpy.putLoansLoanIdPostdatedchecksPostDatedCheckId.and.returnValue(
+    serviceSpy.putLoansLoanIdPostdatedchecksPostDatedCheckId.mockReturnValue(
       of({}) as unknown as ReturnType<
         RepaymentWithPostDatedChecksService['putLoansLoanIdPostdatedchecksPostDatedCheckId']
       >,
@@ -90,7 +91,7 @@ describe('PostDatedCheckFormComponent', () => {
     expect(serviceSpy.putLoansLoanIdPostdatedchecksPostDatedCheckId).toHaveBeenCalledWith(
       7,
       1,
-      jasmine.objectContaining({
+      expect.objectContaining({
         name: 'Updated',
         amount: 2000,
         accountNo: 34,

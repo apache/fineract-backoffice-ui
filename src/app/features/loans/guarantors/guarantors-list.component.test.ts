@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GuarantorsListComponent } from './guarantors-list.component';
 import { GuarantorsService } from '../../../api';
@@ -29,19 +30,19 @@ import { DialogService } from '../../../core/services/dialog.service';
 describe('GuarantorsListComponent', () => {
   let component: GuarantorsListComponent;
   let fixture: ComponentFixture<GuarantorsListComponent>;
-  let serviceSpy: jasmine.SpyObj<GuarantorsService>;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let dialogService: jasmine.SpyObj<DialogService>;
+  let serviceSpy: SpyObj<GuarantorsService>;
+  let routerSpy: SpyObj<Router>;
+  let dialogService: SpyObj<DialogService>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('GuarantorsService', [
+    serviceSpy = createSpyObj([
       'getLoansLoanIdGuarantors',
       'deleteLoansLoanIdGuarantorsGuarantorId',
     ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    dialogService = jasmine.createSpyObj('DialogService', ['confirm']);
-    dialogService.confirm.and.resolveTo(true);
-    serviceSpy.getLoansLoanIdGuarantors.and.returnValue(
+    routerSpy = createSpyObj(['navigate']);
+    dialogService = createSpyObj(['confirm']);
+    dialogService.confirm.mockResolvedValue(true);
+    serviceSpy.getLoansLoanIdGuarantors.mockReturnValue(
       of([{ id: 1, firstname: 'John', lastname: 'Doe', status: true }]) as unknown as ReturnType<
         GuarantorsService['getLoansLoanIdGuarantors']
       >,
@@ -69,11 +70,11 @@ describe('GuarantorsListComponent', () => {
   it('should load guarantors on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getLoansLoanIdGuarantors).toHaveBeenCalledWith(1);
-    expect(component.guarantors()).toHaveSize(1);
+    expect(component.guarantors()).toHaveLength(1);
   });
 
   it('should delete after confirmation and reload', async () => {
-    serviceSpy.deleteLoansLoanIdGuarantorsGuarantorId.and.returnValue(
+    serviceSpy.deleteLoansLoanIdGuarantorsGuarantorId.mockReturnValue(
       of({}) as unknown as ReturnType<GuarantorsService['deleteLoansLoanIdGuarantorsGuarantorId']>,
     );
 
@@ -85,7 +86,7 @@ describe('GuarantorsListComponent', () => {
   });
 
   it('should not delete when cancelled', async () => {
-    dialogService.confirm.and.resolveTo(false);
+    dialogService.confirm.mockResolvedValue(false);
     component.onDelete({ id: 5, firstname: 'Y' });
     await fixture.whenStable();
     expect(serviceSpy.deleteLoansLoanIdGuarantorsGuarantorId).not.toHaveBeenCalled();

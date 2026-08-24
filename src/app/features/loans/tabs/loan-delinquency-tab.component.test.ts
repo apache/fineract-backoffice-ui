@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
@@ -31,23 +32,23 @@ const LOAN_ID = 42;
 describe('LoanDelinquencyTabComponent', () => {
   let fixture: ComponentFixture<LoanDelinquencyTabComponent>;
   let component: LoanDelinquencyTabComponent;
-  let loansService: jasmine.SpyObj<LoansService>;
+  let loansService: SpyObj<LoansService>;
 
   async function setup(options: { fails?: boolean } = {}): Promise<void> {
-    loansService = jasmine.createSpyObj('LoansService', [
+    loansService = createSpyObj([
       'getLoansLoanIdDelinquencytags',
       'getLoansLoanIdDelinquencyActions',
     ]);
     if (options.fails) {
-      loansService.getLoansLoanIdDelinquencytags.and.returnValue(
+      loansService.getLoansLoanIdDelinquencytags.mockReturnValue(
         throwError(() => new Error('boom')) as never,
       );
-      loansService.getLoansLoanIdDelinquencyActions.and.returnValue(of([]) as never);
+      loansService.getLoansLoanIdDelinquencyActions.mockReturnValue(of([]) as never);
     } else {
-      loansService.getLoansLoanIdDelinquencytags.and.returnValue(
+      loansService.getLoansLoanIdDelinquencytags.mockReturnValue(
         of([{ classification: 'Delinquent 30', addedOnDate: '2026-07-01' }]) as never,
       );
-      loansService.getLoansLoanIdDelinquencyActions.and.returnValue(
+      loansService.getLoansLoanIdDelinquencyActions.mockReturnValue(
         of([{ action: 'PAUSE' }]) as never,
       );
     }
@@ -82,7 +83,7 @@ describe('LoanDelinquencyTabComponent', () => {
 
     expect(loansService.getLoansLoanIdDelinquencytags).toHaveBeenCalledWith(LOAN_ID);
     expect(loansService.getLoansLoanIdDelinquencyActions).toHaveBeenCalledWith(LOAN_ID);
-    expect(component.tags()).toHaveSize(1);
+    expect(component.tags()).toHaveLength(1);
   });
 
   it('reads the pause periods off the summary rather than fetching them', async () => {
@@ -90,7 +91,7 @@ describe('LoanDelinquencyTabComponent', () => {
 
     // They ride along on the loan response; a request here would be a second copy of data
     // the page already holds.
-    expect(component.pausePeriods()).toHaveSize(1);
+    expect(component.pausePeriods()).toHaveLength(1);
   });
 
   it('reports a failed load rather than showing no tags', async () => {
@@ -98,8 +99,8 @@ describe('LoanDelinquencyTabComponent', () => {
 
     // The distinction that matters: "this loan has no delinquency tags" and "we could not find
     // out" must not look the same. See issue #223.
-    expect(component.hasError()).toBeTrue();
-    expect(component.isLoading()).toBeFalse();
+    expect(component.hasError()).toBe(true);
+    expect(component.isLoading()).toBe(false);
     expect(component.tags()).toEqual([]);
   });
 });

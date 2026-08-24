@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InterestPauseFormComponent } from './interest-pause-form.component';
 import { LoanInterestPauseService } from '../../../api';
@@ -28,14 +29,12 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 describe('InterestPauseFormComponent', () => {
   let component: InterestPauseFormComponent;
   let fixture: ComponentFixture<InterestPauseFormComponent>;
-  let serviceSpy: jasmine.SpyObj<LoanInterestPauseService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let serviceSpy: SpyObj<LoanInterestPauseService>;
+  let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    serviceSpy = jasmine.createSpyObj('LoanInterestPauseService', [
-      'postLoansLoanIdInterestPauses',
-    ]);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    serviceSpy = createSpyObj(['postLoansLoanIdInterestPauses']);
+    routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [InterestPauseFormComponent, TranslateModule.forRoot()],
@@ -61,7 +60,7 @@ describe('InterestPauseFormComponent', () => {
   });
 
   it('should post the formatted dates and navigate to the list', () => {
-    serviceSpy.postLoansLoanIdInterestPauses.and.returnValue(
+    serviceSpy.postLoansLoanIdInterestPauses.mockReturnValue(
       of({}) as unknown as ReturnType<LoanInterestPauseService['postLoansLoanIdInterestPauses']>,
     );
     component.startDate = '2026-01-01';
@@ -71,7 +70,7 @@ describe('InterestPauseFormComponent', () => {
 
     expect(serviceSpy.postLoansLoanIdInterestPauses).toHaveBeenCalledWith(
       1,
-      jasmine.objectContaining({
+      expect.objectContaining({
         startDate: '01 January 2026',
         endDate: '01 February 2026',
         dateFormat: 'dd MMMM yyyy',
