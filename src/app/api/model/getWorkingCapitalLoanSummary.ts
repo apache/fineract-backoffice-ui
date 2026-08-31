@@ -49,6 +49,9 @@ export interface GetWorkingCapitalLoanSummary {
     principalOutstanding?: number;
     principalPaid?: number;
     realizedIncomeFromDiscountFee?: number;
+    /**
+     * Total amount actually disbursed
+     */
     totalDisbursement?: number;
     totalDiscountFee?: number;
     totalDiscountFeeAdjustment?: number;

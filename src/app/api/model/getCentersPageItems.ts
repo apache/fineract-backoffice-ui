@@ -28,6 +28,7 @@ import { GetCentersStatus } from './getCentersStatus';
 
 export interface GetCentersPageItems { 
     active?: boolean;
+    externalId?: string;
     hierarchy?: string;
     id?: number;
     name?: string;

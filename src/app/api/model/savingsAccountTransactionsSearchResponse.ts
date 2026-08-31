@@ -30,7 +30,7 @@ import { GetSavingsAccountTransactionsPageItem } from './getSavingsAccountTransa
  * SavingsAccountTransactionsSearchResponse
  */
 export interface SavingsAccountTransactionsSearchResponse { 
-    content?: Set<GetSavingsAccountTransactionsPageItem>;
+    content?: Array<GetSavingsAccountTransactionsPageItem>;
     total?: number;
 }
 

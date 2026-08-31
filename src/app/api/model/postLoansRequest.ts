@@ -43,12 +43,20 @@ export interface PostLoansRequest {
     buyDownFeeCalculationType?: PostLoansRequest.BuyDownFeeCalculationTypeEnum;
     buyDownFeeIncomeType?: PostLoansRequest.BuyDownFeeIncomeTypeEnum;
     buyDownFeeStrategy?: PostLoansRequest.BuyDownFeeStrategyEnum;
+    /**
+     * Meeting calendar to attach the loan to; required for jlg loans
+     */
+    calendarId?: number;
     capitalizedIncomeCalculationType?: PostLoansRequest.CapitalizedIncomeCalculationTypeEnum;
     capitalizedIncomeStrategy?: PostLoansRequest.CapitalizedIncomeStrategyEnum;
     capitalizedIncomeType?: StringEnumOptionData;
     charges?: Array<PostLoansRequestChargeData>;
     clientId?: number;
     collateral?: Array<PostLoansRequestCollateralData>;
+    /**
+     * Requires linkAccountId when true
+     */
+    createStandingInstructionAtDisbursement?: boolean;
     datatables?: Array<PostLoansDataTable>;
     dateFormat?: string;
     daysInYearCustomStrategy?: PostLoansRequest.DaysInYearCustomStrategyEnum;
@@ -78,10 +86,19 @@ export interface PostLoansRequest {
     groupId?: number;
     inArrearsTolerance?: number;
     interestCalculationPeriodType?: number;
+    interestChargedFromDate?: string;
+    /**
+     * Added to the floating rate when isFloatingInterestRate is true
+     */
+    interestRateDifferential?: number;
     interestRateFrequencyType?: number;
     interestRatePerPeriod?: number;
     interestRecognitionOnDisbursementDate?: boolean;
     interestType?: number;
+    /**
+     * Take the rate from the product\'s floating rate instead of interestRatePerPeriod
+     */
+    isFloatingInterestRate?: boolean;
     /**
      * GLIM loans only: marks this application as the GLIM parent account
      */
@@ -108,6 +125,10 @@ export interface PostLoansRequest {
     repaymentStartDateType?: number;
     repaymentsStartingFromDate?: string;
     submittedOnDate?: string;
+    /**
+     * Sync the disbursement date with the attached meeting
+     */
+    syncDisbursementWithMeeting?: boolean;
     /**
      * GLIM loans only: the total principal of the parent GLIM account
      */

@@ -125,6 +125,7 @@ export class MakerCheckerOr4EyeFunctionalityService extends BaseService {
      * @param entityName 
      * @param resourceId 
      * @param makerId 
+     * @param username 
      * @param makerDateTimeFrom 
      * @param makerDateTimeTo 
      * @param clientId 
@@ -138,10 +139,10 @@ export class MakerCheckerOr4EyeFunctionalityService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<AuditData>>;
-    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<AuditData>>>;
-    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<AuditData>>>;
-    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<AuditData>>;
+    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<AuditData>>>;
+    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<AuditData>>>;
+    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -176,6 +177,15 @@ export class MakerCheckerOr4EyeFunctionalityService extends BaseService {
             localVarQueryParameters,
             'makerId',
             <any>makerId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'username',
+            <any>username,
             QueryParamStyle.Form,
             true,
         );

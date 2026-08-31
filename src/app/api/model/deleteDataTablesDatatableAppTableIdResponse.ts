@@ -30,5 +30,6 @@
  */
 export interface DeleteDataTablesDatatableAppTableIdResponse { 
     resourceId?: number;
+    transactionId?: string;
 }
 

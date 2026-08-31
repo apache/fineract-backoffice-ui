@@ -27,11 +27,16 @@
 
 export interface WorkingCapitalLoanNearBreachActionData { 
     action?: WorkingCapitalLoanNearBreachActionData.ActionEnum;
+    /**
+     * Audit/system timestamp. Prefer submittedOnDate for the booking business/tenant date.
+     * @deprecated
+     */
     createdDate?: string;
     frequency?: number;
     frequencyType?: string;
     id?: number;
     loanId?: number;
+    submittedOnDate?: string;
     threshold?: number;
 }
 export namespace WorkingCapitalLoanNearBreachActionData {

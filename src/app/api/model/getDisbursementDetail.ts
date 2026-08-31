@@ -42,7 +42,7 @@ export interface GetDisbursementDetail {
     id?: number;
     loanId?: number;
     /**
-     * Expected (planned) disbursement principal
+     * Expected (planned) disbursement principal. Tracks the active principal, so modifying a pending application or undoing an approval moves it too.
      */
     principal?: number;
 }

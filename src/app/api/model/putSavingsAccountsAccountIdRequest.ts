@@ -35,5 +35,6 @@ export interface PutSavingsAccountsAccountIdRequest {
     nominalAnnualInterestRate?: number;
     productId?: number;
     submittedOnDate?: string;
+    withdrawalFeeForTransfers?: boolean;
 }
 
