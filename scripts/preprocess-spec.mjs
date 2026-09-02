@@ -40,7 +40,9 @@
  * Usage: node scripts/preprocess-spec.mjs <inputSpec> <outputSpec>
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
@@ -121,13 +123,12 @@ function preprocess(spec) {
 }
 
 function main() {
-  const [, , input, output] = process.argv;
-  if (!input || !output) {
-    console.error('Usage: node scripts/preprocess-spec.mjs <inputSpec> <outputSpec>');
-    process.exit(1);
-  }
+  const input = process.argv[2] || process.env.FINERACT_SWAGGER_PATH || './public/api/fineract.json';
+  const output = process.argv[3] || 'api-spec/fineract.json';
+
   const spec = JSON.parse(readFileSync(input, 'utf8'));
   const { rewritten, descriptionsPatched } = preprocess(spec);
+  mkdirSync(dirname(output), { recursive: true });
   writeFileSync(output, JSON.stringify(spec, null, 2));
   console.log(
     `[preprocess-spec] ${input} -> ${output}: rewrote ${rewritten} operationIds, ` +
@@ -136,6 +137,6 @@ function main() {
 }
 
 // Only run when invoked directly (allows importing deterministicName from other scripts).
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main();
 }
