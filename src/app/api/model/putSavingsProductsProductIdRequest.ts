@@ -29,8 +29,39 @@
  * PutSavingsProductsProductIdRequest
  */
 export interface PutSavingsProductsProductIdRequest { 
+    accountingRule?: number;
+    allowOverdraft?: boolean;
+    currencyCode?: string;
     description?: string;
+    digitsAfterDecimal?: number;
+    enforceMinRequiredBalance?: boolean;
+    feesReceivableAccountId?: number;
+    inMultiplesOf?: number;
+    incomeFromFeeAccountId?: number;
+    incomeFromInterestId?: number;
+    incomeFromPenaltyAccountId?: number;
+    interestCalculationDaysInYearType?: number;
+    interestCalculationType?: number;
+    interestCompoundingPeriodType?: number;
+    interestOnSavingsAccountId?: number;
+    interestPayableAccountId?: number;
+    interestPostingPeriodType?: number;
     interestRate?: number;
+    interestReceivableAccountId?: number;
     locale?: string;
+    minRequiredOpeningBalance?: number;
+    name?: string;
+    nominalAnnualInterestRate?: number;
+    nominalAnnualInterestRateOverdraft?: number;
+    overdraftLimit?: number;
+    overdraftPortfolioControlId?: number;
+    penaltiesReceivableAccountId?: number;
+    savingsControlAccountId?: number;
+    savingsReferenceAccountId?: number;
+    shortName?: string;
+    transfersInSuspenseAccountId?: number;
+    withHoldTax?: boolean;
+    withdrawalFeeForTransfers?: boolean;
+    writeOffAccountId?: number;
 }
 

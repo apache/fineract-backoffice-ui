@@ -24,40 +24,21 @@
  */
 
 import { CurrencyData } from './currencyData';
+import { EnumOptionData } from './enumOptionData';
 
 
-/**
- * Working Capital Loan summary
- */
-export interface GetWorkingCapitalLoanSummary { 
+export interface DepositProductData { 
     currency?: CurrencyData;
-    fee?: number;
-    feeOutstanding?: number;
-    feePaid?: number;
-    overpayment?: number;
-    penalty?: number;
-    penaltyOutstanding?: number;
-    penaltyPaid?: number;
-    /**
-     * Total principal due: original principal plus principalAdjustment. Already inclusive of principalAdjustment — do not add the two together.
-     */
-    principal?: number;
-    /**
-     * Principal re-injected by an over-refunding credit balance refund. Already included in principal.
-     */
-    principalAdjustment?: number;
-    principalOutstanding?: number;
-    principalPaid?: number;
-    realizedIncomeFromDiscountFee?: number;
-    /**
-     * Total amount actually disbursed
-     */
-    totalDisbursement?: number;
-    totalDiscountFee?: number;
-    totalDiscountFeeAdjustment?: number;
-    totalExpectedRepayment?: number;
-    totalOutstanding?: number;
-    totalRepayment?: number;
-    unrealizedIncomeFromDiscountFee?: number;
+    id?: number;
+    interestCalculationDaysInYearType?: EnumOptionData;
+    interestCalculationType?: EnumOptionData;
+    interestCompoundingPeriodType?: EnumOptionData;
+    interestPostingPeriodType?: EnumOptionData;
+    lockinPeriodFrequency?: number;
+    lockinPeriodFrequencyType?: EnumOptionData;
+    minBalanceForInterestCalculation?: number;
+    name?: string;
+    nominalAnnualInterestRate?: number;
+    shortName?: string;
 }
 

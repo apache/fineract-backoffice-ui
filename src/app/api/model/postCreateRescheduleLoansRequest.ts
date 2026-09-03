@@ -39,6 +39,7 @@ export interface PostCreateRescheduleLoansRequest {
     loanId?: number;
     locale?: string;
     newInterestRate?: number;
+    recalculateInterest?: boolean;
     rescheduleFromDate?: string;
     rescheduleReasonComment?: string;
     rescheduleReasonId?: number;

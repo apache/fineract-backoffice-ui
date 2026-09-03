@@ -27,8 +27,8 @@
 
 export interface FloatingRatePeriodRequest { 
     dateFormat?: string;
-    fromDate?: string;
-    interestRate?: number;
+    fromDate: string;
+    interestRate: number;
     isDifferentialToBaseLendingRate?: boolean;
     locale?: string;
 }

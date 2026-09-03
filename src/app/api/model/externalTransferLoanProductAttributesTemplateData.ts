@@ -25,11 +25,11 @@
 
 
 
-/**
- * DeleteDataTablesDatatableAppTableIdResponse 
- */
-export interface DeleteDataTablesDatatableAppTableIdResponse { 
-    resourceId?: number;
-    transactionId?: string;
+export interface ExternalTransferLoanProductAttributesTemplateData { 
+    attributeId?: number;
+    attributeKey?: string;
+    attributeValues?: Array<string>;
+    loanProductId?: number;
+    multiValue?: boolean;
 }
 

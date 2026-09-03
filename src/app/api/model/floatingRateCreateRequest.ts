@@ -23,12 +23,13 @@
  * Do not edit the class manually.
  */
 
+import { FloatingRatePeriodRequest } from './floatingRatePeriodRequest';
 
 
-/**
- * PostFloatingRatesResponse
- */
-export interface PostFloatingRatesResponse { 
-    resourceId?: number;
+export interface FloatingRateCreateRequest { 
+    isActive?: boolean;
+    isBaseLendingRate?: boolean;
+    name: string;
+    ratePeriods?: Array<FloatingRatePeriodRequest>;
 }
 

@@ -34,5 +34,6 @@ export interface PutDataTablesAppTableIdDatatableIdResponse {
     loanId?: number;
     officeId?: number;
     resourceId?: number;
+    transactionId?: string;
 }
 

@@ -23,19 +23,11 @@
  * Do not edit the class manually.
  */
 
+import { DepositAccountData } from './depositAccountData';
 
 
-/**
- * GetFloatingRatesResponse
- */
-export interface GetFloatingRatesResponse { 
-    createdBy?: string;
-    createdOn?: string;
-    id?: number;
-    isActive?: boolean;
-    isBaseLendingRate?: boolean;
-    modifiedBy?: string;
-    modifiedOn?: string;
-    name?: string;
+export interface PageDepositAccountData { 
+    pageItems?: Array<DepositAccountData>;
+    totalFilteredRecords?: number;
 }
 
