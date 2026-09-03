@@ -77,7 +77,11 @@ describe('FloatingRateFormComponent', () => {
     component.periods.set([
       { fromDate: new Date(2026, 0, 1), interestRate: 9.5, isDifferentialToBaseLendingRate: false },
       { fromDate: new Date(2026, 1, 1), interestRate: 0, isDifferentialToBaseLendingRate: true },
-      { fromDate: new Date(2026, 2, 1), interestRate: null, isDifferentialToBaseLendingRate: false },
+      {
+        fromDate: new Date(2026, 2, 1),
+        interestRate: null,
+        isDifferentialToBaseLendingRate: false,
+      },
     ]);
 
     component.onSubmit();
@@ -100,7 +104,7 @@ describe('FloatingRateFormComponent', () => {
     component.isEditMode.set(true);
     component.rate.set({ name: 'Updated Rate', isBaseLendingRate: false, isActive: true });
     component.periods.set([
-      { fromDate: new Date(2026, 5, 1), interestRate: 12.0, isDifferentialToBaseLendingRate: false },
+      { fromDate: new Date(2026, 5, 1), interestRate: 12, isDifferentialToBaseLendingRate: false },
     ]);
 
     component.onSubmit();
@@ -110,6 +114,6 @@ describe('FloatingRateFormComponent', () => {
     expect(id).toBe(42);
     expect(arg.name).toBe('Updated Rate');
     expect(arg.ratePeriods?.length).toBe(1);
-    expect(arg.ratePeriods?.[0].interestRate).toBe(12.0);
+    expect(arg.ratePeriods?.[0].interestRate).toBe(12);
   });
 });
