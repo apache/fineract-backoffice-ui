@@ -31,7 +31,7 @@ import {
   ShareAccountService,
 } from '../../api';
 import { AuthService } from '../../core/services/auth.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -50,7 +50,7 @@ describe('ClientViewComponent', () => {
   let identifierServiceSpy: SpyObj<ClientIdentifierService>;
   let authServiceSpy: SpyObj<AuthService>;
   let shareAccountServiceSpy: SpyObj<ShareAccountService>;
-  let routerSpy: SpyObj<Router>;
+  let routerSpy: Router;
 
   beforeEach(async () => {
     clientServiceSpy = createSpyObj(['getClientsClientId', 'getClientsClientIdAccounts']);
@@ -77,7 +77,7 @@ describe('ClientViewComponent', () => {
         permissions: ['ALL_FUNCTIONS'],
       }),
     });
-    routerSpy = createSpyObj(['navigate']);
+    authServiceSpy.hasPermission.mockReturnValue(true);
 
     await TestBed.configureTestingModule({
       imports: [ClientViewComponent, TranslateModule.forRoot()],
@@ -92,7 +92,7 @@ describe('ClientViewComponent', () => {
         { provide: ClientIdentifierService, useValue: identifierServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ShareAccountService, useValue: shareAccountServiceSpy },
-        { provide: Router, useValue: routerSpy },
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {
@@ -129,6 +129,9 @@ describe('ClientViewComponent', () => {
     identifierServiceSpy.getClientsClientIdIdentifiers.mockReturnValue(of([]) as any);
     notesServiceSpy.getResourceTypeResourceIdNotes.mockReturnValue(of([]) as any);
 
+    routerSpy = TestBed.inject(Router);
+    vi.spyOn(routerSpy, 'navigate').mockResolvedValue(true);
+
     fixture = TestBed.createComponent(ClientViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -145,6 +148,53 @@ describe('ClientViewComponent', () => {
   });
 
   describe('empty account tabs', () => {
+    for (const { tab, testId, permission } of [
+      {
+        tab: CLIENT_TAB.savings,
+        testId: 'client-create-savings-account',
+        permission: 'CREATE_SAVINGSACCOUNT',
+      },
+      {
+        tab: CLIENT_TAB.loans,
+        testId: 'client-create-loan-account',
+        permission: 'CREATE_LOAN',
+      },
+    ]) {
+      it(`disables the ${tab} action without ${permission}`, () => {
+        authServiceSpy.hasPermission.mockReturnValue(false);
+        component.onTabChange(tab);
+        fixture.detectChanges();
+
+        const button = fixture.nativeElement.querySelector(`[data-testid="${CSS.escape(testId)}"]`);
+        expect(button).not.toBeNull();
+        expect(button.disabled).toBe(true);
+        expect(button.getAttribute('aria-disabled')).toBe('true');
+        expect(authServiceSpy.hasPermission).toHaveBeenCalledWith(permission, false);
+      });
+
+      it(`removes the ${tab} empty-state action when accounts arrive`, () => {
+        component.onTabChange(tab);
+        fixture.detectChanges();
+        expect(
+          fixture.nativeElement.querySelector(`[data-testid="${CSS.escape(testId)}"]`).disabled,
+        ).toBe(false);
+
+        clientServiceSpy.getClientsClientIdAccounts.mockReturnValue(
+          of({
+            savingsAccounts: [{ id: 2, accountNo: 'S002', depositType: { id: 100 } }],
+            loanAccounts: [{ id: 3, accountNo: 'L003' }],
+          }) as any,
+        );
+        component.loadClientAccounts();
+        fixture.detectChanges();
+
+        expect(
+          fixture.nativeElement.querySelector(`[data-testid="${CSS.escape(testId)}"]`),
+        ).toBeNull();
+        expect(fixture.nativeElement.querySelector('table')).not.toBeNull();
+      });
+    }
+
     it('offers a contextual action to create a savings account', () => {
       component.onTabChange(CLIENT_TAB.savings);
       fixture.detectChanges();
