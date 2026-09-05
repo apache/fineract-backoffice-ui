@@ -30,7 +30,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 
 /**
  * Lists interest pause periods (start/end date) for a specific loan and allows
- * creating a new pause or deleting an existing one. The loan id is taken from the route.
+ * creating, editing, or deleting them. The loan id is taken from the route.
  */
 @Component({
   selector: 'app-interest-pauses-list',
@@ -57,6 +57,15 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       (create)="onCreate()"
     >
       <ng-template appCellTemplate="actions" let-row>
+        <ion-button
+          fill="clear"
+          color="primary"
+          [attr.aria-label]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | translate"
+          (click)="onEdit(row)"
+        >
+          <ion-icon name="create-outline"></ion-icon>
+        </ion-button>
         <ion-button
           fill="clear"
           color="danger"
@@ -113,6 +122,12 @@ export class InterestPausesListComponent implements OnInit {
     }
   }
 
+  onEdit(row: InterestPauseResponseDto): void {
+    if (this.loanId && row.id) {
+      this.router.navigate(['/loans', this.loanId, 'interest-pauses', 'edit', row.id]);
+    }
+  }
+
   async onDelete(row: InterestPauseResponseDto): Promise<void> {
     if (!this.loanId || !row.id) return;
     const confirmed = await this.dialogService.confirm({
@@ -126,7 +141,8 @@ export class InterestPausesListComponent implements OnInit {
     if (!confirmed) return;
     this.pauseService.deleteLoansLoanIdInterestPausesVariationId(this.loanId, row.id).subscribe({
       next: () => this.load(),
-      error: (err: unknown) => console.error('Failed to delete interest pause', err),
+      // The global error interceptor displays Fineract's response to the user.
+      error: () => undefined,
     });
   }
 }

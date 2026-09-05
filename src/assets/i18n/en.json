@@ -1897,6 +1897,7 @@
   "INTEREST_PAUSES": {
     "TITLE": "Interest Pauses",
     "CREATE": "Add Interest Pause",
+    "EDIT": "Edit Interest Pause",
     "START_DATE": "Start Date",
     "END_DATE": "End Date",
     "CONFIRM_DELETE": "Delete the interest pause from {{startDate}} to {{endDate}}?"
