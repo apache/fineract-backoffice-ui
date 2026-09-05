@@ -104,6 +104,14 @@ test('empty account tabs offer the matching creation action', async ({ page }, t
   await page.getByRole('tab', { name: 'Loan Accounts', exact: true }).click({ force: true });
   const loanAction = page.getByTestId('client-create-loan-account');
   await expect(loanAction).toBeVisible();
+
+  const loanScreenshot = testInfo.outputPath('empty-loan-account-cta.png');
+  await page.screenshot({ path: loanScreenshot, fullPage: true });
+  await testInfo.attach('empty Loan Accounts CTA', {
+    path: loanScreenshot,
+    contentType: 'image/png',
+  });
+
   await loanAction.click();
   await expect(page).toHaveURL('/loans/create?clientId=2001');
 });
