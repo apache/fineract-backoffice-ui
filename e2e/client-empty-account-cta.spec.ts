@@ -47,6 +47,13 @@ async function signIn(page: Page): Promise<void> {
       }),
     });
   });
+  await page.route('**/api/v1/businessdate**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ type: 'BUSINESS_DATE', date: [2026, 9, 5] }]),
+    });
+  });
 
   await page.goto('/login');
   await page.locator('#tenantId').fill('default');
