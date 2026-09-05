@@ -333,6 +333,7 @@
     "REJECT_CLIENT": "Reject Client",
     "RELEASE_AMOUNT": "Release Held Amount",
     "SAVINGS_ACCOUNT": "Savings Account",
+    "CREATE_SAVINGS_ACCOUNT": "Create Savings Account",
     "UNASSIGNMENT_DATE": "Unassignment Date",
     "UNASSIGN_LOAN_OFFICER": "Unassign Loan Officer",
     "UNDO_APPROVAL": "Undo approval",

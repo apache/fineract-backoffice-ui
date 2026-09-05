@@ -673,6 +673,15 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                     <div class="empty-state">
                       <ion-icon name="wallet-outline"></ion-icon>
                       <p>{{ 'CLIENTS.NO_SAVINGS_ACCOUNTS' | translate }}</p>
+                      <ion-button
+                        color="primary"
+                        data-testid="client-create-savings-account"
+                        (click)="onCreateSavings()"
+                        appRequiresPermission="CREATE_SAVINGSACCOUNT"
+                      >
+                        <ion-icon slot="start" name="add-outline"></ion-icon>
+                        {{ 'ACTIONS.CREATE_SAVINGS_ACCOUNT' | translate }}
+                      </ion-button>
                     </div>
                   }
                 </ion-card-content>
@@ -784,6 +793,15 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                     <div class="empty-state">
                       <ion-icon name="card-outline"></ion-icon>
                       <p>{{ 'CLIENTS.NO_LOAN_ACCOUNTS' | translate }}</p>
+                      <ion-button
+                        color="primary"
+                        data-testid="client-create-loan-account"
+                        (click)="onCreateLoan()"
+                        appRequiresPermission="CREATE_LOAN"
+                      >
+                        <ion-icon slot="start" name="add-outline"></ion-icon>
+                        {{ 'LOANS.CREATE_LOAN' | translate }}
+                      </ion-button>
                     </div>
                   }
                 </ion-card-content>
@@ -1053,6 +1071,9 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
       .empty-state p {
         margin: 0;
         font-size: 16px;
+      }
+      .empty-state ion-button {
+        margin-top: 16px;
       }
       .clickable-link {
         color: #3f51b5;

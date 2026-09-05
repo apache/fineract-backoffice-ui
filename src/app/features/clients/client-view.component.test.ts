@@ -144,6 +144,30 @@ describe('ClientViewComponent', () => {
     expect(component.client()?.displayName).toBe('John Doe');
   });
 
+  describe('empty account tabs', () => {
+    it('offers a contextual action to create a savings account', () => {
+      component.onTabChange(CLIENT_TAB.savings);
+      fixture.detectChanges();
+
+      fixture.nativeElement.querySelector('[data-testid="client-create-savings-account"]').click();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/products/savings-accounts/create'], {
+        queryParams: { clientId: 123 },
+      });
+    });
+
+    it('offers a contextual action to create a loan', () => {
+      component.onTabChange(CLIENT_TAB.loans);
+      fixture.detectChanges();
+
+      fixture.nativeElement.querySelector('[data-testid="client-create-loan-account"]').click();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans/create'], {
+        queryParams: { clientId: 123 },
+      });
+    });
+  });
+
   describe('deposit accounts', () => {
     /**
      * The platform returns savings, fixed deposits and recurring deposits in one array, told
