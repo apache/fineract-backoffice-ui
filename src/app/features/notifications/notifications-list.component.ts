@@ -98,6 +98,12 @@ import {
 
             <tr cdk-header-row *cdkHeaderRowDef="displayedColumns"></tr>
             <tr cdk-row *cdkRowDef="let row; columns: displayedColumns"></tr>
+
+            <tr class="no-data-row" *cdkNoDataRow>
+              <td [attr.colspan]="displayedColumns.length">
+                {{ 'COMMON.NO_DATA' | translate }}
+              </td>
+            </tr>
           </table>
         }
       </ion-card-content>
@@ -123,6 +129,11 @@ import {
       }
       table {
         width: 100%;
+      }
+      .no-data-row td {
+        text-align: center;
+        color: var(--text-muted, #7f8c8d);
+        padding: 24px 0;
       }
     `,
   ],

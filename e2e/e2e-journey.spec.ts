@@ -315,7 +315,7 @@ test.describe('E2E: Dashboard', () => {
   });
 
   test('should have Guide button in header', async ({ page }) => {
-    await expect(page.getByRole('button', { name: 'Help Tour' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Guide' })).toBeVisible();
   });
 
   test('should have dark mode toggle button', async ({ page }) => {

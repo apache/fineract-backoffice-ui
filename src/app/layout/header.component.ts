@@ -264,7 +264,7 @@ type HeaderSearchResult =
         }
       </button>
 
-      <button class="tour-btn" (click)="startTour()" [attr.aria-label]="'Help Tour'">
+      <button class="tour-btn" (click)="startTour()" [attr.aria-label]="'Guide'">
         <ion-icon name="compass-outline"></ion-icon>
         Guide
       </button>

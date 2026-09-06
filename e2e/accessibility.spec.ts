@@ -49,7 +49,13 @@ const CLIENT_LIST_BASELINE = new Set([
   'role-img-alt|ion-icon[name="play-skip-forward-outline"]',
 ]);
 const CLIENT_FORM_BASELINE = new Set([
+  // Ionic renders `ion-select`'s inner trigger as a `button` and reflects `required` onto it as
+  // `aria-required`, which ARIA does not allow on that role. One defect, but its fingerprint moves
+  // with the host's state classes, because axe picks the shortest unique selector for the host:
+  // `.has-value` once a value is chosen, `.has-placeholder` while empty with a placeholder set,
+  // and the bare attribute selector when neither class applies.
   'aria-allowed-attr|.has-value >> #ion-sel-*',
+  'aria-allowed-attr|.has-placeholder >> #ion-sel-*',
   'aria-allowed-attr|ion-select[name="officeId"] >> #ion-sel-*',
   'role-img-alt|ion-icon[name="add-circle-outline"]',
   'role-img-alt|.help-icon[name="help-circle-outline"]',

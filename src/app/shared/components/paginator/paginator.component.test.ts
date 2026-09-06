@@ -78,6 +78,21 @@ describe('PaginatorComponent', () => {
 
       expect(rangeLabel()).toBe('11 - 20 of 20');
     });
+
+    // localLogic callers (e.g. Offices, backed by a plain-array Fineract endpoint) already hold
+    // the entire result set, so a length of 1, 11, 21... is an exact count, not Fineract's
+    // unknown-total sentinel.
+    it('never renders "of many" when the caller vouches the total is exact', () => {
+      setInputs({ length: 11, pageSize: 10, pageIndex: 0, exactTotal: true });
+
+      expect(rangeLabel()).toBe('1 - 10 of 11');
+    });
+
+    it('renders the exact total correctly even for a single record', () => {
+      setInputs({ length: 1, pageSize: 10, pageIndex: 0, exactTotal: true });
+
+      expect(rangeLabel()).toBe('1 - 1 of 1');
+    });
   });
 
   describe('navigation', () => {
