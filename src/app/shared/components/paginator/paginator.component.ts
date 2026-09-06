@@ -121,9 +121,12 @@ import { PageEvent } from '../../models/table.model';
       }
       @media (max-width: 768px) {
         .paginator {
-          grid-template-columns: auto minmax(0, 1fr) repeat(4, auto);
           display: grid;
+          grid-template-columns: max-content minmax(0, 1fr) repeat(4, auto);
           gap: 4px;
+        }
+        .items-per-page {
+          white-space: nowrap;
         }
         .page-size-select {
           min-width: 0;
