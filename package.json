@@ -95,7 +95,7 @@
     "@playwright/test": "^1.61.1",
     "@softarc/native-federation-orchestrator": "^4.5.2",
     "angular-eslint": "^22.0.0",
-    "eslint": "^9.39.4",
+    "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "^2.32.0",
