@@ -30,10 +30,20 @@ describe('GuidanceTourComponent', () => {
   let guidance: GuidanceService;
   let routerEvents: Subject<NavigationEnd>;
 
+  /**
+   * Built node by node rather than parsed from an HTML string: `ga:check` rejects raw HTML
+   * sinks anywhere under `src/`, and a test is not exempt from a rule about them.
+   */
+  function el(tag: string, className: string): HTMLElement {
+    const node = document.createElement(tag);
+    node.className = className;
+    return node;
+  }
+
   /** Stands in for the routed view, so a `'content'` step has a `main` to search. */
-  function mountContent(html: string): HTMLElement {
+  function mountContent(...children: HTMLElement[]): HTMLElement {
     const main = document.createElement('main');
-    main.innerHTML = html;
+    main.append(...children);
     document.body.append(main);
     return main;
   }
@@ -89,9 +99,9 @@ describe('GuidanceTourComponent', () => {
    */
   it('looks for a content step inside the routed view only', async () => {
     const shell = document.createElement('div');
-    shell.innerHTML = '<ul class="nav-list"><li>Clients</li></ul>';
+    shell.append(el('ul', 'nav-list'));
     document.body.prepend(shell);
-    const main = mountContent('<ul class="status-list"><li>API</li></ul>');
+    const main = mountContent(el('ul', 'status-list'));
 
     guidance.startTour('/dashboard');
     fixture.detectChanges();
@@ -105,7 +115,7 @@ describe('GuidanceTourComponent', () => {
   });
 
   it('moves the highlight off the previous target when the step changes', async () => {
-    const main = mountContent('<div class="status-list"></div><div class="tab-group"></div>');
+    const main = mountContent(el('div', 'status-list'), el('div', 'tab-group'));
 
     guidance.startTour('/dashboard');
     fixture.detectChanges();
@@ -121,7 +131,7 @@ describe('GuidanceTourComponent', () => {
   });
 
   it('leaves nothing highlighted once the tour ends', async () => {
-    const main = mountContent('<div class="status-list"></div>');
+    const main = mountContent(el('div', 'status-list'));
 
     guidance.startTour('/dashboard');
     fixture.detectChanges();
@@ -174,7 +184,7 @@ describe('GuidanceTourComponent', () => {
    * reached by navigating rather than by pressing the button.
    */
   it('ends when the user navigates away', async () => {
-    const main = mountContent('<div class="status-list"></div>');
+    const main = mountContent(el('div', 'status-list'));
     guidance.startTour('/dashboard');
     fixture.detectChanges();
     guidance.nextStep();
