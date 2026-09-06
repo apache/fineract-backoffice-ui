@@ -183,6 +183,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
       .login-page {
         display: flex;
         justify-content: center;
+        align-items: center;
         align-items: safe center;
         /* dvh: on a phone, 100vh is measured against the retracted URL bar, so the card
            ends up centred against a viewport taller than the screen. */
