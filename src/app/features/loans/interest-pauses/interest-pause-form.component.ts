@@ -48,6 +48,19 @@ import {
 } from '../../../core/utils/date-formatter';
 
 /**
+ * Parses a route segment that is meant to be a database id. Returns null for
+ * anything that cannot be one, which `+value` would otherwise turn into NaN or
+ * into a number the API cannot address.
+ */
+function toRouteId(value: string | null): number | null {
+  if (value === null || value.trim() === '') {
+    return null;
+  }
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+/**
  * Create or edit an interest pause period on a loan. Submits a start/end date pair formatted
  * with the Fineract date format and locale. The loan and variation ids come from the route.
  */
@@ -171,14 +184,24 @@ export class InterestPauseFormComponent implements OnInit {
   ngOnInit(): void {
     const loanId = this.route.snapshot.paramMap.get('loanId');
     const variationId = this.route.snapshot.paramMap.get('variationId');
-    if (loanId) {
-      this.loanId = +loanId;
+    this.loanId = toRouteId(loanId);
+    if (variationId === null) {
+      return;
     }
-    if (variationId) {
-      this.variationId = +variationId;
-      this.isEditMode.set(true);
-      this.loadPause();
+
+    // The route puts no constraint on the segment, so `edit/abc` used to give
+    // `+'abc'` -> NaN. NaN is falsy, so `loadPause` and the save branch both
+    // skipped it while `isEditMode` stayed true: the screen said Edit, the
+    // pickers were empty, and Save created a second pause. Send an id that
+    // cannot address a pause back to the list instead.
+    this.variationId = toRouteId(variationId);
+    if (this.variationId === null) {
+      this.onCancel();
+      return;
     }
+
+    this.isEditMode.set(true);
+    this.loadPause();
   }
 
   private loadPause(): void {

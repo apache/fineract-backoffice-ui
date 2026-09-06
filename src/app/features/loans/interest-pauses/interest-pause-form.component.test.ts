@@ -94,6 +94,18 @@ describe('InterestPauseFormComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans', 1, 'interest-pauses']);
   });
 
+  it.each(['abc', '0', '-1', '1.5', ' '])(
+    'should not enter edit mode for the unusable variation id %p',
+    async (variationId) => {
+      await setup({ loanId: '1', variationId });
+
+      expect(component.isEditMode()).toBe(false);
+      expect(component.variationId).toBeNull();
+      expect(serviceSpy.getLoansLoanIdInterestPauses).not.toHaveBeenCalled();
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans', 1, 'interest-pauses']);
+    },
+  );
+
   it('should load and pre-fill the selected pause in edit mode', async () => {
     await setup({ loanId: '1', variationId: '7' }, [
       { id: 6, startDate: '2026-03-10', endDate: '2026-03-20' },
