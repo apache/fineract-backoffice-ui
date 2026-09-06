@@ -71,7 +71,14 @@ async function deployBrandedInstitution(page: Page): Promise<void> {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ fineractApiUrl: '/api/v1', defaultTenant: TENANT, rbacEnabled: true }),
+      body: JSON.stringify({
+        fineractApiUrl: '/api/v1',
+        defaultTenant: TENANT,
+        rbacEnabled: true,
+        // This fixture always mounts an overlay, so the layer beneath it says so — which is what
+        // the container entrypoint does after finding the directory the deployer copied in.
+        brandingOverlayEnabled: true,
+      }),
     });
   });
   // Registered before the `en.json` handler on purpose: Playwright matches routes in reverse

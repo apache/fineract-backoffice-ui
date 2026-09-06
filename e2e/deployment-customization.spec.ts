@@ -53,7 +53,16 @@ async function mockBackend(page: Page, overlay: Overlay): Promise<void> {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ fineractApiUrl: '/api/v1', defaultTenant: TENANT, rbacEnabled: true }),
+      body: JSON.stringify({
+        fineractApiUrl: '/api/v1',
+        defaultTenant: TENANT,
+        rbacEnabled: true,
+        // The container entrypoint sets this by detecting the mounted directory, so a fixture
+        // serving an overlay has to declare it too — otherwise it models a deployment that
+        // shipped `branding/` and never told the application, which is not a state the
+        // entrypoint can produce. See AppConfig.brandingOverlayEnabled.
+        brandingOverlayEnabled: overlay !== null,
+      }),
     });
   });
   await page.route('**/branding/config.json*', async (route) => {
@@ -129,6 +138,24 @@ test.describe('with no overlay mounted', () => {
     expect(await token(page, 'primary-color')).toBe('#3498db');
     await expect(page.locator('.app-title')).toHaveText('Fineract Backoffice UI');
     await expect(sidebar(page).getByRole('link', { name: 'Clients', exact: true })).toBeVisible();
+  });
+
+  /**
+   * The fix for #487. The two overlay files are absent on every default install, and asking for
+   * them anyway put a 404 in the browser console on every route. The application can decline to
+   * *report* a 404 and does, but the browser writes it regardless — so the only thing that
+   * settles it is not making the request, and the only place that can be asserted is here.
+   */
+  test('does not ask for an overlay this deployment has not declared', async ({ page }) => {
+    const asked: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/branding/')) asked.push(request.url());
+    });
+
+    await deployWith(page, null);
+    await expect(page.locator('.app-title')).toBeVisible();
+
+    expect(asked).toEqual([]);
   });
 
   test('logs no federation parse error on load', async ({ page }) => {
