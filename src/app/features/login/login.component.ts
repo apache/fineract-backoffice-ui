@@ -187,6 +187,8 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
         /* dvh: on a phone, 100vh is measured against the retracted URL bar, so the card
            ends up centred against a viewport taller than the screen. */
         box-sizing: border-box;
+        height: 100svh;
+        min-height: 100svh;
         height: 100dvh;
         min-height: 100dvh;
         overflow-y: auto;
