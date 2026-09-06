@@ -33,6 +33,7 @@ import { join, relative } from 'node:path';
 
 const SRC = 'src';
 const REGISTRY = 'src/app/core/icons.ts';
+const NAVIGATION_CONFIG = 'src/app/core/services/navigation-config.service.ts';
 
 /** Static `name="foo-outline"` on an ion-icon. */
 const STATIC_ICON = /<ion-icon\b[^>]*?\bname="([a-z0-9-]+)"/g;
@@ -41,6 +42,9 @@ const BOUND_ICON = /<ion-icon\b[^>]*?\[name\]="([^"]*)"/g;
 const QUOTED = /'([a-z0-9-]+)'/g;
 /** Operands of a comparison are test values, not icon names: `direction === 'asc' ? ... : ...`. */
 const COMPARISON_OPERAND = /(?:===|!==|==|!=)\s*'[^']*'/g;
+/** Literal icon names and hoisted icon constants in the application navigation config. */
+const NAV_ICON = /\bicon:\s*'([a-z0-9-]+)'/g;
+const NAV_ICON_CONSTANT = /\bconst\s+ICON_[A-Z0-9_]+\s*=\s*'([a-z0-9-]+)'/g;
 
 function walk(dir) {
   const out = [];
@@ -79,6 +83,10 @@ for (const file of walk(SRC)) {
   for (const [, expression] of source.matchAll(BOUND_ICON)) {
     const branches = expression.replace(COMPARISON_OPERAND, '');
     for (const [, name] of branches.matchAll(QUOTED)) used.add(name);
+  }
+  if (file === NAVIGATION_CONFIG) {
+    for (const [, name] of source.matchAll(NAV_ICON)) used.add(name);
+    for (const [, name] of source.matchAll(NAV_ICON_CONSTANT)) used.add(name);
   }
 
   for (const name of used) {
