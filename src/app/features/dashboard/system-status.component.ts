@@ -499,6 +499,11 @@ import {
         background: rgba(46, 204, 113, 0.16);
         color: var(--success-color);
       }
+      @media (max-width: 768px) {
+        .dashboard-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
     `,
   ],
 })

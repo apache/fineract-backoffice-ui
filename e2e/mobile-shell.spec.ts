@@ -129,6 +129,16 @@ test.describe('the shell at a phone viewport', () => {
     expect(Math.abs(shell - viewport)).toBeLessThanOrEqual(1);
   });
 
+  test('stacks dashboard columns on a phone viewport', async ({ page }) => {
+    const layout = page.locator('.dashboard-layout');
+    await expect(layout).toBeVisible();
+
+    const columns = await layout.evaluate(
+      (element) => getComputedStyle(element).gridTemplateColumns,
+    );
+    expect(columns.trim().split(/\s+/)).toHaveLength(1);
+  });
+
   describe_drawer();
 
   test('renders tables as cards instead of a sideways scroll', async ({ page }) => {
