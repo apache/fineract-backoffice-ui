@@ -23,9 +23,12 @@ This guide provides instructions for setting up the Fineract Backoffice UI devel
 
 ## Prerequisites
 
-- **Node.js**: LTS version (v22.x or later).
-- **npm**: v10.x or later.
-- **Angular CLI**: v20.x or later.
+- **Node.js**: `>=22.22.3`.
+- **npm**: the package manager used by the committed lockfile.
+- **mkcert**: required only for the local HTTPS development server.
+
+The Angular CLI is a project dependency. Use the repository scripts instead of installing a global
+CLI, which can be a different major version.
 
 ## Installation
 
@@ -38,22 +41,16 @@ This guide provides instructions for setting up the Fineract Backoffice UI devel
 
 2.  **Install dependencies**:
     ```bash
-    npm install
+    npm ci
     ```
-
-## Local Helper Scripts
-
-For convenience, the following scripts are provided for local development (Linux/macOS):
-
-- **`./run-local.sh`**: One-step setup. Installs dependencies, generates local SSL certificates (using OpenSSL), and starts the server in HTTPS mode.
-- **`./cleanup-local.sh`**: Safely stops background Angular processes and removes temporary build/SSL artifacts.
 
 ---
 
 ## Development
 
 1.  **Secure Development (SSL)**:
-    Since Fineract sandboxes often require HTTPS, run the following to set up local trusted certificates (requires `mkcert`):
+    The development server is configured for HTTPS. Generate trusted local certificates once
+    (requires `mkcert`):
 
     ```bash
     ./scripts/setup-ssl.sh
@@ -68,7 +65,7 @@ For convenience, the following scripts are provided for local development (Linux
       ```bash
       npm run start:sandbox
       ```
-      Access the UI at `http://localhost:4200` (or `https://localhost:4200` if using SSL).
+      Access the UI at `https://localhost:4200`.
 
 3.  **Connecting to a Sandbox**:
     Update `src/environments/environment.ts` with your sandbox URL:
@@ -80,7 +77,7 @@ For convenience, the following scripts are provided for local development (Linux
 4.  **Run unit tests**:
 
     ```bash
-    npm run test
+    npm test -- --watch=false
     ```
 
 5.  **Run end-to-end tests**:
@@ -104,7 +101,6 @@ For convenience, the following scripts are provided for local development (Linux
 
 1.  **Build and start container**:
     ```bash
-    cd deploy
-    docker-compose up --build
+    docker compose -f deploy/docker-compose.yml up --build
     ```
     Access the UI at `http://localhost:8080`.
