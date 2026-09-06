@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { PostLoansLoanIdSchedulePeriod } from './postLoansLoanIdSchedulePeriod';
 import { PostLoanChanges } from './postLoanChanges';
 
 
@@ -32,5 +33,9 @@ import { PostLoanChanges } from './postLoanChanges';
 export interface PostLoansLoanIdScheduleResponse { 
     changes?: PostLoanChanges;
     loanId?: number;
+    /**
+     * Returned by the calculateLoanSchedule command: the schedule the variations produce
+     */
+    periods?: Array<PostLoansLoanIdSchedulePeriod>;
 }
 

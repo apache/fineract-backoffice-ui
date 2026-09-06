@@ -26,18 +26,13 @@
 
 
 /**
- * PostSavingsAccountsRequest
+ * Post dated check backing one repayment installment
  */
-export interface PostSavingsAccountsRequest { 
-    clientId?: number;
-    dateFormat?: string;
-    externalId?: string;
-    /**
-     * Mandatory for a group savings account, in place of clientId
-     */
-    groupId?: number;
-    locale?: string;
-    productId?: number;
-    submittedOnDate?: string;
+export interface PostLoansLoanIdPostDatedCheckData { 
+    accountNo?: number;
+    amount?: number;
+    checkNo?: number;
+    installmentId?: number;
+    name?: string;
 }
 

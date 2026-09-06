@@ -26,18 +26,17 @@
 
 
 /**
- * PostSavingsAccountsRequest
+ * A period of the schedule the calculateLoanSchedule command returns
  */
-export interface PostSavingsAccountsRequest { 
-    clientId?: number;
-    dateFormat?: string;
-    externalId?: string;
-    /**
-     * Mandatory for a group savings account, in place of clientId
-     */
-    groupId?: number;
-    locale?: string;
-    productId?: number;
-    submittedOnDate?: string;
+export interface PostLoansLoanIdSchedulePeriod { 
+    dueDate?: string;
+    fromDate?: string;
+    interestOriginalDue?: number;
+    period?: number;
+    principalDue?: number;
+    principalOriginalDue?: number;
+    totalDueForPeriod?: number;
+    totalOriginalDueForPeriod?: number;
+    totalOutstandingForPeriod?: number;
 }
 

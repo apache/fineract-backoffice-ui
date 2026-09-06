@@ -33,6 +33,8 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
+import { PostLoansLoanIdScheduleRequest } from '../model/postLoansLoanIdScheduleRequest';
+// @ts-ignore
 import { PostLoansLoanIdScheduleResponse } from '../model/postLoansLoanIdScheduleResponse';
 
 // @ts-ignore
@@ -56,21 +58,21 @@ export class LoanReschedulingService extends BaseService {
      * Calculate loan repayment schedule based on Loan term variations:  Mandatory Fields: exceptions,locale,dateFormat  Updates loan repayment schedule based on Loan term variations:  Mandatory Fields: exceptions,locale,dateFormat  Updates loan repayment schedule by removing Loan term variations:  It updates the loan repayment schedule by removing Loan term variations  Showing request/response for \&#39;Updates loan repayment schedule by removing Loan term variations\&#39;
      * @endpoint post /v1/loans/{loanId}/schedule
      * @param loanId loanId
-     * @param body 
+     * @param postLoansLoanIdScheduleRequest 
      * @param command command
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postLoansLoanIdSchedule(loanId: number, body: object, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostLoansLoanIdScheduleResponse>;
-    public postLoansLoanIdSchedule(loanId: number, body: object, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostLoansLoanIdScheduleResponse>>;
-    public postLoansLoanIdSchedule(loanId: number, body: object, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostLoansLoanIdScheduleResponse>>;
-    public postLoansLoanIdSchedule(loanId: number, body: object, command?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postLoansLoanIdSchedule(loanId: number, postLoansLoanIdScheduleRequest: PostLoansLoanIdScheduleRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostLoansLoanIdScheduleResponse>;
+    public postLoansLoanIdSchedule(loanId: number, postLoansLoanIdScheduleRequest: PostLoansLoanIdScheduleRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostLoansLoanIdScheduleResponse>>;
+    public postLoansLoanIdSchedule(loanId: number, postLoansLoanIdScheduleRequest: PostLoansLoanIdScheduleRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostLoansLoanIdScheduleResponse>>;
+    public postLoansLoanIdSchedule(loanId: number, postLoansLoanIdScheduleRequest: PostLoansLoanIdScheduleRequest, command?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (loanId === null || loanId === undefined) {
             throw new Error('Required parameter loanId was null or undefined when calling postLoansLoanIdSchedule.');
         }
-        if (body === null || body === undefined) {
-            throw new Error('Required parameter body was null or undefined when calling postLoansLoanIdSchedule.');
+        if (postLoansLoanIdScheduleRequest === null || postLoansLoanIdScheduleRequest === undefined) {
+            throw new Error('Required parameter postLoansLoanIdScheduleRequest was null or undefined when calling postLoansLoanIdSchedule.');
         }
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
@@ -129,7 +131,7 @@ export class LoanReschedulingService extends BaseService {
         return this.httpClient.request<PostLoansLoanIdScheduleResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: postLoansLoanIdScheduleRequest,
                 params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),

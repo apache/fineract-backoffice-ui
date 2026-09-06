@@ -32,6 +32,10 @@ import { PostLoansLoanIdStatus } from './postLoansLoanIdStatus';
 export interface PostLoansLoanIdChanges { 
     approvedOnDate?: string;
     dateFormat?: string;
+    /**
+     * Undo last disbursal only: the tranche amount that was rolled back
+     */
+    disbursedAmount?: number;
     locale?: string;
     note?: string;
     status?: PostLoansLoanIdStatus;

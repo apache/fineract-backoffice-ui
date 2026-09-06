@@ -197,9 +197,9 @@ export class RepaymentWithPostDatedChecksService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getLoansLoanIdPostdatedchecksInstallmentId(installmentId: number, loanId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<GetPostDatedChecks>>;
-    public getLoansLoanIdPostdatedchecksInstallmentId(installmentId: number, loanId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<GetPostDatedChecks>>>;
-    public getLoansLoanIdPostdatedchecksInstallmentId(installmentId: number, loanId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<GetPostDatedChecks>>>;
+    public getLoansLoanIdPostdatedchecksInstallmentId(installmentId: number, loanId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GetPostDatedChecks>;
+    public getLoansLoanIdPostdatedchecksInstallmentId(installmentId: number, loanId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GetPostDatedChecks>>;
+    public getLoansLoanIdPostdatedchecksInstallmentId(installmentId: number, loanId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GetPostDatedChecks>>;
     public getLoansLoanIdPostdatedchecksInstallmentId(installmentId: number, loanId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (installmentId === null || installmentId === undefined) {
             throw new Error('Required parameter installmentId was null or undefined when calling getLoansLoanIdPostdatedchecksInstallmentId.');
@@ -241,7 +241,7 @@ export class RepaymentWithPostDatedChecksService extends BaseService {
 
         let localVarPath = `/v1/loans/${this.configuration.encodeParam({name: "loanId", value: loanId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/postdatedchecks/${this.configuration.encodeParam({name: "installmentId", value: installmentId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int32"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<GetPostDatedChecks>>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<GetPostDatedChecks>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

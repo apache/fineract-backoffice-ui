@@ -26,18 +26,12 @@
 
 
 /**
- * PostSavingsAccountsRequest
+ * Installments whose due date, principal or instalment amount changes
  */
-export interface PostSavingsAccountsRequest { 
-    clientId?: number;
-    dateFormat?: string;
-    externalId?: string;
-    /**
-     * Mandatory for a group savings account, in place of clientId
-     */
-    groupId?: number;
-    locale?: string;
-    productId?: number;
-    submittedOnDate?: string;
+export interface PostLoansLoanIdScheduleModifiedInstallment { 
+    dueDate?: string;
+    installmentAmount?: number;
+    modifiedDueDate?: string;
+    principal?: number;
 }
 

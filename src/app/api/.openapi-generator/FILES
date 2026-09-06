@@ -709,6 +709,7 @@ model/getLoansLoanIdPaymentType.ts
 model/getLoansLoanIdRepaymentFrequencyType.ts
 model/getLoansLoanIdRepaymentPeriod.ts
 model/getLoansLoanIdRepaymentSchedule.ts
+model/getLoansLoanIdRepaymentScheduleInstallment.ts
 model/getLoansLoanIdResponse.ts
 model/getLoansLoanIdStatus.ts
 model/getLoansLoanIdSubStatus.ts
@@ -1242,8 +1243,15 @@ model/postLoansLoanIdCollateralsResponse.ts
 model/postLoansLoanIdDisbursementData.ts
 model/postLoansLoanIdGlimApprovalData.ts
 model/postLoansLoanIdOriginatorData.ts
+model/postLoansLoanIdPostDatedCheckData.ts
 model/postLoansLoanIdRequest.ts
 model/postLoansLoanIdResponse.ts
+model/postLoansLoanIdScheduleDeletedInstallment.ts
+model/postLoansLoanIdScheduleExceptions.ts
+model/postLoansLoanIdScheduleModifiedInstallment.ts
+model/postLoansLoanIdScheduleNewInstallment.ts
+model/postLoansLoanIdSchedulePeriod.ts
+model/postLoansLoanIdScheduleRequest.ts
 model/postLoansLoanIdScheduleResponse.ts
 model/postLoansLoanIdStatus.ts
 model/postLoansLoanIdTransactionsRequest.ts
@@ -1439,6 +1447,7 @@ model/putLoansLoanIdChargesChargeIdResponse.ts
 model/putLoansLoanIdCollateral.ts
 model/putLoansLoanIdCollateralsCollateralIdResponse.ts
 model/putLoansLoanIdDisbursementData.ts
+model/putLoansLoanIdDisbursementsDisbursementIdRequest.ts
 model/putLoansLoanIdRequest.ts
 model/putLoansLoanIdResponse.ts
 model/putOfficesOfficeIdRequest.ts

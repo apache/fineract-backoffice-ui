@@ -26,18 +26,20 @@
 
 
 /**
- * PostSavingsAccountsRequest
+ * PutLoansLoanIdDisbursementsDisbursementIdRequest
  */
-export interface PostSavingsAccountsRequest { 
-    clientId?: number;
+export interface PutLoansLoanIdDisbursementsDisbursementIdRequest { 
+    approvedLoanAmount?: number;
     dateFormat?: string;
-    externalId?: string;
-    /**
-     * Mandatory for a group savings account, in place of clientId
-     */
-    groupId?: number;
+    expectedDisbursementDate?: string;
     locale?: string;
-    productId?: number;
-    submittedOnDate?: string;
+    /**
+     * The new expected disbursement date of the tranche
+     */
+    updatedExpectedDisbursementDate?: string;
+    /**
+     * The new principal of the tranche
+     */
+    updatedPrincipal?: number;
 }
 

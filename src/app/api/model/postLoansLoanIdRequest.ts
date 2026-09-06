@@ -24,6 +24,7 @@
  */
 
 import { PostLoansLoanIdDisbursementData } from './postLoansLoanIdDisbursementData';
+import { PostLoansLoanIdPostDatedCheckData } from './postLoansLoanIdPostDatedCheckData';
 import { PostLoansLoanIdOriginatorData } from './postLoansLoanIdOriginatorData';
 import { PostLoansLoanIdGlimApprovalData } from './postLoansLoanIdGlimApprovalData';
 
@@ -62,6 +63,10 @@ export interface PostLoansLoanIdRequest {
      */
     originators?: Array<PostLoansLoanIdOriginatorData>;
     paymentTypeId?: number;
+    /**
+     * Disburse only: the post dated checks backing the repayment schedule
+     */
+    postDatedChecks?: Array<PostLoansLoanIdPostDatedCheckData>;
     rejectedOnDate?: string;
     toLoanOfficerId?: number;
     transactionAmount?: number;

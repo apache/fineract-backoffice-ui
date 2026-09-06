@@ -84,9 +84,9 @@ export interface GetLoansLoanIdResponse {
     disallowExpectedDisbursements?: boolean;
     disbursedAmountPercentageForDownPayment?: number;
     /**
-     * Set of GetLoansLoanIdDisbursementDetails
+     * List of GetLoansLoanIdDisbursementDetails
      */
-    disbursementDetails?: Set<GetLoansLoanIdDisbursementDetails>;
+    disbursementDetails?: Array<GetLoansLoanIdDisbursementDetails>;
     /**
      * List of GetLoansLoanIdLoanTermVariations
      */

@@ -24,6 +24,7 @@
  */
 
 import { GetLoanProductsChargeOffReasonOptions } from './getLoanProductsChargeOffReasonOptions';
+import { GetLoansLoanIdRepaymentScheduleInstallment } from './getLoansLoanIdRepaymentScheduleInstallment';
 import { GetLoanCurrency } from './getLoanCurrency';
 import { GetCodeValuesDataResponse } from './getCodeValuesDataResponse';
 import { GetPaymentTypeOptions } from './getPaymentTypeOptions';
@@ -43,6 +44,10 @@ export interface GetLoansLoanIdTransactionsTemplateResponse {
     date?: string;
     feeChargesPortion?: number;
     interestPortion?: number;
+    /**
+     * Disburse template only: the repayment schedule installments the disbursement will produce
+     */
+    loanRepaymentScheduleInstallments?: Array<GetLoansLoanIdRepaymentScheduleInstallment>;
     netDisbursalAmount?: number;
     nextInstallmentDueDate?: string;
     numberOfFutureInstallments?: number;

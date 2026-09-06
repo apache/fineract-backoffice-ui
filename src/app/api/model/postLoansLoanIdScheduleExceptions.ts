@@ -23,21 +23,26 @@
  * Do not edit the class manually.
  */
 
+import { PostLoansLoanIdScheduleModifiedInstallment } from './postLoansLoanIdScheduleModifiedInstallment';
+import { PostLoansLoanIdScheduleDeletedInstallment } from './postLoansLoanIdScheduleDeletedInstallment';
+import { PostLoansLoanIdScheduleNewInstallment } from './postLoansLoanIdScheduleNewInstallment';
 
 
 /**
- * PostSavingsAccountsRequest
+ * The installment changes to apply to the repayment schedule
  */
-export interface PostSavingsAccountsRequest { 
-    clientId?: number;
-    dateFormat?: string;
-    externalId?: string;
+export interface PostLoansLoanIdScheduleExceptions { 
     /**
-     * Mandatory for a group savings account, in place of clientId
+     * Installments removed from the schedule
      */
-    groupId?: number;
-    locale?: string;
-    productId?: number;
-    submittedOnDate?: string;
+    deletedinstallments?: Array<PostLoansLoanIdScheduleDeletedInstallment>;
+    /**
+     * Installments whose due date, principal or instalment amount changes
+     */
+    modifiedinstallments?: Array<PostLoansLoanIdScheduleModifiedInstallment>;
+    /**
+     * Installments added to the schedule
+     */
+    newinstallments?: Array<PostLoansLoanIdScheduleNewInstallment>;
 }
 

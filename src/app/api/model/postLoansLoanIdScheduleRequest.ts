@@ -23,21 +23,15 @@
  * Do not edit the class manually.
  */
 
+import { PostLoansLoanIdScheduleExceptions } from './postLoansLoanIdScheduleExceptions';
 
 
 /**
- * PostSavingsAccountsRequest
+ * PostLoansLoanIdScheduleRequest
  */
-export interface PostSavingsAccountsRequest { 
-    clientId?: number;
+export interface PostLoansLoanIdScheduleRequest { 
     dateFormat?: string;
-    externalId?: string;
-    /**
-     * Mandatory for a group savings account, in place of clientId
-     */
-    groupId?: number;
+    exceptions?: PostLoansLoanIdScheduleExceptions;
     locale?: string;
-    productId?: number;
-    submittedOnDate?: string;
 }
 
