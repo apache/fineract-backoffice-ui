@@ -23,13 +23,11 @@
  * Do not edit the class manually.
  */
 
+import { GroupGeneralData } from './groupGeneralData';
 
 
-/**
- * DeleteDataTablesDatatableAppTableIdResponse 
- */
-export interface DeleteDataTablesDatatableAppTableIdResponse { 
-    resourceId?: number;
-    transactionId?: string;
+export interface PageGroupGeneralData { 
+    pageItems?: Array<GroupGeneralData>;
+    totalFilteredRecords?: number;
 }
 

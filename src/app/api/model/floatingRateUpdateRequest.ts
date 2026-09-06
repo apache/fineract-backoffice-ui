@@ -23,13 +23,13 @@
  * Do not edit the class manually.
  */
 
+import { FloatingRatePeriodRequest } from './floatingRatePeriodRequest';
 
 
-/**
- * DeleteDataTablesDatatableAppTableIdResponse 
- */
-export interface DeleteDataTablesDatatableAppTableIdResponse { 
-    resourceId?: number;
-    transactionId?: string;
+export interface FloatingRateUpdateRequest { 
+    isActive?: boolean;
+    isBaseLendingRate?: boolean;
+    name?: string;
+    ratePeriods?: Array<FloatingRatePeriodRequest>;
 }
 

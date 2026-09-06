@@ -38,18 +38,33 @@ export interface PostSavingsProductsRequest {
     description?: string;
     digitsAfterDecimal?: number;
     enforceMinRequiredBalance?: boolean;
+    feesReceivableAccountId?: number;
     inMultiplesOf?: number;
+    incomeFromFeeAccountId?: number;
+    incomeFromInterestId?: number;
+    incomeFromPenaltyAccountId?: number;
     interestCalculationDaysInYearType?: number;
     interestCalculationType?: number;
     interestCompoundingPeriodType?: number;
+    interestOnSavingsAccountId?: number;
+    interestPayableAccountId?: number;
     interestPostingPeriodType?: number;
+    interestReceivableAccountId?: number;
     isDormancyTrackingActive?: boolean;
     locale?: string;
     minRequiredOpeningBalance?: number;
     name?: string;
     nominalAnnualInterestRate?: number;
+    nominalAnnualInterestRateOverdraft?: number;
+    overdraftLimit?: number;
+    overdraftPortfolioControlId?: number;
+    penaltiesReceivableAccountId?: number;
+    savingsControlAccountId?: number;
+    savingsReferenceAccountId?: number;
     shortName?: string;
+    transfersInSuspenseAccountId?: number;
     withHoldTax?: boolean;
     withdrawalFeeForTransfers?: boolean;
+    writeOffAccountId?: number;
 }
 

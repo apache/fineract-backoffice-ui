@@ -9,6 +9,7 @@ api/accountingRules.service.ts
 api/adhocQueryApi.service.ts
 api/api.ts
 api/audits.service.ts
+api/auditsV2.service.ts
 api/authenticationHTTPBasic.service.ts
 api/batchAPI.service.ts
 api/bulkImport.service.ts
@@ -18,6 +19,7 @@ api/businessStepConfiguration.service.ts
 api/cache.service.ts
 api/calendar.service.ts
 api/centers.service.ts
+api/centersV2.service.ts
 api/charges.service.ts
 api/client.service.ts
 api/clientCharges.service.ts
@@ -49,6 +51,7 @@ api/fetchAuthenticatedUserDetails.service.ts
 api/fineractEntity.service.ts
 api/fixedDepositAccount.service.ts
 api/fixedDepositAccountTransactions.service.ts
+api/fixedDepositAccountsV2.service.ts
 api/fixedDepositProduct.service.ts
 api/floatingRates.service.ts
 api/funds.service.ts
@@ -56,6 +59,7 @@ api/generalLedgerAccount.service.ts
 api/globalConfiguration.service.ts
 api/groups.service.ts
 api/groupsLevel.service.ts
+api/groupsV2.service.ts
 api/guarantors.service.ts
 api/holidays.service.ts
 api/hooks.service.ts
@@ -105,6 +109,7 @@ api/provisioningEntries.service.ts
 api/rate.service.ts
 api/recurringDepositAccount.service.ts
 api/recurringDepositAccountTransactions.service.ts
+api/recurringDepositAccountsV2.service.ts
 api/recurringDepositProduct.service.ts
 api/repaymentWithPostDatedChecks.service.ts
 api/reportMailingJobs.service.ts
@@ -309,7 +314,9 @@ model/delinquencyRange.ts
 model/delinquencyRangeData.ts
 model/delinquencyRangeRequest.ts
 model/delinquencyRangeResponse.ts
+model/depositAccountData.ts
 model/depositAccountOnHoldTransactionData.ts
+model/depositProductData.ts
 model/disbursementDetail.ts
 model/disbursementTransactionsRequest.ts
 model/documentCreateResponse.ts
@@ -338,17 +345,21 @@ model/externalTransferData.ts
 model/externalTransferDataDetails.ts
 model/externalTransferLoanData.ts
 model/externalTransferLoanProductAttributesData.ts
+model/externalTransferLoanProductAttributesTemplateData.ts
 model/externalTransferOwnerData.ts
 model/fieldConfigurationData.ts
 model/filterData.ts
 model/financialActivityAccountData.ts
 model/financialActivityData.ts
 model/floatingRate.ts
+model/floatingRateCreateRequest.ts
+model/floatingRateCreateResponse.ts
 model/floatingRateData.ts
 model/floatingRatePeriod.ts
 model/floatingRatePeriodData.ts
 model/floatingRatePeriodRequest.ts
-model/floatingRateRequest.ts
+model/floatingRateUpdateRequest.ts
+model/floatingRateUpdateResponse.ts
 model/forgotPasswordRequest.ts
 model/formDataBodyPart.ts
 model/formDataContentDisposition.ts
@@ -547,7 +558,6 @@ model/getFixedDepositProductsProductIdPeriodType.ts
 model/getFixedDepositProductsProductIdPreClosurePenalInterestOnType.ts
 model/getFixedDepositProductsProductIdResponse.ts
 model/getFixedDepositProductsResponse.ts
-model/getFloatingRatesResponse.ts
 model/getFromAccountStandingInstructionSwagger.ts
 model/getFromAccountTypeOptionsResponseStandingInstructionSwagger.ts
 model/getFromAccountTypeResponseStandingInstructionSwagger.ts
@@ -1093,11 +1103,15 @@ model/noteUpdateResponse.ts
 model/office.ts
 model/officeData.ts
 model/oldestCOBProcessedLoanDTO.ts
+model/pageAuditData.ts
 model/pageCashierTransactionData.ts
+model/pageCenterData.ts
 model/pageClientSearchData.ts
+model/pageDepositAccountData.ts
 model/pageExternalTransferData.ts
 model/pageExternalTransferLoanProductAttributesData.ts
 model/pageGetEntityDatatableChecksResponse.ts
+model/pageGroupGeneralData.ts
 model/pageJournalEntryData.ts
 model/pageLoanProductProvisioningEntryData.ts
 model/pageProvisioningEntryData.ts
@@ -1188,8 +1202,6 @@ model/postFixedDepositProductsChartSlabs.ts
 model/postFixedDepositProductsCharts.ts
 model/postFixedDepositProductsRequest.ts
 model/postFixedDepositProductsResponse.ts
-model/postFloatingRatesRatePeriods.ts
-model/postFloatingRatesResponse.ts
 model/postFundsResponse.ts
 model/postGLAccountsRequest.ts
 model/postGLAccountsResponse.ts
@@ -1392,8 +1404,6 @@ model/putFixedDepositAccountsChanges.ts
 model/putFixedDepositProductsChanges.ts
 model/putFixedDepositProductsProductIdRequest.ts
 model/putFixedDepositProductsProductIdResponse.ts
-model/putFloatingRatesChanges.ts
-model/putFloatingRatesFloatingRateIdResponse.ts
 model/putFundsFundIdRequest.ts
 model/putFundsFundIdResponse.ts
 model/putGLAccountsRequest.ts

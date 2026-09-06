@@ -21,7 +21,11 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { FloatingRatesService, FloatingRateRequest } from '../../../api';
+import {
+  FloatingRatesService,
+  FloatingRateCreateRequest,
+  FloatingRateUpdateRequest,
+} from '../../../api';
 import {
   IonButton,
   IonCard,
@@ -231,7 +235,7 @@ export class FloatingRateFormComponent implements OnInit {
   readonly isEditMode = signal(false);
   readonly isSaving = signal(false);
 
-  readonly rate = signal<FloatingRateRequest>({
+  readonly rate = signal<{ name: string; isBaseLendingRate?: boolean; isActive?: boolean }>({
     name: '',
     isBaseLendingRate: false,
     isActive: true,
@@ -253,7 +257,7 @@ export class FloatingRateFormComponent implements OnInit {
     if (!this.rateId) return;
     this.floatingRatesService.getFloatingratesFloatingRateId(this.rateId).subscribe((data) => {
       this.rate.set({
-        name: data.name,
+        name: data.name ?? '',
         isBaseLendingRate: data.isBaseLendingRate,
         isActive: data.isActive,
       });
@@ -287,28 +291,39 @@ export class FloatingRateFormComponent implements OnInit {
 
   onSubmit(): void {
     this.isSaving.set(true);
-    const payload: FloatingRateRequest = {
-      name: this.rate().name,
-      isBaseLendingRate: this.rate().isBaseLendingRate,
-      isActive: this.rate().isActive,
-      ratePeriods: this.periods().map((p) => ({
+    const ratePeriods = this.periods()
+      .filter((p) => typeof p.interestRate === 'number')
+      .map((p) => ({
         fromDate: formatDateToFineract(p.fromDate),
-        interestRate: p.interestRate ?? undefined,
+        interestRate: p.interestRate!,
         isDifferentialToBaseLendingRate: p.isDifferentialToBaseLendingRate,
         dateFormat: FINERACT_DATE_FORMAT,
         locale: FINERACT_LOCALE,
-      })),
-    };
+      }));
 
-    const request$ =
-      this.isEditMode() && this.rateId
-        ? this.floatingRatesService.putFloatingratesFloatingRateId(this.rateId, payload)
-        : this.floatingRatesService.postFloatingrates(payload);
-
-    request$.subscribe({
-      next: () => this.router.navigate([this.LIST_PATH]),
-      error: () => this.isSaving.set(false),
-    });
+    if (this.isEditMode() && this.rateId) {
+      const payload: FloatingRateUpdateRequest = {
+        name: this.rate().name,
+        isBaseLendingRate: this.rate().isBaseLendingRate,
+        isActive: this.rate().isActive,
+        ratePeriods,
+      };
+      this.floatingRatesService.putFloatingratesFloatingRateId(this.rateId, payload).subscribe({
+        next: () => this.router.navigate([this.LIST_PATH]),
+        error: () => this.isSaving.set(false),
+      });
+    } else {
+      const payload: FloatingRateCreateRequest = {
+        name: this.rate().name,
+        isBaseLendingRate: this.rate().isBaseLendingRate,
+        isActive: this.rate().isActive,
+        ratePeriods,
+      };
+      this.floatingRatesService.postFloatingrates(payload).subscribe({
+        next: () => this.router.navigate([this.LIST_PATH]),
+        error: () => this.isSaving.set(false),
+      });
+    }
   }
 
   onCancel(): void {

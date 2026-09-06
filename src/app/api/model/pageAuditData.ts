@@ -23,12 +23,11 @@
  * Do not edit the class manually.
  */
 
+import { AuditData } from './auditData';
 
 
-export interface PostFloatingRatesRatePeriods { 
-    dateFormat?: string;
-    fromDate?: string;
-    interestRate?: number;
-    locale?: string;
+export interface PageAuditData { 
+    pageItems?: Array<AuditData>;
+    totalFilteredRecords?: number;
 }
 

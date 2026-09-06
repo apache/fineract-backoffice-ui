@@ -26,6 +26,10 @@
 
 
 export interface WorkingCapitalLoanPeriodPaymentRateChangeData { 
+    /**
+     * Audit/system timestamp. Prefer submittedOnDate for the booking business/tenant date.
+     * @deprecated
+     */
     createdDate?: string;
     effectiveDate?: string;
     id?: number;
@@ -34,5 +38,6 @@ export interface WorkingCapitalLoanPeriodPaymentRateChangeData {
     previousRate?: number;
     reversed?: boolean;
     reversedOnDate?: string;
+    submittedOnDate?: string;
 }
 

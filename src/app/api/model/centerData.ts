@@ -31,6 +31,7 @@ export interface CenterData {
     accountNo?: string;
     collectionMeetingCalendar?: CalendarData;
     datatables?: Array<DatatableData>;
+    externalId?: string;
     hierarchy?: string;
     id?: number;
     name?: string;

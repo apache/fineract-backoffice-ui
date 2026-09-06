@@ -28,6 +28,7 @@ import { GetGroupsStatus } from './getGroupsStatus';
 
 export interface GetGroupsPageItems { 
     active?: boolean;
+    externalId?: string;
     hierarchy?: string;
     id?: number;
     name?: string;

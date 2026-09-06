@@ -33,6 +33,8 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
+import { CommandProcessingResult } from '../model/commandProcessingResult';
+// @ts-ignore
 import { PagedLocalRequestAdvancedQueryRequest } from '../model/pagedLocalRequestAdvancedQueryRequest';
 // @ts-ignore
 import { PostSavingsAccountBulkReversalTransactionsRequest } from '../model/postSavingsAccountBulkReversalTransactionsRequest';
@@ -40,6 +42,8 @@ import { PostSavingsAccountBulkReversalTransactionsRequest } from '../model/post
 import { PostSavingsAccountTransactionsRequest } from '../model/postSavingsAccountTransactionsRequest';
 // @ts-ignore
 import { PostSavingsAccountTransactionsResponse } from '../model/postSavingsAccountTransactionsResponse';
+// @ts-ignore
+import { SavingsAccountTransactionData } from '../model/savingsAccountTransactionData';
 // @ts-ignore
 import { SavingsAccountTransactionsSearchResponse } from '../model/savingsAccountTransactionsSearchResponse';
 
@@ -68,9 +72,9 @@ export class SavingsAccountTransactionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<SavingsAccountTransactionData>;
+    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<SavingsAccountTransactionData>>;
+    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<SavingsAccountTransactionData>>;
     public getSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (savingsExternalId === null || savingsExternalId === undefined) {
             throw new Error('Required parameter savingsExternalId was null or undefined when calling getSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId.');
@@ -112,7 +116,7 @@ export class SavingsAccountTransactionsService extends BaseService {
 
         let localVarPath = `/v1/savingsaccounts/external-id/${this.configuration.encodeParam({name: "savingsExternalId", value: savingsExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/transactions/external-id/${this.configuration.encodeParam({name: "transactionExternalId", value: transactionExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<SavingsAccountTransactionData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -411,9 +415,9 @@ export class SavingsAccountTransactionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<SavingsAccountTransactionData>;
+    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<SavingsAccountTransactionData>>;
+    public getSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<SavingsAccountTransactionData>>;
     public getSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (savingsExternalId === null || savingsExternalId === undefined) {
             throw new Error('Required parameter savingsExternalId was null or undefined when calling getSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId.');
@@ -455,7 +459,7 @@ export class SavingsAccountTransactionsService extends BaseService {
 
         let localVarPath = `/v1/savingsaccounts/external-id/${this.configuration.encodeParam({name: "savingsExternalId", value: savingsExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/transactions/${this.configuration.encodeParam({name: "transactionId", value: transactionId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<SavingsAccountTransactionData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -477,9 +481,9 @@ export class SavingsAccountTransactionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<SavingsAccountTransactionData>;
+    public getSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<SavingsAccountTransactionData>>;
+    public getSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<SavingsAccountTransactionData>>;
     public getSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (savingsId === null || savingsId === undefined) {
             throw new Error('Required parameter savingsId was null or undefined when calling getSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId.');
@@ -521,7 +525,7 @@ export class SavingsAccountTransactionsService extends BaseService {
 
         let localVarPath = `/v1/savingsaccounts/${this.configuration.encodeParam({name: "savingsId", value: savingsId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/transactions/external-id/${this.configuration.encodeParam({name: "transactionExternalId", value: transactionExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<SavingsAccountTransactionData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -820,9 +824,9 @@ export class SavingsAccountTransactionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<SavingsAccountTransactionData>;
+    public getSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<SavingsAccountTransactionData>>;
+    public getSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<SavingsAccountTransactionData>>;
     public getSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (savingsId === null || savingsId === undefined) {
             throw new Error('Required parameter savingsId was null or undefined when calling getSavingsaccountsSavingsIdTransactionsTransactionId.');
@@ -864,7 +868,7 @@ export class SavingsAccountTransactionsService extends BaseService {
 
         let localVarPath = `/v1/savingsaccounts/${this.configuration.encodeParam({name: "savingsId", value: savingsId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/transactions/${this.configuration.encodeParam({name: "transactionId", value: transactionId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<SavingsAccountTransactionData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -978,9 +982,9 @@ export class SavingsAccountTransactionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PostSavingsAccountBulkReversalTransactionsRequest>>;
-    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PostSavingsAccountBulkReversalTransactionsRequest>>>;
-    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PostSavingsAccountBulkReversalTransactionsRequest>>>;
+    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
     public postSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId(savingsExternalId: string, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (savingsExternalId === null || savingsExternalId === undefined) {
             throw new Error('Required parameter savingsExternalId was null or undefined when calling postSavingsaccountsExternalIdSavingsExternalIdTransactionsExternalIdTransactionExternalId.');
@@ -1045,7 +1049,7 @@ export class SavingsAccountTransactionsService extends BaseService {
 
         let localVarPath = `/v1/savingsaccounts/external-id/${this.configuration.encodeParam({name: "savingsExternalId", value: savingsExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/transactions/external-id/${this.configuration.encodeParam({name: "transactionExternalId", value: transactionExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<PostSavingsAccountBulkReversalTransactionsRequest>>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: postSavingsAccountBulkReversalTransactionsRequest,
@@ -1145,9 +1149,9 @@ export class SavingsAccountTransactionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PostSavingsAccountBulkReversalTransactionsRequest>>;
-    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PostSavingsAccountBulkReversalTransactionsRequest>>>;
-    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PostSavingsAccountBulkReversalTransactionsRequest>>>;
+    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
     public postSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId(savingsExternalId: string, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (savingsExternalId === null || savingsExternalId === undefined) {
             throw new Error('Required parameter savingsExternalId was null or undefined when calling postSavingsaccountsExternalIdSavingsExternalIdTransactionsTransactionId.');
@@ -1212,7 +1216,7 @@ export class SavingsAccountTransactionsService extends BaseService {
 
         let localVarPath = `/v1/savingsaccounts/external-id/${this.configuration.encodeParam({name: "savingsExternalId", value: savingsExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/transactions/${this.configuration.encodeParam({name: "transactionId", value: transactionId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<PostSavingsAccountBulkReversalTransactionsRequest>>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: postSavingsAccountBulkReversalTransactionsRequest,
@@ -1328,9 +1332,9 @@ export class SavingsAccountTransactionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PostSavingsAccountBulkReversalTransactionsRequest>>;
-    public postSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PostSavingsAccountBulkReversalTransactionsRequest>>>;
-    public postSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PostSavingsAccountBulkReversalTransactionsRequest>>>;
+    public postSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
     public postSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId(savingsId: number, transactionExternalId: string, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (savingsId === null || savingsId === undefined) {
             throw new Error('Required parameter savingsId was null or undefined when calling postSavingsaccountsSavingsIdTransactionsExternalIdTransactionExternalId.');
@@ -1395,7 +1399,7 @@ export class SavingsAccountTransactionsService extends BaseService {
 
         let localVarPath = `/v1/savingsaccounts/${this.configuration.encodeParam({name: "savingsId", value: savingsId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/transactions/external-id/${this.configuration.encodeParam({name: "transactionExternalId", value: transactionExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<PostSavingsAccountBulkReversalTransactionsRequest>>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: postSavingsAccountBulkReversalTransactionsRequest,
@@ -1495,9 +1499,9 @@ export class SavingsAccountTransactionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PostSavingsAccountBulkReversalTransactionsRequest>>;
-    public postSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PostSavingsAccountBulkReversalTransactionsRequest>>>;
-    public postSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PostSavingsAccountBulkReversalTransactionsRequest>>>;
+    public postSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
     public postSavingsaccountsSavingsIdTransactionsTransactionId(savingsId: number, transactionId: number, postSavingsAccountBulkReversalTransactionsRequest: PostSavingsAccountBulkReversalTransactionsRequest, command?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (savingsId === null || savingsId === undefined) {
             throw new Error('Required parameter savingsId was null or undefined when calling postSavingsaccountsSavingsIdTransactionsTransactionId.');
@@ -1562,7 +1566,7 @@ export class SavingsAccountTransactionsService extends BaseService {
 
         let localVarPath = `/v1/savingsaccounts/${this.configuration.encodeParam({name: "savingsId", value: savingsId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/transactions/${this.configuration.encodeParam({name: "transactionId", value: transactionId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<PostSavingsAccountBulkReversalTransactionsRequest>>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: postSavingsAccountBulkReversalTransactionsRequest,

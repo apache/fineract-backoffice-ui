@@ -34,7 +34,9 @@ export interface PostSavingsAccountTransactionsRequest {
     isPostInterestAsOn?: boolean;
     lienAllowed?: string;
     locale?: string;
+    note?: string;
     paymentTypeId?: number;
+    postInterestManualOrAutomatic?: boolean;
     reasonForBlock?: string;
     transactionAmount?: number;
     transactionDate?: string;

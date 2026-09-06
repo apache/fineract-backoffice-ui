@@ -41,11 +41,17 @@ export interface GetBalance {
     penalty?: number;
     penaltyOutstanding?: number;
     penaltyPaid?: number;
+    /**
+     * Total repayable principal: the disbursed amount plus the discount fee. Zero until disbursement, and zero again once a disbursal is undone.
+     */
     principal?: number;
     principalAdjustment?: number;
     principalOutstanding?: number;
     principalPaid?: number;
     realizedIncomeFromDiscountFee?: number;
+    /**
+     * Total amount actually disbursed
+     */
     totalDisbursement?: number;
     totalDiscountFee?: number;
     totalDiscountFeeAdjustment?: number;

@@ -56,6 +56,22 @@ export interface WorkingCapitalCollection {
      */
     installmentLevelDelinquency?: Array<WorkingCapitalCollectionRangeScheduleDelinquency>;
     /**
+     * Amount of the last payment made on the loan
+     */
+    lastPaymentAmount?: number;
+    /**
+     * Date the loan was last paid by any repayment like transaction (repayment, goodwill credit, payout refund or charge adjustment)
+     */
+    lastPaymentDate?: string;
+    /**
+     * Amount of the last repayment made on the loan
+     */
+    lastRepaymentAmount?: number;
+    /**
+     * Date the loan was last repaid by a repayment transaction
+     */
+    lastRepaymentDate?: string;
+    /**
      * Days the oldest unmet minimum-payment period is past due (measured from its toDate); 0 when not past due
      */
     pastDueDays?: number;

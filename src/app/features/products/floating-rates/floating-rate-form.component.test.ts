@@ -69,21 +69,51 @@ describe('FloatingRateFormComponent', () => {
     expect(component.periods()).toHaveLength(1);
   });
 
-  it('should post a floating rate with mapped rate periods', () => {
+  it('should post a floating rate with mapped rate periods in create mode, filtering null interest rates but keeping 0', () => {
     serviceSpy.postFloatingrates.mockReturnValue(
       of({}) as unknown as ReturnType<FloatingRatesService['postFloatingrates']>,
     );
     component.rate.set({ name: 'BLR', isBaseLendingRate: true, isActive: true });
     component.periods.set([
       { fromDate: new Date(2026, 0, 1), interestRate: 9.5, isDifferentialToBaseLendingRate: false },
+      { fromDate: new Date(2026, 1, 1), interestRate: 0, isDifferentialToBaseLendingRate: true },
+      {
+        fromDate: new Date(2026, 2, 1),
+        interestRate: null,
+        isDifferentialToBaseLendingRate: false,
+      },
     ]);
 
     component.onSubmit();
 
+    expect(serviceSpy.postFloatingrates).toHaveBeenCalledTimes(1);
     const arg = serviceSpy.postFloatingrates.mock.lastCall![0];
     expect(arg.name).toBe('BLR');
-    expect(arg.ratePeriods?.length).toBe(1);
+    expect(arg.isBaseLendingRate).toBe(true);
+    expect(arg.isActive).toBe(true);
+    expect(arg.ratePeriods?.length).toBe(2);
     expect(arg.ratePeriods?.[0].interestRate).toBe(9.5);
-    expect(arg.ratePeriods?.[0].fromDate).toBeTruthy();
+    expect(arg.ratePeriods?.[1].interestRate).toBe(0);
+  });
+
+  it('should put a floating rate in edit mode with FloatingRateUpdateRequest payload', () => {
+    serviceSpy.putFloatingratesFloatingRateId.mockReturnValue(
+      of({}) as unknown as ReturnType<FloatingRatesService['putFloatingratesFloatingRateId']>,
+    );
+    component.rateId = 42;
+    component.isEditMode.set(true);
+    component.rate.set({ name: 'Updated Rate', isBaseLendingRate: false, isActive: true });
+    component.periods.set([
+      { fromDate: new Date(2026, 5, 1), interestRate: 12, isDifferentialToBaseLendingRate: false },
+    ]);
+
+    component.onSubmit();
+
+    expect(serviceSpy.putFloatingratesFloatingRateId).toHaveBeenCalledTimes(1);
+    const [id, arg] = serviceSpy.putFloatingratesFloatingRateId.mock.lastCall!;
+    expect(id).toBe(42);
+    expect(arg.name).toBe('Updated Rate');
+    expect(arg.ratePeriods?.length).toBe(1);
+    expect(arg.ratePeriods?.[0].interestRate).toBe(12);
   });
 });

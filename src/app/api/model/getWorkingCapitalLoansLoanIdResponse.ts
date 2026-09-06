@@ -52,6 +52,9 @@ export interface GetWorkingCapitalLoansLoanIdResponse {
      * Approved discount fee set during loan approval
      */
     approvedDiscountFee?: number;
+    /**
+     * Principal granted at approval; zero before approval and after undoing it (deliberate Working Capital divergence from classic loans)
+     */
     approvedPrincipal?: number;
     balance?: GetBalance;
     breach?: GetWorkingCapitalLoanBreach;
@@ -155,7 +158,7 @@ export interface GetWorkingCapitalLoansLoanIdResponse {
      */
     periodPaymentAmount?: number;
     /**
-     * Active principal (loanProductRelatedDetails.principal)
+     * Active principal: the requested amount while the application is pending, the granted amount from approval, the actually disbursed amount from disbursement. Undoing approval or disbursal restores the previous stage\'s value. This is the contractual principal, not the outstanding balance - see summary.principalOutstanding for that.
      */
     principal?: number;
     product?: GetWorkingCapitalLoanProductsResponse;
@@ -163,6 +166,9 @@ export interface GetWorkingCapitalLoansLoanIdResponse {
      * Proposed discount fee at loan submission time
      */
     proposedDiscountFee?: number;
+    /**
+     * Principal requested at submission; never changes afterwards
+     */
     proposedPrincipal?: number;
     repaymentEvery?: number;
     repaymentFrequencyType?: StringEnumOptionData;

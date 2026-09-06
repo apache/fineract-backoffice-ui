@@ -23,14 +23,11 @@
  * Do not edit the class manually.
  */
 
-import { PutFloatingRatesChanges } from './putFloatingRatesChanges';
+import { CenterData } from './centerData';
 
 
-/**
- * PutFloatingRatesFloatingRateIdResponse
- */
-export interface PutFloatingRatesFloatingRateIdResponse { 
-    changes?: PutFloatingRatesChanges;
-    resourceId?: number;
+export interface PageCenterData { 
+    pageItems?: Array<CenterData>;
+    totalFilteredRecords?: number;
 }
 
