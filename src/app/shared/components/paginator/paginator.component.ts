@@ -119,6 +119,24 @@ import { PageEvent } from '../../models/table.model';
         --padding-end: 6px;
         margin: 0;
       }
+      @media (max-width: 768px) {
+        .paginator {
+          grid-template-columns: auto minmax(0, 1fr) repeat(4, auto);
+          display: grid;
+          gap: 4px;
+        }
+        .page-size-select {
+          min-width: 0;
+        }
+        .range-label {
+          grid-column: 1 / 3;
+          grid-row: 2;
+          margin: 0;
+        }
+        ion-button {
+          grid-row: 2;
+        }
+      }
     `,
   ],
 })
