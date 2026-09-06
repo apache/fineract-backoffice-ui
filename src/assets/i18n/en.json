@@ -491,6 +491,8 @@
     "PRINCIPAL": "Principal",
     "SUBMITTED_ON": "Submitted On",
     "EXPECTED_DISBURSEMENT": "Expected Disbursement",
+    "EXPECTED_DISBURSEMENT_REQUIRED": "Pick the tranche's expected disbursement date.",
+    "DISBURSEMENT_SAVED": "Disbursement updated.",
     "TERM_FREQUENCY": "Term Frequency",
     "TERM_TYPE": "Term Type",
     "REPAYMENTS_COUNT": "Number of Repayments",

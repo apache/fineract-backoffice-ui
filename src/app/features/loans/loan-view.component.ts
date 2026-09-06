@@ -30,6 +30,7 @@ import { DialogService } from '../../core/services/dialog.service';
 import {
   FINERACT_DATE_FORMAT,
   FINERACT_LOCALE,
+  formatArrayDate,
   formatDateToFineract,
 } from '../../core/utils/date-formatter';
 import { RequiresPermissionDirective } from '../../shared';
@@ -119,6 +120,35 @@ export const LOAN_TAB = {
 } as const;
 
 export type LoanTab = (typeof LOAN_TAB)[keyof typeof LOAN_TAB];
+
+/**
+ * Normalises whatever the disbursement-detail endpoint answers with into the `YYYY-MM-DD` an
+ * `<ion-input type="date">` binds to.
+ *
+ * The generated model types `expectedDisbursementDate` as a `string` because that is what the
+ * OpenAPI document declares, but the platform actually sends a `[year, month, day]` array.
+ * Both shapes are handled rather than trusting either one.
+ */
+export function toEditableDate(value: unknown): string {
+  if (Array.isArray(value)) {
+    const iso = formatArrayDate(value);
+    return iso === '-' ? '' : iso;
+  }
+  return typeof value === 'string' ? value.split('T', 1)[0] : '';
+}
+
+/**
+ * Converts a `YYYY-MM-DD` form value into the `dd MMMM yyyy` Fineract is told to parse.
+ *
+ * The parts are split by hand rather than handed to `new Date(iso)`, which reads a bare
+ * `YYYY-MM-DD` as UTC midnight while `formatDateToFineract` reads the day back in local time —
+ * a combination that moves the date a day earlier for every user west of Greenwich.
+ */
+export function isoToFineractDate(iso: string): string {
+  const [year, month, day] = (iso ?? '').split('-').map(Number);
+  if (!year || !month || !day) return '';
+  return formatDateToFineract([year, month, day]);
+}
 
 @Component({
   selector: 'app-loan-view',
@@ -1270,8 +1300,15 @@ export type LoanTab = (typeof LOAN_TAB)[keyof typeof LOAN_TAB];
                       <ion-label position="stacked">{{
                         'LOANS.EXPECTED_DISBURSEMENT' | translate
                       }}</ion-label>
+                      <!--
+                        A plain text box here rendered the raw year/month/day array the platform
+                        answers with, and let a user type anything at all into a field the
+                        command then parses strictly.
+                      -->
                       <ion-input
                         [attr.aria-label]="'LOANS.EXPECTED_DISBURSEMENT' | translate"
+                        type="date"
+                        data-testid="disbursement-expected-date"
                         [(ngModel)]="disbursementEditForm.expectedDisbursementDate"
                       ></ion-input>
                     </ion-item>
@@ -1282,14 +1319,8 @@ export type LoanTab = (typeof LOAN_TAB)[keyof typeof LOAN_TAB];
                       <ion-input
                         [attr.aria-label]="'LOANS.PRINCIPAL_AMOUNT' | translate"
                         type="number"
+                        data-testid="disbursement-principal"
                         [(ngModel)]="disbursementEditForm.principal"
-                      ></ion-input>
-                    </ion-item>
-                    <ion-item fill="outline">
-                      <ion-label position="stacked">{{ 'COMMON.NOTE' | translate }}</ion-label>
-                      <ion-input
-                        [attr.aria-label]="'COMMON.NOTE' | translate"
-                        [(ngModel)]="disbursementEditForm.note"
                       ></ion-input>
                     </ion-item>
                     <div>
@@ -1602,8 +1633,15 @@ export class LoanViewComponent implements OnInit {
   disbursementEditForm = {
     expectedDisbursementDate: '',
     principal: 0,
-    note: '',
   };
+  /**
+   * The tranche's date as it stands on the server, kept apart from the edited value.
+   *
+   * `updateDisbursementDate` wants both: `expectedDisbursementDate` identifies the tranche being
+   * moved and `updatedExpectedDisbursementDate` carries where it moves to. Editing one field in
+   * place would leave nothing to send for the other.
+   */
+  private originalDisbursementDate = '';
 
   // Collateral Management
   readonly collateralDetail = signal<LoanCollateralResponseData | null>(null);
@@ -1885,10 +1923,9 @@ export class LoanViewComponent implements OnInit {
             parsed = data as GetLoansLoanIdDisbursementDetails;
           }
           this.disbursementDetail.set(parsed);
-          this.disbursementEditForm.expectedDisbursementDate =
-            parsed?.expectedDisbursementDate ?? '';
+          this.originalDisbursementDate = toEditableDate(parsed?.expectedDisbursementDate);
+          this.disbursementEditForm.expectedDisbursementDate = this.originalDisbursementDate;
           this.disbursementEditForm.principal = parsed?.principal ?? 0;
-          this.disbursementEditForm.note = parsed?.note ?? '';
         },
         error: (err) => {
           // The global errorInterceptor already surfaces the backend's error
@@ -1900,19 +1937,38 @@ export class LoanViewComponent implements OnInit {
       });
   }
 
+  /**
+   * Moves a tranche of a multi-disbursal loan, or changes the principal it carries.
+   *
+   * The platform's `updateDisbursementDate` command takes the tranche's current date as
+   * `expectedDisbursementDate` and the edit as `updatedExpectedDisbursementDate` and
+   * `updatedPrincipal`; all three are mandatory, as are `dateFormat` and `locale`. It refuses
+   * anything outside that set outright, so the `note` this form used to collect took the whole
+   * request down with `error.msg.parameter.unsupported` — the reason the field is gone.
+   */
   saveDisbursementDetail() {
     if (!this.editDisbId) return;
+
+    const updatedDate = isoToFineractDate(this.disbursementEditForm.expectedDisbursementDate);
+    if (!updatedDate) {
+      this.notifications.error(this.translate.instant('LOANS.EXPECTED_DISBURSEMENT_REQUIRED'));
+      return;
+    }
+
     this.disbursementDetailsService
-      .putLoansLoanIdDisbursementsDisbursementId(
-        this.loanId(),
-        this.editDisbId,
-        JSON.stringify(this.disbursementEditForm),
-      )
+      .putLoansLoanIdDisbursementsDisbursementId(this.loanId(), this.editDisbId, {
+        expectedDisbursementDate: isoToFineractDate(this.originalDisbursementDate) || updatedDate,
+        updatedExpectedDisbursementDate: updatedDate,
+        updatedPrincipal: Number(this.disbursementEditForm.principal) || 0,
+        dateFormat: FINERACT_DATE_FORMAT,
+        locale: FINERACT_LOCALE,
+      })
       .subscribe({
         next: () => {
-          this.notifications.success('Disbursement saved successfully.');
+          this.notifications.success(this.translate.instant('LOANS.DISBURSEMENT_SAVED'));
           this.loadDisbursementDetail();
         },
+        // The global errorInterceptor already raises the platform's own message.
         error: (err) => console.error('Failed to save disbursement detail', err),
       });
   }
