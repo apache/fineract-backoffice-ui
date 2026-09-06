@@ -138,6 +138,22 @@ export interface AppConfig {
    * matrix; supply it to change what a type means for this deployment.
    */
   institutionFeatures?: Record<InstitutionType, InstitutionFeature[]>;
+  /**
+   * Whether this deployment ships a `branding/` overlay at all.
+   *
+   * The overlay is absent on every default install, so probing for it made a fresh deployment
+   * report two 404s on every page load — one for `branding/config.json` and one for the
+   * language catalogue. A 404 is a network-level event: the application can decline to *report*
+   * it, and does, but it cannot stop the browser writing it to the console. The only way for a
+   * supported configuration to stop looking like a misconfiguration is not to make the request.
+   *
+   * The container entrypoint sets this by looking for the directory, so a deployment following
+   * `DOCS/CUSTOMIZATION.md` gets it without doing anything. A deployment serving `dist/` from
+   * its own web server sets it in `config.json` alongside `fineractApiUrl`.
+   *
+   * Off by default, which is what an install with no overlay wants.
+   */
+  brandingOverlayEnabled?: boolean;
   /** Deployment-specific navigation adjustments. */
   nav?: NavOverrides;
   /** Deployment-specific appearance. See {@link BrandingConfig}. */
@@ -233,6 +249,7 @@ const DEFAULT_CONFIG: AppConfig = {
   rbacEnabled: true,
   institutionType: 'universal',
   developerToolsEnabled: false,
+  brandingOverlayEnabled: false,
 };
 
 /**
@@ -303,6 +320,15 @@ export class ConfigService {
    */
   readonly developerToolsEnabled = computed(() => this._config().developerToolsEnabled === true);
 
+  /**
+   * Whether this deployment ships a `branding/` overlay. See
+   * {@link AppConfig.brandingOverlayEnabled}.
+   *
+   * Read by the translation loader as well as by {@link loadConfig}: both probe the same
+   * directory, and both are silent on a default install because of this flag.
+   */
+  readonly brandingOverlayEnabled = computed(() => this._config().brandingOverlayEnabled === true);
+
   /** Navigation entries this deployment hides, as a set of `labelKey`s. */
   readonly hiddenNavKeys = computed(() => new Set(this._config().nav?.hidden));
 
@@ -315,9 +341,14 @@ export class ConfigService {
    */
   async loadConfig(): Promise<void> {
     const base = await this.fetchLayer(CONFIG_URL, { required: true });
-    // The overlay is expected to be absent on most deployments, so a 404 is a normal outcome and
-    // not worth a console error. See DEPLOYMENT_OVERLAY_URL for why it is a second file at all.
-    const overlay = await this.fetchLayer(DEPLOYMENT_OVERLAY_URL, { required: false });
+    // Only asked for when the deployment says it has one. Probing unconditionally meant a 404
+    // in the console of every default install, which no amount of handling on this side can
+    // suppress — see {@link AppConfig.brandingOverlayEnabled}. The flag has to come from the
+    // layer below, since a file cannot announce its own absence.
+    const overlay =
+      (base.brandingOverlayEnabled ?? DEFAULT_CONFIG.brandingOverlayEnabled)
+        ? await this.fetchLayer(DEPLOYMENT_OVERLAY_URL, { required: false })
+        : {};
 
     // Merged, not assigned: a config.json listing only the keys a deployment cares about must not
     // blank out the rest, and an overlay naming one key must not discard the layer beneath it.

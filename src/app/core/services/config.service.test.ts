@@ -96,12 +96,15 @@ describe('ConfigService', () => {
    * Runs a full load cycle: `body` as config.json, `overlay` as the deployment's own layer.
    *
    * The overlay defaults to absent, which is what almost every deployment serves and therefore
-   * the case most of these tests are about.
+   * the case most of these tests are about. Passing one implies `brandingOverlayEnabled`, since
+   * the base layer is what decides whether the overlay is fetched at all — a deployment that
+   * ships `branding/` without the flag is covered by its own case below.
    */
   async function load(body: Partial<AppConfig>, overlay?: Partial<AppConfig>): Promise<void> {
+    const base = overlay ? { brandingOverlayEnabled: true, ...body } : body;
     const loading = service.loadConfig();
-    await flushNext(isBaseConfig, body);
-    await (overlay ? flushNext(isOverlay, overlay) : flushNext(isOverlay, null, NOT_FOUND));
+    await flushNext(isBaseConfig, base);
+    if (overlay) await flushNext(isOverlay, overlay);
     await loading;
   }
 
@@ -138,7 +141,6 @@ describe('ConfigService', () => {
   it('should fall back to defaults when config.json cannot be read', async () => {
     const loading = service.loadConfig();
     await flushNext(isBaseConfig, null, NOT_FOUND);
-    await flushNext(isOverlay, null, NOT_FOUND);
     await loading;
 
     // Bootstrap must not depend on either file being present.
@@ -161,11 +163,57 @@ describe('ConfigService', () => {
   });
 
   it('should keep the base layer when the overlay is absent', async () => {
-    // The state every existing deployment is in: a 404 means "said nothing", not "reset".
+    // The state every existing deployment is in: nothing is asked for, and nothing is reset.
     await load({ fineractApiUrl: '/api/v1', defaultTenant: TEST_TENANT, rbacEnabled: false });
 
     expect(service.config().defaultTenant).toBe(TEST_TENANT);
     expect(service.rbacEnabled()).toBe(false);
+  });
+
+  /**
+   * The overlay is absent on every default install, so probing for it reported a 404 in the
+   * browser console on every load. The application can decline to *report* a 404 and does, but
+   * the browser writes it regardless — the only fix is not to make the request. See #487.
+   */
+  describe('the branding overlay probe', () => {
+    it('is not issued when the deployment has not declared an overlay', async () => {
+      const loading = service.loadConfig();
+      await flushNext(isBaseConfig, { fineractApiUrl: '/api/v1' });
+      await loading;
+
+      // `httpMock.verify()` in afterEach would fail on an outstanding request, but this says
+      // what is being asserted rather than relying on a teardown to imply it.
+      expect(httpMock.match(isOverlay).length).toBe(0);
+    });
+
+    it('is not issued when the deployment declares it off', async () => {
+      const loading = service.loadConfig();
+      await flushNext(isBaseConfig, { fineractApiUrl: '/api/v1', brandingOverlayEnabled: false });
+      await loading;
+
+      expect(httpMock.match(isOverlay).length).toBe(0);
+    });
+
+    it('is issued once the deployment declares an overlay', async () => {
+      await load(
+        { fineractApiUrl: '/api/v1', brandingOverlayEnabled: true },
+        { branding: { appName: 'Any Community Bank' } },
+      );
+
+      expect(service.config().branding?.appName).toBe('Any Community Bank');
+      expect(service.brandingOverlayEnabled()).toBe(true);
+    });
+
+    it('still tolerates a declared overlay that is not actually there', async () => {
+      // A misdeployed overlay is a real error the deployer wants to see, and it is now
+      // distinguishable from the ordinary "no overlay" case — which is the point of the flag.
+      const loading = service.loadConfig();
+      await flushNext(isBaseConfig, { defaultTenant: TEST_TENANT, brandingOverlayEnabled: true });
+      await flushNext(isOverlay, null, NOT_FOUND);
+      await loading;
+
+      expect(service.config().defaultTenant).toBe(TEST_TENANT);
+    });
   });
 
   it('should not raise a toast or a progress bar while bootstrapping', async () => {
@@ -177,7 +225,6 @@ describe('ConfigService', () => {
     expect(base.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     base.flush(mockConfig);
 
-    await flushNext(isOverlay, null, NOT_FOUND);
     await loading;
   });
 

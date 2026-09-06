@@ -3,5 +3,6 @@
   "defaultTenant": "default",
   "rbacEnabled": true,
   "institutionType": "universal",
-  "developerToolsEnabled": false
+  "developerToolsEnabled": false,
+  "brandingOverlayEnabled": false
 }
