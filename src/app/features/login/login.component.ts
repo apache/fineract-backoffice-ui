@@ -184,9 +184,15 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
         display: flex;
         justify-content: center;
         align-items: center;
+        align-items: safe center;
         /* dvh: on a phone, 100vh is measured against the retracted URL bar, so the card
            ends up centred against a viewport taller than the screen. */
+        box-sizing: border-box;
+        height: 100svh;
+        min-height: 100svh;
+        height: 100dvh;
         min-height: 100dvh;
+        overflow-y: auto;
         background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
         padding: 1rem;
       }
