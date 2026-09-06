@@ -42,6 +42,7 @@ const TWO_FACTOR_SPECS = ['two-factor-backend.spec.ts'];
 const MOBILE_SPECS = ['mobile-shell.spec.ts'];
 
 const BACKEND_SPECS = [
+  'batch-api-operations.spec.ts',
   'center-servicing.spec.ts',
   'parity-screens.spec.ts',
   'rbac-backend-restricted-user.spec.ts',

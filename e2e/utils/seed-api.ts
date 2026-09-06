@@ -219,6 +219,38 @@ export async function seedCollateralProduct(api: APIRequestContext): Promise<num
   return resourceId;
 }
 
+export interface SeededCharge {
+  chargeId: number;
+  name: string;
+}
+
+/**
+ * A flat, specified-due-date loan charge. `chargeAppliesTo: 1` is LOAN — not CLIENT, despite what
+ * a stale comment on the accounting charge form's default suggests; see
+ * `ChargeAppliesTo.java`/`ChargeTimeType.java`/`ChargeCalculationType.java` in the Fineract
+ * backend for the enum this mirrors.
+ */
+export async function seedLoanCharge(
+  api: APIRequestContext,
+  namePrefix = 'E2ESeed',
+  amount = 25,
+): Promise<SeededCharge> {
+  const name = `${namePrefix} Charge ${seedSuffix()}`;
+  const { resourceId } = await post<{ resourceId: number }>(api, '/charges', {
+    name,
+    amount,
+    currencyCode: 'USD',
+    chargeAppliesTo: 1, // LOAN
+    chargeTimeType: 2, // SPECIFIED_DUE_DATE
+    chargeCalculationType: 1, // FLAT
+    chargePaymentMode: 0, // REGULAR
+    penalty: false,
+    active: true,
+    locale: LOCALE,
+  });
+  return { chargeId: resourceId, name };
+}
+
 export interface SeededOffice {
   officeId: number;
   officeName: string;
