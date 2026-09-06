@@ -103,45 +103,54 @@ System admins handle security, audit, and infrastructure. The UI supports:
 
 ## Prerequisites
 
-- **Node.js** (v22 or later recommended) and **npm** or **yarn**
-- **Angular CLI** (`npm i -g @angular/cli`)
-- **Apache Fineract** instance (e.g. via Docker: `docker run -d -p 8443:8443 apache/fineract:latest`)
-- Access to Fineract REST API (default demo: `mifos` / `password` on `https://localhost:8443/fineract-provider/api/v1`)
+- **Node.js** `>=22.22.3` and npm. The repository includes the Angular CLI, so a global install is not needed.
+- For local HTTPS development, [`mkcert`](https://github.com/FiloSottile/mkcert) to generate the ignored
+  `ssl/localhost.*` files once.
+- A Fineract instance for manual work or real-backend E2E tests. Mocked unit and Playwright tests do
+  not need one.
 
 ---
 
 ## Getting Started
 
-### Development
+### Quick start
 
 ```bash
-# Install dependencies
-npm install
+# Install exactly what the lockfile specifies
+npm ci
 
-# Configure API base URL (e.g. in environment files)
-# Default: https://localhost:8443/fineract-provider/api/v1
+# Generate local-only HTTPS certificates (first run)
+./scripts/setup-ssl.sh
 
 # Run development server
 npm start
 ```
 
-Access the app at `http://localhost:4200` (or the configured port).
+The app is available at `https://localhost:4200`. The development proxy keeps API traffic same-origin;
+see [Project Setup Guide](SETUP.md) to connect a local Fineract instance or a sandbox.
 
-### Testing & Quality
+### Validate a change
 
 ```bash
 # Run unit tests (Vitest)
 npm test -- --watch=false
 
-# Run end-to-end tests (Playwright)
-npm run test:e2e
+# Run the fast, mocked browser tests (no Fineract backend required)
+npm run test:e2e -- --project=mocked
 
 # Run linting
 npm run lint
 
-# Format code
-npm run format
+# Check formatting without modifying files
+npm run format:check
+
+# Production build
+npm run build
 ```
+
+For real-backend E2E, a local Docker stack, and focused Playwright runs, see
+[E2E testing](DOCS/E2E_TESTING.md). The complete PR check list and commands for reproducing failures
+are in [CI checks](DOCS/CI_CHECKS.md).
 
 ### Configuration
 
@@ -223,6 +232,11 @@ For more information on contributing, setting up the project, and our coding sta
 - [Contributing Guide](CONTRIBUTING.md)
 - [Project Setup Guide](SETUP.md)
 - [Code Style Guide](STYLE.md)
+- [Agent guidance](AGENTS.md)
+- [CI checks](DOCS/CI_CHECKS.md)
+- [E2E testing](DOCS/E2E_TESTING.md)
+- [Architecture decisions](DOCS/adr/)
+- [Security model](security.md)
 - [Fonts](DOCS/FONTS.md)
 - [Lint and dependency-licence policy](DOCS/LINT_POLICY.md)
 - [Releasing](RELEASING.md)
