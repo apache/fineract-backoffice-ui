@@ -17,11 +17,12 @@
  * under the License.
  */
 
-import { inject } from '@angular/core';
+import { Injector, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateLoader, type TranslationObject } from '@ngx-translate/core';
 import { Observable, forkJoin, map, of, catchError } from 'rxjs';
 import { skipErrorToast, skipLoading } from '../../http/http-context';
+import { ConfigService } from '../../services/config.service';
 
 const SHIPPED_PREFIX = 'assets/i18n/';
 
@@ -58,7 +59,11 @@ function deepMerge(
  * loses — which it did. Returning one already-merged catalogue removes the race rather than
  * timing around it, and means no component has to re-render to pick the overlay up.
  *
- * A missing overlay is the normal case and resolves to `{}`.
+ * The overlay is only *requested* when the deployment says it ships one — the container
+ * entrypoint sets `brandingOverlayEnabled` by looking for the directory. Probing regardless put
+ * a 404 in the console of every default install, and a 404 is a network-level event this side
+ * can decline to report but cannot suppress. A missing overlay still resolves to `{}`, so a
+ * deployment that sets the flag and then ships an incomplete `branding/i18n/` is unaffected.
  *
  * Lives inside the adapter boundary because it is a ngx-translate implementation detail: the
  * `TranslateLoader` contract is the library's, and ADR-0003 keeps that surface here rather than
@@ -66,18 +71,30 @@ function deepMerge(
  */
 export class DeploymentTranslateLoader extends TranslateLoader {
   private readonly http = inject(HttpClient);
+  /**
+   * `ConfigService` is resolved on use, not on construction, because injecting it as a field
+   * closes a cycle: `ConfigService` needs `HttpClient`, whose `errorInterceptor` needs `I18N`,
+   * which needs this loader — Angular reports the loop as NG0200 during bootstrap and the app
+   * renders nothing at all. Reading it inside `getTranslation` breaks the loop, and costs
+   * nothing: the first call happens after the initializer has already built the service.
+   */
+  private readonly injector = inject(Injector);
 
   override getTranslation(lang: string): Observable<TranslationObject> {
     const shipped = this.http.get<TranslationObject>(`${SHIPPED_PREFIX}${lang}.json`, {
       context: skipLoading(skipErrorToast()),
     });
 
-    const overlay = this.http
-      .get<TranslationObject>(`${OVERLAY_PREFIX}${lang}.json`, {
-        context: skipLoading(skipErrorToast()),
-      })
-      // Absent is expected. Reporting it would train operators to ignore the console.
-      .pipe(catchError(() => of({} as TranslationObject)));
+    // `loadConfig()` runs in the app initializer, which resolves before the first `use(lang)`,
+    // so the flag is settled by the time this is read.
+    const overlay = this.injector.get(ConfigService).brandingOverlayEnabled()
+      ? this.http
+          .get<TranslationObject>(`${OVERLAY_PREFIX}${lang}.json`, {
+            context: skipLoading(skipErrorToast()),
+          })
+          // A deployment that sets the flag may still not translate every language.
+          .pipe(catchError(() => of({} as TranslationObject)))
+      : of({} as TranslationObject);
 
     return forkJoin([shipped, overlay]).pipe(
       map(

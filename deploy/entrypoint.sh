@@ -106,16 +106,30 @@ for pair in "RBAC_ENABLED:$FINERACT_UI_RBAC" "DEVELOPER_TOOLS_ENABLED:$FINERACT_
   fi
 done
 
+# Whether this image carries a branding overlay, which is a fact about the container's own
+# filesystem and so exactly what this heredoc is for — the deployer already declared it by
+# doing the `COPY branding/ ...` in DOCS/CUSTOMIZATION.md, and should not have to say it twice.
+#
+# The app cannot work this out for itself. Asking for a file that is absent on every default
+# install put a 404 in the browser console on every page load, and a 404 is a network-level
+# event the application can decline to report but cannot suppress.
+if [ -d "$HTML_ROOT/branding" ]; then
+  FINERACT_UI_BRANDING=true
+else
+  FINERACT_UI_BRANDING=false
+fi
+
 cat > "$HTML_ROOT/config.json" <<EOF
 {
   "fineractApiUrl": "/api/v1",
   "defaultTenant": "$FINERACT_UI_TENANT",
   "rbacEnabled": $FINERACT_UI_RBAC,
   "institutionType": "$FINERACT_UI_INSTITUTION",
-  "developerToolsEnabled": $FINERACT_UI_DEVTOOLS
+  "developerToolsEnabled": $FINERACT_UI_DEVTOOLS,
+  "brandingOverlayEnabled": $FINERACT_UI_BRANDING
 }
 EOF
 
-echo "entrypoint: tenant ${FINERACT_UI_TENANT}, rbacEnabled ${FINERACT_UI_RBAC}, developerTools ${FINERACT_UI_DEVTOOLS}"
+echo "entrypoint: tenant ${FINERACT_UI_TENANT}, rbacEnabled ${FINERACT_UI_RBAC}, developerTools ${FINERACT_UI_DEVTOOLS}, brandingOverlay ${FINERACT_UI_BRANDING}"
 
 exec "$@"

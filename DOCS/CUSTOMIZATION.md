@@ -52,6 +52,32 @@ start, so anything you put there is erased on the next restart.
 Layers are deep-merged, so naming one key does not discard the rest. Arrays are replaced, not
 concatenated — writing `nav.hidden` means "hide exactly these".
 
+### L3 is only read when the deployment says it exists
+
+`brandingOverlayEnabled` gates whether the app asks for `branding/config.json` and
+`branding/i18n/` at all. It defaults to `false`, and **the container entrypoint sets it for you**
+by looking for the directory — so the `COPY branding/` above is the whole declaration and there
+is nothing extra to remember.
+
+It is the one setting that cannot live in L3: a file cannot announce its own absence.
+
+The flag exists because an install with no overlay is the normal, supported case, and probing for
+it anyway put two 404s in the browser console on every page load. The application can decline to
+_report_ a 404, and does — but it cannot stop the browser writing it. A supported configuration
+should not look like a broken one.
+
+If you serve `dist/` from your own web server rather than the container image, set it yourself
+alongside `fineractApiUrl`:
+
+```json
+{
+  "fineractApiUrl": "/api/v1",
+  "brandingOverlayEnabled": true
+}
+```
+
+Leave it off and `branding/` is never read, whatever it contains.
+
 ## Getting started
 
 Point your editor at the schema and it will autocomplete and validate as you type:
