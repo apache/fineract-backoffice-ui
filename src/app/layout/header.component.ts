@@ -264,7 +264,9 @@ type HeaderSearchResult =
         }
       </button>
 
-      <button class="tour-btn" (click)="startTour()" [attr.aria-label]="'GUIDE.OPEN' | translate">
+      <!-- Described, not labelled: an aria-label would replace the visible "Guide" as the
+           accessible name, which breaks WCAG 2.5.3 Label in Name for voice input. -->
+      <button class="tour-btn" (click)="startTour()" [appTooltip]="'GUIDE.OPEN' | translate">
         <ion-icon name="compass-outline" aria-hidden="true"></ion-icon>
         {{ 'GUIDE.OPEN_SHORT' | translate }}
       </button>
