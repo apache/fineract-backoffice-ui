@@ -34,6 +34,12 @@
   --error-color: #e74c3c;
   --success-color: #2ecc71;
   --warning-color: #f39c12;
+  /* The guided tour's highlight outline. Themed because one colour cannot serve both: measured
+     against the surfaces a highlight lands on, #b45309 is 4.23-5.02:1 in light and only
+     3.32-3.87:1 in dark, while #f59e0b is 7.76-9.05:1 in dark and 1.81-2.15:1 in light. WCAG
+     1.4.11 wants 3:1 for a non-text indicator, so each theme takes the one that clears it
+     comfortably. See DOCS/GUIDED_TOUR.md. */
+  --guidance-highlight-color: #b45309;
   --border-color: #dddddd;
   --border-radius: 8px;
   --header-height: 64px;
@@ -92,6 +98,7 @@
   --hover-bg: rgba(255, 255, 255, 0.06);
   --active-bg: rgba(255, 255, 255, 0.1);
   --overlay-bg: rgba(18, 18, 18, 0.7);
+  --guidance-highlight-color: #f59e0b;
 
   /* Ionic components take their colours from the variables above via
      _ionic-theme.scss, so dark mode needs no per-component overrides. */

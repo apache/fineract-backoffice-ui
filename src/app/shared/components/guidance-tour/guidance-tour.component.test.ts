@@ -17,101 +17,206 @@
  * under the License.
  */
 
-import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
+import { TranslateModule } from '@ngx-translate/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { provideIonicTesting } from '../../../testing/ionic-testing';
 import { GuidanceTourComponent } from './guidance-tour.component';
 import { GuidanceService } from '../../../core/services/guidance.service';
-import { TranslateModule } from '@ngx-translate/core';
-import { signal } from '@angular/core';
 
 describe('GuidanceTourComponent', () => {
-  let component: GuidanceTourComponent;
   let fixture: ComponentFixture<GuidanceTourComponent>;
-  let guidanceServiceSpy: SpyObj<GuidanceService>;
+  let guidance: GuidanceService;
+  let routerEvents: Subject<NavigationEnd>;
+
+  /**
+   * Built node by node rather than parsed from an HTML string: `ga:check` rejects raw HTML
+   * sinks anywhere under `src/`, and a test is not exempt from a rule about them.
+   */
+  function el(tag: string, className: string): HTMLElement {
+    const node = document.createElement(tag);
+    node.className = className;
+    return node;
+  }
+
+  /** Stands in for the routed view, so a `'content'` step has a `main` to search. */
+  function mountContent(...children: HTMLElement[]): HTMLElement {
+    const main = document.createElement('main');
+    main.append(...children);
+    document.body.append(main);
+    return main;
+  }
 
   beforeEach(async () => {
-    guidanceServiceSpy = Object.assign(
-      createSpyObj<GuidanceService>(['nextStep', 'previousStep', 'endTour']),
-      {
-        isPlaying: signal(true),
-        currentStepIndex: signal(0),
-        activeSteps: signal([{ titleKey: 'Title', descriptionKey: 'Desc' }]),
-        currentStep: signal({ titleKey: 'Title', descriptionKey: 'Desc' }),
-      },
-    );
-
+    routerEvents = new Subject<NavigationEnd>();
+    TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [GuidanceTourComponent, TranslateModule.forRoot()],
-      providers: [{ provide: GuidanceService, useValue: guidanceServiceSpy }],
+      // No animations provider: `provideNoopAnimations` is deprecated as of Angular 20.2, and
+      // app.config.ts deliberately provides none — there is nothing to no-op.
+      providers: [
+        provideIonicTesting(),
+        GuidanceService,
+        { provide: Router, useValue: { events: routerEvents } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GuidanceTourComponent);
-    component = fixture.componentInstance;
+    guidance = TestBed.inject(GuidanceService);
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  afterEach(() => {
+    guidance.endTour();
+    document.querySelectorAll('main').forEach((el) => el.remove());
   });
 
-  it('should display card when isPlaying is true', () => {
-    const cardEl = fixture.debugElement.query(By.css('.guidance-card'));
-    expect(cardEl).toBeTruthy();
+  it('renders nothing until a tour is playing', () => {
+    expect(fixture.nativeElement.querySelector('.guidance-card')).toBeNull();
   });
 
-  it('should call nextStep on next click', () => {
-    const nextBtn = fixture.debugElement.queryAll(By.css('ion-button'))[2]; // Exit, Back, Next/Finish
-    nextBtn.nativeElement.click();
-    expect(guidanceServiceSpy.nextStep).toHaveBeenCalled();
-  });
+  it('is a dialog, named and described by its own copy', async () => {
+    guidance.startTour('/dashboard');
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-  it('should call endTour on exit click', () => {
-    const exitBtn = fixture.debugElement.queryAll(By.css('ion-button'))[0];
-    exitBtn.nativeElement.click();
-    expect(guidanceServiceSpy.endTour).toHaveBeenCalled();
-  });
-
-  it('renders Exit/Back through translation keys rather than hardcoded English', () => {
-    // No loader is configured, so ngx-translate falls back to echoing the key itself — this
-    // fails against a hardcoded 'Exit'/'Back' string and passes once the template goes
-    // through `| translate`.
-    const buttons = fixture.debugElement.queryAll(By.css('ion-button'));
-    const text = (i: number) => buttons[i].nativeElement.textContent.trim();
-    expect(text(0)).toBe('COMMON.EXIT');
-    expect(text(1)).toBe('COMMON.BACK');
-  });
-
-  it('renders the Finish label translation key on the last (here, only) step', () => {
-    // The default fixture's single-step array makes index 0 both first and last.
-    const buttons = fixture.debugElement.queryAll(By.css('ion-button'));
-    expect(buttons[2].nativeElement.textContent.trim()).toBe('COMMON.FINISH');
-  });
-
-  it('renders the Next label translation key on a step that is not the last', async () => {
-    guidanceServiceSpy = Object.assign(
-      createSpyObj<GuidanceService>(['nextStep', 'previousStep', 'endTour']),
-      {
-        isPlaying: signal(true),
-        currentStepIndex: signal(0),
-        activeSteps: signal([
-          { titleKey: 'Title', descriptionKey: 'Desc' },
-          { titleKey: 'Title2', descriptionKey: 'Desc2' },
-        ]),
-        currentStep: signal({ titleKey: 'Title', descriptionKey: 'Desc' }),
-      },
+    const panel = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+    expect(panel).toBeTruthy();
+    expect(panel.getAttribute('aria-labelledby')).toBe('guidance-title');
+    expect(panel.getAttribute('aria-describedby')).toBe('guidance-description');
+    // Next replaces the copy in place, so the change has to be announced rather than just drawn.
+    expect(fixture.nativeElement.querySelector('.progress-info')?.getAttribute('aria-live')).toBe(
+      'polite',
     );
+  });
 
-    await TestBed.resetTestingModule()
-      .configureTestingModule({
-        imports: [GuidanceTourComponent, TranslateModule.forRoot()],
-        providers: [{ provide: GuidanceService, useValue: guidanceServiceSpy }],
-      })
-      .compileComponents();
+  /**
+   * The original bug: the dashboard step's selector was a bare `ul`, and
+   * `document.querySelector('ul')` returns the first in the whole document — the sidebar's own
+   * nav list, which renders before the routed view. Scoping the lookup to `main` is what makes
+   * that class of mistake impossible rather than merely corrected for one step.
+   */
+  it('looks for a content step inside the routed view only', async () => {
+    const shell = document.createElement('div');
+    shell.append(el('ul', 'nav-list'));
+    document.body.prepend(shell);
+    const main = mountContent(el('ul', 'status-list'));
 
-    const multiStepFixture = TestBed.createComponent(GuidanceTourComponent);
-    multiStepFixture.detectChanges();
-    const buttons = multiStepFixture.debugElement.queryAll(By.css('ion-button'));
-    expect(buttons[2].nativeElement.textContent.trim()).toBe('COMMON.NEXT');
+    guidance.startTour('/dashboard');
+    fixture.detectChanges();
+    guidance.nextStep();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(main.querySelector('.status-list')?.classList).toContain('guidance-highlight');
+    expect(shell.querySelector('.nav-list')?.classList).not.toContain('guidance-highlight');
+    shell.remove();
+  });
+
+  it('moves the highlight off the previous target when the step changes', async () => {
+    const main = mountContent(el('div', 'status-list'), el('div', 'tab-group'));
+
+    guidance.startTour('/dashboard');
+    fixture.detectChanges();
+    guidance.nextStep();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(main.querySelector('.status-list')?.classList).toContain('guidance-highlight');
+
+    guidance.previousStep();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(main.querySelector('.status-list')?.classList).not.toContain('guidance-highlight');
+  });
+
+  it('leaves nothing highlighted once the tour ends', async () => {
+    const main = mountContent(el('div', 'status-list'));
+
+    guidance.startTour('/dashboard');
+    fixture.detectChanges();
+    guidance.nextStep();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    guidance.endTour();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(main.querySelector('.status-list')?.classList).not.toContain('guidance-highlight');
+  });
+
+  /**
+   * The tour is non-modal on purpose: the user is meant to click and read the screen it is
+   * describing. So Escape has to be answered wherever focus happens to be. As a host binding
+   * it only saw events bubbling out of the card, which meant one click on the page behind it
+   * left the tour with no keyboard way out.
+   */
+  it('closes on Escape with focus outside the card', async () => {
+    const elsewhere = document.createElement('button');
+    document.body.append(elsewhere);
+    guidance.startTour('/dashboard');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    elsewhere.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(guidance.isPlaying()).toBe(false);
+    elsewhere.remove();
+  });
+
+  it('leaves an Escape alone when no tour is playing', async () => {
+    // It listens on `document`, so without a guard it would answer an Escape meant for
+    // whatever else is on screen.
+    const endTour = vi.spyOn(guidance, 'endTour');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    expect(endTour).not.toHaveBeenCalled();
+  });
+
+  /**
+   * A tour describes one screen, so it cannot outlive being on it. Navigating with it open used
+   * to carry the dashboard card onto the client list, where Next walked steps about a
+   * `.status-list` that is not in that view — the same wrongness as the old dashboard fallback,
+   * reached by navigating rather than by pressing the button.
+   */
+  it('ends when the user navigates away', async () => {
+    const main = mountContent(el('div', 'status-list'));
+    guidance.startTour('/dashboard');
+    fixture.detectChanges();
+    guidance.nextStep();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(guidance.isPlaying()).toBe(true);
+
+    routerEvents.next(new NavigationEnd(1, '/clients', '/clients'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(guidance.isPlaying()).toBe(false);
+    expect(fixture.nativeElement.querySelector('.guidance-card')).toBeNull();
+    expect(main.querySelector('.status-list')?.classList).not.toContain('guidance-highlight');
+  });
+
+  it('hands focus back to whatever opened it', async () => {
+    const opener = document.createElement('button');
+    opener.className = 'tour-btn';
+    document.body.append(opener);
+    opener.focus();
+
+    guidance.startTour('/dashboard');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(document.activeElement).not.toBe(opener);
+
+    guidance.endTour();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(opener);
+
+    opener.remove();
   });
 });

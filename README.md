@@ -224,6 +224,7 @@ For more information on contributing, setting up the project, and our coding sta
 - [Project Setup Guide](SETUP.md)
 - [Code Style Guide](STYLE.md)
 - [Fonts](DOCS/FONTS.md)
+- [The guided tour](DOCS/GUIDED_TOUR.md)
 - [Lint and dependency-licence policy](DOCS/LINT_POLICY.md)
 - [Releasing](RELEASING.md)
 - [Changelog](CHANGELOG.md)

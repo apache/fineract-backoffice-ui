@@ -264,9 +264,11 @@ type HeaderSearchResult =
         }
       </button>
 
-      <button class="tour-btn" (click)="startTour()" [attr.aria-label]="'Guide'">
-        <ion-icon name="compass-outline"></ion-icon>
-        Guide
+      <!-- Described, not labelled: an aria-label would replace the visible "Guide" as the
+           accessible name, which breaks WCAG 2.5.3 Label in Name for voice input. -->
+      <button class="tour-btn" (click)="startTour()" [appTooltip]="'GUIDE.OPEN' | translate">
+        <ion-icon name="compass-outline" aria-hidden="true"></ion-icon>
+        {{ 'GUIDE.OPEN_SHORT' | translate }}
       </button>
 
       <div class="user-info">
@@ -888,8 +890,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /**
    * Triggers the tour on the current active route.
    */
+  /**
+   * Opens the tour for the screen the user is on.
+   *
+   * The route's own `title` key and a DOM probe are passed in, so a screen with no hand-written
+   * copy still gets a tour named after itself and describing the controls it actually has. The
+   * probe is scoped to `main`: the shell is not part of the screen, and a loose selector must
+   * not be able to reach it.
+   */
   startTour() {
-    this.guidanceService.startTour(this.router.url);
+    let route = this.router.routerState.snapshot.root;
+    while (route.firstChild) route = route.firstChild;
+
+    this.guidanceService.startTour(this.router.url, {
+      titleKey: route.title,
+      has: (selector) => !!document.querySelector('main')?.querySelector(selector),
+    });
   }
 
   /**
