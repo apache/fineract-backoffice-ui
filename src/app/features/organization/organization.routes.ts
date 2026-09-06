@@ -23,6 +23,11 @@ import { authGuard } from '../../core/guards/auth.guard';
 
 export const ORGANIZATION_ROUTES: Routes = [
   {
+    path: '',
+    redirectTo: 'offices',
+    pathMatch: 'full',
+  },
+  {
     path: 'offices',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_OFFICE' },

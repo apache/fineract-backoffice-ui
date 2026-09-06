@@ -184,6 +184,21 @@ test.describe('Navigation & Sidebar', () => {
     }
   });
 
+  test('navigating to /accounting redirects to /accounting/chart-of-accounts', async ({ page }) => {
+    await page.goto('/accounting');
+    await expect(page).toHaveURL(/\/accounting\/chart-of-accounts$/);
+  });
+
+  test('navigating to /organization redirects to /organization/offices', async ({ page }) => {
+    await page.goto('/organization');
+    await expect(page).toHaveURL(/\/organization\/offices$/);
+  });
+
+  test('navigating to /system redirects to /system/data-tables', async ({ page }) => {
+    await page.goto('/system');
+    await expect(page).toHaveURL(/\/system\/data-tables$/);
+  });
+
   test('header shows logged-in user info', async ({ page }) => {
     await expect(page.getByText(TEST_USER)).toBeVisible();
     await expect(page.getByText('Business Date:')).toBeVisible();
