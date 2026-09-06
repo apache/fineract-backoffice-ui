@@ -139,6 +139,7 @@ import {
                   <ion-label position="stacked">{{ 'COMMON.OFFICE' | translate }}</ion-label>
                   <ion-select
                     [attr.aria-label]="'COMMON.OFFICE' | translate"
+                    [placeholder]="'CLIENTS.SELECT_OFFICE' | translate"
                     interface="popover"
                     name="officeId"
                     [(ngModel)]="client().officeId"

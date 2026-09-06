@@ -221,6 +221,7 @@ const NEXT_DIRECTION: Record<SortDirection, SortDirection> = {
               [pageSize]="effectivePageSize"
               [pageIndex]="effectivePageIndex"
               [pageSizeOptions]="pageSizeOptions()"
+              [exactTotal]="localLogic()"
               (page)="onPage($event)"
             ></app-paginator>
           </div>
