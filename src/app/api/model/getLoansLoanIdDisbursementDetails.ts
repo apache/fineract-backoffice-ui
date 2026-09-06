@@ -26,7 +26,7 @@
 
 
 /**
- * Set of GetLoansLoanIdDisbursementDetails
+ * List of GetLoansLoanIdDisbursementDetails
  */
 export interface GetLoansLoanIdDisbursementDetails { 
     actualDisbursementDate?: string;

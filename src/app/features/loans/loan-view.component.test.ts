@@ -21,14 +21,21 @@
 
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { LOAN_TAB, LoanViewComponent } from './loan-view.component';
+import {
+  LOAN_TAB,
+  LoanViewComponent,
+  isoToFineractDate,
+  toEditableDate,
+} from './loan-view.component';
 import {
   LoansService,
   LoanBuyDownFeesService,
   LoanCapitalizedIncomeService,
+  LoanDisbursementDetailsService,
   LoanTransactionsService,
   BASE_PATH,
 } from '../../api';
+import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
@@ -50,6 +57,8 @@ describe('LoanViewComponent', () => {
   let capitalizedIncomeSpy: SpyObj<LoanCapitalizedIncomeService>;
   let routerSpy: SpyObj<Router>;
   let transactionsSpy: SpyObj<LoanTransactionsService>;
+  let disbursementsSpy: SpyObj<LoanDisbursementDetailsService>;
+  let notificationsSpy: SpyObj<NotificationService>;
 
   /** A cumulative loan, i.e. one that can carry none of the progressive-only features. */
   const cumulativeLoan = {
@@ -76,6 +85,12 @@ describe('LoanViewComponent', () => {
     routerSpy = createSpyObj(['navigate']);
     transactionsSpy = createSpyObj(['postLoansLoanIdTransactions']);
     transactionsSpy.postLoansLoanIdTransactions.mockReturnValue(of({}) as any);
+    disbursementsSpy = createSpyObj([
+      'getLoansLoanIdDisbursementsDisbursementId',
+      'putLoansLoanIdDisbursementsDisbursementId',
+    ]);
+    disbursementsSpy.putLoansLoanIdDisbursementsDisbursementId.mockReturnValue(of({}) as any);
+    notificationsSpy = createSpyObj(['success', 'error']);
 
     const authServiceSpy = Object.assign(createSpyObj<AuthService>(['hasPermission']), {
       currentUser: signal({
@@ -106,6 +121,8 @@ describe('LoanViewComponent', () => {
         { provide: LoanBuyDownFeesService, useValue: buyDownFeesSpy },
         { provide: LoanCapitalizedIncomeService, useValue: capitalizedIncomeSpy },
         { provide: LoanTransactionsService, useValue: transactionsSpy },
+        { provide: LoanDisbursementDetailsService, useValue: disbursementsSpy },
+        { provide: NotificationService, useValue: notificationsSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: BASE_PATH, useValue: 'https://example.com/fineract-provider/api' },
@@ -362,6 +379,111 @@ describe('LoanViewComponent', () => {
       await setup(ADVANCE);
 
       expect(component.hasAdvanceBalance()).toBe(true);
+    });
+  });
+  /**
+   * `PUT /loans/{loanId}/disbursements/{disbursementId}` runs Fineract's `updateDisbursementDate`
+   * command, which is stricter than the screen used to assume. Verified against a multi-tranche
+   * loan on a live 1.16.0-SNAPSHOT platform:
+   *
+   * - `principal` and `note` come back 400 `error.msg.parameter.unsupported`; a single stray
+   *   parameter fails the whole request, so the old body never once succeeded.
+   * - `expectedDisbursementDate` is mandatory and separate from the edit —
+   *   `validation.msg.loan.update.disbursement.expectedDisbursementDate.cannot.be.blank`.
+   * - `updatedPrincipal` is mandatory too, reported as
+   *   `validation.msg.loan.update.disbursement.principal.cannot.be.blank`.
+   * - Omitting `dateFormat`/`locale` fails with `validation.msg.missing.dateFormat.parameter`.
+   */
+  describe('editing a disbursement tranche', () => {
+    const TRANCHE = { id: 1, loanId: 456, expectedDisbursementDate: [2026, 8, 10], principal: 650 };
+
+    async function loadTranche(): Promise<void> {
+      disbursementsSpy.getLoansLoanIdDisbursementsDisbursementId.mockReturnValue(
+        of(TRANCHE) as any,
+      );
+      component.editDisbId = 1;
+      component.loadDisbursementDetail();
+    }
+
+    it('turns the year/month/day array the platform sends into a date the form can bind', async () => {
+      await loadTranche();
+
+      expect(component.disbursementEditForm.expectedDisbursementDate).toBe('2026-08-10');
+      expect(component.disbursementEditForm.principal).toBe(650);
+    });
+
+    it('sends the tranche date as the anchor and the edit as the update', async () => {
+      await loadTranche();
+      component.disbursementEditForm.expectedDisbursementDate = '2026-08-20';
+      component.disbursementEditForm.principal = 700;
+
+      component.saveDisbursementDetail();
+
+      expect(disbursementsSpy.putLoansLoanIdDisbursementsDisbursementId).toHaveBeenCalledWith(
+        456,
+        1,
+        {
+          expectedDisbursementDate: '10 August 2026',
+          updatedExpectedDisbursementDate: '20 August 2026',
+          updatedPrincipal: 700,
+          dateFormat: 'dd MMMM yyyy',
+          locale: 'en',
+        },
+      );
+    });
+
+    it('sends nothing the command would reject', async () => {
+      await loadTranche();
+
+      component.saveDisbursementDetail();
+
+      const body = disbursementsSpy.putLoansLoanIdDisbursementsDisbursementId.mock
+        .calls[0][2] as Record<string, unknown>;
+      // Named individually rather than compared as a set, so a future addition has to be a
+      // deliberate edit here — the command fails outright on anything it does not recognise.
+      expect(body).not.toHaveProperty('note');
+      expect(body).not.toHaveProperty('principal');
+      expect(new Set(Object.keys(body))).toEqual(
+        new Set([
+          'dateFormat',
+          'expectedDisbursementDate',
+          'locale',
+          'updatedExpectedDisbursementDate',
+          'updatedPrincipal',
+        ]),
+      );
+    });
+
+    it('asks for a date rather than letting the platform reject a blank one', async () => {
+      await loadTranche();
+      component.disbursementEditForm.expectedDisbursementDate = '';
+
+      component.saveDisbursementDetail();
+
+      expect(disbursementsSpy.putLoansLoanIdDisbursementsDisbursementId).not.toHaveBeenCalled();
+      expect(notificationsSpy.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('date conversion for the disbursement command', () => {
+    it('reads a bare YYYY-MM-DD in local time', () => {
+      // `new Date('2026-08-01')` is UTC midnight, which `formatDateToFineract` then reads back
+      // with local getters — one day earlier for anyone west of Greenwich. The 1st of the month
+      // is the case that exposes it, because the shift crosses into the previous month.
+      expect(isoToFineractDate('2026-08-01')).toBe('01 August 2026');
+      expect(isoToFineractDate('2026-01-01')).toBe('01 January 2026');
+    });
+
+    it('yields nothing for a value the command could not parse', () => {
+      expect(isoToFineractDate('')).toBe('');
+      expect(isoToFineractDate('not-a-date')).toBe('');
+    });
+
+    it('accepts either shape the disbursement endpoint answers with', () => {
+      expect(toEditableDate([2026, 8, 10])).toBe('2026-08-10');
+      expect(toEditableDate('2026-08-10T00:00:00')).toBe('2026-08-10');
+      expect(toEditableDate(undefined)).toBe('');
+      expect(toEditableDate([2026])).toBe('');
     });
   });
 });

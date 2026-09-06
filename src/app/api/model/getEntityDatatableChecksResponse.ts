@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { StringEnumOptionData } from './stringEnumOptionData';
 import { EnumOptionData } from './enumOptionData';
 
 
@@ -32,6 +33,7 @@ import { EnumOptionData } from './enumOptionData';
 export interface GetEntityDatatableChecksResponse { 
     datatableName?: string;
     entity?: string;
+    entityData?: StringEnumOptionData;
     id?: number;
     order?: number;
     productId?: number;

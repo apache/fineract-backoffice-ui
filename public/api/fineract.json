@@ -16386,7 +16386,16 @@
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutLoansLoanIdDisbursementsDisbursementIdRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "default": {
             "content": {
@@ -16998,10 +17007,7 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/GetPostDatedChecks" }
-                }
+                "schema": { "$ref": "#/components/schemas/GetPostDatedChecks" }
               }
             },
             "description": "OK"
@@ -34555,6 +34561,11 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/ResultsetColumnHeaderData" }
           },
+          "entitySubType": {
+            "type": "string",
+            "description": "The entity sub type the datatable is registered against, when the application table supports one (for example Person or Entity on m_client). Null when the registration is not scoped to a sub type.",
+            "example": "Person"
+          },
           "registeredTableName": { "type": "string", "example": "extra_client_details" }
         }
       },
@@ -34635,7 +34646,8 @@
         "description": "GetEntityDatatableChecksResponse",
         "properties": {
           "datatableName": { "type": "string" },
-          "entity": { "type": "string" },
+          "entity": { "type": "string", "example": "m_loan" },
+          "entityData": { "$ref": "#/components/schemas/StringEnumOptionData" },
           "id": { "type": "integer", "format": "int64" },
           "order": { "type": "integer", "format": "int64" },
           "productId": { "type": "integer", "format": "int64" },
@@ -37436,7 +37448,7 @@
       },
       "GetLoansLoanIdDisbursementDetails": {
         "type": "object",
-        "description": "Set of GetLoansLoanIdDisbursementDetails",
+        "description": "List of GetLoansLoanIdDisbursementDetails",
         "properties": {
           "actualDisbursementDate": { "type": "string", "format": "date" },
           "chargeAmount": { "type": "number", "example": 22000.0 },
@@ -37808,6 +37820,16 @@
           "totalWrittenOff": { "type": "number", "example": 0.0 }
         }
       },
+      "GetLoansLoanIdRepaymentScheduleInstallment": {
+        "type": "object",
+        "description": "A repayment schedule installment of a loan transaction template",
+        "properties": {
+          "amount": { "type": "number", "example": 1600.0 },
+          "date": { "type": "string", "format": "date" },
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "installmentId": { "type": "integer", "format": "int32", "example": 1 }
+        }
+      },
       "GetLoansLoanIdResponse": {
         "type": "object",
         "description": "GetLoansLoanIdResponse",
@@ -37855,9 +37877,8 @@
           "disbursedAmountPercentageForDownPayment": { "type": "number", "example": 0.0 },
           "disbursementDetails": {
             "type": "array",
-            "description": "Set of GetLoansLoanIdDisbursementDetails",
-            "items": { "$ref": "#/components/schemas/GetLoansLoanIdDisbursementDetails" },
-            "uniqueItems": true
+            "description": "List of GetLoansLoanIdDisbursementDetails",
+            "items": { "$ref": "#/components/schemas/GetLoansLoanIdDisbursementDetails" }
           },
           "emiAmountVariations": {
             "type": "array",
@@ -38205,6 +38226,11 @@
           "date": { "type": "string", "format": "date" },
           "feeChargesPortion": { "type": "number", "format": "double", "example": 20.0 },
           "interestPortion": { "type": "number", "format": "double", "example": 80.0 },
+          "loanRepaymentScheduleInstallments": {
+            "type": "array",
+            "description": "Disburse template only: the repayment schedule installments the disbursement will produce",
+            "items": { "$ref": "#/components/schemas/GetLoansLoanIdRepaymentScheduleInstallment" }
+          },
           "netDisbursalAmount": { "type": "number", "format": "double", "example": 200.0 },
           "nextInstallmentDueDate": { "type": "string", "format": "date" },
           "numberOfFutureInstallments": { "type": "integer", "format": "int32", "example": 3 },
@@ -46604,10 +46630,21 @@
           "loanScheduleProcessingType": { "type": "string", "example": "HORIZONTAL" },
           "loanScheduleType": { "type": "string", "example": "CUMULATIVE" },
           "locale": { "type": "string", "example": "en_GB" },
+          "mandatoryGuarantee": {
+            "type": "number",
+            "description": "Percentage of the loan that guarantors must cover",
+            "example": 50
+          },
           "maxInterestRatePerPeriod": { "type": "number", "format": "double", "example": 23.4 },
           "maxNumberOfRepayments": { "type": "integer", "format": "int32", "example": 1 },
           "maxPrincipal": { "type": "number", "format": "double", "example": 15000.0 },
           "maxTrancheCount": { "type": "integer", "format": "int32", "example": 3 },
+          "maximumGap": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Maximum days between two installments of a variable installment loan",
+            "example": 90
+          },
           "merchantBuyDownFee": { "type": "boolean", "example": false },
           "minInterestRatePerPeriod": { "type": "number", "format": "double", "example": 0 },
           "minNumberOfRepayments": { "type": "integer", "format": "int32", "example": 1 },
@@ -46616,6 +46653,22 @@
             "type": "integer",
             "format": "int32",
             "example": 30
+          },
+          "minimumGap": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Minimum days between two installments of a variable installment loan",
+            "example": 0
+          },
+          "minimumGuaranteeFromGuarantor": {
+            "type": "number",
+            "description": "Minimum percentage of the guarantee an external guarantor must provide",
+            "example": 20
+          },
+          "minimumGuaranteeFromOwnFunds": {
+            "type": "number",
+            "description": "Minimum percentage of the guarantee the borrower must provide from own funds",
+            "example": 20
           },
           "multiDisburseLoan": { "type": "boolean", "example": true },
           "name": { "type": "string", "example": "LP Accrual Accounting" },
@@ -46706,6 +46759,11 @@
           "shortName": { "type": "string", "example": "LPAA" },
           "startDate": { "type": "string", "example": "10 July 2022" },
           "supportedInterestRefundTypes": { "type": "array", "items": { "type": "string" } },
+          "syncExpectedWithDisbursementDate": {
+            "type": "boolean",
+            "description": "Force the actual disbursement date to match the expected disbursement date",
+            "example": false
+          },
           "transactionProcessingStrategyCode": {
             "type": "string",
             "example": "mifos-standard-strategy"
@@ -46770,6 +46828,11 @@
         "properties": {
           "approvedOnDate": { "type": "string", "example": "28 June 2022" },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "disbursedAmount": {
+            "type": "number",
+            "description": "Undo last disbursal only: the tranche amount that was rolled back",
+            "example": 1000.0
+          },
           "locale": { "type": "string", "example": "en" },
           "note": { "type": "string", "example": "Loan approval note" },
           "status": { "$ref": "#/components/schemas/PostLoansLoanIdStatus" }
@@ -46913,6 +46976,17 @@
           }
         }
       },
+      "PostLoansLoanIdPostDatedCheckData": {
+        "type": "object",
+        "description": "Post dated check backing one repayment installment",
+        "properties": {
+          "accountNo": { "type": "integer", "format": "int64", "example": 900400500621 },
+          "amount": { "type": "number", "example": 1600.0 },
+          "checkNo": { "type": "integer", "format": "int64", "example": 123456789 },
+          "installmentId": { "type": "integer", "format": "int32", "example": 1 },
+          "name": { "type": "string", "example": "AMANA BANK" }
+        }
+      },
       "PostLoansLoanIdRequest": {
         "type": "object",
         "description": "PostLoansLoanIdRequest",
@@ -46951,6 +47025,11 @@
             "items": { "$ref": "#/components/schemas/PostLoansLoanIdOriginatorData" }
           },
           "paymentTypeId": { "type": "integer", "format": "int32", "example": 3 },
+          "postDatedChecks": {
+            "type": "array",
+            "description": "Disburse only: the post dated checks backing the repayment schedule",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdPostDatedCheckData" }
+          },
           "rejectedOnDate": { "type": "string", "example": "28 June 2022" },
           "toLoanOfficerId": { "type": "integer", "format": "int64", "example": 2 },
           "transactionAmount": { "type": "number", "example": 5000.33 },
@@ -46978,16 +47057,86 @@
           "subResourceId": { "type": "integer", "format": "int64", "example": 22 }
         }
       },
+      "PostLoansLoanIdScheduleDeletedInstallment": {
+        "type": "object",
+        "description": "Installments removed from the schedule",
+        "properties": { "dueDate": { "type": "string", "example": "20 December 2011" } }
+      },
+      "PostLoansLoanIdScheduleExceptions": {
+        "type": "object",
+        "description": "The installment changes to apply to the repayment schedule",
+        "properties": {
+          "deletedinstallments": {
+            "type": "array",
+            "description": "Installments removed from the schedule",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdScheduleDeletedInstallment" }
+          },
+          "modifiedinstallments": {
+            "type": "array",
+            "description": "Installments whose due date, principal or instalment amount changes",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdScheduleModifiedInstallment" }
+          },
+          "newinstallments": {
+            "type": "array",
+            "description": "Installments added to the schedule",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdScheduleNewInstallment" }
+          }
+        }
+      },
+      "PostLoansLoanIdScheduleModifiedInstallment": {
+        "type": "object",
+        "description": "Installments whose due date, principal or instalment amount changes",
+        "properties": {
+          "dueDate": { "type": "string", "example": "20 November 2011" },
+          "installmentAmount": { "type": "number", "example": 30000 },
+          "modifiedDueDate": { "type": "string", "example": "25 November 2011" },
+          "principal": { "type": "number", "example": 5000 }
+        }
+      },
+      "PostLoansLoanIdScheduleNewInstallment": {
+        "type": "object",
+        "description": "Installments added to the schedule",
+        "properties": {
+          "dueDate": { "type": "string", "example": "31 October 2011" },
+          "installmentAmount": { "type": "number", "example": 5000 },
+          "principal": { "type": "number", "example": 5000 }
+        }
+      },
+      "PostLoansLoanIdSchedulePeriod": {
+        "type": "object",
+        "description": "A period of the schedule the calculateLoanSchedule command returns",
+        "properties": {
+          "dueDate": { "type": "string", "format": "date" },
+          "fromDate": { "type": "string", "format": "date" },
+          "interestOriginalDue": { "type": "number", "example": 1972.6 },
+          "period": { "type": "integer", "format": "int32", "example": 1 },
+          "principalDue": { "type": "number", "example": 34675.47 },
+          "principalOriginalDue": { "type": "number", "example": 34675.47 },
+          "totalDueForPeriod": { "type": "number", "example": 36648.07 },
+          "totalOriginalDueForPeriod": { "type": "number", "example": 36648.07 },
+          "totalOutstandingForPeriod": { "type": "number", "example": 36648.07 }
+        }
+      },
       "PostLoansLoanIdScheduleRequest": {
         "type": "object",
-        "description": "PostLoansLoanIdScheduleRequest"
+        "description": "PostLoansLoanIdScheduleRequest",
+        "properties": {
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "exceptions": { "$ref": "#/components/schemas/PostLoansLoanIdScheduleExceptions" },
+          "locale": { "type": "string", "example": "en" }
+        }
       },
       "PostLoansLoanIdScheduleResponse": {
         "type": "object",
         "description": "PostLoansLoanIdScheduleResponse",
         "properties": {
           "changes": { "$ref": "#/components/schemas/PostLoanChanges" },
-          "loanId": { "type": "integer", "format": "int64", "example": 1 }
+          "loanId": { "type": "integer", "format": "int64", "example": 1 },
+          "periods": {
+            "type": "array",
+            "description": "Returned by the calculateLoanSchedule command: the schedule the variations produce",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdSchedulePeriod" }
+          }
         }
       },
       "PostLoansLoanIdStatus": {
@@ -47833,6 +47982,12 @@
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "externalId": { "type": "string", "example": "123" },
+          "groupId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Mandatory for a group savings account, in place of clientId",
+            "example": 1
+          },
           "locale": { "type": "string", "example": "en" },
           "productId": { "type": "integer", "format": "int64", "example": 1 },
           "submittedOnDate": { "type": "string", "example": "01 March 2011" }
@@ -50055,6 +50210,26 @@
           "locale": { "type": "string", "example": "en" },
           "netDisbursalAmount": { "type": "number", "example": 1 },
           "principal": { "type": "number", "example": 1 }
+        }
+      },
+      "PutLoansLoanIdDisbursementsDisbursementIdRequest": {
+        "type": "object",
+        "description": "PutLoansLoanIdDisbursementsDisbursementIdRequest",
+        "properties": {
+          "approvedLoanAmount": { "type": "number", "example": 5000 },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "expectedDisbursementDate": { "type": "string", "example": "01 March 2014" },
+          "locale": { "type": "string", "example": "en" },
+          "updatedExpectedDisbursementDate": {
+            "type": "string",
+            "description": "The new expected disbursement date of the tranche",
+            "example": "01 March 2014"
+          },
+          "updatedPrincipal": {
+            "type": "number",
+            "description": "The new principal of the tranche",
+            "example": 900
+          }
         }
       },
       "PutLoansLoanIdRequest": {

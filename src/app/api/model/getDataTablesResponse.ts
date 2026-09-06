@@ -32,6 +32,10 @@ import { ResultsetColumnHeaderData } from './resultsetColumnHeaderData';
 export interface GetDataTablesResponse { 
     applicationTableName?: string;
     columnHeaderData?: Array<ResultsetColumnHeaderData>;
+    /**
+     * The entity sub type the datatable is registered against, when the application table supports one (for example Person or Entity on m_client). Null when the registration is not scoped to a sub type.
+     */
+    entitySubType?: string;
     registeredTableName?: string;
 }
 

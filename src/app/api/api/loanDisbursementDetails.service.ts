@@ -36,6 +36,8 @@ import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 import { CommandProcessingResult } from '../model/commandProcessingResult';
 // @ts-ignore
 import { PostAddAndDeleteDisbursementDetailRequest } from '../model/postAddAndDeleteDisbursementDetailRequest';
+// @ts-ignore
+import { PutLoansLoanIdDisbursementsDisbursementIdRequest } from '../model/putLoansLoanIdDisbursementsDisbursementIdRequest';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -122,20 +124,23 @@ export class LoanDisbursementDetailsService extends BaseService {
      * @endpoint put /v1/loans/{loanId}/disbursements/{disbursementId}
      * @param loanId 
      * @param disbursementId 
-     * @param body 
+     * @param putLoansLoanIdDisbursementsDisbursementIdRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putLoansLoanIdDisbursementsDisbursementId(loanId: number, disbursementId: number, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
-    public putLoansLoanIdDisbursementsDisbursementId(loanId: number, disbursementId: number, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
-    public putLoansLoanIdDisbursementsDisbursementId(loanId: number, disbursementId: number, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
-    public putLoansLoanIdDisbursementsDisbursementId(loanId: number, disbursementId: number, body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putLoansLoanIdDisbursementsDisbursementId(loanId: number, disbursementId: number, putLoansLoanIdDisbursementsDisbursementIdRequest: PutLoansLoanIdDisbursementsDisbursementIdRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public putLoansLoanIdDisbursementsDisbursementId(loanId: number, disbursementId: number, putLoansLoanIdDisbursementsDisbursementIdRequest: PutLoansLoanIdDisbursementsDisbursementIdRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public putLoansLoanIdDisbursementsDisbursementId(loanId: number, disbursementId: number, putLoansLoanIdDisbursementsDisbursementIdRequest: PutLoansLoanIdDisbursementsDisbursementIdRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public putLoansLoanIdDisbursementsDisbursementId(loanId: number, disbursementId: number, putLoansLoanIdDisbursementsDisbursementIdRequest: PutLoansLoanIdDisbursementsDisbursementIdRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (loanId === null || loanId === undefined) {
             throw new Error('Required parameter loanId was null or undefined when calling putLoansLoanIdDisbursementsDisbursementId.');
         }
         if (disbursementId === null || disbursementId === undefined) {
             throw new Error('Required parameter disbursementId was null or undefined when calling putLoansLoanIdDisbursementsDisbursementId.');
+        }
+        if (putLoansLoanIdDisbursementsDisbursementIdRequest === null || putLoansLoanIdDisbursementsDisbursementIdRequest === undefined) {
+            throw new Error('Required parameter putLoansLoanIdDisbursementsDisbursementIdRequest was null or undefined when calling putLoansLoanIdDisbursementsDisbursementId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -183,7 +188,7 @@ export class LoanDisbursementDetailsService extends BaseService {
         return this.httpClient.request<CommandProcessingResult>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: putLoansLoanIdDisbursementsDisbursementIdRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
