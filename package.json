@@ -74,7 +74,7 @@
     "@angular/platform-browser": "22.1.0",
     "@angular/router": "22.1.0",
     "@ionic/angular": "^8.8.15",
-    "@ngx-translate/core": "^17.0.0",
+    "@ngx-translate/core": "^18.0.0",
     "@ngx-translate/http-loader": "^17.0.0",
     "es-module-shims": "^2.8.4",
     "ionicons": "^8.0.13",
