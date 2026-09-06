@@ -46,10 +46,7 @@ export async function login(page: Page): Promise<void> {
 
   await page.goto('/login');
 
-  if (
-    page.url().includes('/dashboard') ||
-    (await page.getByRole('navigation', { name: 'Main Navigation' }).isVisible())
-  ) {
+  if (page.url().includes('/dashboard') || (await page.locator('#app-navigation').isVisible())) {
     return;
   }
 
@@ -68,8 +65,11 @@ export async function login(page: Page): Promise<void> {
   await page.locator('#password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
 
-  // Successful login lands on a page with the main sidebar navigation.
-  await expect(page.getByRole('navigation', { name: 'Main Navigation' })).toBeVisible({
+  // Successful login lands on a page with the main sidebar navigation. Checked by id rather
+  // than role: SidebarComponent's `role` attribute is `navigation` on a wide viewport but
+  // `dialog` on a narrow one (it becomes a modal drawer there), so a role-based check would
+  // never resolve for a mobile-viewport caller of this helper.
+  await expect(page.locator('#app-navigation')).toBeVisible({
     timeout: 30000,
   });
 }
