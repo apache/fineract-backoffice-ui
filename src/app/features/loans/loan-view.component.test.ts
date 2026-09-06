@@ -329,4 +329,39 @@ describe('LoanViewComponent', () => {
       expect(component.isWrittenOff()).toBe(true);
     });
   });
+
+  describe('refund by cash', () => {
+    const ADVANCE = { paidInAdvance: { paidInAdvance: 250 } };
+
+    it('routes to the shared transaction form under the command name the platform expects', async () => {
+      await setup(ADVANCE);
+
+      component.onLoanTransactionAction('refundByCash');
+
+      // The route's :type segment becomes the `command` query parameter on
+      // POST /loans/{id}/transactions, so the casing here is not cosmetic —
+      // the platform answers "unsupported" to anything it does not match.
+      expect(routerSpy.navigate).toHaveBeenCalledWith([
+        `/loans/${component.loanId()}/transactions/refundByCash`,
+      ]);
+    });
+
+    /**
+     * The platform refuses a cash refund on a loan with nothing paid ahead (403
+     * `error.msg.loan.refund.amount.invalid`), so the action must not be offered there.
+     */
+    it('is withheld from a loan carrying no advance balance', async () => {
+      await setup();
+      expect(component.hasAdvanceBalance()).toBe(false);
+
+      await setup({ paidInAdvance: { paidInAdvance: 0 } });
+      expect(component.hasAdvanceBalance()).toBe(false);
+    });
+
+    it('is offered once the loan is paid ahead of schedule', async () => {
+      await setup(ADVANCE);
+
+      expect(component.hasAdvanceBalance()).toBe(true);
+    });
+  });
 });

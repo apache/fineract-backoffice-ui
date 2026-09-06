@@ -591,6 +591,7 @@
       "CHARGED_OFF": "Charged Off",
       "MERCHANT_ISSUED_REFUND": "Merchant Issued Refund",
       "PAYOUT_REFUND": "Payout Refund",
+      "REFUND_BY_CASH": "Refund by Cash",
       "GOODWILL_CREDIT": "Goodwill Credit",
       "DOWN_PAYMENT": "Record Down Payment",
       "INTEREST_PAYMENT_WAIVER": "Waive Interest Payment",
