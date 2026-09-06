@@ -32,6 +32,22 @@ const MONTHS = [
   'December',
 ];
 
+/** The date-only form ECMAScript specifies as UTC: exactly `YYYY-MM-DD`, nothing more. */
+const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/**
+ * Builds a local `Date` from calendar parts, rejecting a value that is merely well-shaped.
+ *
+ * `new Date(2026, 12, 45)` does not fail — it rolls forward to 14 February 2027. Handing a
+ * malformed string back as a real date is worse than refusing it, since the caller sends the
+ * result to the platform as the user's chosen date, so the parts are read back and compared.
+ */
+function localDate(year: number, month: number, day: number): Date {
+  const d = new Date(year, month - 1, day);
+  const rolled = d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day;
+  return rolled ? new Date(Number.NaN) : d;
+}
+
 /**
  * Formats a Date object (or date-like string/array) into the Fineract-preferred
  * 'dd Month yyyy' format (e.g., '15 January 2026', '02 August 2026').
@@ -41,6 +57,15 @@ const MONTHS = [
  * format it is told to use, so an unpadded '2 August 2026' does not merely fail validation — it
  * fails to parse at all and the request comes back 500. That made every dated submission in the
  * application fail on the 1st through the 9th of any month, and succeed for the rest of it.
+ *
+ * A **date-only** string is read through its parts rather than handed to `new Date()`. ECMAScript
+ * reads `'2026-01-15'` as UTC midnight while the getters below read local time, so west of
+ * Greenwich the two disagree and the output lands a day early — `'2026-01-15'` formats as
+ * `14 January 2026` in `America/New_York`. Every screen that pre-fills a date from an API
+ * response and is saved without re-picking that field went out with the wrong day.
+ *
+ * A string carrying a time (`'2026-01-15T00:00:00'`, what `ion-datetime` emits) or an explicit
+ * zone (`'...Z'`) is left to `new Date()`, which already reads both correctly.
  *
  * @param date - The date to format.
  * @returns The formatted date string, or empty string if invalid.
@@ -56,12 +81,13 @@ export function formatDateToFineract(date: Date | string | number[] | null | und
       return '';
     }
   } else if (typeof date === 'string') {
-    d = new Date(date);
+    const parts = DATE_ONLY.exec(date);
+    d = parts ? localDate(+parts[1], +parts[2], +parts[3]) : new Date(date);
   } else {
     d = date;
   }
 
-  if (isNaN(d.getTime())) return '';
+  if (Number.isNaN(d.getTime())) return '';
 
   const day = String(d.getDate()).padStart(2, '0');
   const month = MONTHS[d.getMonth()];
@@ -104,7 +130,7 @@ export function toIsoDate(date: Date | string | null | undefined): string {
     return date.split('T', 1)[0];
   }
 
-  if (isNaN(date.getTime())) return '';
+  if (Number.isNaN(date.getTime())) return '';
 
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');

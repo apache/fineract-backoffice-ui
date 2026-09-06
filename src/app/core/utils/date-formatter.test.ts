@@ -100,9 +100,45 @@ describe('date-formatter', () => {
       }
     });
 
+    /**
+     * These are the cases that motivated the date-only branch. They only *fail* at a negative
+     * UTC offset, so CI runs the whole unit suite a second time under `TZ=America/New_York` —
+     * see the "Run unit tests west of Greenwich" step in `ci.yml`. Under UTC they still pin the
+     * behaviour; they just cannot detect its absence.
+     */
+    describe('a date-only string', () => {
+      it('is read as the calendar date it spells, not as UTC midnight', () => {
+        expect(formatDateToFineract('2026-01-15')).toBe('15 January 2026');
+        expect(formatDateToFineract('2026-04-01')).toBe('01 April 2026');
+      });
+
+      it('does not roll back across a month or a year boundary', () => {
+        // The 1st is the case that exposes the shift most sharply: a day early crosses into the
+        // previous month, and on 1 January into the previous year.
+        expect(formatDateToFineract('2026-01-01')).toBe('01 January 2026');
+        expect(formatDateToFineract('2026-03-01')).toBe('01 March 2026');
+      });
+
+      it('agrees with the array form of the same date', () => {
+        for (const iso of ['2026-01-01', '2026-06-15', '2026-12-31']) {
+          const [year, month, day] = iso.split('-').map(Number);
+          expect(formatDateToFineract(iso)).toBe(formatDateToFineract([year, month, day]));
+        }
+      });
+    });
+
+    it('leaves a string carrying a time to the platform parser', () => {
+      // What ion-datetime emits. `new Date()` already reads a local timestamp as local, and an
+      // explicit `Z` as UTC — neither needs the date-only branch, and both would be wrong if it
+      // claimed them.
+      expect(formatDateToFineract('2026-07-26T14:30:00')).toBe('26 July 2026');
+    });
+
     it('returns empty string for invalid input', () => {
       expect(formatDateToFineract(null)).toBe('');
       expect(formatDateToFineract([2026])).toBe('');
+      expect(formatDateToFineract('not-a-date')).toBe('');
+      expect(formatDateToFineract('2026-13-45')).toBe('');
     });
   });
 });

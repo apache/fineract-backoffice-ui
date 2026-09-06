@@ -39,11 +39,6 @@
       "count": 4
     }
   },
-  "src/app/core/utils/date-formatter.ts": {
-    "unicorn/prefer-number-properties": {
-      "count": 2
-    }
-  },
   "src/app/features/accounting/accounting-closure-form.component.ts": {
     "no-restricted-imports": {
       "count": 1
