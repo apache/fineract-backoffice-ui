@@ -464,6 +464,19 @@ export type LoanTab = (typeof LOAN_TAB)[keyof typeof LOAN_TAB];
                         <ion-label>{{ 'LOANS.ACTIONS.PAYOUT_REFUND' | translate }}</ion-label>
                       </ion-item>
 
+                      <!-- Only a loan paid ahead of schedule has an advance balance to hand back. -->
+                      @if (hasAdvanceBalance()) {
+                        <ion-item
+                          button
+                          data-testid="loan-refund-by-cash-action"
+                          appRequiresPermission="REFUNDBYCASH_LOAN"
+                          (click)="onLoanTransactionAction('refundByCash')"
+                        >
+                          <ion-icon slot="start" name="cash-outline"></ion-icon>
+                          <ion-label>{{ 'LOANS.ACTIONS.REFUND_BY_CASH' | translate }}</ion-label>
+                        </ion-item>
+                      }
+
                       <ion-item
                         button
                         data-testid="loan-goodwill-credit-action"
@@ -1607,6 +1620,25 @@ export class LoanViewComponent implements OnInit {
   readonly isOverpaid = computed(
     () => (this.loan()?.status as unknown as Record<string, unknown>)?.['overpaid'] === true,
   );
+
+  /**
+   * A cash refund returns money the borrower paid ahead of schedule, so the platform accepts it
+   * only while the loan is still active *and* carries an advance balance. Both halves matter, and
+   * each fails differently: an active loan with nothing paid ahead answers `403`
+   * `error.msg.loan.refund.amount.invalid` ("loan is not paid in advance"), while an overpaid —
+   * therefore closed — loan answers `400` `error.msg.loan.refund.account.is.not.active`. Offering
+   * the action outside that window would hand the user something that can only fail, which is the
+   * conditional-offering rule #268 established for undo-last-disbursal.
+   *
+   * `paidInAdvance` is not on the generated `GetLoansLoanIdResponse` (see #448), so it is read
+   * defensively rather than through the typed model — the same shape as `isOverpaid` above.
+   */
+  readonly hasAdvanceBalance = computed(() => {
+    const block = (this.loan() as unknown as Record<string, unknown> | undefined)?.[
+      'paidInAdvance'
+    ] as { paidInAdvance?: number } | undefined;
+    return (block?.paidInAdvance ?? 0) > 0;
+  });
 
   /** Recovery payments and undoing a write-off both require the loan to be written off. */
   readonly isWrittenOff = computed(
