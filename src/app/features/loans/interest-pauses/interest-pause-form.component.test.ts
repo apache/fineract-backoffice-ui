@@ -22,7 +22,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InterestPauseFormComponent } from './interest-pause-form.component';
 import { LoanInterestPauseService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
@@ -32,8 +32,19 @@ describe('InterestPauseFormComponent', () => {
   let serviceSpy: SpyObj<LoanInterestPauseService>;
   let routerSpy: SpyObj<Router>;
 
-  beforeEach(async () => {
-    serviceSpy = createSpyObj(['postLoansLoanIdInterestPauses']);
+  async function setup(
+    params?: { loanId: string; variationId?: string },
+    pauses: { id: number; startDate: string | number[]; endDate: string | number[] }[] = [],
+  ) {
+    const routeParams = params ?? { loanId: '1' };
+    serviceSpy = createSpyObj([
+      'getLoansLoanIdInterestPauses',
+      'postLoansLoanIdInterestPauses',
+      'putLoansLoanIdInterestPausesVariationId',
+    ]);
+    serviceSpy.getLoansLoanIdInterestPauses.mockReturnValue(
+      of(pauses) as unknown as ReturnType<LoanInterestPauseService['getLoansLoanIdInterestPauses']>,
+    );
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
@@ -43,7 +54,7 @@ describe('InterestPauseFormComponent', () => {
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: convertToParamMap({ loanId: '1' }) } },
+          useValue: { snapshot: { paramMap: convertToParamMap(routeParams) } },
         },
         provideNoopAnimations(),
       ],
@@ -52,19 +63,22 @@ describe('InterestPauseFormComponent', () => {
     fixture = TestBed.createComponent(InterestPauseFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
+  }
 
-  it('should read the loan id from the route', () => {
+  it('should read the loan id from the route', async () => {
+    await setup();
+
     expect(component).toBeTruthy();
     expect(component.loanId).toBe(1);
   });
 
-  it('should post the formatted dates and navigate to the list', () => {
+  it('should post the formatted dates and navigate to the list', async () => {
+    await setup();
     serviceSpy.postLoansLoanIdInterestPauses.mockReturnValue(
       of({}) as unknown as ReturnType<LoanInterestPauseService['postLoansLoanIdInterestPauses']>,
     );
-    component.startDate = '2026-01-01';
-    component.endDate = '2026-02-01';
+    component.startDate.set('2026-01-01');
+    component.endDate.set('2026-02-01');
 
     component.onSubmit();
 
@@ -78,5 +92,60 @@ describe('InterestPauseFormComponent', () => {
       }),
     );
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans', 1, 'interest-pauses']);
+  });
+
+  it('should load and pre-fill the selected pause in edit mode', async () => {
+    await setup({ loanId: '1', variationId: '7' }, [
+      { id: 6, startDate: '2026-03-10', endDate: '2026-03-20' },
+      { id: 7, startDate: [2026, 4, 1], endDate: [2026, 4, 8] },
+    ]);
+
+    expect(component.isEditMode()).toBe(true);
+    expect(component.variationId).toBe(7);
+    expect(component.startDate()).toBe('2026-04-01');
+    expect(component.endDate()).toBe('2026-04-08');
+  });
+
+  it('should put the formatted dates and navigate to the list in edit mode', async () => {
+    await setup({ loanId: '1', variationId: '7' }, [
+      { id: 7, startDate: '2026-04-01', endDate: '2026-04-08' },
+    ]);
+    serviceSpy.putLoansLoanIdInterestPausesVariationId.mockReturnValue(
+      of({}) as unknown as ReturnType<
+        LoanInterestPauseService['putLoansLoanIdInterestPausesVariationId']
+      >,
+    );
+    component.startDate.set('2026-04-02');
+    component.endDate.set('2026-04-09');
+
+    component.onSubmit();
+
+    expect(serviceSpy.putLoansLoanIdInterestPausesVariationId).toHaveBeenCalledWith(
+      1,
+      7,
+      expect.objectContaining({
+        startDate: '02 April 2026',
+        endDate: '09 April 2026',
+        dateFormat: 'dd MMMM yyyy',
+        locale: 'en',
+      }),
+    );
+    expect(serviceSpy.postLoansLoanIdInterestPauses).not.toHaveBeenCalled();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans', 1, 'interest-pauses']);
+  });
+
+  it('should re-enable the edit form when the update is rejected', async () => {
+    await setup({ loanId: '1', variationId: '7' }, [
+      { id: 7, startDate: '2026-04-01', endDate: '2026-04-08' },
+    ]);
+    serviceSpy.putLoansLoanIdInterestPausesVariationId.mockReturnValue(
+      throwError(() => new Error('overlap')) as ReturnType<
+        LoanInterestPauseService['putLoansLoanIdInterestPausesVariationId']
+      >,
+    );
+    component.onSubmit();
+
+    expect(component.isSaving()).toBe(false);
+    expect(routerSpy.navigate).not.toHaveBeenCalled();
   });
 });

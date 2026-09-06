@@ -393,7 +393,8 @@
   "LoanInterestPauseService": [
     "deleteLoansLoanIdInterestPausesVariationId",
     "getLoansLoanIdInterestPauses",
-    "postLoansLoanIdInterestPauses"
+    "postLoansLoanIdInterestPauses",
+    "putLoansLoanIdInterestPausesVariationId"
   ],
   "LoanOriginatorsService": [
     "deleteLoanOriginatorsOriginatorId",

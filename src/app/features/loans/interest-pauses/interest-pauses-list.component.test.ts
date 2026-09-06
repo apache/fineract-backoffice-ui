@@ -79,6 +79,12 @@ describe('InterestPausesListComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans', 1, 'interest-pauses', 'create']);
   });
 
+  it('should navigate to edit for the selected pause', () => {
+    component.onEdit({ id: 5 });
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans', 1, 'interest-pauses', 'edit', 5]);
+  });
+
   it('should delete after confirmation and reload', async () => {
     serviceSpy.deleteLoansLoanIdInterestPausesVariationId.mockReturnValue(
       of({}) as unknown as ReturnType<

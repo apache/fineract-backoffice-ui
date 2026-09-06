@@ -21,7 +21,11 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { LoanInterestPauseService, InterestPauseRequestDto } from '../../../api';
+import {
+  LoanInterestPauseService,
+  InterestPauseRequestDto,
+  InterestPauseResponseDto,
+} from '../../../api';
 import {
   IonButton,
   IonCard,
@@ -36,14 +40,16 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import {
+  formatArrayDate,
   formatDateToFineract,
   FINERACT_DATE_FORMAT,
   FINERACT_LOCALE,
+  toIsoDate,
 } from '../../../core/utils/date-formatter';
 
 /**
- * Create form for an interest pause period on a loan. Submits a start/end date pair
- * formatted with the Fineract date format and locale. The loan id is taken from the route.
+ * Create or edit an interest pause period on a loan. Submits a start/end date pair formatted
+ * with the Fineract date format and locale. The loan and variation ids come from the route.
  */
 @Component({
   selector: 'app-interest-pause-form',
@@ -67,7 +73,9 @@ import {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'INTEREST_PAUSES.CREATE' | translate }}</ion-card-title>
+          <ion-card-title>
+            {{ (isEditMode() ? 'INTEREST_PAUSES.EDIT' : 'INTEREST_PAUSES.CREATE') | translate }}
+          </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -84,7 +92,8 @@ import {
                     data-testid="startDate-picker"
                     presentation="date"
                     name="startDate"
-                    [(ngModel)]="startDate"
+                    [ngModel]="startDate()"
+                    (ngModelChange)="startDate.set($event)"
                     required
                   ></ion-datetime>
                 </ng-template>
@@ -101,7 +110,8 @@ import {
                     data-testid="endDate-picker"
                     presentation="date"
                     name="endDate"
-                    [(ngModel)]="endDate"
+                    [ngModel]="endDate()"
+                    (ngModelChange)="endDate.set($event)"
                     required
                   ></ion-datetime>
                 </ng-template>
@@ -151,16 +161,50 @@ export class InterestPauseFormComponent implements OnInit {
   private readonly router = inject(Router);
 
   loanId: number | null = null;
+  variationId: number | null = null;
+  readonly isEditMode = signal(false);
   readonly isSaving = signal(false);
 
-  startDate: string | null = null;
-  endDate: string | null = null;
+  readonly startDate = signal<string | null>(null);
+  readonly endDate = signal<string | null>(null);
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('loanId');
-    if (id) {
-      this.loanId = +id;
+    const loanId = this.route.snapshot.paramMap.get('loanId');
+    const variationId = this.route.snapshot.paramMap.get('variationId');
+    if (loanId) {
+      this.loanId = +loanId;
     }
+    if (variationId) {
+      this.variationId = +variationId;
+      this.isEditMode.set(true);
+      this.loadPause();
+    }
+  }
+
+  private loadPause(): void {
+    if (!this.loanId || !this.variationId) return;
+
+    this.pauseService.getLoansLoanIdInterestPauses(this.loanId).subscribe({
+      next: (pauses: InterestPauseResponseDto[]) => {
+        const pause = pauses.find(({ id }) => id === this.variationId);
+        if (pause) {
+          this.startDate.set(this.toFormDate(pause.startDate));
+          this.endDate.set(this.toFormDate(pause.endDate));
+        }
+      },
+      // The global error interceptor displays Fineract's response to the user.
+      error: () => undefined,
+    });
+  }
+
+  /**
+   * Fineract's OpenAPI model declares these values as ISO strings, while older deployments
+   * serialize `LocalDate` as `[year, month, day]`. Accept both so editing also works against
+   * installations whose response shape predates the generated model.
+   */
+  private toFormDate(value: unknown): string | null {
+    const date = Array.isArray(value) ? formatArrayDate(value) : toIsoDate(String(value ?? ''));
+    return date && date !== '-' ? date : null;
   }
 
   onSubmit(): void {
@@ -168,13 +212,22 @@ export class InterestPauseFormComponent implements OnInit {
     this.isSaving.set(true);
 
     const request: InterestPauseRequestDto = {
-      startDate: formatDateToFineract(this.startDate),
-      endDate: formatDateToFineract(this.endDate),
+      startDate: formatDateToFineract(this.startDate()),
+      endDate: formatDateToFineract(this.endDate()),
       dateFormat: FINERACT_DATE_FORMAT,
       locale: FINERACT_LOCALE,
     };
 
-    this.pauseService.postLoansLoanIdInterestPauses(this.loanId, request).subscribe({
+    const save$ =
+      this.isEditMode() && this.variationId
+        ? this.pauseService.putLoansLoanIdInterestPausesVariationId(
+            this.loanId,
+            this.variationId,
+            request,
+          )
+        : this.pauseService.postLoansLoanIdInterestPauses(this.loanId, request);
+
+    save$.subscribe({
       next: () => this.router.navigate(['/loans', this.loanId, 'interest-pauses']),
       error: () => this.isSaving.set(false),
     });

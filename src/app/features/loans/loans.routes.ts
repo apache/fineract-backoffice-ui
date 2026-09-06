@@ -162,6 +162,15 @@ export const LOANS_ROUTES: Routes = [
       ),
   },
   {
+    path: ':loanId/interest-pauses/edit/:variationId',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_INTEREST_PAUSE' },
+    loadComponent: () =>
+      import('./interest-pauses/interest-pause-form.component').then(
+        (m) => m.InterestPauseFormComponent,
+      ),
+  },
+  {
     path: ':loanId/post-dated-checks',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_LOAN' },

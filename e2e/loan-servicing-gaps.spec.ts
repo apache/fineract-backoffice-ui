@@ -18,7 +18,7 @@
  */
 
 /**
- * The loan gaps closed in #266, against mocks.
+ * The loan gaps closed in #266 and the interest-pause edit flow from #283, against mocks.
  *
  * Mocked rather than backend for two reasons. The four data tabs need a loan carrying term
  * variations, overdue charges, originators and a delinquency block, and a fresh platform
@@ -44,6 +44,7 @@ const MENU_TRIGGER = '#loanMenu-trigger';
 const UNDO_APPROVAL_ITEM = 'loan-undo-approval-action';
 const WRONG_CLIENT = 'approved against the wrong client';
 const OFFICER_NAME = 'Field Officer';
+const INTEREST_PAUSE_ID = 77;
 
 interface LoanOverrides {
   status?: Record<string, unknown>;
@@ -88,10 +89,11 @@ function loan(overrides: LoanOverrides) {
 /** Records what the page sent, so the assertions are about requests rather than appearances. */
 interface Probe {
   commands: { command: string | null; body: unknown }[];
+  interestPauseUpdates: { variationId: number; body: Record<string, unknown> }[];
 }
 
 async function loginWithLoan(page: Page, overrides: LoanOverrides): Promise<Probe> {
-  const probe: Probe = { commands: [] };
+  const probe: Probe = { commands: [], interestPauseUpdates: [] };
 
   await page.route('**/config.json*', async (route) => {
     await route.fulfill({
@@ -130,6 +132,40 @@ async function loginWithLoan(page: Page, overrides: LoanOverrides): Promise<Prob
     await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
   });
 
+  await page.route(
+    new RegExp(`/api/v1/loans/${LOAN_ID}/interest-pauses(?:/\\d+)?(?:\\?|$)`),
+    async (route) => {
+      const request = route.request();
+      if (request.method() === 'PUT') {
+        const variationId = Number(new URL(request.url()).pathname.split('/').pop());
+        probe.interestPauseUpdates.push({
+          variationId,
+          body: request.postDataJSON() as Record<string, unknown>,
+        });
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ loanId: LOAN_ID, resourceId: variationId }),
+        });
+        return;
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        // Fineract deployments can serialize LocalDate this way; the form accepts this as well
+        // as the ISO strings declared by the generated OpenAPI model.
+        body: JSON.stringify([
+          {
+            id: INTEREST_PAUSE_ID,
+            startDate: [2026, 4, 1],
+            endDate: [2026, 4, 8],
+          },
+        ]),
+      });
+    },
+  );
+
   await page.route(/\/api\/v1\/loans\/456(\?|$)/, async (route) => {
     const request = route.request();
     if (request.method() === 'POST') {
@@ -164,6 +200,31 @@ async function loginWithLoan(page: Page, overrides: LoanOverrides): Promise<Prob
 const tab = (page: Page, testId: string) => page.getByTestId(testId);
 
 test.describe('Loan servicing gaps', () => {
+  test('edits an interest pause through PUT while preserving its existing dates', async ({
+    page,
+  }) => {
+    const probe = await loginWithLoan(page, {});
+
+    await page.goto(`/loans/${LOAN_ID}/interest-pauses`);
+    await page.getByRole('button', { name: 'Edit' }).click();
+
+    await expect(page).toHaveURL(`/loans/${LOAN_ID}/interest-pauses/edit/${INTEREST_PAUSE_ID}`);
+    await expect(page.getByText('Edit Interest Pause', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect.poll(() => probe.interestPauseUpdates.length).toBe(1);
+    expect(probe.interestPauseUpdates[0]).toEqual({
+      variationId: INTEREST_PAUSE_ID,
+      body: {
+        startDate: '01 April 2026',
+        endDate: '08 April 2026',
+        dateFormat: 'dd MMMM yyyy',
+        locale: 'en',
+      },
+    });
+    await expect(page).toHaveURL(`/loans/${LOAN_ID}/interest-pauses`);
+  });
+
   test('undo approval sends an empty body, without the locale the platform refuses', async ({
     page,
   }) => {
