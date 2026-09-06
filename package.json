@@ -28,7 +28,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "generate-api": "npm run copy-swagger && npm run clean-api && npx openapi-generator-cli generate -i ./api-spec/fineract.json -g typescript-angular -o src/app/api -t templates/openapi-generator --additional-properties=ngVersion=22.0.7",
-    "copy-swagger": "node scripts/preprocess-spec.mjs",
+    "copy-swagger": "mkdir -p api-spec && node scripts/preprocess-spec.mjs ${FINERACT_SWAGGER_PATH:-./public/api/fineract.json} api-spec/fineract.json",
     "clean-api": "node -e \"fs.rmSync('src/app/api/api',{recursive:true,force:true});fs.rmSync('src/app/api/model',{recursive:true,force:true})\"",
     "verify-api-client": "npm run generate-api && git diff --exit-code src/app/api",
     "i18n:check": "node scripts/check-translations.mjs",
