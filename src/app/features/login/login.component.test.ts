@@ -87,6 +87,20 @@ describe('LoginComponent', () => {
     expect(component['loginForm'].valid).toBe(false);
   });
 
+  it('announces invalid fields only after interaction', () => {
+    const username = fixture.nativeElement.querySelector('#username') as HTMLInputElement;
+    const password = fixture.nativeElement.querySelector('#password') as HTMLInputElement;
+
+    expect(username.hasAttribute('aria-invalid')).toBe(false);
+    expect(password.hasAttribute('aria-invalid')).toBe(false);
+
+    component['loginForm'].controls.username.markAsTouched();
+    fixture.detectChanges();
+
+    expect(username.getAttribute('aria-invalid')).toBe('true');
+    expect(password.hasAttribute('aria-invalid')).toBe(false);
+  });
+
   it('should call login and navigate on success', () => {
     authServiceSpy.login.mockReturnValue(of({} as UserSession));
 
