@@ -65,9 +65,14 @@ collapsed column back on rotating to landscape rather than an overlay they never
 attribute rather than a second template, so a column added to `columns()` appears in both layouts
 and cannot be added to one only.
 
-**The header sheds what does not fit.** Business date, render time, the guide, the user's name and
-the language selector are all reachable elsewhere and are hidden rather than crushed. Navigation,
-search and sign-out stay.
+**The header moves what does not fit.** Business date, render time, the guide, the user's name and
+the language selector go into a popover behind an overflow button (`#header-overflow`) rather than
+being dropped: they are rendered from the same template as the wide header, so a control cannot be
+added to one layout and forgotten in the other. Navigation, search and sign-out stay in the bar.
+
+Anything that points at one of those controls has to account for both placements — the guided tour
+does it with a grouped selector, `.system-info, #header-overflow`, which resolves to whichever
+exists at the current width. See `DOCS/GUIDED_TOUR.md`.
 
 **Spacing tightens.** `--content-padding` drops from `2rem` to `12px` and `--header-height` from
 64px to 56px. Both are tokens, so a deployment can set them — see `DOCS/CUSTOMIZATION.md`.

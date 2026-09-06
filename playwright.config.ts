@@ -41,6 +41,17 @@ const TWO_FACTOR_SPECS = ['two-factor-backend.spec.ts'];
  */
 const MOBILE_SPECS = ['mobile-shell.spec.ts'];
 
+/**
+ * Specs that have something to assert at *both* viewports, and so run in `mocked` and in
+ * `mobile`.
+ *
+ * Not members of MOBILE_SPECS, because that list is also `mocked`'s testIgnore — joining it
+ * would take the desktop half of these specs out of the run entirely. Each one carries
+ * describe-level viewport guards, so the half that does not apply at the current width is
+ * skipped rather than asserting the opposite of the intended behaviour.
+ */
+const DUAL_VIEWPORT_SPECS = ['guidance-tour.spec.ts'];
+
 const BACKEND_SPECS = [
   'batch-api-operations.spec.ts',
   'center-servicing.spec.ts',
@@ -151,7 +162,7 @@ export default defineConfig({
       // scripts/check-responsive.mjs holds the CSS side of the same agreement.
       name: 'mobile',
       use: { ...devices['Pixel 7'] },
-      testMatch: MOBILE_SPECS,
+      testMatch: [...MOBILE_SPECS, ...DUAL_VIEWPORT_SPECS],
     },
     {
       // Drives a real Fineract end to end. Slow, and the only half that needs the
