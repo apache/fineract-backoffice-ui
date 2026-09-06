@@ -139,6 +139,38 @@ test.describe('the shell at a phone viewport', () => {
     expect(columns.trim().split(/\s+/)).toHaveLength(1);
   });
 
+  test('keeps the paginator label intact on a phone viewport', async ({ page }) => {
+    await page.route(/\/api\/v1\/clients/, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          totalFilteredRecords: 21,
+          pageItems: [
+            {
+              id: 1,
+              accountNo: '000000001',
+              displayName: 'Aisha Rahman',
+              status: { value: 'Active' },
+            },
+          ],
+        }),
+      }),
+    );
+    await page.goto('/clients');
+
+    const paginator = page.locator('app-paginator .paginator');
+    await expect(paginator).toBeVisible();
+    const styles = await paginator.evaluate((element) => ({
+      display: getComputedStyle(element).display,
+      columns: getComputedStyle(element).gridTemplateColumns,
+      labelWhiteSpace: getComputedStyle(element.querySelector('.items-per-page')!).whiteSpace,
+    }));
+    expect(styles.display).toBe('grid');
+    expect(styles.columns.trim().startsWith('max-content')).toBe(true);
+    expect(styles.labelWhiteSpace).toBe('nowrap');
+  });
+
   describe_drawer();
 
   test('renders tables as cards instead of a sideways scroll', async ({ page }) => {
