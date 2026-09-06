@@ -21,12 +21,8 @@
 
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  LOAN_TAB,
-  LoanViewComponent,
-  isoToFineractDate,
-  toEditableDate,
-} from './loan-view.component';
+import { LOAN_TAB, LoanViewComponent, toEditableDate } from './loan-view.component';
+import { formatDateToFineract } from '../../core/utils/date-formatter';
 import {
   LoansService,
   LoanBuyDownFeesService,
@@ -466,17 +462,17 @@ describe('LoanViewComponent', () => {
   });
 
   describe('date conversion for the disbursement command', () => {
-    it('reads a bare YYYY-MM-DD in local time', () => {
-      // `new Date('2026-08-01')` is UTC midnight, which `formatDateToFineract` then reads back
-      // with local getters — one day earlier for anyone west of Greenwich. The 1st of the month
-      // is the case that exposes it, because the shift crosses into the previous month.
-      expect(isoToFineractDate('2026-08-01')).toBe('01 August 2026');
-      expect(isoToFineractDate('2026-01-01')).toBe('01 January 2026');
+    it('reads the form value as the calendar date it spells', () => {
+      // The form binds a bare `YYYY-MM-DD`, which `formatDateToFineract` reads through its parts
+      // rather than as UTC midnight. See #496 — before that fix these came out a day early west
+      // of Greenwich, and the 1st of the month crossed into the previous one.
+      expect(formatDateToFineract('2026-08-01')).toBe('01 August 2026');
+      expect(formatDateToFineract('2026-01-01')).toBe('01 January 2026');
     });
 
     it('yields nothing for a value the command could not parse', () => {
-      expect(isoToFineractDate('')).toBe('');
-      expect(isoToFineractDate('not-a-date')).toBe('');
+      expect(formatDateToFineract('')).toBe('');
+      expect(formatDateToFineract('not-a-date')).toBe('');
     });
 
     it('accepts either shape the disbursement endpoint answers with', () => {

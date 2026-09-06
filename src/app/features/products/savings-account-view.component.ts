@@ -51,7 +51,6 @@ import {
 } from './savings-undo-approval-dialog.component';
 import {
   formatDateToFineract,
-  toIsoDate,
   FINERACT_DATE_FORMAT,
   FINERACT_LOCALE,
 } from '../../core/utils/date-formatter';
@@ -964,7 +963,7 @@ export class SavingsAccountViewComponent implements OnInit {
     ).subscribe((confirmed) => {
       if (!confirmed) return;
       this.runCommand(command, {
-        [dateField]: formatDateToFineract(toIsoDate(new Date())),
+        [dateField]: formatDateToFineract(new Date()),
         dateFormat: FINERACT_DATE_FORMAT,
         locale: FINERACT_LOCALE,
       });
@@ -993,7 +992,7 @@ export class SavingsAccountViewComponent implements OnInit {
         if (!result) return;
         this.runCommand('assignSavingsOfficer', {
           toSavingsOfficerId: result.toSavingsOfficerId,
-          assignmentDate: formatDateToFineract(toIsoDate(new Date())),
+          assignmentDate: formatDateToFineract(new Date()),
           dateFormat: FINERACT_DATE_FORMAT,
           locale: FINERACT_LOCALE,
         });
@@ -1027,7 +1026,7 @@ export class SavingsAccountViewComponent implements OnInit {
           {
             transactionAmount: result.transactionAmount,
             reasonForBlock: result.reasonForBlock,
-            transactionDate: formatDateToFineract(toIsoDate(new Date())),
+            transactionDate: formatDateToFineract(new Date()),
             dateFormat: FINERACT_DATE_FORMAT,
             locale: FINERACT_LOCALE,
           } as never,

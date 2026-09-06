@@ -32,6 +32,7 @@ import {
 
 import { CentersService } from '../../api';
 import { OVERLAY, TranslatePipe } from '../../core/adapters';
+import { toIsoDate } from '../../core/utils/date-formatter';
 
 export interface CenterActionDialogData {
   command: 'activate' | 'close';
@@ -156,7 +157,7 @@ export class CenterActionDialogComponent implements OnInit {
   readonly data = input.required<CenterActionDialogData>();
 
   readonly closureReasons = signal<{ id?: number; name?: string }[]>([]);
-  date = new Date().toISOString();
+  date = toIsoDate(new Date());
   closureReasonId?: number;
 
   ngOnInit(): void {

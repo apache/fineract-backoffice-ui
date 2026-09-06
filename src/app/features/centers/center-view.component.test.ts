@@ -163,7 +163,10 @@ describe('CenterViewComponent', () => {
     create();
     flushCenter({ ...ACTIVE_CENTER, status: { id: 100, value: 'Pending' } });
 
-    dialog.open.mockResolvedValue({ date: '2026-02-01T00:00:00.000Z' });
+    // The dialogs seed their picker with `toIsoDate(new Date())` and bind an ion-datetime, so
+    // what comes back is a calendar date, not a UTC instant. A `...Z` fixture here used to pass
+    // only because both the fixture and the formatter agreed to read it as UTC — see #496.
+    dialog.open.mockResolvedValue({ date: '2026-02-01' });
     await component.onAction('activate');
 
     const request = http.expectOne(
@@ -183,7 +186,7 @@ describe('CenterViewComponent', () => {
     create();
     flushCenter();
 
-    dialog.open.mockResolvedValue({ date: '2026-03-02T00:00:00.000Z', closureReasonId: 9 });
+    dialog.open.mockResolvedValue({ date: '2026-03-02', closureReasonId: 9 });
     await component.onAction('close');
 
     const request = http.expectOne(
@@ -306,7 +309,7 @@ describe('CenterViewComponent', () => {
 
     dialog.open.mockResolvedValue({
       title: WEEKLY_COLLECTION,
-      startDate: '2026-04-06T00:00:00.000Z',
+      startDate: '2026-04-06',
       frequency: 2,
       interval: 1,
       typeId: 1,
@@ -338,7 +341,7 @@ describe('CenterViewComponent', () => {
 
     dialog.open.mockResolvedValue({
       title: 'Fortnightly collection',
-      startDate: '2026-04-06T00:00:00.000Z',
+      startDate: '2026-04-06',
       frequency: 1,
       interval: 2,
       typeId: 1,

@@ -225,6 +225,18 @@ jobs:
             ${{ runner.os }}-angular-test-
       - name: Run unit tests on Vitest
         run: npm run test:unit
+      # The runner's clock is UTC and playwright.config.ts pins Asia/Kolkata, so every timezone
+      # this project tests at is at or east of Greenwich — and a local/UTC date mix-up is
+      # invisible at a non-negative offset. That is how #496 shipped: a bare `YYYY-MM-DD` read as
+      # UTC midnight and printed back with local getters submitted the day before, for users the
+      # suite never simulated.
+      #
+      # A second pass costs about a minute and covers the whole application rather than the one
+      # helper, which no assertion running only at UTC can do.
+      - name: Run unit tests west of Greenwich
+        run: npm run test:unit
+        env:
+          TZ: America/New_York
       - name: Run microfrontend tests on Vitest
         run: npm run test:mfe
 

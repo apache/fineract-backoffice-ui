@@ -1384,7 +1384,7 @@ export class ClientViewComponent implements OnInit {
     // `proposeTransfer` requires a date and the locale/format that make it parseable;
     // `proposeAndAcceptTransfer` rejects `transferDate` outright, so neither is sent for it.
     if (mode === 'propose' && result.transferDate) {
-      body['transferDate'] = formatDateToFineract(new Date(result.transferDate));
+      body['transferDate'] = formatDateToFineract(result.transferDate);
       body['locale'] = FINERACT_LOCALE;
       body['dateFormat'] = FINERACT_DATE_FORMAT;
     }

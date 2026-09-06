@@ -610,7 +610,7 @@ export class GroupViewComponent implements OnInit {
     if (!result) return;
 
     this.runCommand('activate', {
-      activationDate: formatDateToFineract(new Date(result.actionDate)),
+      activationDate: formatDateToFineract(result.actionDate),
       locale: FINERACT_LOCALE,
       dateFormat: FINERACT_DATE_FORMAT,
     });
@@ -626,7 +626,7 @@ export class GroupViewComponent implements OnInit {
     if (!result) return;
 
     this.runCommand('close', {
-      closureDate: formatDateToFineract(new Date(result.actionDate)),
+      closureDate: formatDateToFineract(result.actionDate),
       closureReasonId: result.closureReasonId,
       locale: FINERACT_LOCALE,
       dateFormat: FINERACT_DATE_FORMAT,

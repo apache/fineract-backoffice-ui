@@ -32,6 +32,7 @@ import { DialogService } from '../../../core/services/dialog.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { DOWNLOAD, TranslatePipe } from '../../../core/adapters';
 import { toCsv } from '../../../core/utils/csv';
+import { toIsoDate } from '../../../core/utils/date-formatter';
 import {
   IonAccordion,
   IonAccordionGroup,
@@ -318,11 +319,14 @@ export class AuditLogsListComponent implements OnInit {
           const orderBy = this.currentSort.active;
           const sortOrder = this.currentSort.direction.toUpperCase() || 'DESC';
 
+          // Through `toIsoDate`, not `toISOString()`: the latter converts to UTC first, so a
+          // filter set to today reads as tomorrow for anyone east of Greenwich once the local
+          // clock passes the offset, and as yesterday for anyone west of it.
           const fromDate = this.activeFilters.makerDateTimeFrom
-            ? this.activeFilters.makerDateTimeFrom.toISOString().split('T', 1)[0]
+            ? toIsoDate(this.activeFilters.makerDateTimeFrom)
             : undefined;
           const toDate = this.activeFilters.makerDateTimeTo
-            ? this.activeFilters.makerDateTimeTo.toISOString().split('T', 1)[0]
+            ? toIsoDate(this.activeFilters.makerDateTimeTo)
             : undefined;
 
           return this.auditsService
