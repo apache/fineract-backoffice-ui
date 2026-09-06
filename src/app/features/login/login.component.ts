@@ -129,7 +129,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
                 id="tenantId"
                 type="text"
                 formControlName="tenantId"
-                [attr.aria-invalid]="loginForm.get('tenantId')?.invalid"
+                [attr.aria-invalid]="showInvalid('tenantId')"
               />
             </div>
 
@@ -140,7 +140,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
                 type="text"
                 formControlName="username"
                 autocomplete="username"
-                [attr.aria-invalid]="loginForm.get('username')?.invalid"
+                [attr.aria-invalid]="showInvalid('username')"
               />
             </div>
 
@@ -151,7 +151,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
                 type="password"
                 formControlName="password"
                 autocomplete="current-password"
-                [attr.aria-invalid]="loginForm.get('password')?.invalid"
+                [attr.aria-invalid]="showInvalid('password')"
               />
             </div>
 
@@ -383,6 +383,12 @@ export class LoginComponent {
     username: ['', Validators.required],
     password: ['', Validators.required],
   });
+
+  /** Announce validation only after the user has interacted with the field. */
+  protected showInvalid(name: 'tenantId' | 'username' | 'password'): 'true' | null {
+    const control = this.loginForm.controls[name];
+    return control.invalid && (control.touched || control.dirty) ? 'true' : null;
+  }
 
   /**
    * Switches the application language at runtime.
