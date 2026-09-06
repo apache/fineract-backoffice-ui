@@ -137,19 +137,6 @@ export function toEditableDate(value: unknown): string {
   return typeof value === 'string' ? value.split('T', 1)[0] : '';
 }
 
-/**
- * Converts a `YYYY-MM-DD` form value into the `dd MMMM yyyy` Fineract is told to parse.
- *
- * The parts are split by hand rather than handed to `new Date(iso)`, which reads a bare
- * `YYYY-MM-DD` as UTC midnight while `formatDateToFineract` reads the day back in local time —
- * a combination that moves the date a day earlier for every user west of Greenwich.
- */
-export function isoToFineractDate(iso: string): string {
-  const [year, month, day] = (iso ?? '').split('-').map(Number);
-  if (!year || !month || !day) return '';
-  return formatDateToFineract([year, month, day]);
-}
-
 @Component({
   selector: 'app-loan-view',
   standalone: true,
@@ -1949,7 +1936,7 @@ export class LoanViewComponent implements OnInit {
   saveDisbursementDetail() {
     if (!this.editDisbId) return;
 
-    const updatedDate = isoToFineractDate(this.disbursementEditForm.expectedDisbursementDate);
+    const updatedDate = formatDateToFineract(this.disbursementEditForm.expectedDisbursementDate);
     if (!updatedDate) {
       this.notifications.error(this.translate.instant('LOANS.EXPECTED_DISBURSEMENT_REQUIRED'));
       return;
@@ -1957,7 +1944,8 @@ export class LoanViewComponent implements OnInit {
 
     this.disbursementDetailsService
       .putLoansLoanIdDisbursementsDisbursementId(this.loanId(), this.editDisbId, {
-        expectedDisbursementDate: isoToFineractDate(this.originalDisbursementDate) || updatedDate,
+        expectedDisbursementDate:
+          formatDateToFineract(this.originalDisbursementDate) || updatedDate,
         updatedExpectedDisbursementDate: updatedDate,
         updatedPrincipal: Number(this.disbursementEditForm.principal) || 0,
         dateFormat: FINERACT_DATE_FORMAT,
@@ -2079,7 +2067,7 @@ export class LoanViewComponent implements OnInit {
 
     this.runLoanCommand('disbursetosavings', {
       ...result,
-      actualDisbursementDate: formatDateToFineract(new Date(result.actualDisbursementDate)),
+      actualDisbursementDate: formatDateToFineract(result.actualDisbursementDate),
       dateFormat: FINERACT_DATE_FORMAT,
       locale: FINERACT_LOCALE,
     });
@@ -2093,7 +2081,7 @@ export class LoanViewComponent implements OnInit {
     if (!result) return;
 
     this.runLoanCommand('unassignloanofficer', {
-      unassignedDate: formatDateToFineract(new Date(result.unassignedDate)),
+      unassignedDate: formatDateToFineract(result.unassignedDate),
       dateFormat: FINERACT_DATE_FORMAT,
       locale: FINERACT_LOCALE,
     });

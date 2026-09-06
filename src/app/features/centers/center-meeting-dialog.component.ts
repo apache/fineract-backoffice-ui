@@ -35,6 +35,7 @@ import {
 import { BASE_PATH } from '../../api';
 import { OVERLAY, TranslatePipe } from '../../core/adapters';
 import { CenterMeeting } from './center-detail.model';
+import { toIsoDate } from '../../core/utils/date-formatter';
 
 export interface CenterMeetingDialogData {
   centerId: number;
@@ -221,7 +222,7 @@ export class CenterMeetingDialogComponent implements OnInit {
   readonly dayOptions = signal<CodeOption[]>([]);
 
   title = '';
-  startDate = new Date().toISOString();
+  startDate = toIsoDate(new Date());
   frequency = 2;
   interval = 1;
   typeId = 1;

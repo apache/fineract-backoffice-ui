@@ -468,7 +468,7 @@ export class ShareAccountViewComponent implements OnInit {
     const today = toIsoDate(new Date());
     const stamped = formatArrayDate(this.account()?.timeline?.[floorKey]);
     const iso = stamped !== '-' && stamped > today ? stamped : today;
-    return formatDateToFineract(iso.split('-').map(Number));
+    return formatDateToFineract(iso);
   }
 
   /** A dated command body, under the field name this particular command expects. */

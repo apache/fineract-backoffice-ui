@@ -947,9 +947,7 @@ export class DepositAccountViewComponent implements OnInit {
   }
 
   private commandDate(floor: unknown): string {
-    // Through the parts rather than through `new Date(iso)`, which parses as UTC midnight and
-    // then reads back in local time — a day out for anyone west of Greenwich.
-    return formatDateToFineract(this.commandDateIso(floor).split('-').map(Number));
+    return formatDateToFineract(this.commandDateIso(floor));
   }
 
   /** A date the platform stamped on this account, by timeline key. */
