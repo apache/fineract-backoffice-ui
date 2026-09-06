@@ -129,7 +129,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
                 id="tenantId"
                 type="text"
                 formControlName="tenantId"
-                [attr.aria-invalid]="loginForm.get('tenantId')?.invalid"
+                [attr.aria-invalid]="(loginForm.get('tenantId')?.invalid && (loginForm.get('tenantId')?.touched || loginForm.get('tenantId')?.dirty)) ? 'true' : null"
               />
             </div>
 
@@ -140,7 +140,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
                 type="text"
                 formControlName="username"
                 autocomplete="username"
-                [attr.aria-invalid]="loginForm.get('username')?.invalid"
+                [attr.aria-invalid]="(loginForm.get('username')?.invalid && (loginForm.get('username')?.touched || loginForm.get('username')?.dirty)) ? 'true' : null"
               />
             </div>
 
@@ -151,7 +151,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
                 type="password"
                 formControlName="password"
                 autocomplete="current-password"
-                [attr.aria-invalid]="loginForm.get('password')?.invalid"
+                [attr.aria-invalid]="(loginForm.get('password')?.invalid && (loginForm.get('password')?.touched || loginForm.get('password')?.dirty)) ? 'true' : null"
               />
             </div>
 
