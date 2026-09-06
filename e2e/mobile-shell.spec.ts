@@ -161,14 +161,17 @@ test.describe('the shell at a phone viewport', () => {
 
     const paginator = page.locator('app-paginator .paginator');
     await expect(paginator).toBeVisible();
-    const styles = await paginator.evaluate((element) => ({
-      display: getComputedStyle(element).display,
-      columns: getComputedStyle(element).gridTemplateColumns,
-      labelWhiteSpace: getComputedStyle(element.querySelector('.items-per-page')!).whiteSpace,
-    }));
+    const styles = await paginator.evaluate((element) => {
+      const label = element.querySelector<HTMLElement>('.items-per-page')!;
+      return {
+        display: getComputedStyle(element).display,
+        labelWhiteSpace: getComputedStyle(label).whiteSpace,
+        labelFits: label.scrollWidth <= label.clientWidth,
+      };
+    });
     expect(styles.display).toBe('grid');
-    expect(styles.columns.trim().startsWith('max-content')).toBe(true);
     expect(styles.labelWhiteSpace).toBe('nowrap');
+    expect(styles.labelFits).toBe(true);
   });
 
   describe_drawer();
