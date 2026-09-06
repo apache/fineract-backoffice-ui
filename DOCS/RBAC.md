@@ -189,7 +189,7 @@ It changes nothing server-side. Fineract still enforces permissions on every req
 
 ```bash
 # Unit — guard semantics, the Access Denied page, navigation filtering
-npm run test -- --watch=false --browsers=ChromeHeadless
+npm run test:unit
 
 # Static — route/navigation parity
 npm run check:route-permissions

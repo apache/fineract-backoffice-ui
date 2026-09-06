@@ -108,7 +108,7 @@ npm run check:licenses
 npm run check:licenses:selftest
 bash scripts/check-license.sh
 npm run build
-npm run test -- --watch=false --browsers=ChromeHeadless
+npm run test:unit
 npm run ga:check
 
 # 4. The end-to-end suites, against a real Fineract.
