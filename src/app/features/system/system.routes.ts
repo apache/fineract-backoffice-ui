@@ -23,6 +23,11 @@ import { authGuard } from '../../core/guards/auth.guard';
 
 export const SYSTEM_ROUTES: Routes = [
   {
+    path: '',
+    redirectTo: 'data-tables',
+    pathMatch: 'full',
+  },
+  {
     path: 'data-tables',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_DATATABLE' },

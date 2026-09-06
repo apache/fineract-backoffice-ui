@@ -20,7 +20,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
-import { TitleStrategy, provideRouter } from '@angular/router';
+import { TitleStrategy, provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { SYSTEM_ROUTES } from './system.routes';
 import { TranslatedTitleStrategy } from '../../core/router/translated-title.strategy';
@@ -56,11 +56,15 @@ describe('SYSTEM_ROUTES', () => {
   beforeEach(() => {
     // The guards are not under test here, and permissionGuard would reject every
     // navigation without an authenticated user.
-    const routes = SYSTEM_ROUTES.map(({ path, title }) => ({
-      path,
-      title,
-      component: RouteStub,
-    }));
+    const routes = SYSTEM_ROUTES.map((route) =>
+      route.redirectTo
+        ? route
+        : {
+            path: route.path,
+            title: route.title,
+            component: RouteStub,
+          },
+    );
 
     const adapters = provideFakeAdapters();
     i18n = adapters.i18n;
@@ -83,22 +87,24 @@ describe('SYSTEM_ROUTES', () => {
    * place for that: 49 administrative screens that all read "System".
    */
   it('gives every route its own title', () => {
-    const untitled = SYSTEM_ROUTES.filter((route) => !route.title).map((route) => route.path);
+    const untitled = SYSTEM_ROUTES.filter((route) => !route.redirectTo && !route.title).map(
+      (route) => route.path,
+    );
 
     expect(untitled).toEqual([]);
   });
 
   it('titles routes with translation keys rather than phrases', () => {
-    const notKeys = SYSTEM_ROUTES.filter((route) => !isTranslationKey(route.title)).map(
-      (route) => route.path,
-    );
+    const notKeys = SYSTEM_ROUTES.filter(
+      (route) => !route.redirectTo && !isTranslationKey(route.title),
+    ).map((route) => route.path);
 
     expect(notKeys).toEqual([]);
   });
 
   it('gives no two routes the same title', () => {
     const seen = new Map<string, string[]>();
-    for (const route of SYSTEM_ROUTES) {
+    for (const route of SYSTEM_ROUTES.filter((route) => !route.redirectTo)) {
       const key = String(route.title);
       seen.set(key, [...(seen.get(key) ?? []), String(route.path)]);
     }
@@ -108,6 +114,14 @@ describe('SYSTEM_ROUTES', () => {
     expect(collisions).toEqual([]);
   });
 
+  it('redirects the feature root to data-tables', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/system');
+
+    expect(TestBed.inject(Router).url).toBe('/system/data-tables');
+  });
+
   /**
    * The shapes this file contributes. `codes/:codeId/values` is the one that needed a
    * judgement: its heading is the code's own name, bound at runtime, so the route takes the
@@ -115,7 +129,6 @@ describe('SYSTEM_ROUTES', () => {
    * configuration screens, which is why this file needed no new translation keys at all.
    */
   const cases = [
-    { url: '/system', key: SECTION_KEY, name: SECTION_NAME },
     { url: '/system/codes', key: 'CODES.TITLE', name: 'Codes' },
     { url: '/system/codes/7/values', key: 'CODE_VALUES.TITLE', name: 'Code Values' },
     {

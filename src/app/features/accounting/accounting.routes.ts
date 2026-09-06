@@ -23,6 +23,11 @@ import { Routes } from '@angular/router';
 
 export const ACCOUNTING_ROUTES: Routes = [
   {
+    path: '',
+    redirectTo: 'chart-of-accounts',
+    pathMatch: 'full',
+  },
+  {
     path: 'chart-of-accounts',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_GLACCOUNT' },
