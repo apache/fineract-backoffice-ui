@@ -133,7 +133,9 @@ test.describe('the shell at a phone viewport', () => {
     const layout = page.locator('.dashboard-layout');
     await expect(layout).toBeVisible();
 
-    const columns = await layout.evaluate((element) => getComputedStyle(element).gridTemplateColumns);
+    const columns = await layout.evaluate(
+      (element) => getComputedStyle(element).gridTemplateColumns,
+    );
     expect(columns.trim().split(/\s+/)).toHaveLength(1);
   });
 
