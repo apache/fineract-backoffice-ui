@@ -16,7 +16,7 @@
     "main": "Main Navigation",
     "dashboard": "Dashboard",
     "clients": "Clients",
-    "clientSearchV2": "Advanced Client Search",
+    "clientSearchV2": "Client Search",
     "groups": "Groups",
     "centers": "Centers",
     "loans": "Loans",
@@ -2711,7 +2711,7 @@
     "SUCCESS": "Operation successful."
   },
   "CLIENT_SEARCH_V2": {
-    "TITLE": "Advanced Client Search",
+    "TITLE": "Client Search",
     "QUERY": "Search Query",
     "SEARCH": "Search",
     "NAME": "Client Name",
