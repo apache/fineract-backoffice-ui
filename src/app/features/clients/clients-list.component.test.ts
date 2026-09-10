@@ -59,6 +59,7 @@ describe('ClientsListComponent search', () => {
     });
     expect(component.clients()[0]).toMatchObject({ accountNo: '0004', displayName: 'Jane' });
     expect(component.totalRecords()).toBe(37);
+    expect(component.exactTotal()).toBe(true);
     expect(component.isLoading()).toBe(false);
   });
 
@@ -97,6 +98,7 @@ describe('ClientsListComponent search', () => {
     component.onFilterChange();
     const filtered = http.expectOne((req) => req.url === CLIENTS_URL);
     expect(filtered.request.params.get('status')).toBe('closed');
+    expect(component.exactTotal()).toBe(false);
     filtered.flush({ pageItems: [], totalFilteredRecords: 0 });
     component.onSearch('Jane');
     const named = http.expectOne((req) => req.url === CLIENTS_URL);
@@ -112,6 +114,7 @@ describe('ClientsListComponent search', () => {
     expect(all.request.body).toEqual({ request: { text: 'Jane' }, page: 0, size: 10 });
     all.flush(EMPTY_PAGE);
     expect(component.searchPlaceholder()).toBe('COMMON.SEARCH_PLACEHOLDER');
+    expect(component.exactTotal()).toBe(true);
   });
 
   it('preserves office sorting without sending unsupported officeName to v2', () => {

@@ -97,6 +97,14 @@ describe('DataTableComponent', () => {
     expect(renderedNames()).toEqual(['Alice', 'Bob']);
   });
 
+  it.each([1, 11, 21])('preserves an exact server total of %i records', (totalRecords) => {
+    setInputs({ localLogic: false, totalRecords, exactTotal: true, pageSize: 10 });
+    const range = fixture.nativeElement.querySelector('[data-testid="paginator-range-label"]');
+    expect(range.textContent.trim()).toBe(`1 - ${Math.min(totalRecords, 10)} of ${totalRecords}`);
+    setInputs({ exactTotal: false });
+    expect(range.textContent.trim()).toContain('of many');
+  });
+
   it('renders a row per record', () => {
     expect(component.rows()).toHaveLength(2);
     expect(renderedNames()).toEqual(['Alice', 'Bob']);

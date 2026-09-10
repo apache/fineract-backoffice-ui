@@ -79,6 +79,7 @@ import {
       [sortState]="currentSort()"
       [data]="clients()"
       [totalRecords]="totalRecords()"
+      [exactTotal]="exactTotal()"
       (searchChange)="onSearch($event)"
       (sortChange)="onSort($event)"
       [pageIndex]="pageIndex()"
@@ -203,6 +204,7 @@ export class ClientsListComponent {
 
   readonly clients = signal<GetClientsPageItemsResponse[]>([]);
   readonly totalRecords = signal(0);
+  readonly exactTotal = signal(true);
 
   // Empty string, not `undefined`, so it round-trips through `<ion-select>`'s ngModel
   // binding as a real match for the "All" option's own `value=""` rather than leaving the
@@ -275,7 +277,9 @@ export class ClientsListComponent {
   }
 
   private loadClients() {
-    if (this.usesNameSearch()) {
+    const nameSearch = this.usesNameSearch();
+    this.exactTotal.set(!nameSearch);
+    if (nameSearch) {
       return this.clientService.getClients(
         undefined,
         undefined,

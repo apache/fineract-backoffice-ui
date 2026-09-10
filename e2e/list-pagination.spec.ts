@@ -173,7 +173,13 @@ test.describe('List pagination', () => {
   });
 
   test('keeps search text when paging and shows the v2 account number', async ({ page }) => {
+    const searchLoaded = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/v2/clients/search') &&
+        response.request().postDataJSON().request.text === 'Client',
+    );
     await page.getByPlaceholder('Type to search...').fill('Client');
+    await searchLoaded;
     await expect(range(page)).toContainText(`1 - 10 of ${TOTAL_CLIENTS}`);
     const requested = page.waitForRequest(
       (request) =>
