@@ -125,6 +125,10 @@ async function setup(
     ),
   );
 
+  await page.route('**/api/v1/businessdate**', (route) =>
+    route.fulfill(json([{ type: 'BUSINESS_DATE', date: [2026, 9, 10] }])),
+  );
+
   await page.route('**/api/v1/offices**', (route) =>
     route.fulfill(json([{ id: 1, name: HEAD_OFFICE, nameDecorated: HEAD_OFFICE, hierarchy: '.' }])),
   );
@@ -194,7 +198,7 @@ test.describe('Group detail', () => {
   for (const width of [1280, 390]) {
     test(`custom field tabs expose the app keyboard and panel contract at ${width}px`, async ({
       page,
-    }) => {
+    }, testInfo) => {
       await setup(page);
       const fetched: string[] = [];
       await page.route(/\/api\/v1\/datatables(?:\?|$)/, (route) =>
@@ -236,6 +240,12 @@ test.describe('Group detail', () => {
       await expect(notes).toHaveAttribute('aria-selected', 'true');
       await expect(page.getByRole('cell', { name: 'Recorded notes' })).toBeVisible();
       expect(fetched).toEqual(['GroupStats', 'GroupNotes', 'GroupStats', 'GroupNotes']);
+      const region = page.locator('app-entity-datatables .entity-datatables-container');
+      await expect(region.getByTestId('data-table-spinner')).toHaveCount(0);
+      await testInfo.attach(`custom-fields-${width}px`, {
+        body: await region.screenshot({ animations: 'disabled' }),
+        contentType: 'image/png',
+      });
     });
   }
 
