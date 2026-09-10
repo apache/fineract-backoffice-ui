@@ -49,7 +49,8 @@ The UI layer is **Ionic** (`@ionic/angular` v8). Ionic is configured in `mode: '
 (`src/app/app.config.ts`), so components render in Material Design styling.
 
 > Angular Material has been removed entirely, and `npm run lint` fails on any import of it.
-> The table below records the equivalents, which are also the conventions for new code.
+> The table below records vendor equivalents for UI implementations. New feature/shared code
+> uses the app-owned boundary described below.
 > `@angular/cdk` is retained and is fine to use for unstyled primitives (`cdk-table`, virtual
 > scroll, a11y) — the shared data table is built on it.
 

@@ -53,8 +53,9 @@ The UI layer is **Ionic** (`@ionic/angular` v8) in `mode: 'md'`. Angular Materia
 removed and `npm run lint` blocks any import of it. `@angular/cdk` is retained for unstyled
 primitives. `STYLE.md` holds the full component mapping — the essentials:
 
-- Import individual components from `@ionic/angular/standalone` into the component's `imports`
-  array; never `IonicModule`.
+- New feature/shared code uses app-owned primitives from `src/app/ui/`; existing direct Ionic
+  imports are a shrinking lint baseline. Inside UI implementations, import individual vendor
+  components from `@ionic/angular/standalone`; never `IonicModule`.
 - `MatSnackBar` → `NotificationService`, `MatDialog` → `DialogService`
   (both in `src/app/core/services/`).
 - Icons are ionicons and **must** be registered in `src/app/core/icons.ts`, which `bootstrap.ts`
