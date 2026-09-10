@@ -53,7 +53,15 @@ The UI layer is **Ionic** (`@ionic/angular` v8). Ionic is configured in `mode: '
 > `@angular/cdk` is retained and is fine to use for unstyled primitives (`cdk-table`, virtual
 > scroll, a11y) — the shared data table is built on it.
 
-### Importing Ionic components
+### UI boundary
+
+New UI dependencies belong in `src/app/ui/`. Prefer its app-owned primitives; direct Ionic
+imports in existing features are a lint migration baseline. See
+[ADR 0005](DOCS/adr/0005-ui-boundary.md) for component, form-value, theme and browser-test
+contracts. Implementations inside `ui/` may use Ionic as described below; CDK behavioural
+primitives such as `app-tabs` do not need it.
+
+### Importing Ionic components inside UI implementations
 
 Always import individual components from the **standalone** entry point and list them in the
 component's own `imports` array. Never use `IonicModule`.

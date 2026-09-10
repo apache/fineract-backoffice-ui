@@ -81,8 +81,9 @@ Third-party surfaces the application must be able to replace are reached through
 
 - Tokens resolve to their default implementation with no provider needed; override in
   `app.config.ts` to swap one.
-- `<ion-*>` components are **not** restricted — they are the UI layer. Only Ionic's imperative
-  controllers are.
+- UI primitives are reached through `src/app/ui/`; direct Ionic imports outside that boundary
+  are a shrinking lint baseline. Add or migrate one primitive at a time with its browser test
+  contract. Imperative controllers still use OVERLAY. See `DOCS/adr/0005-ui-boundary.md`.
 - New keys must be added to `STORAGE_KEYS` (`core/adapters/storage/storage-keys.ts`); the type
   admits nothing else.
 - `npm run lint` fails on a new violation. The existing backlog is recorded in

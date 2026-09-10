@@ -35,6 +35,7 @@ import { Page, Request } from '@playwright/test';
 import { test, expect } from './fixtures';
 import { confirmDialog, modalFor } from './utils/ionic-locators';
 import { selectInDialog } from './utils/select-in-dialog';
+import { selectUiTab } from './utils/ui-locators';
 
 const HEAD_OFFICE = 'Head Office';
 const GROUP_ID = 7;
@@ -190,6 +191,54 @@ async function openGroup(page: Page): Promise<void> {
 }
 
 test.describe('Group detail', () => {
+  for (const width of [1280, 390]) {
+    test(`custom field tabs expose the app keyboard and panel contract at ${width}px`, async ({
+      page,
+    }) => {
+      await setup(page);
+      const fetched: string[] = [];
+      await page.route(/\/api\/v1\/datatables(?:\?|$)/, (route) =>
+        route.fulfill(
+          json([
+            { registeredTableName: 'GroupStats', columnHeaderData: [{ columnName: 'value' }] },
+            { registeredTableName: 'GroupNotes', columnHeaderData: [{ columnName: 'value' }] },
+          ]),
+        ),
+      );
+      await page.route(/\/api\/v1\/datatables\/Group(?:Stats|Notes)\/7(?:\?|$)/, (route) => {
+        const table = new URL(route.request().url()).pathname.split('/')[4];
+        fetched.push(table);
+        return route.fulfill(
+          json([{ value: table === 'GroupStats' ? 'Recorded statistics' : 'Recorded notes' }]),
+        );
+      });
+      await openGroup(page);
+      await page.getByTestId('group-tab-custom-fields').click();
+      const scope = page.getByTestId('entity-datatables-tabs');
+      const stats = scope.getByRole('tab', { name: 'GroupStats', exact: true });
+      const notes = scope.getByRole('tab', { name: 'GroupNotes', exact: true });
+      await expect(page.getByRole('cell', { name: 'Recorded statistics' })).toBeVisible();
+      await page.setViewportSize({ width, height: 844 });
+      await stats.focus();
+      await stats.press('ArrowRight');
+      await expect(notes).toBeFocused();
+      await expect(stats).toHaveAttribute('aria-selected', 'true');
+      expect(fetched).toEqual(['GroupStats']);
+      await notes.press('Enter');
+      await expect(notes).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('cell', { name: 'Recorded notes' })).toBeVisible();
+      await notes.press('Tab');
+      await expect(page.getByRole('tabpanel', { name: 'GroupNotes', exact: true })).toBeFocused();
+      await selectUiTab(scope, 'GroupStats');
+      await expect(page.getByRole('cell', { name: 'Recorded statistics' })).toBeVisible();
+      await notes.focus();
+      await notes.press('Space');
+      await expect(notes).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('cell', { name: 'Recorded notes' })).toBeVisible();
+      expect(fetched).toEqual(['GroupStats', 'GroupNotes', 'GroupStats', 'GroupNotes']);
+    });
+  }
+
   test('asks for the associations, and shows every member rather than only the active ones', async ({
     page,
   }) => {

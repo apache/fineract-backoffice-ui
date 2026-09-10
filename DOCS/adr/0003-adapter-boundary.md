@@ -23,6 +23,9 @@ under the License.
 - **Date:** 2026-08-02
 - **Deciders:** Maintainers of fineract-backoffice-ui
 
+> UI component migration is extended by [ADR 0005](0005-ui-boundary.md); the imperative
+> adapter decisions below remain unchanged.
+
 ## Context
 
 The application depends directly on several third-party surfaces, measured across the
