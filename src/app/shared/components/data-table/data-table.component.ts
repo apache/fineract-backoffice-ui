@@ -384,7 +384,9 @@ export class DataTableComponent<T> {
    */
   readonly cellTemplates = contentChildren(CellTemplateDirective);
 
-  readonly sort = signal<SortEvent>({ active: '', direction: '' });
+  /** Lets a server-backed table visibly reset sorting when its query mode changes. */
+  readonly sortState = input<SortEvent>();
+  readonly sort = linkedSignal<SortEvent>(() => this.sortState() ?? { active: '', direction: '' });
 
   protected readonly columnTemplates = computed<Record<string, TemplateRef<unknown>>>(() => {
     const map: Record<string, TemplateRef<unknown>> = {};

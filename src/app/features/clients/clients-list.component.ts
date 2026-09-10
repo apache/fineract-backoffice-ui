@@ -17,13 +17,14 @@
  * under the License.
  */
 
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, merge, of } from 'rxjs';
-import { catchError, map, startWith, switchMap, tap } from 'rxjs/operators';
+import { catchError, finalize, map, startWith, switchMap, tap } from 'rxjs/operators';
 import {
   StatusBadgeComponent,
   DataTableComponent,
@@ -31,7 +32,12 @@ import {
   ColumnDef,
   HasPermissionDirective,
 } from '../../shared';
-import { ClientService, GetClientsPageItemsResponse } from '../../api';
+import {
+  ClientService,
+  ClientSearchV2Service,
+  GetClientsPageItemsResponse,
+  SortOrder,
+} from '../../api';
 import { PageEvent, SortEvent } from '../../shared/models/table.model';
 import {
   IonButton,
@@ -48,7 +54,7 @@ import {
   imports: [
     RouterModule,
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     StatusBadgeComponent,
     DataTableComponent,
     CellTemplateDirective,
@@ -63,10 +69,14 @@ import {
   template: `
     <app-data-table
       [hasError]="hasError()"
+      [isLoading]="isLoading()"
+      [searchPlaceholder]="searchPlaceholder()"
+      [pageSize]="pageSize()"
       (retry)="onRetry()"
       title="MODULES.CLIENTS_CONTRACTS"
       helpTextKey="HELP.CLIENTS_CONTRACTS_DESC"
-      [columns]="columns"
+      [columns]="columns()"
+      [sortState]="currentSort()"
       [data]="clients()"
       [totalRecords]="totalRecords()"
       (searchChange)="onSearch($event)"
@@ -86,21 +96,28 @@ import {
 
       <div filters class="filter-row">
         <ion-item fill="outline" class="filter-field">
-          <ion-label position="stacked">{{ 'COMMON.STATUS' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'COMMON.STATUS' | appTranslate }}</ion-label>
           <ion-select
-            [attr.aria-label]="'COMMON.STATUS' | translate"
+            [attr.aria-label]="'COMMON.STATUS' | appTranslate"
             interface="popover"
             [(ngModel)]="activeFilters.status"
             (ionChange)="onFilterChange()"
           >
-            <ion-select-option value="">{{ 'COMMON.ALL' | translate }}</ion-select-option>
-            <ion-select-option value="active">{{ 'COMMON.ACTIVE' | translate }}</ion-select-option>
-            <ion-select-option value="pending">{{
-              'COMMON.PENDING' | translate
+            <ion-select-option value="">{{ 'COMMON.ALL' | appTranslate }}</ion-select-option>
+            <ion-select-option value="active">{{
+              'COMMON.ACTIVE' | appTranslate
             }}</ion-select-option>
-            <ion-select-option value="closed">{{ 'COMMON.CLOSED' | translate }}</ion-select-option>
+            <ion-select-option value="pending">{{
+              'COMMON.PENDING' | appTranslate
+            }}</ion-select-option>
+            <ion-select-option value="closed">{{
+              'COMMON.CLOSED' | appTranslate
+            }}</ion-select-option>
           </ion-select>
         </ion-item>
+        @if (activeFilters.status) {
+          <p class="search-hint">{{ 'CLIENTS.NAME_SEARCH_HINT' | appTranslate }}</p>
+        }
       </div>
 
       <ng-template appCellTemplate="status" let-client>
@@ -123,7 +140,7 @@ import {
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
+          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
           title="Edit Client Details"
           (click)="onEditClient(client)"
           *appHasPermission="'UPDATE_CLIENT'"
@@ -137,8 +154,14 @@ import {
     `
       .filter-row {
         display: flex;
+        flex-wrap: wrap;
+        align-items: center;
         gap: 12px;
         margin-left: 16px;
+      }
+      .search-hint {
+        margin: 0;
+        color: var(--text-secondary);
       }
       .filter-field {
         width: 150px;
@@ -158,20 +181,25 @@ import {
 export class ClientsListComponent {
   /** True when the last load failed, so the table offers a retry instead of an empty list. */
   readonly hasError = signal(false);
+  readonly isLoading = signal(false);
+  readonly pageSize = signal(10);
+  readonly searchPlaceholder = signal('COMMON.SEARCH_PLACEHOLDER');
 
   /** Re-runs the query behind the table when the user asks to try again. */
   private readonly retrySubject = new Subject<void>();
 
   private readonly clientService = inject(ClientService);
+  private readonly clientSearchService = inject(ClientSearchV2Service);
   private readonly router = inject(Router);
 
-  columns: ColumnDef[] = [
+  private readonly broadTextSearch = signal(false);
+  readonly columns = computed<ColumnDef[]>(() => [
     { key: 'accountNo', label: 'CLIENTS.ACCOUNT_NO', sortable: true },
     { key: 'fullname', label: 'COMMON.NAME', sortable: true },
     { key: 'status', label: 'COMMON.STATUS', sortable: true },
-    { key: 'officeName', label: 'COMMON.OFFICE', sortable: true },
+    { key: 'officeName', label: 'COMMON.OFFICE', sortable: !this.broadTextSearch() },
     { key: 'actions', label: 'COMMON.ACTIONS', sortable: false },
-  ];
+  ]);
 
   readonly clients = signal<GetClientsPageItemsResponse[]>([]);
   readonly totalRecords = signal(0);
@@ -187,7 +215,7 @@ export class ClientsListComponent {
   private filterSubject = new Subject<void>();
 
   private currentFilter = '';
-  private currentSort: SortEvent = { active: '', direction: '' };
+  readonly currentSort = signal<SortEvent>({ active: '', direction: '' });
   private currentPage: PageEvent = { pageIndex: 0, pageSize: 10, length: 0 };
   /** Mirrors currentPage.pageIndex for the data-table, so resetting to the
       first page on search/sort/filter actually moves the paginator. */
@@ -204,63 +232,110 @@ export class ClientsListComponent {
       .pipe(
         startWith({}),
         switchMap(() => {
-          const offset = this.currentPage.pageIndex * this.currentPage.pageSize;
-          const limit = this.currentPage.pageSize;
-          const orderBy = this.currentSort.active || undefined;
-          const sortOrder = this.currentSort.direction
-            ? this.currentSort.direction.toUpperCase()
-            : undefined;
-
-          const displayName = this.currentFilter ? `%${this.currentFilter}%` : undefined;
-          // Fineract's /clients endpoint rejects `status=` and `status=All` outright (a 400,
-          // "The Status value '...' is not supported") — the param must be omitted entirely
-          // to mean "any status", so the "All" sentinel is never forwarded as-is.
-          const status = this.activeFilters.status || undefined;
-
-          return this.clientService
-            .getClients(
-              undefined,
-              undefined,
-              displayName,
-              undefined,
-              undefined,
-              status,
-              undefined,
-              offset,
-              limit,
-              orderBy,
-              sortOrder,
-              false,
-              1,
-            )
-            .pipe(
-              tap(() => this.hasError.set(false)),
-              catchError(() => {
-                this.hasError.set(true);
-                return of(null);
-              }),
-            );
+          this.isLoading.set(true);
+          return this.loadClients().pipe(
+            tap(() => this.hasError.set(false)),
+            catchError(() => {
+              this.hasError.set(true);
+              return of({ totalFilteredRecords: 0, pageItems: [] });
+            }),
+            finalize(() => this.isLoading.set(false)),
+          );
         }),
         map((response) => {
-          if (response === null) return [];
           this.totalRecords.set(response.totalFilteredRecords || 0);
           return response.pageItems || [];
         }),
+        takeUntilDestroyed(),
       )
       .subscribe((data) => {
         this.clients.set(data);
       });
   }
 
+  private usesNameSearch(): boolean {
+    // The v2 endpoint searches multiple fields but cannot filter by status or sort
+    // by the joined office name. Keep these existing v1 capabilities in this table.
+    return (
+      !!this.activeFilters.status ||
+      (!this.currentFilter &&
+        this.currentSort().active === 'officeName' &&
+        !!this.currentSort().direction)
+    );
+  }
+
+  private updateSearchPlaceholder(): void {
+    this.broadTextSearch.set(!!this.currentFilter && !this.activeFilters.status);
+    if (this.broadTextSearch() && this.currentSort().active === 'officeName') {
+      this.currentSort.set({ active: '', direction: '' });
+    }
+    this.searchPlaceholder.set(
+      this.usesNameSearch() ? 'CLIENTS.SEARCH_BY_NAME' : 'COMMON.SEARCH_PLACEHOLDER',
+    );
+  }
+
+  private loadClients() {
+    if (this.usesNameSearch()) {
+      return this.clientService.getClients(
+        undefined,
+        undefined,
+        this.currentFilter ? `%${this.currentFilter}%` : undefined,
+        undefined,
+        undefined,
+        this.activeFilters.status || undefined,
+        undefined,
+        this.currentPage.pageIndex * this.currentPage.pageSize,
+        this.currentPage.pageSize,
+        this.currentSort().active || undefined,
+        this.currentSort().direction ? this.currentSort().direction.toUpperCase() : undefined,
+        false,
+        1,
+      );
+    }
+
+    const sortProperties: Record<string, string> = {
+      accountNo: 'accountNumber',
+      fullname: 'displayName',
+      status: 'status',
+    };
+    const property = sortProperties[this.currentSort().active];
+    const sorts: SortOrder[] =
+      property && this.currentSort().direction
+        ? [{ property, direction: this.currentSort().direction === 'asc' ? 'ASC' : 'DESC' }]
+        : [];
+    return this.clientSearchService
+      .postClientsSearch({
+        request: { text: this.currentFilter },
+        page: this.currentPage.pageIndex,
+        size: this.currentPage.pageSize,
+        ...(sorts.length ? { sorts } : {}),
+      })
+      .pipe(
+        map((response) => ({
+          totalFilteredRecords: response.totalElements ?? 0,
+          pageItems: (response.content ?? []).map((client): GetClientsPageItemsResponse => ({
+            id: client.id,
+            accountNo: client.accountNumber,
+            displayName: client.displayName,
+            officeId: client.officeId,
+            officeName: client.officeName,
+            status: client.status,
+          })),
+        })),
+      );
+  }
+
   onSearch(filterValue: string) {
-    this.currentFilter = filterValue;
+    this.currentFilter = filterValue.trim();
+    this.updateSearchPlaceholder();
     this.currentPage.pageIndex = 0;
     this.pageIndex.set(0);
     this.searchSubject.next(filterValue);
   }
 
   onSort(sort: SortEvent) {
-    this.currentSort = sort;
+    this.currentSort.set(sort);
+    this.updateSearchPlaceholder();
     this.currentPage.pageIndex = 0;
     this.pageIndex.set(0);
     this.sortSubject.next(sort);
@@ -268,11 +343,13 @@ export class ClientsListComponent {
 
   onPage(event: PageEvent) {
     this.currentPage = event;
+    this.pageSize.set(event.pageSize);
     this.pageIndex.set(event.pageIndex);
     this.pageSubject.next(event);
   }
 
   onFilterChange() {
+    this.updateSearchPlaceholder();
     this.currentPage.pageIndex = 0;
     this.pageIndex.set(0);
     this.filterSubject.next();

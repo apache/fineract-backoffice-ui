@@ -16,7 +16,6 @@
     "main": "Main Navigation",
     "dashboard": "Dashboard",
     "clients": "Clients",
-    "clientSearchV2": "Client Search",
     "groups": "Groups",
     "centers": "Centers",
     "loans": "Loans",
@@ -855,7 +854,9 @@
     "RECURRING_DEPOSITS": "Recurring Deposits",
     "NO_FIXED_DEPOSITS": "This client holds no fixed deposits.",
     "NO_RECURRING_DEPOSITS": "This client holds no recurring deposits.",
-    "NO_SHARE_ACCOUNTS": "This client holds no share accounts."
+    "NO_SHARE_ACCOUNTS": "This client holds no share accounts.",
+    "SEARCH_BY_NAME": "Search by client name...",
+    "NAME_SEARCH_HINT": "When a status is selected, search matches client names."
   },
   "SAVINGS": {
     "CREATE_ACCOUNT": "Create Savings Account",
@@ -2709,17 +2710,6 @@
     "SUBMIT": "Submit",
     "DELETE": "Delete",
     "SUCCESS": "Operation successful."
-  },
-  "CLIENT_SEARCH_V2": {
-    "TITLE": "Client Search",
-    "QUERY": "Search Query",
-    "SEARCH": "Search",
-    "NAME": "Client Name",
-    "ACCOUNT_NO": "Account No.",
-    "STATUS": "Status",
-    "OFFICE": "Office",
-    "VIEW": "View Client",
-    "NO_RESULTS": "No clients found matching your search."
   },
   "LOAN_SCHEDULE_MODIFY": {
     "TITLE": "Loan Schedule Modification",

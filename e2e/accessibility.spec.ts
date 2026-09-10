@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { mockClientTextSearch } from './utils/client-search-mock';
 import AxeBuilder from '@axe-core/playwright';
 
 import { test, expect, Page } from './fixtures';
@@ -120,6 +121,8 @@ async function mockSession(page: Page): Promise<void> {
       ]),
     });
   });
+
+  await mockClientTextSearch(page);
 
   await page.route(/\/api\/v1\/clients(\?|$)/, async (route) => {
     await route.fulfill({

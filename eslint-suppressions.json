@@ -234,22 +234,12 @@
       "count": 1
     }
   },
-  "src/app/features/clients/client-search-v2.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
   "src/app/features/clients/client-view.component.test.ts": {
     "no-restricted-imports": {
       "count": 1
     }
   },
   "src/app/features/clients/client-view.component.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/clients/clients-list.component.ts": {
     "no-restricted-imports": {
       "count": 1
     }

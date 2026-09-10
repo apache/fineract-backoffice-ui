@@ -52,7 +52,10 @@ const SNAPSHOT = join(HERE, 'nav-ids.json');
  * stops matching, and so the removal appears in a changelog someone reads.
  */
 const DEPRECATED = {
-  // 'products.share': { removedIn: '1.1.0', note: 'Folded into products.shares.' },
+  'clients.search': {
+    removedIn: 'unreleased',
+    note: 'Folded into clients; /clients/search redirects to /clients.',
+  },
 };
 
 /** Ids as they appear in NAV_CONFIG, in source order. */

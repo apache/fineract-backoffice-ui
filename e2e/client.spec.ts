@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { mockClientTextSearch } from './utils/client-search-mock';
 import { test, expect } from './fixtures';
 
 const HEAD_OFFICE = 'Head Office';
@@ -101,6 +102,8 @@ test.describe('Client Management', () => {
         await route.continue();
       }
     });
+
+    await mockClientTextSearch(page, createdClients);
 
     // Intercept Clients List GET
     await page.route('**/api/v1/clients?**', async (route) => {

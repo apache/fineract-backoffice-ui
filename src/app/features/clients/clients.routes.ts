@@ -31,11 +31,8 @@ export const CLIENTS_ROUTES: Routes = [
   },
   {
     path: 'search',
-    canActivate: [authGuard, permissionGuard],
-    data: { permissions: 'READ_CLIENT' },
-    title: 'CLIENT_SEARCH_V2.TITLE',
-    loadComponent: () =>
-      import('./client-search-v2.component').then((m) => m.ClientSearchV2Component),
+    pathMatch: 'full',
+    redirectTo: '/clients',
   },
   {
     path: 'create',

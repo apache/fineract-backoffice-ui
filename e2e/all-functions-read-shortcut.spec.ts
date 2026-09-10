@@ -30,6 +30,7 @@
  * which is hidden or shown purely by `AuthService.hasPermission()`.
  */
 
+import { mockClientTextSearch } from './utils/client-search-mock';
 import { test, expect, Page } from './fixtures';
 
 const API_BASE = '/api/v1';
@@ -64,6 +65,8 @@ async function login(page: Page, permissions: string[]): Promise<void> {
       }),
     });
   });
+
+  await mockClientTextSearch(page);
 
   await page.route('**/api/v1/clients*', async (route) => {
     await route.fulfill({

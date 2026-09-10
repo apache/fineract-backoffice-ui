@@ -26,6 +26,7 @@
  * against page.route() mocks, so it needs no backend.
  */
 
+import { mockClientTextSearch } from './utils/client-search-mock';
 import { test, expect, Page } from './fixtures';
 
 const TENANT = 'default';
@@ -80,7 +81,9 @@ async function mockSession(page: Page) {
     });
   });
 
-  // Serve the slice the app asks for, so the rows on screen reflect the offset.
+  await mockClientTextSearch(page, clientsPage(0, TOTAL_CLIENTS).pageItems);
+
+  // Status filtering keeps using the v1 endpoint.
   await page.route(/\/api\/v1\/clients(\?|$)/, async (route) => {
     const url = new URL(route.request().url());
     const offset = Number(url.searchParams.get('offset') ?? 0);
@@ -164,6 +167,46 @@ test.describe('List pagination', () => {
     // paginator still reading "51 - 54" would be lying about what is on screen.
     await expect(range(page)).toContainText(`1 - 10 of ${TOTAL_CLIENTS}`);
     await expect(firstAccountNo(page)).toHaveText('000000001');
+    await expect(
+      page.getByText('When a status is selected, search matches client names.'),
+    ).toBeVisible();
+  });
+
+  test('keeps search text when paging and shows the v2 account number', async ({ page }) => {
+    await page.getByPlaceholder('Type to search...').fill('Client');
+    await expect(range(page)).toContainText(`1 - 10 of ${TOTAL_CLIENTS}`);
+    const requested = page.waitForRequest(
+      (request) =>
+        request.url().endsWith('/api/v2/clients/search') && request.postDataJSON().page === 1,
+    );
+    await pagerButton(page, NEXT).click();
+    expect((await requested).postDataJSON()).toMatchObject({
+      request: { text: 'Client' },
+      page: 1,
+      size: 10,
+    });
+    await expect(firstAccountNo(page)).toHaveText('000000011');
+  });
+
+  test('redirects the old search page and exposes only one client navigation item', async ({
+    page,
+  }) => {
+    await page.goto('/clients/search');
+    await expect(page).toHaveURL('/clients');
+    await expect(page.locator('a[href="/clients/search"]')).toHaveCount(0);
+    await expect(firstAccountNo(page)).toHaveText('000000001');
+  });
+
+  test('keeps an account-number search broad and disables unsupported Office sorting', async ({
+    page,
+  }) => {
+    await page.getByRole('button', { name: 'Office', exact: true }).click();
+    await expect(page.locator('th[aria-sort="ascending"]')).toContainText('Office');
+    await page.getByPlaceholder('Search by client name...').fill('000000011');
+    await expect(firstAccountNo(page)).toHaveText('000000011');
+    await expect(range(page)).toContainText('1 - 1 of 1');
+    await expect(page.getByRole('button', { name: 'Office', exact: true })).toHaveCount(0);
+    await expect(page.locator('th[aria-sort]')).toHaveCount(0);
   });
 
   test('returns to the first page when searching', async ({ page }) => {
@@ -225,19 +268,24 @@ test.describe('List load failure', () => {
     // Fail the first request, serve the second. The retry has to be what fixes it, or this
     // passes whether or not the button is wired to anything.
     let attempts = 0;
-    await page.route(/\/api\/v1\/clients(\?|$)/, async (route) => {
+    await page.route('**/api/v2/clients/search', async (route) => {
       attempts += 1;
       if (attempts === 1) {
         await route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
         return;
       }
-      const url = new URL(route.request().url());
+      const { page: pageIndex, size } = route.request().postDataJSON();
+      const clients = clientsPage(pageIndex * size, size);
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(
-          clientsPage(Number(url.searchParams.get('offset') ?? 0), PAGE_SIZE, undefined),
-        ),
+        body: JSON.stringify({
+          content: clients.pageItems.map((client) => ({
+            ...client,
+            accountNumber: client.accountNo,
+          })),
+          totalElements: clients.totalFilteredRecords,
+        }),
       });
     });
 

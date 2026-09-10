@@ -86,6 +86,17 @@ describe('DataTableComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('clears the visible sort indicator when the parent resets the query sort', () => {
+    setInputs({ sortState: { active: 'name', direction: 'desc' } });
+    expect(component.ariaSortFor(COLUMNS.find((column) => column.key === 'name')!)).toBe(
+      'descending',
+    );
+    expect(renderedNames()).toEqual(['Bob', 'Alice']);
+    setInputs({ sortState: { active: '', direction: '' } });
+    expect(component.ariaSortFor(COLUMNS.find((column) => column.key === 'name')!)).toBeNull();
+    expect(renderedNames()).toEqual(['Alice', 'Bob']);
+  });
+
   it('renders a row per record', () => {
     expect(component.rows()).toHaveLength(2);
     expect(renderedNames()).toEqual(['Alice', 'Bob']);
