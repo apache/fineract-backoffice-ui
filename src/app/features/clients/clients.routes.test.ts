@@ -103,7 +103,7 @@ describe('CLIENTS_ROUTES', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/clients/search');
     expect(TestBed.inject(Router).url).toBe('/clients');
-    expect(TestBed.inject(Title).getTitle()).toBe(`${SECTION_NAME} \u00b7 ${APP_NAME}`);
+    expect(TestBed.inject(Title).getTitle()).toBe(`${SECTION_NAME} · ${APP_NAME}`);
   });
 
   /**
