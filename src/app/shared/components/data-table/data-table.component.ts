@@ -221,7 +221,7 @@ const NEXT_DIRECTION: Record<SortDirection, SortDirection> = {
               [pageSize]="effectivePageSize"
               [pageIndex]="effectivePageIndex"
               [pageSizeOptions]="pageSizeOptions()"
-              [exactTotal]="localLogic()"
+              [exactTotal]="localLogic() || exactTotal()"
               (page)="onPage($event)"
             ></app-paginator>
           </div>
@@ -350,6 +350,8 @@ export class DataTableComponent<T> {
   readonly data = input<T[]>([]);
   /** Total number of records. If server-side, this comes from API response. */
   readonly totalRecords = input(0);
+  /** Set when a server endpoint returns an exact count rather than an unknown-total sentinel. */
+  readonly exactTotal = input(false);
   readonly pageSize = input(10);
   readonly pageIndex = input(0);
   readonly pageSizeOptions = input([5, 10, 25, 100]);
@@ -384,7 +386,9 @@ export class DataTableComponent<T> {
    */
   readonly cellTemplates = contentChildren(CellTemplateDirective);
 
-  readonly sort = signal<SortEvent>({ active: '', direction: '' });
+  /** Lets a server-backed table visibly reset sorting when its query mode changes. */
+  readonly sortState = input<SortEvent>();
+  readonly sort = linkedSignal<SortEvent>(() => this.sortState() ?? { active: '', direction: '' });
 
   protected readonly columnTemplates = computed<Record<string, TemplateRef<unknown>>>(() => {
     const map: Record<string, TemplateRef<unknown>> = {};

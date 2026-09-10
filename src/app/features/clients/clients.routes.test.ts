@@ -20,7 +20,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
-import { TitleStrategy, provideRouter } from '@angular/router';
+import { Router, TitleStrategy, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { CLIENTS_ROUTES } from './clients.routes';
 import { TranslatedTitleStrategy } from '../../core/router/translated-title.strategy';
@@ -57,11 +57,11 @@ describe('CLIENTS_ROUTES', () => {
   beforeEach(() => {
     // The guards are not under test here, and permissionGuard would reject every
     // navigation without an authenticated user.
-    const routes = CLIENTS_ROUTES.map(({ path, title }) => ({
-      path,
-      title,
-      component: RouteStub,
-    }));
+    const routes = CLIENTS_ROUTES.map(({ path, title, redirectTo, pathMatch }) =>
+      redirectTo === undefined
+        ? { path, title, component: RouteStub }
+        : { path, redirectTo, pathMatch },
+    );
 
     const adapters = provideFakeAdapters();
     i18n = adapters.i18n;
@@ -83,18 +83,27 @@ describe('CLIENTS_ROUTES', () => {
    * screen and is only wrong in the one place nobody is looking. Every page under `clients`
    * would silently read "Clients".
    */
-  it('gives every route its own title', () => {
-    const untitled = CLIENTS_ROUTES.filter((route) => !route.title).map((route) => route.path);
+  it('gives every rendered page its own title', () => {
+    const untitled = CLIENTS_ROUTES.filter(
+      (route) => route.redirectTo === undefined && !route.title,
+    ).map((route) => route.path);
 
     expect(untitled).toEqual([]);
   });
 
   it('titles routes with translation keys rather than phrases', () => {
-    const notKeys = CLIENTS_ROUTES.filter((route) => !isTranslationKey(route.title)).map(
-      (route) => route.path,
-    );
+    const notKeys = CLIENTS_ROUTES.filter(
+      (route) => route.redirectTo === undefined && !isTranslationKey(route.title),
+    ).map((route) => route.path);
 
     expect(notKeys).toEqual([]);
+  });
+
+  it('uses the destination title when the old search URL redirects to the client list', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/clients/search');
+    expect(TestBed.inject(Router).url).toBe('/clients');
+    expect(TestBed.inject(Title).getTitle()).toBe(`${SECTION_NAME} · ${APP_NAME}`);
   });
 
   /**

@@ -19,6 +19,7 @@
 
 /* eslint-disable sonarjs/no-duplicate-string -- Playwright test patterns inherently repeat locator strings */
 
+import { mockClientTextSearch } from './utils/client-search-mock';
 import { test, expect, Page } from './fixtures';
 
 /* ─────────── Constants ─────────── */
@@ -106,6 +107,7 @@ async function mockOffices(page: Page, offices = [OFFICE_HEAD]) {
 }
 
 async function mockClients(page: Page, clients: unknown[] = []) {
+  await mockClientTextSearch(page, clients);
   const body =
     clients.length > 0
       ? JSON.stringify({ totalFilteredRecords: clients.length, pageItems: clients })
@@ -668,6 +670,7 @@ test.describe('E2E: Client Creation', () => {
   });
 
   test('should fill client form and enable save on the last step', async ({ page }) => {
+    await mockClientTextSearch(page);
     await page.route('**/api/v1/clients?**', async (route) => {
       await route.fulfill(okJsonResponse(EMPTY_LIST));
     });
@@ -689,6 +692,7 @@ test.describe('E2E: Client Creation', () => {
   });
 
   test('should submit client and redirect to clients list', async ({ page }) => {
+    await mockClientTextSearch(page);
     await page.route('**/api/v1/clients?**', async (route) => {
       await route.fulfill(okJsonResponse(EMPTY_LIST));
     });

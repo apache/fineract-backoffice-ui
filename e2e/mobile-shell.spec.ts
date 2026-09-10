@@ -30,6 +30,7 @@
  */
 
 import { test, expect, type Page } from './fixtures';
+import { mockClientTextSearch } from './utils/client-search-mock';
 
 const TENANT = 'default';
 const USER = 'mifos';
@@ -42,6 +43,7 @@ const MOBILE_BREAKPOINT_PX = 768;
 const MIN_TAP_TARGET_PX = 44;
 
 async function mockBackend(page: Page): Promise<void> {
+  await mockClientTextSearch(page);
   // Registration order is load-bearing: Playwright matches routes in *reverse* order, so the
   // catch-all has to be registered first or it shadows every specific handler below it. With it
   // last, the authentication call returns `{}`, the session carries no permissions, and RBAC
@@ -140,16 +142,16 @@ test.describe('the shell at a phone viewport', () => {
   });
 
   test('keeps the paginator label intact on a phone viewport', async ({ page }) => {
-    await page.route(/\/api\/v1\/clients/, (route) =>
+    await page.route('**/api/v2/clients/search', (route) =>
       route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          totalFilteredRecords: 21,
-          pageItems: [
+          totalElements: 21,
+          content: [
             {
               id: 1,
-              accountNo: '000000001',
+              accountNumber: '000000001',
               displayName: 'Aisha Rahman',
               status: { value: 'Active' },
             },
@@ -211,23 +213,23 @@ test.describe('the shell at a phone viewport', () => {
   test('renders tables as cards instead of a sideways scroll', async ({ page }) => {
     // The generic `/api/v1/` mock returns `{}`, which renders an empty state rather than a
     // table — so this case has to supply rows before it can assert on how they are laid out.
-    await page.route(/\/api\/v1\/clients/, (route) =>
+    await page.route('**/api/v2/clients/search', (route) =>
       route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          totalFilteredRecords: 2,
-          pageItems: [
+          totalElements: 2,
+          content: [
             {
               id: 1,
-              accountNo: '000000001',
+              accountNumber: '000000001',
               displayName: 'Aisha Rahman',
               status: { value: 'Active' },
               officeName: 'Head Office',
             },
             {
               id: 2,
-              accountNo: '000000002',
+              accountNumber: '000000002',
               displayName: 'Boubacar Diallo',
               status: { value: 'Pending' },
               officeName: 'Head Office',

@@ -25,6 +25,14 @@ Notable changes to the Apache Fineract Backoffice UI. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Client search and the client list share one paginated screen. The separate `clients.search`
+  navigation id is retired; deployments should move any navigation overrides to `clients`.
+  Existing `/clients/search` links redirect to `/clients`. With a status filter selected,
+  search continues to match client names; without it, text search also matches account numbers,
+  external identifiers, mobile numbers and identification documents.
+
 ## [1.0.0-rc.1]
 
 The first release candidate. Everything below is the initial release content rather than a diff

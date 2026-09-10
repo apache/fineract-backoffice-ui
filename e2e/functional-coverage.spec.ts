@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { mockClientTextSearch } from './utils/client-search-mock';
 import { test, expect, Page } from './fixtures';
 
 const TEST_USER = 'mifos';
@@ -128,6 +129,7 @@ async function loginAndGoToDashboard(page: Page) {
 }
 
 async function setupClientMocks(page: Page, clients: unknown[] = []) {
+  await mockClientTextSearch(page, clients);
   const body =
     clients.length > 0
       ? JSON.stringify({ totalFilteredRecords: clients.length, pageItems: clients })
@@ -1172,6 +1174,7 @@ test.describe('Create Office Dialog from Client Form', () => {
   test('should open create office dialog from client create form', async ({ page }) => {
     await loginAndGoToDashboard(page);
     await mockOffices(page);
+    await mockClientTextSearch(page);
     await page.route('**/api/v1/clients?**', async (route) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: EMPTY_RESPONSE });
     });

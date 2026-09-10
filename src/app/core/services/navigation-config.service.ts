@@ -167,13 +167,6 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
     icon: ICON_PEOPLE_OUTLINE,
   },
   {
-    id: 'clients.search',
-    route: '/clients/search',
-    requiredPermissions: 'READ_CLIENT',
-    labelKey: 'nav.clientSearchV2',
-    icon: 'search-circle-outline',
-  },
-  {
     id: 'groups',
     route: '/groups',
     requiredPermissions: 'READ_GROUP',
