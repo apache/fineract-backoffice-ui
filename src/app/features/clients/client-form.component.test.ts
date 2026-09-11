@@ -146,6 +146,34 @@ describe('ClientFormComponent', () => {
       expect(routerSpy.navigate).toHaveBeenCalledWith(['/clients']);
     });
 
+    it('uses unique date picker IDs across client form instances', () => {
+      const secondFixture = TestBed.createComponent(ClientFormComponent);
+
+      const datetimeReferences = (element: HTMLElement) =>
+        Array.from(element.querySelectorAll('ion-datetime-button')).map(
+          (button) => (button as HTMLIonDatetimeButtonElement).datetime,
+        );
+      const datetimeIds = (element: HTMLElement) =>
+        Array.from(element.querySelectorAll('ion-datetime')).map((picker) => picker.id);
+      const firstPickerIds = [
+        component.submittedOnDatePickerId,
+        component.activationDatePickerId,
+        component.dateOfBirthPickerId,
+      ];
+      const secondComponent = secondFixture.componentInstance;
+      const secondPickerIds = [
+        secondComponent.submittedOnDatePickerId,
+        secondComponent.activationDatePickerId,
+        secondComponent.dateOfBirthPickerId,
+      ];
+
+      expect(datetimeReferences(fixture.nativeElement)).toEqual(firstPickerIds);
+      expect(datetimeIds(fixture.nativeElement)).toEqual(firstPickerIds);
+      expect(new Set([...firstPickerIds, ...secondPickerIds]).size).toBe(6);
+
+      secondFixture.destroy();
+    });
+
     it('shows the wizard stepper and only the first step initially', () => {
       expect(component.showWizard()).toBe(true);
       expect(component.currentStep()).toBe(0);

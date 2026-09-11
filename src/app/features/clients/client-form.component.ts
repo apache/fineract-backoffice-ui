@@ -60,6 +60,8 @@ import {
   toIsoDate,
 } from '../../core/utils/date-formatter';
 
+let nextClientFormId = 0;
+
 @Component({
   selector: 'app-client-form',
   standalone: true,
@@ -187,11 +189,11 @@ import {
               <!-- Submitted On Date -->
               <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | translate">
                 <ion-label position="stacked">{{ 'COMMON.SUBMITTED_ON' | translate }}</ion-label>
-                <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
+                <ion-datetime-button [datetime]="submittedOnDatePickerId"></ion-datetime-button>
                 <ion-modal [keepContentsMounted]="true">
                   <ng-template>
                     <ion-datetime
-                      id="submittedOnDate-picker"
+                      [id]="submittedOnDatePickerId"
                       data-testid="submittedOnDate-picker"
                       presentation="date"
                       name="submittedOnDate"
@@ -207,11 +209,11 @@ import {
               <!-- Activation Date -->
               <ion-item fill="outline" [appTooltip]="'HELP.ACTIVATION_DATE_DESC' | translate">
                 <ion-label position="stacked">{{ 'COMMON.ACTIVATION_DATE' | translate }}</ion-label>
-                <ion-datetime-button datetime="activationDate-picker"></ion-datetime-button>
+                <ion-datetime-button [datetime]="activationDatePickerId"></ion-datetime-button>
                 <ion-modal [keepContentsMounted]="true">
                   <ng-template>
                     <ion-datetime
-                      id="activationDate-picker"
+                      [id]="activationDatePickerId"
                       data-testid="activationDate-picker"
                       presentation="date"
                       name="activationDate"
@@ -276,11 +278,11 @@ import {
                   <ion-label position="stacked">{{
                     'CLIENTS.DATE_OF_BIRTH' | translate
                   }}</ion-label>
-                  <ion-datetime-button datetime="dateOfBirth-picker"></ion-datetime-button>
+                  <ion-datetime-button [datetime]="dateOfBirthPickerId"></ion-datetime-button>
                   <ion-modal [keepContentsMounted]="true">
                     <ng-template>
                       <ion-datetime
-                        id="dateOfBirth-picker"
+                        [id]="dateOfBirthPickerId"
                         data-testid="dateOfBirth-picker"
                         presentation="date"
                         name="dateOfBirth"
@@ -436,6 +438,11 @@ export class ClientFormComponent implements OnInit {
   private readonly LIST_PATH = '/clients';
   private readonly DATE_FORMAT = 'yyyy-MM-dd';
   private readonly LOCALE_EN = 'en';
+  private readonly datePickerIdSuffix = ++nextClientFormId;
+
+  readonly submittedOnDatePickerId = `submittedOnDate-picker-${this.datePickerIdSuffix}`;
+  readonly activationDatePickerId = `activationDate-picker-${this.datePickerIdSuffix}`;
+  readonly dateOfBirthPickerId = `dateOfBirth-picker-${this.datePickerIdSuffix}`;
 
   clientId: number | null = null;
   readonly isEditMode = signal(false);
