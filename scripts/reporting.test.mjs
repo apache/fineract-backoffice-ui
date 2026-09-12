@@ -33,7 +33,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { cell, humanDuration } from './e2e-summary.mjs';
+import { cell, classifyStatus, humanDuration } from './e2e-summary.mjs';
 import { safeId, safeText, escapeRegExp } from './pr-sequence-diagram.mjs';
 
 test('cell escapes a pipe so it cannot end the table cell', () => {
@@ -102,4 +102,24 @@ test('importing either script renders nothing', async () => {
   const diagram = await import('./pr-sequence-diagram.mjs');
   assert.equal(typeof summary.cell, 'function');
   assert.equal(typeof diagram.safeId, 'function');
+});
+
+test('classifyStatus keeps an asserted failure out of the failure count', () => {
+  // The regression this guards: reading result.status alone reported "1 failing" on a run
+  // Playwright exited zero for, which trains people to ignore the report.
+  assert.equal(classifyStatus('failed', 'failed'), 'expectedFailure');
+  assert.equal(classifyStatus('timedOut', 'failed'), 'expectedFailure');
+});
+
+test('classifyStatus flags a test.fail() case that has started passing', () => {
+  // Playwright fails the run when this happens, so the report has to agree with the exit code
+  // rather than quietly counting it as a pass and leaving a stale marker in place.
+  assert.equal(classifyStatus('passed', 'failed'), 'unexpectedPass');
+});
+
+test('classifyStatus leaves ordinary results untouched', () => {
+  assert.equal(classifyStatus('passed', 'passed'), 'passed');
+  assert.equal(classifyStatus('failed', 'passed'), 'failed');
+  assert.equal(classifyStatus('timedOut', 'passed'), 'timedOut');
+  assert.equal(classifyStatus('skipped', 'skipped'), 'skipped');
 });

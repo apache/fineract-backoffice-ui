@@ -65,7 +65,29 @@ const ICON = {
   timedOut: '⏱️',
   skipped: '⏭️',
   interrupted: '⚠️',
+  expectedFailure: '🔒',
+  unexpectedPass: '❌',
 };
+
+/**
+ * Reconciles what a test *did* with what it was *asked* to do.
+ *
+ * A `test.fail()` case documents a known bug: Playwright runs it, requires it to fail, and
+ * exits zero when it does. Reading `result.status` alone renders that as a failure, so a green
+ * run reports "1 failing" — and a report that cries wolf on a passing suite is one nobody reads.
+ *
+ * The inverse matters just as much. When such a test starts passing, the marker is stale and
+ * Playwright fails the run; that must surface as a failure here too, not as a quiet pass, or
+ * the report would disagree with the exit code.
+ */
+export function classifyStatus(resultStatus, expectedStatus) {
+  const didFail = resultStatus === 'failed' || resultStatus === 'timedOut';
+  if (expectedStatus === 'failed') {
+    if (didFail) return 'expectedFailure';
+    if (resultStatus === 'passed') return 'unexpectedPass';
+  }
+  return resultStatus;
+}
 
 /**
  * Strips ANSI escape sequences.
@@ -96,7 +118,10 @@ function collect(suite, out, titlePath = []) {
         title: [...path, spec.title].join(' › '),
         file: spec.file ?? suite.file ?? '',
         project: test.projectName ?? '',
-        status: test.status === 'skipped' ? 'skipped' : (result?.status ?? test.status),
+        status:
+          test.status === 'skipped'
+            ? 'skipped'
+            : classifyStatus(result?.status ?? test.status, test.expectedStatus),
         expected: test.expectedStatus,
         // A test that failed and then passed on retry is green overall but worth surfacing:
         // it is the shape a flake takes, and flakes are what a sharded suite hides best.
@@ -164,6 +189,28 @@ function failureSection(failed) {
   return lines;
 }
 
+/**
+ * Known failures are green, but they are not nothing: each one is a bug someone chose to
+ * document rather than fix, and an undated list of them is how a `test.fail()` becomes
+ * permanent. Naming them keeps the cost visible on every run.
+ */
+function knownFailureSection(knownFailures) {
+  if (!knownFailures.length) return [];
+  const lines = [
+    '### 🔒 Known failures',
+    '',
+    'Marked `test.fail()`: the suite asserts the bug is still present, and turns red when it',
+    'is fixed so the marker can be removed.',
+    '',
+  ];
+  for (const test of knownFailures.slice(0, 15)) {
+    lines.push(`- **${cell(test.title)}** — \`${cell(test.file)}\``);
+  }
+  if (knownFailures.length > 15) lines.push(`- …and ${knownFailures.length - 15} more.`);
+  lines.push('');
+  return lines;
+}
+
 function flakySection(flaky) {
   if (!flaky.length) return [];
   const lines = [
@@ -184,17 +231,22 @@ function perFileSection(files) {
   const lines = [
     '### By spec file',
     '',
-    '| Spec | ✅ | ❌ | ⏭️ | Time |',
-    '| --- | ---: | ---: | ---: | ---: |',
+    '| Spec | ✅ | ❌ | ⏭️ | 🔒 | Time |',
+    '| --- | ---: | ---: | ---: | ---: | ---: |',
   ];
   for (const [file, tests] of files) {
     const pass = tests.filter((t) => t.status === 'passed').length;
-    const fail = tests.filter((t) => t.status === 'failed' || t.status === 'timedOut').length;
+    const fail = tests.filter(
+      (t) => t.status === 'failed' || t.status === 'timedOut' || t.status === 'unexpectedPass',
+    ).length;
     const skip = tests.filter((t) => t.status === 'skipped').length;
+    // Carried in its own column rather than folded into ❌ or ⏭️: a known failure is neither a
+    // broken run nor a test that did not run, and the per-file counts must still add up.
+    const known = tests.filter((t) => t.status === 'expectedFailure').length;
     const ms = tests.reduce((total, t) => total + t.durationMs, 0);
     // A file whose tests all failed is worth spotting from the table alone.
     const name = fail ? `**${cell(file)}**` : cell(file);
-    lines.push(`| ${name} | ${pass} | ${fail} | ${skip} | ${humanDuration(ms)} |`);
+    lines.push(`| ${name} | ${pass} | ${fail} | ${skip} | ${known} | ${humanDuration(ms)} |`);
   }
   lines.push('');
   return lines;
@@ -278,9 +330,12 @@ function main() {
     return;
   }
 
-  const failed = tests.filter((t) => t.status === 'failed' || t.status === 'timedOut');
+  const failed = tests.filter(
+    (t) => t.status === 'failed' || t.status === 'timedOut' || t.status === 'unexpectedPass',
+  );
   const passed = tests.filter((t) => t.status === 'passed' && t.expected !== 'skipped').length;
   const skipped = tests.filter((t) => t.status === 'skipped').length;
+  const knownFailures = tests.filter((t) => t.status === 'expectedFailure');
   const flaky = tests.filter((t) => t.status === 'passed' && t.retries > 0);
   const seconds = Math.round((report.stats?.duration ?? 0) / 1000);
   const files = byFile(tests);
@@ -291,6 +346,7 @@ function main() {
     '## 🎭 E2E Tests',
     '',
     `**${verdict}** — ${passed} passed · ${failed.length} failed · ${skipped} skipped` +
+      `${knownFailures.length ? ` · ${knownFailures.length} known-failing` : ''}` +
       `${flaky.length ? ` · ${flaky.length} flaky` : ''}, ` +
       `across ${files.size} spec files in ${humanDuration(seconds * 1000)}.`,
     '',
@@ -300,6 +356,7 @@ function main() {
   // thing fits the budget, and the drop is always announced.
   const sections = [
     { name: 'failures', lines: failureSection(failed) },
+    { name: 'known failures', lines: knownFailureSection(knownFailures) },
     { name: 'flaky', lines: flakySection(flaky) },
     { name: 'the per-file table', lines: perFileSection(files) },
     { name: 'the full test listing', lines: fullListingSection(files, tests.length) },
