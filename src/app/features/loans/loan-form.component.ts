@@ -41,6 +41,8 @@ import {
   requiredStrategyFor,
 } from '../products/loan-schedule-type';
 import { NotificationService } from '../../core/services/notification.service';
+import { DialogService } from '../../core/services/dialog.service';
+import { LoanProductQuickCreateDialogComponent } from '../products/loan-product-quick-create-dialog.component';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import {
   IonButton,
@@ -559,6 +561,7 @@ export class LoanFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly notifications = inject(NotificationService);
+  private readonly dialogService = inject(DialogService);
 
   private readonly LIST_PATH = '/loans';
 
@@ -615,12 +618,25 @@ export class LoanFormComponent implements OnInit {
   }
 
   onCreateProduct() {
-    this.router.navigate(['/products/loan/create']);
+    this.dialogService
+      .open<{ id?: number; resourceId?: number }>(LoanProductQuickCreateDialogComponent)
+      .then((result) => {
+        if (result) {
+          const createdId = result.id ?? result.resourceId;
+          this.loadProducts(createdId);
+        }
+      });
   }
 
-  private loadProducts() {
+  private loadProducts(selectProductId?: number) {
     this.productService.getLoanproducts().subscribe({
-      next: (data: GetLoanProductsResponse[]) => this.products.set(data || []),
+      next: (data: GetLoanProductsResponse[]) => {
+        this.products.set(data || []);
+        if (selectProductId) {
+          this.loan().productId = selectProductId;
+          this.onProductSelected(selectProductId);
+        }
+      },
       error: () => this.notifications.error(OPERATION_FAILED_MESSAGE),
     });
   }
