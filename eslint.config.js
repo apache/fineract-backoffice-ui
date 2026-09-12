@@ -38,6 +38,26 @@ const local = {
   rules: { 'cognitive-complexity': cognitiveComplexity },
 };
 
+const restrictedImportPatterns = [
+  {
+    group: ['@angular/material', '@angular/material/*'],
+    message:
+      'Angular Material has been removed. Use app-owned primitives in src/app/ui. @angular/cdk is still allowed.',
+  },
+  // The existing imports are a migration baseline; new vendor dependencies belong
+  // only in the UI implementation or the existing imperative adapters.
+  {
+    group: ['@ionic/angular', '@ionic/angular/*'],
+    message:
+      "Use app-owned primitives from 'app/ui'; Ionic implementations belong inside src/app/ui. Use OVERLAY for controllers. See DOCS/adr/0005-ui-boundary.md.",
+  },
+  {
+    group: ['@ngx-translate/*'],
+    message:
+      "Use the I18N adapter (or the | appTranslate pipe) from 'app/core/adapters'. See DOCS/adr/0003-adapter-boundary.md.",
+  },
+];
+
 module.exports = tseslint.config(
   {
     // Build and report output, not source. coverage/ in particular holds one .html per
@@ -166,37 +186,7 @@ module.exports = tseslint.config(
       'no-restricted-imports': [
         'error',
         {
-          patterns: [
-            {
-              group: ['@angular/material', '@angular/material/*'],
-              message:
-                'Angular Material has been removed. Use Ionic (@ionic/angular/standalone) — see STYLE.md for the component mapping. @angular/cdk is still allowed.',
-            },
-            // Adapter boundary — DOCS/adr/0003-adapter-boundary.md.
-            //
-            // `<ion-*>` components are deliberately NOT restricted: they are the UI layer
-            // (AGENTS.md) and migrate one component at a time. What is restricted is Ionic's
-            // *imperative* surface, which services reach for and which has lifecycle
-            // semantics worth testing without a component library present.
-            {
-              group: ['@ionic/angular', '@ionic/angular/*'],
-              importNames: [
-                'ModalController',
-                'ToastController',
-                'AlertController',
-                'LoadingController',
-                'ActionSheetController',
-                'PopoverController',
-              ],
-              message:
-                "Use the OVERLAY adapter from 'app/core/adapters' instead of Ionic's controllers. Ion* components are unaffected. See DOCS/adr/0003-adapter-boundary.md.",
-            },
-            {
-              group: ['@ngx-translate/*'],
-              message:
-                "Use the I18N adapter (or the | appTranslate pipe) from 'app/core/adapters'. See DOCS/adr/0003-adapter-boundary.md.",
-            },
-          ],
+          patterns: restrictedImportPatterns,
         },
       ],
       // Web Storage is a trust boundary (security.md §4) and reached through globals rather
@@ -250,6 +240,20 @@ module.exports = tseslint.config(
       'no-restricted-imports': 'off',
       'no-restricted-globals': 'off',
       'no-restricted-properties': 'off',
+    },
+  },
+  {
+    // UI implementations may name their vendor, but retain the Material and i18n boundaries.
+    files: ['src/app/ui/**/*.ts', 'src/app/testing/ionic-testing.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: restrictedImportPatterns.filter(
+            (pattern) => !pattern.group.includes('@ionic/angular'),
+          ),
+        },
+      ],
     },
   },
   {

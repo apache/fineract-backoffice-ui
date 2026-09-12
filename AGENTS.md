@@ -113,8 +113,9 @@ The UI layer is **Ionic** (`@ionic/angular` v8) in `mode: 'md'`. Angular Materia
 removed and `npm run lint` blocks any import of it. `@angular/cdk` is retained for unstyled
 primitives. `STYLE.md` holds the full component mapping — the essentials:
 
-- Import individual components from `@ionic/angular/standalone` into the component's `imports`
-  array; never `IonicModule`.
+- New feature/shared code uses app-owned primitives from `src/app/ui/`; existing direct Ionic
+  imports are a shrinking lint baseline. Inside UI implementations, import individual vendor
+  components from `@ionic/angular/standalone`; never `IonicModule`.
 - `MatSnackBar` → `NotificationService`, `MatDialog` → `DialogService`
   (both in `src/app/core/services/`).
 - Icons are ionicons and **must** be registered in `src/app/core/icons.ts`, which `bootstrap.ts`
@@ -141,8 +142,9 @@ Third-party surfaces the application must be able to replace are reached through
 
 - Tokens resolve to their default implementation with no provider needed; override in
   `app.config.ts` to swap one.
-- `<ion-*>` components are **not** restricted — they are the UI layer. Only Ionic's imperative
-  controllers are.
+- UI primitives are reached through `src/app/ui/`; direct Ionic imports outside that boundary
+  are a shrinking lint baseline. Add or migrate one primitive at a time with its browser test
+  contract. Imperative controllers still use OVERLAY. See `DOCS/adr/0005-ui-boundary.md`.
 - New keys must be added to `STORAGE_KEYS` (`core/adapters/storage/storage-keys.ts`); the type
   admits nothing else.
 - `npm run lint` fails on a new violation. The existing backlog is recorded in

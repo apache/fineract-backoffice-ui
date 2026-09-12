@@ -17,16 +17,10 @@
  * under the License.
  */
 
-import { inject, input, signal, Component, OnInit } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
-import {
-  IonButton,
-  IonIcon,
-  IonSegment,
-  IonSegmentButton,
-  IonLabel,
-  IonSpinner,
-} from '@ionic/angular/standalone';
+import { computed, inject, input, signal, Component, OnInit } from '@angular/core';
+import { TranslatePipe } from '../../../core/adapters';
+import { TabsComponent, UiTab } from '../../../ui/tabs/tabs.component';
+import { IonButton, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { DataTablesService, GetDataTablesResponse } from '../../../api';
 import { DialogService } from '../../../core/services/dialog.service';
 import { DataTableComponent, ColumnDef } from '../data-table/data-table.component';
@@ -37,16 +31,7 @@ const AUDIT_COLUMN_NAMES = new Set(['id', 'created_at', 'updated_at']);
 @Component({
   selector: 'app-entity-datatables',
   standalone: true,
-  imports: [
-    TranslateModule,
-    IonSegment,
-    IonSegmentButton,
-    IonLabel,
-    IonButton,
-    IonIcon,
-    IonSpinner,
-    DataTableComponent,
-  ],
+  imports: [TranslatePipe, TabsComponent, IonButton, IonIcon, IonSpinner, DataTableComponent],
   template: `
     <div class="entity-datatables-container">
       @if (isLoading()) {
@@ -56,21 +41,24 @@ const AUDIT_COLUMN_NAMES = new Set(['id', 'created_at', 'updated_at']);
       }
 
       @if (datatables().length > 0) {
-        <ion-segment
-          scrollable
+        <app-tabs
+          #tabs
           data-testid="entity-datatables-tabs"
+          [tabs]="tableTabs()"
+          [label]="'SYSTEM.DATA_TABLES' | appTranslate"
+          [idPrefix]="'entity-datatables-' + apptableName() + '-' + entityId()"
           [value]="activeTable()?.registeredTableName"
-          (ionChange)="onTabChange($event)"
-        >
-          @for (dt of datatables(); track dt.registeredTableName) {
-            <ion-segment-button [value]="dt.registeredTableName!">
-              <ion-label>{{ dt.registeredTableName }}</ion-label>
-            </ion-segment-button>
-          }
-        </ion-segment>
+          (valueChange)="onTabChange($event)"
+        />
 
         @if (activeTable(); as dt) {
-          <div class="tab-content">
+          <div
+            class="tab-content"
+            role="tabpanel"
+            tabindex="0"
+            [id]="tabs.panelId()"
+            [attr.aria-labelledby]="tabs.tabId(dt.registeredTableName!)"
+          >
             <app-data-table
               [columns]="getColumnDefs(dt)"
               [data]="tableData()"
@@ -84,13 +72,13 @@ const AUDIT_COLUMN_NAMES = new Set(['id', 'created_at', 'updated_at']);
                 (click)="onAddEntry(dt)"
               >
                 <ion-icon name="add-outline" slot="start"></ion-icon>
-                {{ 'SYSTEM.ADD_ENTRY' | translate }}
+                {{ 'SYSTEM.ADD_ENTRY' | appTranslate }}
               </ion-button>
             </app-data-table>
           </div>
         }
       } @else if (!isLoading()) {
-        <p class="no-data">{{ 'SYSTEM.NO_DATA_TABLES_REGISTERED' | translate }}</p>
+        <p class="no-data">{{ 'SYSTEM.NO_DATA_TABLES_REGISTERED' | appTranslate }}</p>
       }
     </div>
   `,
@@ -124,6 +112,11 @@ export class EntityDatatablesComponent implements OnInit {
   private readonly dialogService = inject(DialogService);
 
   readonly datatables = signal<GetDataTablesResponse[]>([]);
+  readonly tableTabs = computed<UiTab[]>(() =>
+    this.datatables()
+      .filter((table) => !!table.registeredTableName)
+      .map((table) => ({ value: table.registeredTableName!, label: table.registeredTableName! })),
+  );
   readonly isLoading = signal<boolean>(false);
 
   readonly tableData = signal<Record<string, unknown>[]>([]);
@@ -202,12 +195,10 @@ export class EntityDatatablesComponent implements OnInit {
       }));
   }
 
-  onTabChange(event: Event): void {
-    const detail = (event as CustomEvent<{ value?: string }>).detail;
-    const tableName = detail?.value ?? (event.target as HTMLInputElement)?.value;
-    if (!tableName) return;
-
-    this.activeTable.set(this.datatables().find((d) => d.registeredTableName === tableName));
+  onTabChange(tableName: string): void {
+    const table = this.datatables().find((dt) => dt.registeredTableName === tableName);
+    if (!table || table === this.activeTable()) return;
+    this.activeTable.set(table);
     this.loadTableData(tableName);
   }
 
