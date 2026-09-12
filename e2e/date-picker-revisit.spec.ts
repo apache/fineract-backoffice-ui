@@ -77,9 +77,20 @@ test.describe('Date pickers on revisited forms', () => {
       }),
     );
 
-    await page.route('**/api/v1/staff**', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
-    );
+    // The list pages these forms are reached through only need to render; an empty collection is
+    // enough, and keeps each new page from dragging in its own fixture.
+    for (const collection of [
+      'staff',
+      'floatingrates',
+      'holidays',
+      'tellers',
+      'glclosures',
+      'currencies',
+    ]) {
+      await page.route(`**/api/v1/${collection}**`, (route) =>
+        route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+      );
+    }
 
     await page.goto('/login');
     if (!page.url().includes('/dashboard')) {
@@ -118,10 +129,45 @@ test.describe('Date pickers on revisited forms', () => {
       createButton: 'Create Staff Member',
       createRole: 'link' as const,
     },
+    {
+      name: 'holiday',
+      listUrl: '/settings/holidays',
+      createButton: 'Create Holiday',
+      createRole: 'button' as const,
+    },
+    {
+      name: 'teller',
+      listUrl: '/tellers',
+      createButton: 'Create Teller',
+      createRole: 'button' as const,
+    },
+    {
+      name: 'accounting closure',
+      listUrl: '/accounting/closures',
+      createButton: 'Close Period',
+      createRole: 'button' as const,
+    },
+    {
+      name: 'floating rate',
+      listUrl: '/products/floating-rates',
+      createButton: 'Create Floating Rate',
+      createRole: 'button' as const,
+      // This form's pickers live inside a @for over rate periods, so they are created after the
+      // first render rather than with the page. The button and its modal then mount in the same
+      // change-detection pass and the button binds to nothing -- #548, which `createPickersReady`
+      // does not reach because the flag is already true by the time a row is added. Expected to
+      // fail until that is fixed; when it starts passing, drop the marker with the fix.
+      knownBroken: true,
+      prepare: async (page: import('@playwright/test').Page) => {
+        await page.getByRole('button', { name: 'Add Period', exact: true }).click();
+      },
+    },
   ];
 
-  for (const { name, listUrl, createButton, createRole } of cases) {
+  for (const { name, listUrl, createButton, createRole, prepare, knownBroken } of cases) {
     test(`${name} form keeps its pickers usable on every visit`, async ({ page }) => {
+      if (knownBroken) test.fail();
+
       const pickerErrors: string[] = [];
       page.on('console', (message) => {
         const text = message.text();
@@ -133,6 +179,7 @@ test.describe('Date pickers on revisited forms', () => {
       for (const visit of [1, 2, 3]) {
         await page.getByRole(createRole, { name: createButton, exact: true }).click();
         await expect(page).toHaveURL(`${listUrl}/create`);
+        await prepare?.(page);
         await expect(page.locator('ion-datetime-button').first()).toBeAttached();
 
         await expect
