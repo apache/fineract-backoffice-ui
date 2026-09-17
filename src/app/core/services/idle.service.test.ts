@@ -171,4 +171,44 @@ describe('IdleService', () => {
 
     service.ngOnDestroy();
   });
+
+  it('dismisses the warning dialog immediately if the session already ended while it was still presenting', async () => {
+    authServiceSpy.isAuthenticated.mockReturnValue(true);
+
+    // Same async gap as the activity-event race above: `dialogRef` stays unset until
+    // `presentModal()` resolves, and Ionic's own enter animation makes that resolution
+    // ~300ms+ after `create()` is even called. If the session ends in that window — a 401
+    // from another tab, an explicit sign-out — `closeDialog()` has nothing to dismiss yet,
+    // and the modal still appears moments later even though the session it warns about is
+    // already gone (issue #555).
+    let resolvePresent!: (handle: {
+      result: Promise<unknown>;
+      dismiss: () => Promise<void>;
+    }) => void;
+    const dismissSpy = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(overlay, 'presentModal').mockReturnValue(
+      new Promise((resolve) => {
+        resolvePresent = resolve;
+      }),
+    );
+
+    service = TestBed.inject(IdleService);
+
+    vi.advanceTimersByTime(13 * 60 * 1000 + 1000);
+    expect(overlay.presentModal).toHaveBeenCalledTimes(1);
+
+    // The session ends for some other reason while the modal is still being created.
+    authServiceSpy.isAuthenticated.mockReturnValue(false);
+
+    // The modal now finishes presenting, late — after the session it warns about is gone.
+    resolvePresent({ result: new Promise(() => undefined), dismiss: dismissSpy });
+    await Promise.resolve();
+
+    expect(dismissSpy).toHaveBeenCalled();
+    // IdleService itself must not also try to log out — something else already ended
+    // this session; dismissing the stale dialog is all this path should do.
+    expect(authServiceSpy.logout).not.toHaveBeenCalled();
+
+    service.ngOnDestroy();
+  });
 });
