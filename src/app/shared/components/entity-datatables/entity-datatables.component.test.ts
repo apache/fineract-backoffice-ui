@@ -86,6 +86,24 @@ describe('EntityDatatablesComponent', () => {
     dialogSpy = dialogServiceSpy.open;
   });
 
+  it('selects the first named table so the rendered panel always has a selected tab', () => {
+    datatablesServiceSpy.getDatatables.mockReturnValue(
+      of([{ applicationTableName: 'm_client' }, ...mockDatatables]) as unknown as Observable<never>,
+    );
+    datatablesServiceSpy.getDatatablesDatatableApptableId.mockReturnValue(
+      of(mockTableDataResultSet) as unknown as Observable<never>,
+    );
+
+    fixture.detectChanges();
+
+    expect(component.activeTable()).toEqual(mockDatatables[0]);
+    const selected = fixture.nativeElement.querySelector('[role=tab][aria-selected=true]');
+    const panel = fixture.nativeElement.querySelector('[role=tabpanel]');
+    expect(selected?.textContent?.trim()).toBe('m_client_details');
+    expect(panel.getAttribute('aria-labelledby')).toBe(selected.id);
+    expect(selected.getAttribute('aria-controls')).toBe(panel.id);
+  });
+
   it('should create and load datatables on init', () => {
     datatablesServiceSpy.getDatatables.mockReturnValue(
       of(mockDatatables) as unknown as Observable<never>,
@@ -171,9 +189,13 @@ describe('EntityDatatablesComponent', () => {
     fixture.detectChanges();
 
     // Trigger tab change to second tab
-    component.onTabChange(
-      new CustomEvent('ionChange', { detail: { value: 'm_client_more_details' } }),
-    );
+    const secondTab = fixture.nativeElement.querySelectorAll('[role=tab]')[1] as HTMLButtonElement;
+    secondTab.click();
+    fixture.detectChanges();
+    expect(secondTab.getAttribute('aria-selected')).toBe('true');
+    const panel = fixture.nativeElement.querySelector('[role=tabpanel]') as HTMLElement;
+    expect(panel.getAttribute('aria-labelledby')).toBe(secondTab.id);
+    expect(secondTab.getAttribute('aria-controls')).toBe(panel.id);
 
     expect(component.activeTable()).toEqual(mockDatatables[1]);
     expect(datatablesServiceSpy.getDatatablesDatatableApptableId).toHaveBeenCalledWith(

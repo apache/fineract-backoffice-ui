@@ -56,9 +56,13 @@ const HEADER_ACTIONS_SELECTOR = '[data-testid="data-table-create"], [headerActio
  *
  * Was `.tab-group`, which no template in this application applies to anything — it survives
  * only as a leftover style rule in five record views, from the Material port where the element
- * was `mat-tab-group`. So the tabs step of four separate tours matched nothing whatsoever. All
- * sixteen components with a tab strip render an `ion-segment`, so that is what the step points
- * at.
+ * was `mat-tab-group`. So the tabs step of four separate tours matched nothing whatsoever. The
+ * record-view tab strips still render an `ion-segment`, so that is what the step points at.
+ *
+ * Mid-migration (DOCS/adr/0005-ui-boundary.md): strips moved to `app-tabs` render
+ * `[data-testid="ui-tabs"]` instead, and currently only the nested custom-fields strip does, which
+ * sits after the outer `ion-segment` in DOM order. Migrating a record-view strip must move this
+ * selector in the same change, or the step silently matches nothing again.
  */
 const TAB_GROUP_SELECTOR = 'ion-segment';
 const ACTIONS_AREA_SELECTOR = '.actions-area';
