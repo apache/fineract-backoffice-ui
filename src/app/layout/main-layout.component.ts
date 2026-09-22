@@ -18,8 +18,9 @@
  */
 
 import { Component, HostListener, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { Router, RouterModule } from '@angular/router';
+import { NavigationStart, Router, RouterModule } from '@angular/router';
 import { IonProgressBar } from '@ionic/angular/standalone';
 import { HeaderComponent } from './header.component';
 import { SidebarComponent } from './sidebar.component';
@@ -29,6 +30,8 @@ import { LoadingService } from '../core/services/loading.service';
 import { SidebarService } from '../core/services/sidebar.service';
 import { GuidanceService } from '../core/services/guidance.service';
 import { isTypingTarget, matchShortcut } from './keyboard-shortcuts';
+import { filter } from 'rxjs';
+import { OVERLAY } from '../core/adapters';
 
 /**
  * The primary application layout component (App Shell).
@@ -139,6 +142,16 @@ export class MainLayoutComponent {
   protected readonly sidebarService = inject(SidebarService);
   private readonly guidanceService = inject(GuidanceService);
   private readonly router = inject(Router);
+  private readonly overlay = inject(OVERLAY);
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationStart),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => void this.overlay.dismissPopovers());
+  }
 
   /** Global navigation shortcuts (Alt+letter) — see `keyboard-shortcuts.ts` for the bindings. */
   @HostListener('window:keydown', ['$event'])

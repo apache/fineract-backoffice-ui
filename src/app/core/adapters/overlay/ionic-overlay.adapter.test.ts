@@ -19,7 +19,7 @@
 
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController, PopoverController } from '@ionic/angular/standalone';
 
 import { IonicOverlayAdapter } from './ionic-overlay.adapter';
 
@@ -83,13 +83,24 @@ function settledOrNot<T>(promise: Promise<T>): Promise<T | symbol> {
 describe('IonicOverlayAdapter', () => {
   let modal: FakeModal;
   let adapter: IonicOverlayAdapter;
+  let dismissPopover: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     modal = new FakeModal();
+    dismissPopover = vi.fn().mockResolvedValue(true);
     TestBed.configureTestingModule({
-      providers: [{ provide: ModalController, useValue: { create: () => Promise.resolve(modal) } }],
+      providers: [
+        { provide: ModalController, useValue: { create: () => Promise.resolve(modal) } },
+        { provide: PopoverController, useValue: { dismiss: dismissPopover } },
+      ],
     });
     adapter = TestBed.inject(IonicOverlayAdapter);
+  });
+
+  it('dismisses the active popover', async () => {
+    await adapter.dismissPopovers();
+
+    expect(dismissPopover).toHaveBeenCalledOnce();
   });
 
   /**

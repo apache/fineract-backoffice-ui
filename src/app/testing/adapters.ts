@@ -69,6 +69,13 @@ export class FakeOverlayAdapter implements OverlayAdapter {
    */
   readonly dismissals: unknown[] = [];
 
+  /** Number of requests to close an open popover. */
+  dismissedPopovers = 0;
+
+  async dismissPopovers(): Promise<void> {
+    this.dismissedPopovers += 1;
+  }
+
   async toast(request: ToastRequest): Promise<void> {
     this.toasts.push(request);
   }

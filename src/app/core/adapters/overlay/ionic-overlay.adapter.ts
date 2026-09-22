@@ -18,7 +18,7 @@
  */
 
 import { Injectable, Injector, inject } from '@angular/core';
-import { ModalController, ToastController } from '@ionic/angular/standalone';
+import { ModalController, PopoverController, ToastController } from '@ionic/angular/standalone';
 // Type-only, and deliberately so: `overlay.adapter.ts` names this class as the token's
 // default binding, and a value import back would close a runtime cycle. `import type` is
 // erased, so the cycle exists only in the type graph, where it is harmless.
@@ -47,6 +47,14 @@ export class IonicOverlayAdapter implements OverlayAdapter {
 
   private get modalController(): ModalController {
     return this.injector.get(ModalController);
+  }
+
+  private get popoverController(): PopoverController {
+    return this.injector.get(PopoverController);
+  }
+
+  async dismissPopovers(): Promise<void> {
+    await this.popoverController.dismiss();
   }
 
   async toast(request: ToastRequest): Promise<void> {

@@ -27,6 +27,7 @@ import { signal } from '@angular/core';
 import { provideTranslateTesting } from '../testing/i18n-testing';
 import { BusinessDateManagementService } from '../api';
 import { of } from 'rxjs';
+import { OVERLAY } from '../core/adapters';
 
 function keydown(overrides: Partial<KeyboardEvent> & { target: EventTarget }): KeyboardEvent {
   return {
@@ -43,6 +44,7 @@ describe('MainLayoutComponent', () => {
   let component: MainLayoutComponent;
   let fixture: ComponentFixture<MainLayoutComponent>;
   let authServiceSpy: SpyObj<AuthService>;
+  let dismissPopover: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     const mockSession: UserSession = {
@@ -61,6 +63,7 @@ describe('MainLayoutComponent', () => {
       currentUser: signal<UserSession | null>(mockSession),
     });
     authServiceSpy.hasPermission.mockReturnValue(true);
+    dismissPopover = vi.fn().mockResolvedValue(true);
 
     await TestBed.configureTestingModule({
       imports: [RouterModule.forRoot([]), MainLayoutComponent],
@@ -68,12 +71,14 @@ describe('MainLayoutComponent', () => {
         ...provideTranslateTesting(),
         { provide: AuthService, useValue: authServiceSpy },
         { provide: BusinessDateManagementService, useValue: { getBusinessdate: () => of([]) } },
+        { provide: OVERLAY, useValue: { dismissPopovers: dismissPopover } },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MainLayoutComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    dismissPopover.mockClear();
   });
 
   it('should create', () => {
@@ -84,6 +89,14 @@ describe('MainLayoutComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('app-header')).toBeTruthy();
     expect(compiled.querySelector('app-sidebar')).toBeTruthy();
+  });
+
+  it('dismisses an open popover when navigation starts', async () => {
+    await TestBed.inject(Router)
+      .navigateByUrl('/another-page')
+      .catch(() => false);
+
+    expect(dismissPopover).toHaveBeenCalledOnce();
   });
 
   describe('global keyboard shortcuts', () => {
