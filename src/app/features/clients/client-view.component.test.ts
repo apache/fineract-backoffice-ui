@@ -32,7 +32,9 @@ import {
 } from '../../api';
 import { AuthService } from '../../core/services/auth.service';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
+import { SKIP_ERROR_TOAST } from '../../core/http/http-context';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
@@ -142,9 +144,77 @@ describe('ClientViewComponent', () => {
   });
 
   it('should load client details and accounts on init', () => {
-    expect(clientServiceSpy.getClientsClientId).toHaveBeenCalledWith(123);
+    const [id, , observe, reportProgress, options] =
+      clientServiceSpy.getClientsClientId.mock.calls[0];
+    expect(id).toBe(123);
+    expect(observe).toBe('body');
+    expect(reportProgress).toBe(false);
+    // The screen renders a failed load itself, so the global toast must not also report it.
+    expect(options?.context?.get(SKIP_ERROR_TOAST)).toBe(true);
     expect(clientServiceSpy.getClientsClientIdAccounts).toHaveBeenCalledWith(123);
     expect(component.client()?.displayName).toBe('John Doe');
+    expect(component.loadError()).toBeNull();
+  });
+
+  describe('failed load', () => {
+    /**
+     * A fresh instance, not the shared `fixture`/`component` from the outer `beforeEach` — that
+     * one has already loaded successfully by the time a test body runs, and reusing it here
+     * would leave `client()` holding stale data from that earlier success rather than exercising
+     * what a first visit to a bad id actually renders.
+     */
+    function createFailingInstance(status: number): ComponentFixture<ClientViewComponent> {
+      clientServiceSpy.getClientsClientId.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status })),
+      );
+      const freshFixture = TestBed.createComponent(ClientViewComponent);
+      freshFixture.detectChanges();
+      return freshFixture;
+    }
+
+    it('shows a not-found state and offers to go back for a 404', () => {
+      const freshFixture = createFailingInstance(404);
+      const freshComponent = freshFixture.componentInstance;
+
+      expect(freshComponent.loadError()).toBe('not-found');
+      expect(freshComponent.client()).toBeNull();
+
+      const errorState = freshFixture.nativeElement.querySelector(
+        '[data-testid="client-load-error"]',
+      );
+      expect(errorState).not.toBeNull();
+      // TranslateModule.forRoot() has no loader in this spec, so the key itself renders — this
+      // confirms the not-found branch is wired to the right translation key.
+      expect(errorState.textContent).toContain('CLIENTS.ERRORS.NOT_FOUND');
+
+      freshFixture.nativeElement.querySelector('[data-testid="client-load-error-action"]').click();
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/clients']);
+    });
+
+    it('shows a not-found state for a 403 as well, without revealing which is true', () => {
+      const freshComponent = createFailingInstance(403).componentInstance;
+      expect(freshComponent.loadError()).toBe('not-found');
+    });
+
+    it('offers a retry rather than a not-found state for a transient failure', () => {
+      const freshFixture = createFailingInstance(500);
+      const freshComponent = freshFixture.componentInstance;
+      expect(freshComponent.loadError()).toBe('failed');
+
+      clientServiceSpy.getClientsClientId.mockReturnValue(
+        of({
+          id: 123,
+          accountNo: 'CL00123',
+          displayName: 'John Doe',
+          officeName: 'Head Office',
+        } as any),
+      );
+      freshFixture.nativeElement.querySelector('[data-testid="client-load-error-action"]').click();
+      freshFixture.detectChanges();
+
+      expect(freshComponent.loadError()).toBeNull();
+      expect(freshComponent.client()?.displayName).toBe('John Doe');
+    });
   });
 
   describe('empty account tabs', () => {

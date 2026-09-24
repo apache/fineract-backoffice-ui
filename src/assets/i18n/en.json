@@ -856,7 +856,12 @@
     "NO_RECURRING_DEPOSITS": "This client holds no recurring deposits.",
     "NO_SHARE_ACCOUNTS": "This client holds no share accounts.",
     "SEARCH_BY_NAME": "Search by client name...",
-    "NAME_SEARCH_HINT": "When a status is selected, search matches client names."
+    "NAME_SEARCH_HINT": "When a status is selected, search matches client names.",
+    "LOAD_FAILED": "This client could not be loaded.",
+    "BACK_TO_CLIENTS": "Back to clients",
+    "ERRORS": {
+      "NOT_FOUND": "This client doesn't exist, or you don't have permission to view it."
+    }
   },
   "SAVINGS": {
     "CREATE_ACCOUNT": "Create Savings Account",
