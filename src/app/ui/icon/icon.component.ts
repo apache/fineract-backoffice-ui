@@ -17,8 +17,18 @@
  * under the License.
  */
 
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
+
+/** What an icon's colour says about the state it represents, not which vendor palette it uses. */
+export type UiIconTone = 'success' | 'warning' | 'danger' | 'neutral';
+
+const TONE_COLOR: Record<UiIconTone, string> = {
+  success: 'success',
+  warning: 'warning',
+  danger: 'danger',
+  neutral: 'medium',
+};
 
 /**
  * An icon, named from the set registered in `src/app/core/icons.ts`. An unregistered name
@@ -35,6 +45,7 @@ import { IonIcon } from '@ionic/angular/standalone';
   template: `
     <ion-icon
       [name]="name()"
+      [color]="color()"
       [attr.aria-label]="label() ?? null"
       [attr.aria-hidden]="label() ? null : 'true'"
     />
@@ -54,6 +65,13 @@ import { IonIcon } from '@ionic/angular/standalone';
 export class IconComponent {
   /** A name registered in `src/app/core/icons.ts`. */
   readonly name = input.required<string>();
+  /** Semantic state colour. Omit to inherit the surrounding text colour. */
+  readonly tone = input<UiIconTone>();
   /** Already-translated accessible name. Omit for an icon that repeats adjacent text. */
   readonly label = input<string>();
+
+  protected readonly color = computed(() => {
+    const tone = this.tone();
+    return tone ? TONE_COLOR[tone] : undefined;
+  });
 }

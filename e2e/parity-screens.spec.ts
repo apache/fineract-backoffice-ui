@@ -130,11 +130,10 @@ test.describe('Screens added for platform parity', () => {
     await expect(coreRow).toBeVisible({ timeout: 20000 });
 
     // The platform refuses to delete a core report, so the control is not offered.
-    // ion-button is a custom element, so toBeDisabled() does not see it — the attribute does.
-    await expect(coreRow.getByTestId('report-definition-delete')).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    // app-button renders an ion-button, where aria-disabled is applied.
+    await expect(
+      coreRow.getByTestId('report-definition-delete').locator('ion-button'),
+    ).toHaveAttribute('aria-disabled', 'true');
 
     await search.fill(report.reportName);
     const tenantRow = page.getByRole('row').filter({ hasText: report.reportName }).first();

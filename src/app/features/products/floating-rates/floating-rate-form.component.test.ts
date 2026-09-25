@@ -25,6 +25,10 @@ import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideIonicTesting } from '../../../testing/ionic-testing';
+
+const PERIOD_FROM_DATE_PICKER_0 = 'periodfromDate-picker-0';
+const PERIOD_FROM_DATE_PICKER_1 = 'periodfromDate-picker-1';
 
 describe('FloatingRateFormComponent', () => {
   let component: FloatingRateFormComponent;
@@ -47,6 +51,7 @@ describe('FloatingRateFormComponent', () => {
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },
         provideNoopAnimations(),
+        provideIonicTesting(),
       ],
     }).compileComponents();
 
@@ -75,10 +80,10 @@ describe('FloatingRateFormComponent', () => {
     );
     component.rate.set({ name: 'BLR', isBaseLendingRate: true, isActive: true });
     component.periods.set([
-      { fromDate: new Date(2026, 0, 1), interestRate: 9.5, isDifferentialToBaseLendingRate: false },
-      { fromDate: new Date(2026, 1, 1), interestRate: 0, isDifferentialToBaseLendingRate: true },
+      { fromDate: '2026-01-01', interestRate: 9.5, isDifferentialToBaseLendingRate: false },
+      { fromDate: '2026-02-01', interestRate: 0, isDifferentialToBaseLendingRate: true },
       {
-        fromDate: new Date(2026, 2, 1),
+        fromDate: '2026-03-01',
         interestRate: null,
         isDifferentialToBaseLendingRate: false,
       },
@@ -104,7 +109,7 @@ describe('FloatingRateFormComponent', () => {
     component.isEditMode.set(true);
     component.rate.set({ name: 'Updated Rate', isBaseLendingRate: false, isActive: true });
     component.periods.set([
-      { fromDate: new Date(2026, 5, 1), interestRate: 12, isDifferentialToBaseLendingRate: false },
+      { fromDate: '2026-06-01', interestRate: 12, isDifferentialToBaseLendingRate: false },
     ]);
 
     component.onSubmit();
@@ -115,5 +120,36 @@ describe('FloatingRateFormComponent', () => {
     expect(arg.name).toBe('Updated Rate');
     expect(arg.ratePeriods?.length).toBe(1);
     expect(arg.ratePeriods?.[0].interestRate).toBe(12);
+  });
+
+  it('gives each period row a unique picker id and stamps it on the button', async () => {
+    component.periods.set([
+      { fromDate: '2026-01-01', interestRate: 9.5, isDifferentialToBaseLendingRate: false },
+      { fromDate: '2026-02-01', interestRate: 10, isDifferentialToBaseLendingRate: false },
+    ]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.periodFromDatePickerId(0)).toBe(PERIOD_FROM_DATE_PICKER_0);
+    expect(component.periodFromDatePickerId(1)).toBe(PERIOD_FROM_DATE_PICKER_1);
+
+    const buttons: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('ion-datetime-button'),
+    );
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0].getAttribute('datetime')).toBe(PERIOD_FROM_DATE_PICKER_0);
+    expect(buttons[1].getAttribute('datetime')).toBe(PERIOD_FROM_DATE_PICKER_1);
+    expect(buttons[0].getAttribute('datetime')).not.toBe(buttons[1].getAttribute('datetime'));
+
+    const pickers: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('ion-datetime'),
+    );
+    const pickerIds = pickers.map((el) => el.id);
+    if (pickerIds.length > 0) {
+      expect(pickerIds).toEqual([PERIOD_FROM_DATE_PICKER_0, PERIOD_FROM_DATE_PICKER_1]);
+    }
+    expect(fixture.nativeElement.querySelector('#periodfromDate-picker')).toBeNull();
   });
 });

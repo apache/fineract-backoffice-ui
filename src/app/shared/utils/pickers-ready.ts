@@ -37,6 +37,9 @@ import { Signal, afterNextRender, signal } from '@angular/core';
  * readonly pickersReady = createPickersReady();
  * ```
  *
+ * A page-level flag does not help pickers created later inside `@for` — by then it is already
+ * true. Use `DeferredDatetimeButtonComponent` for those rows (see #548).
+ *
  * See https://github.com/apache/fineract-backoffice-ui/issues/541.
  */
 export function createPickersReady(): Signal<boolean> {

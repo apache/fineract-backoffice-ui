@@ -32,7 +32,7 @@ import {
 import { CentersService, GetCentersPageItems } from '../../api';
 import { TranslatePipe } from '../../core/adapters';
 import { PageEvent, SortEvent } from '../../shared/models/table.model';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../ui/button/button.component';
 
 @Component({
   selector: 'app-centers-list',
@@ -44,8 +44,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
     DataTableComponent,
     CellTemplateDirective,
     TranslatePipe,
-    IonIcon,
-    IonButton,
+    ButtonComponent,
   ],
   template: `
     <app-data-table
@@ -75,15 +74,14 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-center>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
-          [title]="'CENTERS.EDIT_CENTER' | appTranslate"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="create-outline"
+          [label]="'COMMON.EDIT' | appTranslate"
           (click)="onEditCenter(center)"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

@@ -24,7 +24,7 @@ import { DatePipe, NgClass } from '@angular/common';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../shared';
 import { AccountingClosureService, GetGlClosureResponse } from '../../api';
 import { TranslatePipe } from '../../core/adapters';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../ui/button/button.component';
 
 /**
  * Component for listing accounting period closures.
@@ -41,8 +41,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
     TranslatePipe,
     DatePipe,
     NgClass,
-    IonIcon,
-    IonButton,
+    ButtonComponent,
   ],
   template: `
     <app-data-table
@@ -67,15 +66,14 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-closure>
-        <ion-button
-          fill="clear"
-          color="danger"
-          [title]="'ACCOUNTING_CLOSURES.REOPEN' | appTranslate"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="danger"
+          icon="lock-open-outline"
           (click)="onDeleteClosure(closure)"
-          [attr.aria-label]="'ACCOUNTING_CLOSURES.REOPEN' | translate"
-        >
-          <ion-icon name="lock-open-outline"></ion-icon>
-        </ion-button>
+          [label]="'ACCOUNTING_CLOSURES.REOPEN' | appTranslate"
+        />
       </ng-template>
     </app-data-table>
   `,

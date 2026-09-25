@@ -152,22 +152,19 @@ test.describe('Date pickers on revisited forms', () => {
       listUrl: '/products/floating-rates',
       createButton: 'Create Floating Rate',
       createRole: 'button' as const,
-      // This form's pickers live inside a @for over rate periods, so they are created after the
-      // first render rather than with the page. The button and its modal then mount in the same
-      // change-detection pass and the button binds to nothing -- #548, which `createPickersReady`
-      // does not reach because the flag is already true by the time a row is added. Expected to
-      // fail until that is fixed; when it starts passing, drop the marker with the fix.
-      knownBroken: true,
+      // Pickers live inside a @for over rate periods (#548). Add two rows so the
+      // revisit assertion also covers unique ids — a shared id would bind both
+      // buttons to the first picker.
       prepare: async (page: import('@playwright/test').Page) => {
         await page.getByRole('button', { name: 'Add Period', exact: true }).click();
+        await page.getByRole('button', { name: 'Add Period', exact: true }).click();
       },
+      expectUniquePickerIds: true,
     },
   ];
 
-  for (const { name, listUrl, createButton, createRole, prepare, knownBroken } of cases) {
+  for (const { name, listUrl, createButton, createRole, prepare, expectUniquePickerIds } of cases) {
     test(`${name} form keeps its pickers usable on every visit`, async ({ page }) => {
-      if (knownBroken) test.fail();
-
       const pickerErrors: string[] = [];
       page.on('console', (message) => {
         const text = message.text();
@@ -185,6 +182,14 @@ test.describe('Date pickers on revisited forms', () => {
         await expect
           .poll(() => blankPickers(page), { message: `visit ${visit} left a picker unbound` })
           .toBe(0);
+
+        if (expectUniquePickerIds) {
+          const ids = await page
+            .locator('ion-datetime-button')
+            .evaluateAll((buttons) => buttons.map((button) => button.getAttribute('datetime')));
+          expect(ids.length).toBeGreaterThan(1);
+          expect(new Set(ids).size).toBe(ids.length);
+        }
 
         await page.getByRole('button', { name: 'Cancel', exact: true }).click();
         await expect(page).toHaveURL(listUrl);

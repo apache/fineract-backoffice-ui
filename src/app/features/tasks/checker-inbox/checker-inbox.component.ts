@@ -24,7 +24,7 @@ import { catchError, map, startWith, switchMap, tap } from 'rxjs/operators';
 import { DataTableComponent, CellTemplateDirective, ColumnDef } from '../../../shared';
 import { MakerCheckerOr4EyeFunctionalityService, AuditData } from '../../../api';
 import { ViewPayloadDialogComponent } from './view-payload-dialog.component';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 import { I18N, TranslatePipe } from '../../../core/adapters';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DialogService } from '../../../core/services/dialog.service';
@@ -32,7 +32,7 @@ import { DialogService } from '../../../core/services/dialog.service';
 @Component({
   selector: 'app-checker-inbox',
   standalone: true,
-  imports: [TranslatePipe, DataTableComponent, CellTemplateDirective, IonIcon, IonButton],
+  imports: [TranslatePipe, DataTableComponent, CellTemplateDirective, ButtonComponent],
   template: `
     <app-data-table
       [hasError]="hasError()"
@@ -50,30 +50,30 @@ import { DialogService } from '../../../core/services/dialog.service';
 
       <ng-template appCellTemplate="actions" let-task>
         <div class="action-buttons">
-          <ion-button
-            fill="clear"
-            color="primary"
+          <app-button
+            type="button"
+            emphasis="quiet"
+            intent="primary"
+            icon="eye-outline"
             (click)="onViewPayload(task)"
-            [attr.aria-label]="'CHECKER_INBOX.VIEW_PAYLOAD' | appTranslate"
-          >
-            <ion-icon name="eye-outline"></ion-icon>
-          </ion-button>
-          <ion-button
-            fill="clear"
+            [label]="'CHECKER_INBOX.VIEW_PAYLOAD' | appTranslate"
+          />
+          <app-button
+            type="button"
+            emphasis="quiet"
             class="approve-btn"
+            icon="checkmark-circle-outline"
             (click)="onApprove(task)"
-            [attr.aria-label]="'ACTIONS.APPROVE' | appTranslate"
-          >
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-          </ion-button>
-          <ion-button
-            fill="clear"
-            color="danger"
+            [label]="'ACTIONS.APPROVE' | appTranslate"
+          />
+          <app-button
+            type="button"
+            emphasis="quiet"
+            intent="danger"
+            icon="close-circle-outline"
             (click)="onReject(task)"
-            [attr.aria-label]="'ACTIONS.REJECT' | appTranslate"
-          >
-            <ion-icon name="close-circle-outline"></ion-icon>
-          </ion-button>
+            [label]="'ACTIONS.REJECT' | appTranslate"
+          />
         </div>
       </ng-template>
     </app-data-table>

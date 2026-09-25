@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 
 import { GetReportsResponse, ReportsService } from '../../../api';
 import { I18N, TranslatePipe } from '../../../core/adapters';
@@ -39,7 +39,7 @@ import { CellTemplateDirective, ColumnDef, DataTableComponent } from '../../../s
 @Component({
   selector: 'app-report-definitions-list',
   standalone: true,
-  imports: [TranslatePipe, DataTableComponent, CellTemplateDirective, NgClass, IonButton, IonIcon],
+  imports: [TranslatePipe, DataTableComponent, CellTemplateDirective, NgClass, ButtonComponent],
   template: `
     <app-data-table
       title="nav.reportDefinitions"
@@ -67,29 +67,24 @@ import { CellTemplateDirective, ColumnDef, DataTableComponent } from '../../../s
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-report>
-        <ion-button
-          fill="clear"
+        <app-button
+          type="button"
+          emphasis="quiet"
           data-testid="report-definition-edit"
-          [title]="'COMMON.EDIT' | appTranslate"
-          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
+          icon="create-outline"
+          [label]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(report)"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="clear"
-          color="danger"
+        />
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="danger"
           data-testid="report-definition-delete"
+          icon="trash-outline"
           [disabled]="report.coreReport"
-          [title]="
-            (report.coreReport ? 'REPORT_DEFINITIONS.CORE_NOT_DELETABLE' : 'COMMON.DELETE')
-              | appTranslate
-          "
-          [attr.aria-label]="'COMMON.DELETE' | appTranslate"
+          [label]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(report)"
-        >
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

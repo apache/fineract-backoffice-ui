@@ -24,7 +24,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../../shared';
 import { LoanCollateralService, CollateralData, LoansService } from '../../../api';
 import { LoanSummary } from '../loan-summary.model';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 
 /**
  * Component for listing collateral associated with a specific loan.
@@ -32,7 +32,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
 @Component({
   selector: 'app-collateral-list',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective, IonIcon, IonButton],
+  imports: [TranslateModule, DataTableComponent, CellTemplateDirective, ButtonComponent],
   template: `
     @if (loanSummary(); as summary) {
       <div class="loan-context">
@@ -58,24 +58,22 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-collateral>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
-          title="Edit Collateral"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="create-outline"
+          [label]="'COMMON.EDIT' | translate"
           (click)="onEditCollateral(collateral)"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="clear"
-          color="danger"
-          [attr.aria-label]="'COMMON.DELETE' | translate"
-          title="Delete Collateral"
+        />
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="danger"
+          icon="trash-outline"
+          [label]="'COMMON.DELETE' | translate"
           (click)="onDeleteCollateral(collateral)"
-        >
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

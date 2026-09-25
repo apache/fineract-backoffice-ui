@@ -168,6 +168,20 @@ export class IdleService implements OnDestroy {
           cssClass: 'inactivity-dialog',
         })
         .then((handle) => {
+          // The session can end for a reason unrelated to this countdown — a 401 from
+          // another tab, an explicit sign-out — while the modal is still being created and
+          // animated in (presentModal() resolves only after Ionic's ~300ms+ enter
+          // animation finishes). closeDialog() called during that window found dialogRef
+          // still null and had nothing to dismiss, so the now-late modal still appeared
+          // even though the session it warns about was already gone (issue #555). Catch
+          // it here, the first moment a real handle exists.
+          if (!this.authService.isAuthenticated()) {
+            this.presentingWarning = false;
+            this.clearTimers();
+            void handle.dismiss();
+            return;
+          }
+
           this.dialogRef = handle;
 
           return handle.result.then((shouldExtend) => {

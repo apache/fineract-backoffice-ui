@@ -163,7 +163,7 @@ async function ensureClosureReason(page: Page, name: string): Promise<string> {
 async function openGroup(page: Page, name: string): Promise<void> {
   await page.goto('/groups');
   const row = await findRow(page, name);
-  await row.locator('ion-button[data-testid^="group-view-"]').click();
+  await row.getByTestId(/^group-view-/).click();
   await expect(page).toHaveURL(/\/groups\/view\/\d+$/, { timeout: 20000 });
   await expect(page.getByTestId('group-name')).toHaveText(name, { timeout: 20000 });
 }

@@ -697,7 +697,7 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
         margin: 0 0 4px 0;
         font-size: 24px;
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--secondary-color);
       }
       .subtitle-row {
         display: flex;
@@ -759,7 +759,7 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
         font-weight: 500;
       }
       .detail-item .value {
-        color: #2c3e50;
+        color: var(--secondary-color);
         font-size: 14px;
         font-weight: 600;
       }

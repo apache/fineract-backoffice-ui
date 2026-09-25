@@ -24,7 +24,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { OfficesService, GetOfficesResponse } from '../../../api';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { TranslatePipe } from '../../../core/adapters';
 
@@ -35,8 +35,7 @@ import { TranslatePipe } from '../../../core/adapters';
     TranslateModule,
     DataTableComponent,
     CellTemplateDirective,
-    IonIcon,
-    IonButton,
+    ButtonComponent,
     TooltipDirective,
     TranslatePipe,
   ],
@@ -57,24 +56,23 @@ import { TranslatePipe } from '../../../core/adapters';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-office>
-        <ion-button
-          fill="clear"
+        <app-button
+          type="button"
+          emphasis="quiet"
           data-testid="office-view"
-          [title]="'COMMON.VIEW' | appTranslate"
-          [attr.aria-label]="'COMMON.VIEW' | appTranslate"
+          icon="eye-outline"
+          [label]="'COMMON.VIEW' | appTranslate"
           (click)="onViewOffice(office)"
-        >
-          <ion-icon name="eye-outline"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
+        />
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="create-outline"
           [appTooltip]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | translate"
           (click)="onEditOffice(office)"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

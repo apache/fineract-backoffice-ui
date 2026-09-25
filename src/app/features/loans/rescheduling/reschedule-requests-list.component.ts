@@ -29,7 +29,7 @@ import {
 } from '../../../shared';
 import { RescheduleLoansService, GetLoanRescheduleRequestResponse } from '../../../api';
 import { DialogService } from '../../../core/services/dialog.service';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 
 /**
  * Component for listing loan reschedule requests.
@@ -44,8 +44,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
     DataTableComponent,
     CellTemplateDirective,
     StatusBadgeComponent,
-    IonIcon,
-    IonButton,
+    ButtonComponent,
   ],
   template: `
     <app-data-table
@@ -72,15 +71,14 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-request>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.VIEW' | translate"
-          title="View Request Details"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="eye-outline"
+          [label]="'COMMON.VIEW' | translate"
           (click)="onViewRequest(request)"
-        >
-          <ion-icon name="eye-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

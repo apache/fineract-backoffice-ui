@@ -29,7 +29,7 @@ import {
   StatusBadgeComponent,
 } from '../../../shared';
 import { RecurringDepositAccountService, GetRecurringDepositAccountsResponse } from '../../../api';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 
 /**
@@ -47,8 +47,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
     CellTemplateDirective,
     StatusBadgeComponent,
     CurrencyPipe,
-    IonIcon,
-    IonButton,
+    ButtonComponent,
     TooltipDirective,
   ],
   template: `
@@ -74,25 +73,24 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 
       <ng-template appCellTemplate="actions" let-account>
         @if (account.status?.value === 'Submitted and pending approval') {
-          <ion-button
-            fill="clear"
-            color="secondary"
-            [attr.aria-label]="'LOANS.APPROVE' | translate"
+          <app-button
+            type="button"
+            emphasis="quiet"
+            intent="secondary"
+            icon="checkmark-circle-outline"
+            [label]="'LOANS.APPROVE' | translate"
             [appTooltip]="'LOANS.APPROVE' | translate"
             (click)="onApprove(account)"
-          >
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-          </ion-button>
+          />
         }
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
-          title="Edit Account Details"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="create-outline"
+          [label]="'COMMON.EDIT' | translate"
           (click)="onEditAccount(account)"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

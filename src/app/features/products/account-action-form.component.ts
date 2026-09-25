@@ -337,7 +337,7 @@ import {
       .summary-item .value {
         font-size: 1rem;
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--secondary-color);
       }
     `,
   ],

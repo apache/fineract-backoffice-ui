@@ -18,12 +18,19 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { IonIcon } from '@ionic/angular/standalone';
 import { provideIonicTesting } from '../../testing/ionic-testing';
 import { IconComponent } from './icon.component';
 
 describe('IconComponent public contract', () => {
   let fixture: ComponentFixture<IconComponent>;
   const icon = (): HTMLElement => fixture.nativeElement.querySelector('ion-icon');
+  /** The vendor seam: what this component's app-level inputs actually resolved to. */
+  const vendor = (): { color?: string } =>
+    fixture.debugElement.query(By.directive(IonIcon)).componentInstance as unknown as {
+      color?: string;
+    };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -39,6 +46,17 @@ describe('IconComponent public contract', () => {
     expect(icon().getAttribute('name')).toBe('add-outline');
     expect(icon().getAttribute('aria-hidden')).toBe('true');
     expect(icon().hasAttribute('aria-label')).toBe(false);
+    expect(vendor().color).toBeUndefined();
+  });
+
+  it('maps semantic tones to distinct colours without exposing the vendor palette', () => {
+    const colors = new Set<string | undefined>();
+    for (const tone of ['success', 'warning', 'danger', 'neutral'] as const) {
+      fixture.componentRef.setInput('tone', tone);
+      fixture.detectChanges();
+      colors.add(vendor().color);
+    }
+    expect(colors.size).toBe(4);
   });
 
   it('becomes an announced image once it carries meaning of its own', () => {

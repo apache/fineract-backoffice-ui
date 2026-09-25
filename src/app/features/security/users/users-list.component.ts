@@ -23,7 +23,7 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../../shared';
 import { UsersService, GetUsersResponse } from '../../../api';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 
 /**
  * Component for listing system users.
@@ -31,7 +31,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective, IonIcon, IonButton],
+  imports: [TranslateModule, DataTableComponent, CellTemplateDirective, ButtonComponent],
   template: `
     <app-data-table
       title="nav.users"
@@ -46,15 +46,14 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       (create)="onCreateUser()"
     >
       <ng-template appCellTemplate="actions" let-user>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
-          title="Edit User"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="create-outline"
+          [label]="'COMMON.EDIT' | translate"
           (click)="onEditUser(user)"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

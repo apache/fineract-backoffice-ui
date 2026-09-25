@@ -25,7 +25,7 @@ import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../../shared';
 import { ChargesService, ChargeData } from '../../../api';
 import { TranslatePipe } from '../../../core/adapters';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 
 /**
  * Component for listing globally configured charges and penalties.
@@ -42,8 +42,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
     TranslatePipe,
     DecimalPipe,
     CurrencyPipe,
-    IonIcon,
-    IonButton,
+    ButtonComponent,
   ],
   template: `
     <app-data-table
@@ -80,15 +79,14 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-charge>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
-          [title]="'CHARGES.EDIT' | appTranslate"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="create-outline"
+          [label]="'COMMON.EDIT' | appTranslate"
           (click)="onEditCharge(charge)"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

@@ -19,6 +19,7 @@
 
 import { Component, OnInit, computed, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateModule } from '@ngx-translate/core';
 import { DecimalPipe } from '@angular/common';
 import {
@@ -30,7 +31,7 @@ import {
   PostClientsClientIdRequest,
   ShareAccountService,
 } from '../../api';
-import { StatusBadgeComponent } from '../../shared';
+import { StatusBadgeComponent, LoadErrorComponent } from '../../shared';
 import { RequiresPermissionDirective } from '../../shared/directives/requires-permission.directive';
 import { skipErrorToast } from '../../core/http/http-context';
 import { resolveAccountActionType } from '../../core/utils/account-type-resolver';
@@ -146,6 +147,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
     TranslateModule,
     CdkTableModule,
     StatusBadgeComponent,
+    LoadErrorComponent,
     RequiresPermissionDirective,
     ClientIdentifiersListComponent,
     ClientAddressesListComponent,
@@ -171,7 +173,22 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
   ],
   template: `
     <div class="view-container">
-      @if (client()) {
+      @if (loadError() === 'not-found') {
+        <app-load-error
+          testId="client-load-error"
+          icon="person-remove-outline"
+          [message]="'CLIENTS.ERRORS.NOT_FOUND' | translate"
+          [actionLabel]="'CLIENTS.BACK_TO_CLIENTS' | translate"
+          (action)="onBackToClients()"
+        ></app-load-error>
+      } @else if (loadError() === 'failed') {
+        <app-load-error
+          testId="client-load-error"
+          [message]="'CLIENTS.LOAD_FAILED' | translate"
+          [actionLabel]="'COMMON.RETRY' | translate"
+          (action)="loadClientData()"
+        ></app-load-error>
+      } @else if (client()) {
         <ion-card class="header-card">
           <ion-card-content class="header-content">
             <div class="client-title-area">
@@ -1103,6 +1120,13 @@ export class ClientViewComponent implements OnInit {
 
   readonly clientId = signal(0);
   readonly client = signal<GetClientsClientIdResponse | null>(null);
+  /**
+   * `'not-found'` covers both a missing client and one the caller lacks permission to see —
+   * Fineract's 404 and 403 read the same to the user, and distinguishing them here would leak
+   * which is true, telling an unauthorized caller a client id is valid. `'failed'` is anything
+   * else (a 500, a dropped connection), where retrying the same request can succeed.
+   */
+  readonly loadError = signal<'not-found' | 'failed' | null>(null);
   readonly loanAccounts = signal<GetClientsLoanAccounts[]>([]);
   readonly savingsAccounts = signal<GetClientsSavingsAccounts[]>([]);
   readonly shareAccounts = signal<ShareAccountRow[]>([]);
@@ -1191,11 +1215,29 @@ export class ClientViewComponent implements OnInit {
     });
   }
 
+  /**
+   * `skipErrorToast()` because this screen renders the failure itself — the global toast
+   * otherwise prints Fineract's raw `defaultUserMessage`/parameter name (e.g. "[id] Client not
+   * found with valuer 99999") over a blank page.
+   */
   loadClientData() {
-    this.clientService.getClientsClientId(this.clientId()).subscribe({
-      next: (data) => this.client.set(data),
-      error: (err) => console.error('Failed to load client details', err),
-    });
+    this.clientService
+      .getClientsClientId(this.clientId(), undefined, 'body', false, {
+        context: skipErrorToast(),
+      })
+      .subscribe({
+        next: (data) => {
+          this.client.set(data);
+          this.loadError.set(null);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.loadError.set(err.status === 404 || err.status === 403 ? 'not-found' : 'failed');
+        },
+      });
+  }
+
+  onBackToClients(): void {
+    this.router.navigate(['/clients']);
   }
 
   loadClientAccounts() {

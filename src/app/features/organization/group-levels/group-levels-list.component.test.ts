@@ -18,6 +18,7 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 
@@ -25,6 +26,7 @@ import { GroupLevelsListComponent } from './group-levels-list.component';
 import { GroupsLevelService } from '../../../api';
 import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
+import { IconComponent } from '../../../ui/icon/icon.component';
 
 describe('GroupLevelsListComponent', () => {
   let component: GroupLevelsListComponent;
@@ -71,5 +73,11 @@ describe('GroupLevelsListComponent', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getGrouplevels).toHaveBeenCalled();
     expect(component.groupLevels()).toHaveLength(2);
+  });
+
+  it('renders the positive state through the semantic icon tone', () => {
+    const icons = fixture.debugElement.queryAll(By.directive(IconComponent));
+    expect(icons).toHaveLength(1);
+    expect(icons[0].componentInstance.tone()).toBe('success');
   });
 });

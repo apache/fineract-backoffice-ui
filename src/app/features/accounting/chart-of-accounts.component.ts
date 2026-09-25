@@ -26,7 +26,7 @@ import { catchError, startWith, tap } from 'rxjs/operators';
 import { DataTableComponent, CellTemplateDirective, ColumnDef } from '../../shared';
 import { GeneralLedgerAccountService, GetGLAccountsResponse } from '../../api';
 import { TranslatePipe } from '../../core/adapters';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../ui/button/button.component';
 
 @Component({
   selector: 'app-chart-of-accounts',
@@ -37,8 +37,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
     CellTemplateDirective,
     TranslatePipe,
     NgClass,
-    IonIcon,
-    IonButton,
+    ButtonComponent,
   ],
   template: `
     <app-data-table
@@ -60,15 +59,14 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-account>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [title]="'ACCOUNTING.EDIT_ACCOUNT' | appTranslate"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="create-outline"
           (click)="onEditAccount(account)"
-          [attr.aria-label]="'ACCOUNTING.EDIT_ACCOUNT' | translate"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
+          [label]="'ACCOUNTING.EDIT_ACCOUNT' | appTranslate"
+        />
       </ng-template>
     </app-data-table>
   `,

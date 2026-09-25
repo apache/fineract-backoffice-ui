@@ -28,6 +28,7 @@ import {
 } from '../../../shared';
 import { StaffService, StaffData } from '../../../api';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { IconComponent } from '../../../ui/icon/icon.component';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 
 @Component({
@@ -41,6 +42,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
     CellTemplateDirective,
     IonIcon,
     IonButton,
+    IconComponent,
     TooltipDirective,
   ],
   template: `
@@ -62,17 +64,17 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       </ion-button>
 
       <ng-template appCellTemplate="isLoanOfficer" let-row>
-        <ion-icon
-          [color]="row.isLoanOfficer ? 'primary' : 'danger'"
+        <app-icon
+          [tone]="row.isLoanOfficer ? 'success' : 'danger'"
           [name]="row.isLoanOfficer ? 'checkmark-circle-outline' : 'close-circle-outline'"
-        ></ion-icon>
+        />
       </ng-template>
 
       <ng-template appCellTemplate="isActive" let-row>
-        <ion-icon
-          [color]="row.isActive ? 'primary' : 'danger'"
+        <app-icon
+          [tone]="row.isActive ? 'success' : 'danger'"
           [name]="row.isActive ? 'checkmark-circle-outline' : 'close-circle-outline'"
-        ></ion-icon>
+        />
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-row>

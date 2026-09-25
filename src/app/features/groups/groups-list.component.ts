@@ -30,7 +30,7 @@ import {
 } from '../../shared';
 import { GroupsService, GetGroupsPageItems } from '../../api';
 import { PageEvent, SortEvent } from '../../shared/models/table.model';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../ui/button/button.component';
 import { TranslatePipe } from '../../core/adapters';
 
 @Component({
@@ -42,8 +42,7 @@ import { TranslatePipe } from '../../core/adapters';
     StatusBadgeComponent,
     DataTableComponent,
     CellTemplateDirective,
-    IonIcon,
-    IonButton,
+    ButtonComponent,
   ],
   template: `
     <app-data-table
@@ -73,25 +72,23 @@ import { TranslatePipe } from '../../core/adapters';
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-group>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.VIEW' | appTranslate"
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="eye-outline"
+          [label]="'COMMON.VIEW' | appTranslate"
           [attr.data-testid]="'group-view-' + group.id"
-          [title]="'COMMON.VIEW' | appTranslate"
           (click)="onViewGroup(group)"
-        >
-          <ion-icon name="eye-outline"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="clear"
-          color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
-          [title]="'COMMON.EDIT' | appTranslate"
+        />
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="primary"
+          icon="create-outline"
+          [label]="'COMMON.EDIT' | appTranslate"
           (click)="onEditGroup(group)"
-        >
-          <ion-icon name="create-outline"></ion-icon>
-        </ion-button>
+        />
       </ng-template>
     </app-data-table>
   `,

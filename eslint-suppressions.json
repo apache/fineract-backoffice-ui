@@ -43,9 +43,6 @@
     }
   },
   "src/app/features/accounting/accounting-closures-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -64,17 +61,11 @@
     }
   },
   "src/app/features/accounting/charges/charges-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
   },
   "src/app/features/accounting/chart-of-accounts.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -313,9 +304,6 @@
     }
   },
   "src/app/features/centers/centers-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -600,16 +588,6 @@
       "count": 1
     }
   },
-  "src/app/features/groups/groups-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    }
-  },
-  "src/app/features/groups/tabs/group-notes-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    }
-  },
   "src/app/features/interop/interop-account-view.component.ts": {
     "local/no-vendor-ui-import": {
       "count": 1
@@ -711,9 +689,6 @@
     }
   },
   "src/app/features/loans/collateral/collateral-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -872,9 +847,6 @@
     }
   },
   "src/app/features/loans/rescheduling/reschedule-requests-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -953,9 +925,6 @@
     }
   },
   "src/app/features/organization/group-levels/group-levels-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -995,9 +964,6 @@
     }
   },
   "src/app/features/organization/offices/offices-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -1152,9 +1118,6 @@
     }
   },
   "src/app/features/products/fixed-deposits/fixed-deposits-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -1339,9 +1302,6 @@
     }
   },
   "src/app/features/products/recurring-deposits/recurring-deposits-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -1612,9 +1572,6 @@
     }
   },
   "src/app/features/security/users/users-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    },
     "no-restricted-imports": {
       "count": 1
     }
@@ -1931,11 +1888,6 @@
       "count": 1
     }
   },
-  "src/app/features/system/report-definitions/report-definitions-list.component.ts": {
-    "local/no-vendor-ui-import": {
-      "count": 1
-    }
-  },
   "src/app/features/system/report-mailing-jobs/report-mailing-jobs-form.component.ts": {
     "local/no-vendor-ui-import": {
       "count": 1
@@ -1991,11 +1943,6 @@
       "count": 1
     },
     "no-restricted-imports": {
-      "count": 1
-    }
-  },
-  "src/app/features/tasks/checker-inbox/checker-inbox.component.ts": {
-    "local/no-vendor-ui-import": {
       "count": 1
     }
   },

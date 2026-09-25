@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { ButtonComponent } from '../../../ui/button/button.component';
 
 import {
   CellTemplateDirective,
@@ -56,20 +56,20 @@ import { NotificationService } from '../../../core/services/notification.service
     CellTemplateDirective,
     HasPermissionDirective,
     TooltipDirective,
-    IonButton,
-    IonIcon,
+    ButtonComponent,
   ],
   template: `
     <div class="tab-actions">
-      <ion-button
-        color="primary"
+      <app-button
+        type="button"
+        intent="primary"
         data-testid="group-add-note"
-        [routerLink]="[basePath(), groupId(), 'notes', 'create']"
+        icon="add-outline"
+        [link]="[basePath(), groupId(), 'notes', 'create']"
         *appHasPermission="'CREATE_GROUPNOTE'"
       >
-        <ion-icon name="add-outline"></ion-icon>
         {{ 'GROUPS.ADD_NOTE' | appTranslate }}
-      </ion-button>
+      </app-button>
     </div>
 
     <app-data-table
@@ -86,26 +86,26 @@ import { NotificationService } from '../../../core/services/notification.service
 
       <ng-template appCellTemplate="actions" let-row>
         <div class="action-buttons">
-          <ion-button
-            fill="clear"
-            color="primary"
-            [routerLink]="[basePath(), groupId(), 'notes', 'edit', row.id]"
+          <app-button
+            type="button"
+            emphasis="quiet"
+            intent="primary"
+            icon="create-outline"
+            [link]="[basePath(), groupId(), 'notes', 'edit', row.id]"
             *appHasPermission="'UPDATE_GROUPNOTE'"
             [appTooltip]="'COMMON.EDIT' | appTranslate"
-            [attr.aria-label]="'COMMON.EDIT' | appTranslate"
-          >
-            <ion-icon name="create-outline"></ion-icon>
-          </ion-button>
-          <ion-button
-            fill="clear"
-            color="danger"
+            [label]="'COMMON.EDIT' | appTranslate"
+          />
+          <app-button
+            type="button"
+            emphasis="quiet"
+            intent="danger"
+            icon="trash-outline"
             (click)="onDelete(row.id)"
             *appHasPermission="'DELETE_GROUPNOTE'"
             [appTooltip]="'COMMON.DELETE' | appTranslate"
-            [attr.aria-label]="'COMMON.DELETE' | appTranslate"
-          >
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
+            [label]="'COMMON.DELETE' | appTranslate"
+          />
         </div>
       </ng-template>
     </app-data-table>
