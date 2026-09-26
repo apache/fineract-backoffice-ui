@@ -1332,6 +1332,11 @@
       "count": 1
     }
   },
+  "src/app/features/products/savings-accounts-list.component.test.ts": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
   "src/app/features/products/savings-accounts-list.component.ts": {
     "no-restricted-imports": {
       "count": 1
