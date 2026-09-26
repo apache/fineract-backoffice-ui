@@ -78,6 +78,9 @@ export interface ModalHandle<T> {
  * testable without `provideIonicTesting()`.
  */
 export interface OverlayAdapter {
+  /** Dismisses any currently presented popover. Does nothing when none is open. */
+  dismissPopovers(): Promise<void>;
+
   /** Presents a toast and resolves once it has been shown, not once it has dismissed. */
   toast(request: ToastRequest): Promise<void>;
 
