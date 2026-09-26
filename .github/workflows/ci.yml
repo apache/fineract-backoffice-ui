@@ -139,6 +139,10 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
       - run: npm ci
+      # Three checks: every referenced key exists, no key is interpolated without a translate
+      # pipe, and no catalogue holds a key en.json dropped or loses coverage. What none of them
+      # can see is a key assembled at runtime — the e2e suite fails on those instead, via
+      # ReportingMissingTranslationHandler and the failOnMissingTranslations fixture.
       - name: Verify translations
         run: npm run i18n:check
       - name: Verify every icon name is registered
@@ -162,8 +166,10 @@ jobs:
         run: npm run check:route-permissions
       # Navigation ids are the handle a deployment's config names, in a file this repository
       # never sees. A renamed or removed id silently stops matching there, so the menu a
-      # deployment meant to change comes back on upgrade with no error anywhere.
-      - name: Verify navigation ids are present, unique and stable
+      # deployment meant to change comes back on upgrade with no error anywhere. The same check
+      # holds labelKey to being an actual key: `labelKey: 'Admin'` renders exactly like a
+      # working entry in English and stays English everywhere else.
+      - name: Verify navigation ids are stable and every label is a translation key
         run: npm run check:nav-ids
       # public/branding/ is reserved for deployments. Anything committed there becomes a merge
       # conflict for every downstream that mounts its own overlay.

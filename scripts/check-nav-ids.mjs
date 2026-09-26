@@ -29,10 +29,17 @@
  *   1. every non-divider entry has an id            — an entry without one cannot be addressed
  *   2. ids are unique                               — a duplicate makes an override ambiguous
  *   3. no id disappears without a deprecation entry — a removal silently breaks deployments
+ *   4. every labelKey is a translation key          — a phrase there cannot be translated
  *
  * (3) is checked against `scripts/nav-ids.json`, a committed snapshot of the ids that shipped.
  * Adding an id updates the snapshot automatically with `--update`; removing one requires saying
  * so out loud in DEPRECATED below, which is the point.
+ *
+ * (4) exists because the field being named `labelKey` did not stop three top-level groups from
+ * holding `labelKey: 'Admin'` — the English word. It renders identically to a working entry in
+ * English and stays English in every other language, so neither a review nor a screenshot shows
+ * it. `scripts/check-translations.mjs` cannot see it either: it verifies that keys exist, and a
+ * bare word is not shaped like a key it would look up.
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -89,6 +96,22 @@ function findIdlessEntries(source) {
   return offenders;
 }
 
+/**
+ * Label keys as they appear in NAV_CONFIG, with the id they belong to where one is nearby.
+ *
+ * A dotted identifier (`nav.admin`, `BATCH_OPERATIONS.TITLE`) is a key. An empty string is a
+ * divider's placeholder and is skipped. Anything else is a phrase that will be printed verbatim.
+ */
+function findLiteralLabels(source) {
+  const start = source.indexOf('const NAV_CONFIG');
+  const body = source.slice(start, source.indexOf('\n];', start));
+  const KEY_SHAPED = /^[A-Za-z]\w*(?:\.\w+)+$/;
+
+  return [...body.matchAll(/labelKey: '([^']*)'/g)]
+    .map((match) => match[1])
+    .filter((label) => label !== '' && !KEY_SHAPED.test(label));
+}
+
 const source = readFileSync(SOURCE, 'utf8');
 const ids = extractIds(source);
 const problems = [];
@@ -122,6 +145,14 @@ if (previous) {
   }
 }
 
+// 4 — labels are keys
+for (const label of findLiteralLabels(source)) {
+  problems.push(
+    `Nav entry labelKey "${label}" is a phrase, not a translation key. Add a key to ` +
+      'src/assets/i18n/en.json and name it here, or the entry stays English in every language.',
+  );
+}
+
 if (process.argv.includes('--update')) {
   writeFileSync(
     SNAPSHOT,
@@ -146,4 +177,4 @@ if (added.length > 0) {
   process.exit(1);
 }
 
-console.log(`✓ ${ids.length} nav ids: all present, unique and stable.`);
+console.log(`✓ ${ids.length} nav ids: all present, unique and stable; every label is a key.`);
