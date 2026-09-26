@@ -30,7 +30,7 @@ import {
 } from '@angular/core';
 import { TitleStrategy, provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { MissingTranslationHandler, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -42,6 +42,7 @@ import { GlobalErrorHandler } from './core/errors/global-error-handler';
 import { ConfigService } from './core/services/config.service';
 import { BrandingService } from './core/services/branding.service';
 import { DeploymentTranslateLoader } from './core/adapters/i18n/deployment-translate.loader';
+import { ReportingMissingTranslationHandler } from './core/adapters/i18n/missing-translation.handler';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 
 import { BASE_PATH } from './api/variables';
@@ -128,7 +129,18 @@ export const appConfig: ApplicationConfig = {
     // built for the application's first request. The catalogue fetch re-enters the
     // half-built chain and never resolves, so every key renders as its own name and the
     // login button reads `login.submit`. Caught by e2e/all-functions-read-shortcut.spec.ts.
-    importProvidersFrom(TranslateModule.forRoot()),
+    // The one option passed here. `missingTranslationHandler` does not touch language
+    // selection or catalogue loading — it only observes a lookup that already failed — so it
+    // is exempt from the argument above. See the handler for why an unresolved key needs to
+    // be loud somewhere.
+    importProvidersFrom(
+      TranslateModule.forRoot({
+        missingTranslationHandler: {
+          provide: MissingTranslationHandler,
+          useExisting: ReportingMissingTranslationHandler,
+        },
+      }),
+    ),
     // Replaces provideTranslateHttpLoader so the shipped catalogue and a deployment's own
     // string overrides arrive as one already-merged object. See DeploymentTranslateLoader for
     // why the merge cannot be applied after the fact.

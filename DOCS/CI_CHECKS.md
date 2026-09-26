@@ -124,7 +124,7 @@ served minified, so a hand-copied spec fails this check as one 1.4 MB line — r
 ### `i18n-check`
 
 ```bash
-npm run i18n:check         # every referenced key exists in src/assets/i18n/en.json
+npm run i18n:check         # three checks over src/assets/i18n/ — see below
 npm run check:icons        # every <ion-icon name> is registered in src/app/core/icons.ts
 npm run check:a11y-names   # every icon-only <ion-button> has an accessible name
 ```
@@ -134,7 +134,35 @@ key renders as the raw key, an unregistered ionicon renders as blank space with 
 console error, and an unnamed icon-only button looks perfectly fine on screen while
 announcing itself to a screen reader as "button" and nothing else.
 
+`i18n:check` runs three checks, any of which fails the job:
+
+| Check        | Catches                                                                   |
+| ------------ | ------------------------------------------------------------------------- |
+| `MISSING`    | a key referenced in code that `en.json` does not define                   |
+| `UNWRAPPED`  | `{{ 'COMMON.SAVE' }}` — a key interpolated with no `\| appTranslate` pipe |
+| `CATALOGUES` | `hi`/`ko` defining a key `en.json` dropped, or coverage going backwards   |
+
+Coverage is a ratchet, not a threshold: `scripts/i18n-coverage.json` records what each
+language covers today, and the check fails only if a language covers less than that.
+Filling a partial catalogue is translator work and never blocks a UI change; what this
+stops is a rename on the English side silently orphaning a translation. Refresh the
+baseline with `npm run i18n:check -- --update` when a catalogue legitimately shrinks.
+
 `npm run i18n:check -- --unused` lists orphaned keys.
+
+#### Keys built at runtime
+
+None of the three sees `SAVINGS.CONFIRM_${action}`, or a key looked up through a prefix
+assembled at the call site. Those are caught in the browser instead:
+`ReportingMissingTranslationHandler`
+(`src/app/core/adapters/i18n/missing-translation.handler.ts`) logs every key that
+resolves to nothing in a dev build, and the `failOnMissingTranslations` fixture in
+`e2e/fixtures.ts` fails any Playwright test that produced one. Set `ALLOW_I18N_MISSES=1`
+to downgrade that to a warning for a local run.
+
+The handler stays quiet until the current language's catalogue has actually loaded —
+every key misses during startup — and ngx-translate consults the fallback catalogue
+before calling it, so a key present in `en` but missing from `hi` is never reported.
 
 #### `check:a11y-names`
 
@@ -160,6 +188,15 @@ Two things look like they already do this and do not:
 
 An `aria-label` on the `<ion-icon>` does count, because name-from-content descends into
 children, and the check accepts it.
+
+#### `check:nav-ids`
+
+Also holds `labelKey` in `navigation-config.service.ts` to being a translation key
+rather than a phrase. Three top-level groups shipped as `labelKey: 'Admin'`,
+`'Campaigns'` and `'Interop'`: correct-looking English, permanently English in every
+other language, and invisible to `i18n:check`, which verifies that keys resolve and a
+bare word is not shaped like one it would look up. Add the key to `en.json` and name it
+here.
 
 ### `test`
 

@@ -57,6 +57,24 @@ const CHANGE_DETECTION_ERROR_CODES = ['NG0100'];
 const ENFORCE = process.env.ENFORCE_CD_ERRORS === '1';
 
 /**
+ * The prefix `ReportingMissingTranslationHandler` writes, restated rather than imported.
+ *
+ * `tsconfig.e2e.json` compiles `e2e/` alone; importing the constant from `src/` would pull the
+ * application's Angular sources into the Playwright program to carry one string. The same
+ * argument keeps `NG0100` above a literal. A change to either side breaks this, loudly — the
+ * gate stops reporting — so the handler names this file in its own comment.
+ */
+const MISSING_TRANSLATION_PREFIX = '[i18n-miss]';
+
+/**
+ * Unlike the change-detection check above, this one enforces by default. That check reports
+ * rather than fails because it inherited a backlog; this one has none to inherit — an
+ * unresolved key is a defect on the branch that introduced it. `ALLOW_I18N_MISSES=1` downgrades
+ * it to a warning for a local run against a half-translated feature.
+ */
+const ALLOW_MISSES = process.env.ALLOW_I18N_MISSES === '1';
+
+/**
  * Pulls the component out of "Expression location: _LoginComponent component".
  *
  * Angular does not always include one — the message shape differs between a binding it can
@@ -72,6 +90,10 @@ type ChangeDetectionFixtures = {
   changeDetectionErrors: string[];
   /** Auto-fixture: records the errors above, then asserts none were seen. */
   failOnChangeDetectionErrors: void;
+  /** Translation keys that resolved to nothing while this test ran. */
+  missingTranslations: string[];
+  /** Auto-fixture: records the keys above, then asserts none were seen. */
+  failOnMissingTranslations: void;
 };
 
 export const test = base.extend<ChangeDetectionFixtures>({
@@ -123,6 +145,50 @@ export const test = base.extend<ChangeDetectionFixtures>({
         components,
         `${components.join(', ')} changed state without notifying Angular (${page.url()}).\n` +
           summary,
+      ).toEqual([]);
+    },
+    { auto: true },
+  ],
+
+  missingTranslations: async ({}, use) => {
+    await use([]);
+  },
+
+  failOnMissingTranslations: [
+    async ({ page, missingTranslations }, use) => {
+      // The handler writes a warning, not an error, so this listens for the type the
+      // change-detection fixture above deliberately ignores.
+      page.on('console', (message) => {
+        const text = message.text();
+        if (message.type() === 'warning' && text.includes(MISSING_TRANSLATION_PREFIX)) {
+          missingTranslations.push(text.slice(text.indexOf(MISSING_TRANSLATION_PREFIX)).trim());
+        }
+      });
+
+      await use();
+
+      if (missingTranslations.length === 0) {
+        return;
+      }
+
+      // The handler already reports each key once per page load, but a test that reloads sees
+      // the same key again from the new document.
+      const keys = [...new Set(missingTranslations)].map((line) =>
+        line.replace(`${MISSING_TRANSLATION_PREFIX} `, ''),
+      );
+      const summary = keys.map((key) => `  - ${key}`).join('\n');
+
+      if (ALLOW_MISSES) {
+        console.warn(`[i18n] unresolved keys on ${page.url()}\n${summary}`);
+        return;
+      }
+
+      expect(
+        keys,
+        `${keys.length} translation key(s) rendered as their own name on ${page.url()}.\n` +
+          `${summary}\n` +
+          'A key assembled at runtime is the usual cause — check that every branch of it ' +
+          'exists in src/assets/i18n/en.json. npm run i18n:check covers the literal ones.',
       ).toEqual([]);
     },
     { auto: true },
