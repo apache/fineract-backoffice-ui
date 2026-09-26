@@ -20,7 +20,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { CurrencyPipe } from '@angular/common';
 import { Subject, merge, of } from 'rxjs';
 import { catchError, map, startWith, switchMap, tap } from 'rxjs/operators';
@@ -35,6 +34,7 @@ import { SavingsAccountService, GetSavingsAccountsResponse, GetSavingsPageItems 
 import { PageEvent, SortEvent } from '../../shared/models/table.model';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../ui/button/button.component';
+import { TranslatePipe } from '../../core/adapters';
 import {
   resolveAccountActionType,
   resolveAccountRoutePrefix,
@@ -45,7 +45,7 @@ import {
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     StatusBadgeComponent,
@@ -77,7 +77,7 @@ import {
         headerActions
         *appHasPermission="'CREATE_SAVINGSACCOUNT'"
         (click)="onCreateAccount()"
-        >{{ 'SAVINGS.CREATE_ACCOUNT' | translate }}</app-button
+        >{{ 'SAVINGS.CREATE_ACCOUNT' | appTranslate }}</app-button
       >
 
       <ng-template appCellTemplate="accountNo" let-account>
@@ -102,9 +102,9 @@ import {
             type="button"
             intent="secondary"
             emphasis="quiet"
-            [label]="'LOANS.APPROVE' | translate"
+            [label]="'LOANS.APPROVE' | appTranslate"
             icon="checkmark-circle-outline"
-            [appTooltip]="'LOANS.APPROVE' | translate"
+            [appTooltip]="'LOANS.APPROVE' | appTranslate"
             (click)="onApprove(account)"
             *appHasPermission="'APPROVE_SAVINGSACCOUNT'"
           />
@@ -113,9 +113,9 @@ import {
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEditAccount(account)"
           *appHasPermission="'UPDATE_SAVINGSACCOUNT'"
         />
@@ -123,9 +123,9 @@ import {
           type="button"
           intent="secondary"
           emphasis="quiet"
-          [label]="'SAVINGS.DEPOSIT' | translate"
+          [label]="'SAVINGS.DEPOSIT' | appTranslate"
           icon="add-circle-outline"
-          [appTooltip]="'SAVINGS.DEPOSIT_CASH' | translate"
+          [appTooltip]="'SAVINGS.DEPOSIT_CASH' | appTranslate"
           (click)="onTransaction(account, 'deposit')"
           *appHasPermission="'DEPOSIT_SAVINGSACCOUNT'"
         />
@@ -133,9 +133,9 @@ import {
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'SAVINGS.WITHDRAWAL' | translate"
+          [label]="'SAVINGS.WITHDRAWAL' | appTranslate"
           icon="remove-circle-outline"
-          [appTooltip]="'SAVINGS.WITHDRAW_CASH' | translate"
+          [appTooltip]="'SAVINGS.WITHDRAW_CASH' | appTranslate"
           (click)="onTransaction(account, 'withdrawal')"
           *appHasPermission="'WITHDRAW_SAVINGSACCOUNT'"
         />

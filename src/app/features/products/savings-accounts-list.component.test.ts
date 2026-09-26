@@ -23,9 +23,10 @@ import { SavingsAccountsListComponent } from './savings-accounts-list.component'
 import { SavingsAccountService, GetSavingsAccountsResponse } from '../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { HttpEvent } from '@angular/common/http';
+import { provideFakeAdapters } from '../../testing/adapters';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
 
 function savingsResponse(
   pageItems: Record<string, unknown>[],
@@ -47,9 +48,14 @@ describe('SavingsAccountsListComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [SavingsAccountsListComponent, TranslateModule.forRoot()],
+      imports: [SavingsAccountsListComponent],
       providers: [
         provideNoopAnimations(),
+        ...provideFakeAdapters().providers,
+        // app-data-table (rendered via the component's template) still uses ngx-translate's
+        // own `| translate` internally, so the library itself has to be configured — see
+        // provideTranslateTesting's doc comment.
+        provideTranslateTesting(),
         { provide: SavingsAccountService, useValue: savingsServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: {} },
