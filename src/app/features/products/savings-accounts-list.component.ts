@@ -208,7 +208,11 @@ export class SavingsAccountsListComponent implements OnInit {
         map((response: GetSavingsAccountsResponse | null) => {
           this.isLoading = false;
           if (!response) return [];
-          const items = Array.from(response.pageItems || []).filter((account) => {
+          // `pageItems` is typed as a Set by the generated client (the Fineract spec marks it
+          // `uniqueItems: true`), but the wire payload is a plain JSON array, so it is converted
+          // via Array.from rather than read through Set members like `.size`.
+          const rawItems = Array.from(response.pageItems || []);
+          const items = rawItems.filter((account) => {
             const acc = account as Record<string, unknown>;
             const depositType = acc['depositType'] as Record<string, unknown> | undefined;
             const depositTypeId = depositType ? depositType['id'] : acc['depositTypeId'];
@@ -216,11 +220,8 @@ export class SavingsAccountsListComponent implements OnInit {
           });
           this.totalRecords = response.totalFilteredRecords || 0;
           // If server-side count is returned, but we filtered client-side, adjust totalRecords accordingly
-          if (response.pageItems && response.pageItems.size !== items.length) {
-            this.totalRecords = Math.max(
-              0,
-              this.totalRecords - (response.pageItems.size - items.length),
-            );
+          if (rawItems.length !== items.length) {
+            this.totalRecords = Math.max(0, this.totalRecords - (rawItems.length - items.length));
           }
           return items;
         }),
