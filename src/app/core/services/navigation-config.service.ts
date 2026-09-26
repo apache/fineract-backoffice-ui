@@ -473,7 +473,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
   },
   {
     id: 'campaigns',
-    labelKey: 'Campaigns',
+    labelKey: 'nav.campaigns',
     children: [
       {
         id: 'campaigns.email',
@@ -500,7 +500,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
   },
   {
     id: 'interop',
-    labelKey: 'Interop',
+    labelKey: 'nav.interop',
     children: [
       {
         id: 'interop.parties',
@@ -541,7 +541,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
   },
   {
     id: 'admin',
-    labelKey: 'Admin',
+    labelKey: 'nav.admin',
     requiredPermissions: 'READ_SCHEDULER',
     children: [
       {
