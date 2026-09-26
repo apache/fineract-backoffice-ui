@@ -74,7 +74,7 @@
     "@angular/forms": "22.2.0",
     "@angular/platform-browser": "22.2.0",
     "@angular/router": "22.2.0",
-    "@ionic/angular": "^8.8.15",
+    "@ionic/angular": "^9.0.4",
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^17.0.0",
     "es-module-shims": "^2.8.4",
