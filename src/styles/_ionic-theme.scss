@@ -38,9 +38,9 @@
  */
 
 :root {
-  /* Primary — #3498db */
-  --ion-color-primary: var(--primary-color, #3498db);
-  --ion-color-primary-rgb: 52, 152, 219;
+  /* Primary — #2471a3 (5.30:1 with white text) */
+  --ion-color-primary: var(--primary-strong, #2471a3);
+  --ion-color-primary-rgb: 36, 113, 163;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
   --ion-color-primary-shade: #2e86c1;
