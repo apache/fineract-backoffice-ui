@@ -613,7 +613,6 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
         gap: 16px;
       }
       .form-item {
-        --background: var(--ion-color-light, #f8f9fa);
         --border-radius: 8px;
         margin-bottom: 12px;
       }
