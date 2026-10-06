@@ -241,10 +241,12 @@ type HeaderSearchResult =
 
     <ng-template #headerActions>
       <div class="system-info">
-        <div class="info-group">
-          <span class="label">{{ 'COMMON.BUSINESS_DATE' | translate }}:</span>
-          <span class="value">{{ businessDate() }}</span>
-        </div>
+        @if (businessDate()) {
+          <div class="info-group">
+            <span class="label">{{ 'COMMON.BUSINESS_DATE' | translate }}:</span>
+            <span class="value">{{ businessDate() }}</span>
+          </div>
+        }
         <div class="info-group">
           <span class="label">{{ 'COMMON.RENDER_TIME' | translate }}:</span>
           <span class="value">{{ renderTime() }}</span>
@@ -752,7 +754,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   protected readonly showResults = signal(false);
   private searchSubject = new Subject<string>();
 
-  readonly businessDate = signal<string>('-');
+  readonly businessDate = signal<string | null>(null);
   readonly renderTime = signal<string>('-');
   private renderTimeInterval: ReturnType<typeof setInterval> | null = null;
 

@@ -85,6 +85,23 @@ describe('HeaderComponent', () => {
     expect(compiled.querySelector('.office')?.textContent).toContain('Head Office');
   });
 
+  it('omits the business date chip when no business date is configured', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(component.businessDate()).toBeNull();
+    const systemInfoText = compiled.querySelector('.system-info')?.textContent ?? '';
+    expect(systemInfoText).not.toContain('COMMON.BUSINESS_DATE');
+  });
+
+  it('renders the business date chip when a business date is set', () => {
+    component.businessDate.set('10/5/2026');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const systemInfoText = compiled.querySelector('.system-info')?.textContent ?? '';
+    expect(systemInfoText).toContain('COMMON.BUSINESS_DATE');
+    expect(systemInfoText).toContain('10/5/2026');
+  });
+
   it('moves the actions into an overflow menu on a narrow viewport', () => {
     // The counterpart to the case above: below the breakpoint those same controls are not in
     // the bar at all, and reaching them is what the overflow trigger is for.

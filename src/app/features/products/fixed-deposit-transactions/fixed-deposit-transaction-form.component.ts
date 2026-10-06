@@ -164,6 +164,7 @@ type DepositRequest = PostFixedDepositAccountsFixedDepositAccountIdTransactionsR
                 interface="popover"
                 name="paymentTypeId"
                 [(ngModel)]="paymentTypeId"
+                required
               >
                 @for (option of paymentTypeOptions(); track option.id) {
                   <ion-select-option [value]="option.id">{{ option.name }}</ion-select-option>

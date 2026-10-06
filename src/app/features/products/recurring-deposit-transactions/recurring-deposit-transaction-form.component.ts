@@ -133,6 +133,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 interface="popover"
                 name="paymentTypeId"
                 [(ngModel)]="paymentTypeId"
+                required
               >
                 @for (opt of paymentTypeOptions(); track opt) {
                   <ion-select-option [value]="opt">{{ opt }}</ion-select-option>

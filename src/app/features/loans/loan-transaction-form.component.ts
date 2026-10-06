@@ -242,6 +242,7 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
                     interface="popover"
                     name="paymentTypeId"
                     [(ngModel)]="transaction.paymentTypeId"
+                    required
                   >
                     @for (type of paymentTypeOptions(); track type.id) {
                       <ion-select-option [value]="type.id">{{ type.name }}</ion-select-option>

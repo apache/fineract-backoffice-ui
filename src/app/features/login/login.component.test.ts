@@ -126,7 +126,7 @@ describe('LoginComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
   });
 
-  it('should set error on login failure', () => {
+  it('should set error on login failure with backend message', () => {
     authServiceSpy.login.mockReturnValue(
       throwError(() => ({ error: { defaultUserMessage: 'Failed' } })),
     );
@@ -147,6 +147,60 @@ describe('LoginComponent', () => {
     );
     expect((component as unknown as { isLoading: WritableSignal<boolean> }).isLoading()).toBe(
       false,
+    );
+  });
+
+  it('distinguishes 401 invalid credentials from other errors', () => {
+    authServiceSpy.login.mockReturnValue(throwError(() => ({ status: 401, error: {} })));
+
+    component['loginForm'].setValue({
+      serverUrl: mockApiUrl,
+      customUrl: '',
+      tenantId: 'default',
+      username: 'mifos',
+      password: 'wrongpassword',
+    });
+
+    component.onSubmit();
+
+    expect((component as unknown as { error: WritableSignal<string | null> }).error()).toContain(
+      'login.errors.invalidCredentials',
+    );
+  });
+
+  it('distinguishes 404 server endpoint not found errors', () => {
+    authServiceSpy.login.mockReturnValue(throwError(() => ({ status: 404, error: {} })));
+
+    component['loginForm'].setValue({
+      serverUrl: mockApiUrl,
+      customUrl: '',
+      tenantId: 'default',
+      username: 'mifos',
+      password: 'wrongpassword',
+    });
+
+    component.onSubmit();
+
+    expect((component as unknown as { error: WritableSignal<string | null> }).error()).toContain(
+      'login.errors.serverNotFound',
+    );
+  });
+
+  it('distinguishes status 0 network / connection errors', () => {
+    authServiceSpy.login.mockReturnValue(throwError(() => ({ status: 0, error: {} })));
+
+    component['loginForm'].setValue({
+      serverUrl: mockApiUrl,
+      customUrl: '',
+      tenantId: 'default',
+      username: 'mifos',
+      password: 'wrongpassword',
+    });
+
+    component.onSubmit();
+
+    expect((component as unknown as { error: WritableSignal<string | null> }).error()).toContain(
+      'login.errors.networkError',
     );
   });
 

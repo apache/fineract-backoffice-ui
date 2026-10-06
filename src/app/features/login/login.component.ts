@@ -514,9 +514,24 @@ export class LoginComponent {
           },
           error: (err) => {
             this.isLoading.set(false);
-            this.error.set(
-              err.error?.defaultUserMessage || 'Login failed. Check credentials/server.',
-            );
+            if (err.error?.defaultUserMessage) {
+              this.error.set(err.error.defaultUserMessage);
+              return;
+            }
+            switch (err.status) {
+              case 401:
+                this.error.set(this.translate.instant('login.errors.invalidCredentials'));
+                break;
+              case 404:
+                this.error.set(this.translate.instant('login.errors.serverNotFound'));
+                break;
+              case 0:
+                this.error.set(this.translate.instant('login.errors.networkError'));
+                break;
+              default:
+                this.error.set(this.translate.instant('login.errors.default'));
+                break;
+            }
           },
         });
     }

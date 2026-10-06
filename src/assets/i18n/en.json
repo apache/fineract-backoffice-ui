@@ -1733,7 +1733,11 @@
     "proxyOption": "Local proxy (same origin)",
     "customOption": "Custom URL…",
     "errors": {
-      "endpointNotAllowed": "That API endpoint is not permitted by this deployment. Ask your administrator to add it to the allowed list."
+      "endpointNotAllowed": "That API endpoint is not permitted by this deployment. Ask your administrator to add it to the allowed list.",
+      "invalidCredentials": "Login failed. Check your username, password, or tenant ID.",
+      "serverNotFound": "Authentication endpoint not found (404). Check the API Endpoint selection.",
+      "networkError": "Cannot connect to server. Check your network, server URL, or CORS configuration.",
+      "default": "Login failed. Check credentials/server."
     },
     "twoFactor": {
       "title": "Two-step verification",
