@@ -183,6 +183,18 @@ describe('ClientFormComponent', () => {
       // Clamped at the first step.
       expect(component.currentStep()).toBe(0);
     });
+
+    it('displays required asterisks for required fields', () => {
+      const markers = fixture.nativeElement.querySelectorAll('.required-marker');
+      expect(markers.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('shows hint when step 1 has incomplete required fields', async () => {
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const hint = fixture.nativeElement.querySelector('[data-testid="client-form-step-hint"]');
+      expect(hint).toBeTruthy();
+    });
   });
 
   describe('Edit Mode', () => {

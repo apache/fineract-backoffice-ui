@@ -32,6 +32,7 @@ import {
   IonInput,
   IonItem,
   IonLabel,
+  IonNote,
   IonSpinner,
 } from '@ionic/angular/standalone';
 
@@ -46,6 +47,7 @@ import {
     IonInput,
     IonItem,
     IonLabel,
+    IonNote,
     IonCardContent,
     IonCardHeader,
     IonCardTitle,
@@ -66,15 +68,38 @@ import {
 
         <ion-card-content>
           <form #codeForm="ngForm" (ngSubmit)="onSubmit()" class="code-form">
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CODES.NAME' | appTranslate }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'CODES.NAME' | appTranslate"
-                name="name"
-                [(ngModel)]="code().name"
-                required
-              ></ion-input>
-            </ion-item>
+            <div class="field">
+              <ion-item fill="outline">
+                <ion-label position="stacked"
+                  >{{ 'CODES.NAME' | appTranslate
+                  }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                >
+                <ion-input
+                  [attr.aria-label]="'CODES.NAME' | appTranslate"
+                  name="name"
+                  [(ngModel)]="code().name"
+                  #nameModel="ngModel"
+                  (ionBlur)="nameModel.control.markAsTouched()"
+                  required
+                  id="code-name-input"
+                  data-testid="code-name-input"
+                  [attr.aria-invalid]="nameModel.invalid && nameModel.touched"
+                  [attr.aria-describedby]="
+                    nameModel.invalid && nameModel.touched ? 'code-name-error' : null
+                  "
+                ></ion-input>
+              </ion-item>
+              @if (nameModel.invalid && nameModel.touched) {
+                <ion-note
+                  color="danger"
+                  class="field-error"
+                  id="code-name-error"
+                  role="alert"
+                  data-testid="code-name-error"
+                  >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                >
+              }
+            </div>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
@@ -89,6 +114,15 @@ import {
                 }
               </ion-button>
             </div>
+            @if (codeForm.invalid) {
+              <ion-note
+                color="medium"
+                class="submit-hint"
+                data-testid="code-submit-hint"
+                aria-live="polite"
+                >{{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}</ion-note
+              >
+            }
           </form>
         </ion-card-content>
       </ion-card>
@@ -105,6 +139,25 @@ import {
         display: flex;
         flex-direction: column;
         gap: 16px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
+      .field-error {
+        display: block;
+        padding-inline-start: 4px;
+        margin-top: -4px;
+        font-size: 0.8125rem;
+      }
+      .submit-hint {
+        display: block;
+        text-align: end;
+        font-size: 0.8125rem;
       }
       ion-item {
         width: 100%;

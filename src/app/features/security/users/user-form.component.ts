@@ -32,6 +32,7 @@ import {
   IonInput,
   IonItem,
   IonLabel,
+  IonNote,
   IonSelect,
   IonSelectOption,
   IonSpinner,
@@ -73,6 +74,7 @@ interface UserFormModel {
     IonInput,
     IonItem,
     IonLabel,
+    IonNote,
     IonCardContent,
     IonCardHeader,
     IonCardTitle,
@@ -97,104 +99,294 @@ interface UserFormModel {
         <ion-card-content>
           <form #userForm="ngForm" (ngSubmit)="onSubmit()" class="user-form">
             <div class="form-grid">
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'USERS.USERNAME' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'USERS.USERNAME' | appTranslate"
-                  name="username"
-                  [(ngModel)]="user().username"
-                  required
-                  [disabled]="isEditMode()"
-                ></ion-input>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked"
+                    >{{ 'USERS.USERNAME' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-input
+                    [attr.aria-label]="'USERS.USERNAME' | appTranslate"
+                    name="username"
+                    [(ngModel)]="user().username"
+                    #usernameModel="ngModel"
+                    (ionBlur)="usernameModel.control.markAsTouched()"
+                    required
+                    [disabled]="isEditMode()"
+                    id="user-username-input"
+                    data-testid="user-username-input"
+                    [attr.aria-invalid]="usernameModel.invalid && usernameModel.touched"
+                    [attr.aria-describedby]="
+                      usernameModel.invalid && usernameModel.touched ? 'user-username-error' : null
+                    "
+                  ></ion-input>
+                </ion-item>
+                @if (usernameModel.invalid && usernameModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="user-username-error"
+                    role="alert"
+                    data-testid="user-username-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
 
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'CLIENTS.FIRST_NAME' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
-                  name="firstname"
-                  [(ngModel)]="user().firstname"
-                  required
-                ></ion-input>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked"
+                    >{{ 'CLIENTS.FIRST_NAME' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-input
+                    [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
+                    name="firstname"
+                    [(ngModel)]="user().firstname"
+                    #firstnameModel="ngModel"
+                    (ionBlur)="firstnameModel.control.markAsTouched()"
+                    required
+                    id="user-firstname-input"
+                    data-testid="user-firstname-input"
+                    [attr.aria-invalid]="firstnameModel.invalid && firstnameModel.touched"
+                    [attr.aria-describedby]="
+                      firstnameModel.invalid && firstnameModel.touched
+                        ? 'user-firstname-error'
+                        : null
+                    "
+                  ></ion-input>
+                </ion-item>
+                @if (firstnameModel.invalid && firstnameModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="user-firstname-error"
+                    role="alert"
+                    data-testid="user-firstname-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
 
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'CLIENTS.LAST_NAME' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
-                  name="lastname"
-                  [(ngModel)]="user().lastname"
-                  required
-                ></ion-input>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked"
+                    >{{ 'CLIENTS.LAST_NAME' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-input
+                    [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
+                    name="lastname"
+                    [(ngModel)]="user().lastname"
+                    #lastnameModel="ngModel"
+                    (ionBlur)="lastnameModel.control.markAsTouched()"
+                    required
+                    id="user-lastname-input"
+                    data-testid="user-lastname-input"
+                    [attr.aria-invalid]="lastnameModel.invalid && lastnameModel.touched"
+                    [attr.aria-describedby]="
+                      lastnameModel.invalid && lastnameModel.touched ? 'user-lastname-error' : null
+                    "
+                  ></ion-input>
+                </ion-item>
+                @if (lastnameModel.invalid && lastnameModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="user-lastname-error"
+                    role="alert"
+                    data-testid="user-lastname-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
 
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.EMAIL' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'COMMON.EMAIL' | appTranslate"
-                  type="email"
-                  name="email"
-                  [(ngModel)]="user().email"
-                  required
-                ></ion-input>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked"
+                    >{{ 'COMMON.EMAIL' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-input
+                    [attr.aria-label]="'COMMON.EMAIL' | appTranslate"
+                    type="email"
+                    name="email"
+                    [(ngModel)]="user().email"
+                    #emailModel="ngModel"
+                    (ionBlur)="emailModel.control.markAsTouched()"
+                    required
+                    id="user-email-input"
+                    data-testid="user-email-input"
+                    [attr.aria-invalid]="emailModel.invalid && emailModel.touched"
+                    [attr.aria-describedby]="
+                      emailModel.invalid && emailModel.touched ? 'user-email-error' : null
+                    "
+                  ></ion-input>
+                </ion-item>
+                @if (emailModel.invalid && emailModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="user-email-error"
+                    role="alert"
+                    data-testid="user-email-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
 
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.OFFICE' | appTranslate }}</ion-label>
-                <ion-select
-                  [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
-                  interface="popover"
-                  name="officeId"
-                  [(ngModel)]="user().officeId"
-                  required
-                >
-                  @for (office of offices(); track office.id) {
-                    <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
-                  }
-                </ion-select>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">
+                    <span>{{ 'COMMON.OFFICE' | appTranslate }}</span
+                    ><span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-select
+                    [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
+                    interface="popover"
+                    name="officeId"
+                    [(ngModel)]="user().officeId"
+                    #officeIdModel="ngModel"
+                    (ionBlur)="officeIdModel.control.markAsTouched()"
+                    required
+                    id="user-office-select"
+                    data-testid="user-office-select"
+                    [attr.aria-invalid]="officeIdModel.invalid && officeIdModel.touched"
+                    [attr.aria-describedby]="
+                      officeIdModel.invalid && officeIdModel.touched ? 'user-office-error' : null
+                    "
+                  >
+                    @for (office of offices(); track office.id) {
+                      <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+                @if (officeIdModel.invalid && officeIdModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="user-office-error"
+                    role="alert"
+                    data-testid="user-office-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
 
               @if (!isEditMode()) {
-                <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'USERS.PASSWORD' | appTranslate }}</ion-label>
-                  <ion-input
-                    [attr.aria-label]="'USERS.PASSWORD' | appTranslate"
-                    type="password"
-                    name="password"
-                    [(ngModel)]="user().password"
-                    required
-                  ></ion-input>
-                </ion-item>
+                <div class="field">
+                  <ion-item fill="outline">
+                    <ion-label position="stacked"
+                      >{{ 'USERS.PASSWORD' | appTranslate
+                      }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
+                    <ion-input
+                      [attr.aria-label]="'USERS.PASSWORD' | appTranslate"
+                      type="password"
+                      name="password"
+                      [(ngModel)]="user().password"
+                      #passwordModel="ngModel"
+                      (ionBlur)="passwordModel.control.markAsTouched()"
+                      required
+                      id="user-password-input"
+                      data-testid="user-password-input"
+                      [attr.aria-invalid]="passwordModel.invalid && passwordModel.touched"
+                      [attr.aria-describedby]="
+                        passwordModel.invalid && passwordModel.touched
+                          ? 'user-password-error'
+                          : null
+                      "
+                    ></ion-input>
+                  </ion-item>
+                  @if (passwordModel.invalid && passwordModel.touched) {
+                    <ion-note
+                      color="danger"
+                      class="field-error"
+                      id="user-password-error"
+                      role="alert"
+                      data-testid="user-password-error"
+                      >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                    >
+                  }
+                </div>
 
-                <ion-item fill="outline">
-                  <ion-label position="stacked">{{
-                    'USERS.REPEAT_PASSWORD' | appTranslate
-                  }}</ion-label>
-                  <ion-input
-                    [attr.aria-label]="'USERS.REPEAT_PASSWORD' | appTranslate"
-                    type="password"
-                    name="repeatPassword"
-                    [(ngModel)]="user().repeatPassword"
-                    required
-                  ></ion-input>
-                </ion-item>
+                <div class="field">
+                  <ion-item fill="outline">
+                    <ion-label position="stacked"
+                      >{{ 'USERS.REPEAT_PASSWORD' | appTranslate
+                      }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
+                    <ion-input
+                      [attr.aria-label]="'USERS.REPEAT_PASSWORD' | appTranslate"
+                      type="password"
+                      name="repeatPassword"
+                      [(ngModel)]="user().repeatPassword"
+                      #repeatPasswordModel="ngModel"
+                      (ionBlur)="repeatPasswordModel.control.markAsTouched()"
+                      required
+                      id="user-repeat-password-input"
+                      data-testid="user-repeat-password-input"
+                      [attr.aria-invalid]="
+                        repeatPasswordModel.invalid && repeatPasswordModel.touched
+                      "
+                      [attr.aria-describedby]="
+                        repeatPasswordModel.invalid && repeatPasswordModel.touched
+                          ? 'user-repeat-password-error'
+                          : null
+                      "
+                    ></ion-input>
+                  </ion-item>
+                  @if (repeatPasswordModel.invalid && repeatPasswordModel.touched) {
+                    <ion-note
+                      color="danger"
+                      class="field-error"
+                      id="user-repeat-password-error"
+                      role="alert"
+                      data-testid="user-repeat-password-error"
+                      >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                    >
+                  }
+                </div>
               }
 
-              <ion-item fill="outline" class="full-width">
-                <ion-label position="stacked">{{ 'USERS.ROLES' | appTranslate }}</ion-label>
-                <ion-select
-                  [attr.aria-label]="'USERS.ROLES' | appTranslate"
-                  interface="popover"
-                  name="roles"
-                  [(ngModel)]="user().roles"
-                  multiple
-                  required
-                >
-                  @for (role of availableRoles(); track role.id) {
-                    <ion-select-option [value]="role.id">{{ role.name }}</ion-select-option>
-                  }
-                </ion-select>
-              </ion-item>
+              <div class="field full-width">
+                <ion-item fill="outline" class="full-width">
+                  <ion-label position="stacked"
+                    >{{ 'USERS.ROLES' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-select
+                    [attr.aria-label]="'USERS.ROLES' | appTranslate"
+                    interface="popover"
+                    name="roles"
+                    [(ngModel)]="user().roles"
+                    multiple
+                    required
+                    #rolesModel="ngModel"
+                    (ionBlur)="rolesModel.control.markAsTouched()"
+                    id="user-roles-select"
+                    data-testid="user-roles-select"
+                    [attr.aria-invalid]="rolesModel.invalid && rolesModel.touched"
+                    [attr.aria-describedby]="
+                      rolesModel.invalid && rolesModel.touched ? 'user-roles-error' : null
+                    "
+                  >
+                    @for (role of availableRoles(); track role.id) {
+                      <ion-select-option [value]="role.id">{{ role.name }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+                @if (rolesModel.invalid && rolesModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="user-roles-error"
+                    role="alert"
+                    data-testid="user-roles-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
             </div>
 
             <div class="checkbox-container" style="display: flex; gap: 16px; flex-wrap: wrap;">
@@ -220,6 +412,15 @@ interface UserFormModel {
                 }
               </ion-button>
             </div>
+            @if (userForm.invalid) {
+              <ion-note
+                color="medium"
+                class="submit-hint"
+                data-testid="user-submit-hint"
+                aria-live="polite"
+                >{{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}</ion-note
+              >
+            }
           </form>
         </ion-card-content>
       </ion-card>
@@ -241,6 +442,28 @@ interface UserFormModel {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
         gap: 16px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .full-width {
+        grid-column: 1 / -1;
+      }
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
+      .field-error {
+        display: block;
+        padding-inline-start: 4px;
+        margin-top: -4px;
+        font-size: 0.8125rem;
+      }
+      .submit-hint {
+        display: block;
+        text-align: end;
+        font-size: 0.8125rem;
       }
       .checkbox-container {
         padding: 8px 0;

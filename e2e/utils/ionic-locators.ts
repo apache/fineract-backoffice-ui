@@ -88,7 +88,7 @@ export function modalFor(page: Page, componentSelector: string): Locator {
 export function ionSelect(page: Page, label: string): Locator {
   return page
     .locator('ion-item')
-    .filter({ has: page.getByText(label, { exact: true }) })
+    .filter({ has: page.getByText(new RegExp(`^${label}\\*?$`)) })
     .locator('ion-select');
 }
 

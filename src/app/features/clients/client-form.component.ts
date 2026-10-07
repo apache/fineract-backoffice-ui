@@ -40,6 +40,7 @@ import {
   IonItem,
   IonLabel,
   IonModal,
+  IonNote,
   IonSelect,
   IonSelectOption,
   IonSpinner,
@@ -83,6 +84,7 @@ import {
     IonDatetime,
     IonDatetimeButton,
     IonModal,
+    IonNote,
     TooltipDirective,
   ],
   template: `
@@ -112,54 +114,98 @@ import {
               #step1Group="ngModelGroup"
             >
               <!-- Legal Form -->
-              <ion-item fill="outline" [appTooltip]="'HELP.LEGAL_FORM_DESC' | appTranslate">
-                <ion-label position="stacked">{{ 'CLIENTS.LEGAL_FORM' | appTranslate }}</ion-label>
-                <ion-select
-                  [attr.aria-label]="'CLIENTS.LEGAL_FORM' | appTranslate"
-                  interface="popover"
-                  name="legalFormId"
-                  [(ngModel)]="client().legalFormId"
-                  required
-                  [disabled]="isEditMode()"
-                >
-                  <ion-select-option [value]="1">{{
-                    'CLIENTS.PERSON' | appTranslate
-                  }}</ion-select-option>
-                  <ion-select-option [value]="2">{{
-                    'CLIENTS.ENTITY' | appTranslate
-                  }}</ion-select-option>
-                </ion-select>
-              </ion-item>
-
-              <!-- Office -->
-              <div class="office-field-container">
-                <ion-item fill="outline" [appTooltip]="'HELP.OFFICE_DESC' | appTranslate">
-                  <ion-label position="stacked">{{ 'COMMON.OFFICE' | appTranslate }}</ion-label>
+              <div class="field">
+                <ion-item fill="outline" [appTooltip]="'HELP.LEGAL_FORM_DESC' | appTranslate">
+                  <ion-label position="stacked">
+                    {{ 'CLIENTS.LEGAL_FORM' | appTranslate }}
+                    <span class="required-marker" aria-hidden="true">*</span>
+                  </ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
-                    [placeholder]="'CLIENTS.SELECT_OFFICE' | appTranslate"
+                    [attr.aria-label]="'CLIENTS.LEGAL_FORM' | appTranslate"
                     interface="popover"
-                    name="officeId"
-                    [(ngModel)]="client().officeId"
+                    name="legalFormId"
+                    #legalFormId="ngModel"
+                    [(ngModel)]="client().legalFormId"
                     required
+                    (ionBlur)="legalFormId.control.markAsTouched()"
+                    [attr.aria-invalid]="legalFormId.invalid && legalFormId.touched"
+                    [attr.aria-describedby]="
+                      legalFormId.invalid && legalFormId.touched ? 'legalFormId-error' : null
+                    "
                     [disabled]="isEditMode()"
                   >
-                    @for (office of offices(); track office.id) {
-                      <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
-                    }
+                    <ion-select-option [value]="1">{{
+                      'CLIENTS.PERSON' | appTranslate
+                    }}</ion-select-option>
+                    <ion-select-option [value]="2">{{
+                      'CLIENTS.ENTITY' | appTranslate
+                    }}</ion-select-option>
                   </ion-select>
                 </ion-item>
-                @if (!isEditMode()) {
-                  <ion-button
-                    fill="clear"
-                    type="button"
-                    color="primary"
-                    [attr.aria-label]="'CLIENTS.ADD_NEW_OFFICE' | appTranslate"
-                    [appTooltip]="'CLIENTS.ADD_NEW_OFFICE' | appTranslate"
-                    (click)="addOffice()"
+                @if (legalFormId.invalid && legalFormId.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="legalFormId-error"
+                    role="alert"
+                    data-testid="legalFormId-error"
                   >
-                    <ion-icon name="add-circle-outline"></ion-icon>
-                  </ion-button>
+                    {{ 'COMMON.REQUIRED' | appTranslate }}
+                  </ion-note>
+                }
+              </div>
+
+              <!-- Office -->
+              <div class="field">
+                <div class="office-field-container">
+                  <ion-item fill="outline" [appTooltip]="'HELP.OFFICE_DESC' | appTranslate">
+                    <ion-label position="stacked">
+                      <span>{{ 'COMMON.OFFICE' | appTranslate }}</span
+                      ><span class="required-marker" aria-hidden="true">*</span>
+                    </ion-label>
+                    <ion-select
+                      [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
+                      [placeholder]="'CLIENTS.SELECT_OFFICE' | appTranslate"
+                      interface="popover"
+                      name="officeId"
+                      #officeId="ngModel"
+                      [(ngModel)]="client().officeId"
+                      required
+                      (ionBlur)="officeId.control.markAsTouched()"
+                      [attr.aria-invalid]="officeId.invalid && officeId.touched"
+                      [attr.aria-describedby]="
+                        officeId.invalid && officeId.touched ? 'officeId-error' : null
+                      "
+                      [disabled]="isEditMode()"
+                    >
+                      @for (office of offices(); track office.id) {
+                        <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
+                      }
+                    </ion-select>
+                  </ion-item>
+                  @if (!isEditMode()) {
+                    <ion-button
+                      fill="clear"
+                      type="button"
+                      color="primary"
+                      [attr.aria-label]="'CLIENTS.ADD_NEW_OFFICE' | appTranslate"
+                      [appTooltip]="'CLIENTS.ADD_NEW_OFFICE' | appTranslate"
+                      (click)="addOffice()"
+                    >
+                      <ion-icon name="add-circle-outline"></ion-icon>
+                    </ion-button>
+                  }
+                </div>
+                @if (officeId.invalid && officeId.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="officeId-error"
+                    role="alert"
+                    data-testid="officeId-error"
+                  >
+                    {{ 'COMMON.REQUIRED' | appTranslate }}
+                  </ion-note>
                 }
               </div>
 
@@ -182,126 +228,199 @@ import {
               ngModelGroup="step2"
               #step2Group="ngModelGroup"
             >
-              <!-- Submitted On Date -->
-              <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | appTranslate">
-                <ion-label position="stacked">{{ 'COMMON.SUBMITTED_ON' | appTranslate }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="submittedOnDate-picker"
-                      data-testid="submittedOnDate-picker"
-                      presentation="date"
-                      name="submittedOnDate"
-                      [ngModel]="submittedOnDate()"
-                      (ngModelChange)="submittedOnDate.set($event)"
-                      required
-                      [disabled]="isEditMode()"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
-
-              <!-- Activation Date -->
-              <ion-item fill="outline" [appTooltip]="'HELP.ACTIVATION_DATE_DESC' | appTranslate">
-                <ion-label position="stacked">{{
-                  'COMMON.ACTIVATION_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="activationDate-picker"></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="activationDate-picker"
-                      data-testid="activationDate-picker"
-                      presentation="date"
-                      name="activationDate"
-                      [ngModel]="activationDate()"
-                      (ngModelChange)="activationDate.set($event)"
-                      required
-                      [disabled]="isEditMode()"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
-
-              <!-- Entity fields -->
-              @if (client().legalFormId === 2) {
-                <ion-item
-                  fill="outline"
-                  [appTooltip]="'HELP.FULL_NAME_DESC' | appTranslate"
-                  class="full-width"
-                >
-                  <ion-label position="stacked">{{
-                    'CLIENTS.COMPANY_NAME' | appTranslate
-                  }}</ion-label>
-                  <ion-input
-                    [attr.aria-label]="'CLIENTS.COMPANY_NAME' | appTranslate"
-                    name="fullname"
-                    [(ngModel)]="client().fullname"
-                    required
-                  ></ion-input>
-                </ion-item>
-              }
-
-              <!-- Person fields -->
-              @if (client().legalFormId === 1) {
-                <ion-item fill="outline" [appTooltip]="'HELP.FIRST_NAME_DESC' | appTranslate">
-                  <ion-label position="stacked">{{
-                    'CLIENTS.FIRST_NAME' | appTranslate
-                  }}</ion-label>
-                  <ion-input
-                    [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
-                    name="firstname"
-                    [(ngModel)]="client().firstname"
-                    required
-                  ></ion-input>
-                </ion-item>
-
-                <ion-item fill="outline" [appTooltip]="'HELP.MIDDLE_NAME_DESC' | appTranslate">
-                  <ion-label position="stacked">{{
-                    'CLIENTS.MIDDLE_NAME' | appTranslate
-                  }}</ion-label>
-                  <ion-input
-                    [attr.aria-label]="'CLIENTS.MIDDLE_NAME' | appTranslate"
-                    name="middlename"
-                    [(ngModel)]="client().middlename"
-                  ></ion-input>
-                </ion-item>
-
-                <ion-item fill="outline" [appTooltip]="'HELP.LAST_NAME_DESC' | appTranslate">
-                  <ion-label position="stacked">{{ 'CLIENTS.LAST_NAME' | appTranslate }}</ion-label>
-                  <ion-input
-                    [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
-                    name="lastname"
-                    [(ngModel)]="client().lastname"
-                    required
-                  ></ion-input>
-                </ion-item>
-
-                <ion-item fill="outline" [appTooltip]="'HELP.DATE_OF_BIRTH_DESC' | appTranslate">
-                  <ion-label position="stacked">{{
-                    'CLIENTS.DATE_OF_BIRTH' | appTranslate
-                  }}</ion-label>
+              <div class="field">
+                <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | appTranslate">
+                  <ion-label position="stacked">
+                    {{ 'COMMON.SUBMITTED_ON' | appTranslate }}
+                    <span class="required-marker" aria-hidden="true">*</span>
+                  </ion-label>
                   @if (pickersReady()) {
-                    <ion-datetime-button datetime="dateOfBirth-picker"></ion-datetime-button>
+                    <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
                   }
                   <ion-modal [keepContentsMounted]="true">
                     <ng-template>
                       <ion-datetime
-                        id="dateOfBirth-picker"
-                        data-testid="dateOfBirth-picker"
+                        id="submittedOnDate-picker"
+                        data-testid="submittedOnDate-picker"
                         presentation="date"
-                        name="dateOfBirth"
-                        [ngModel]="dateOfBirth()"
-                        (ngModelChange)="dateOfBirth.set($event)"
+                        name="submittedOnDate"
+                        [ngModel]="submittedOnDate()"
+                        (ngModelChange)="submittedOnDate.set($event)"
+                        required
+                        [disabled]="isEditMode()"
                       ></ion-datetime>
                     </ng-template>
                   </ion-modal>
                 </ion-item>
+              </div>
+
+              <!-- Activation Date -->
+              <div class="field">
+                <ion-item fill="outline" [appTooltip]="'HELP.ACTIVATION_DATE_DESC' | appTranslate">
+                  <ion-label position="stacked">
+                    {{ 'COMMON.ACTIVATION_DATE' | appTranslate }}
+                    <span class="required-marker" aria-hidden="true">*</span>
+                  </ion-label>
+                  @if (pickersReady()) {
+                    <ion-datetime-button datetime="activationDate-picker"></ion-datetime-button>
+                  }
+                  <ion-modal [keepContentsMounted]="true">
+                    <ng-template>
+                      <ion-datetime
+                        id="activationDate-picker"
+                        data-testid="activationDate-picker"
+                        presentation="date"
+                        name="activationDate"
+                        [ngModel]="activationDate()"
+                        (ngModelChange)="activationDate.set($event)"
+                        required
+                        [disabled]="isEditMode()"
+                      ></ion-datetime>
+                    </ng-template>
+                  </ion-modal>
+                </ion-item>
+              </div>
+
+              <!-- Entity fields -->
+              @if (client().legalFormId === 2) {
+                <div class="field full-width">
+                  <ion-item
+                    fill="outline"
+                    [appTooltip]="'HELP.FULL_NAME_DESC' | appTranslate"
+                    class="full-width"
+                  >
+                    <ion-label position="stacked">
+                      {{ 'CLIENTS.COMPANY_NAME' | appTranslate }}
+                      <span class="required-marker" aria-hidden="true">*</span>
+                    </ion-label>
+                    <ion-input
+                      [attr.aria-label]="'CLIENTS.COMPANY_NAME' | appTranslate"
+                      name="fullname"
+                      #fullname="ngModel"
+                      [(ngModel)]="client().fullname"
+                      required
+                      (ionBlur)="fullname.control.markAsTouched()"
+                      [attr.aria-invalid]="fullname.invalid && fullname.touched"
+                      [attr.aria-describedby]="
+                        fullname.invalid && fullname.touched ? 'fullname-error' : null
+                      "
+                    ></ion-input>
+                  </ion-item>
+                  @if (fullname.invalid && fullname.touched) {
+                    <ion-note
+                      color="danger"
+                      class="field-error"
+                      id="fullname-error"
+                      role="alert"
+                      data-testid="fullname-error"
+                    >
+                      {{ 'COMMON.REQUIRED' | appTranslate }}
+                    </ion-note>
+                  }
+                </div>
+              }
+
+              <!-- Person fields -->
+              @if (client().legalFormId === 1) {
+                <div class="field">
+                  <ion-item fill="outline" [appTooltip]="'HELP.FIRST_NAME_DESC' | appTranslate">
+                    <ion-label position="stacked">
+                      {{ 'CLIENTS.FIRST_NAME' | appTranslate }}
+                      <span class="required-marker" aria-hidden="true">*</span>
+                    </ion-label>
+                    <ion-input
+                      [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
+                      name="firstname"
+                      #firstname="ngModel"
+                      [(ngModel)]="client().firstname"
+                      required
+                      (ionBlur)="firstname.control.markAsTouched()"
+                      [attr.aria-invalid]="firstname.invalid && firstname.touched"
+                      [attr.aria-describedby]="
+                        firstname.invalid && firstname.touched ? 'firstname-error' : null
+                      "
+                    ></ion-input>
+                  </ion-item>
+                  @if (firstname.invalid && firstname.touched) {
+                    <ion-note
+                      color="danger"
+                      class="field-error"
+                      id="firstname-error"
+                      role="alert"
+                      data-testid="firstname-error"
+                    >
+                      {{ 'COMMON.REQUIRED' | appTranslate }}
+                    </ion-note>
+                  }
+                </div>
+
+                <div class="field">
+                  <ion-item fill="outline" [appTooltip]="'HELP.MIDDLE_NAME_DESC' | appTranslate">
+                    <ion-label position="stacked">{{
+                      'CLIENTS.MIDDLE_NAME' | appTranslate
+                    }}</ion-label>
+                    <ion-input
+                      [attr.aria-label]="'CLIENTS.MIDDLE_NAME' | appTranslate"
+                      name="middlename"
+                      [(ngModel)]="client().middlename"
+                    ></ion-input>
+                  </ion-item>
+                </div>
+
+                <div class="field">
+                  <ion-item fill="outline" [appTooltip]="'HELP.LAST_NAME_DESC' | appTranslate">
+                    <ion-label position="stacked">
+                      {{ 'CLIENTS.LAST_NAME' | appTranslate }}
+                      <span class="required-marker" aria-hidden="true">*</span>
+                    </ion-label>
+                    <ion-input
+                      [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
+                      name="lastname"
+                      #lastname="ngModel"
+                      [(ngModel)]="client().lastname"
+                      required
+                      (ionBlur)="lastname.control.markAsTouched()"
+                      [attr.aria-invalid]="lastname.invalid && lastname.touched"
+                      [attr.aria-describedby]="
+                        lastname.invalid && lastname.touched ? 'lastname-error' : null
+                      "
+                    ></ion-input>
+                  </ion-item>
+                  @if (lastname.invalid && lastname.touched) {
+                    <ion-note
+                      color="danger"
+                      class="field-error"
+                      id="lastname-error"
+                      role="alert"
+                      data-testid="lastname-error"
+                    >
+                      {{ 'COMMON.REQUIRED' | appTranslate }}
+                    </ion-note>
+                  }
+                </div>
+
+                <div class="field">
+                  <ion-item fill="outline" [appTooltip]="'HELP.DATE_OF_BIRTH_DESC' | appTranslate">
+                    <ion-label position="stacked">{{
+                      'CLIENTS.DATE_OF_BIRTH' | appTranslate
+                    }}</ion-label>
+                    @if (pickersReady()) {
+                      <ion-datetime-button datetime="dateOfBirth-picker"></ion-datetime-button>
+                    }
+                    <ion-modal [keepContentsMounted]="true">
+                      <ng-template>
+                        <ion-datetime
+                          id="dateOfBirth-picker"
+                          data-testid="dateOfBirth-picker"
+                          presentation="date"
+                          name="dateOfBirth"
+                          [ngModel]="dateOfBirth()"
+                          (ngModelChange)="dateOfBirth.set($event)"
+                        ></ion-datetime>
+                      </ng-template>
+                    </ion-modal>
+                  </ion-item>
+                </div>
               }
             </div>
 
@@ -369,6 +488,16 @@ import {
                 </ion-button>
               }
               @if (showWizard() && currentStep() < 2) {
+                @if (currentStep() === 0 ? step1Group.invalid : step2Group.invalid) {
+                  <ion-note
+                    color="medium"
+                    class="submit-hint"
+                    data-testid="client-form-step-hint"
+                    aria-live="polite"
+                  >
+                    {{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}
+                  </ion-note>
+                }
                 <ion-button
                   color="primary"
                   type="button"
@@ -378,6 +507,16 @@ import {
                   {{ 'COMMON.NEXT' | appTranslate }}
                 </ion-button>
               } @else {
+                @if (clientForm.invalid) {
+                  <ion-note
+                    color="medium"
+                    class="submit-hint"
+                    data-testid="client-form-submit-hint"
+                    aria-live="polite"
+                  >
+                    {{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}
+                  </ion-note>
+                }
                 <ion-button
                   color="primary"
                   type="submit"
@@ -416,6 +555,25 @@ import {
       }
       .form-grid.hidden {
         display: none;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
+      .field-error {
+        display: block;
+        padding-inline-start: 4px;
+        margin-top: -4px;
+        font-size: 0.8125rem;
+      }
+      .submit-hint {
+        display: block;
+        text-align: end;
+        font-size: 0.8125rem;
       }
       .office-field-container {
         display: flex;
