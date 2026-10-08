@@ -96,6 +96,7 @@ import {
   CenterDetail,
   CenterGroupMember,
   CenterMeeting,
+  FineractDate,
   isCenterActive,
   isCenterClosed,
   isCenterPending,
@@ -575,8 +576,12 @@ export class CenterViewComponent implements OnInit, OnDestroy {
   }
 
   async onAction(command: 'activate' | 'close'): Promise<void> {
+    const minDate =
+      command === 'activate'
+        ? this.isoDate(this.center()?.timeline?.submittedOnDate)
+        : this.isoDate(this.center()?.timeline?.activatedOnDate);
     const result = await this.dialogService.open<CenterActionResult>(CenterActionDialogComponent, {
-      data: { command } satisfies CenterActionDialogData,
+      data: { command, minDate } satisfies CenterActionDialogData,
     });
     if (!result) return;
 
@@ -674,13 +679,32 @@ export class CenterViewComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/centers']);
   }
 
+  /**
+   * A date the platform has stamped, as the ISO `YYYY-MM-DD` the action dialog floors on.
+   *
+   * Stamped in the tenant's timezone, which makes it usable as a floor for a picker that
+   * would otherwise only know what day it is in the browser's.
+   */
+  private isoDate(value: FineractDate | undefined): string | undefined {
+    const iso = formatArrayDate(value);
+    return iso === '-' ? undefined : iso;
+  }
+
+  /**
+   * Posts a center command and reloads.
+   *
+   * No error toast here. `errorInterceptor` already raises one carrying the platform's own
+   * message, and that message is the useful one: an activation refused for a submittedOnDate
+   * answers the platform's constraint with parameter details, which a generic `COMMON.ERROR`
+   * toast would mask.
+   */
   private run(request: Observable<unknown>): void {
     request.subscribe({
       next: () => {
         this.notifications.success(this.i18n.translate('COMMON.SUCCESS'));
         this.loadCenter();
       },
-      error: () => this.notifications.error(this.i18n.translate('COMMON.ERROR')),
+      error: () => undefined,
     });
   }
 }

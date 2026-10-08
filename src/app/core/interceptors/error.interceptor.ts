@@ -117,7 +117,20 @@ function messageFor(error: HttpErrorResponse, i18n: I18nAdapter): string {
         const err = unwrapNestedError(rawErr);
         const msg = err['developerMessage'] || err['defaultUserMessage'] || 'Validation error';
         const param = err['parameterName'] ? `[${err['parameterName']}] ` : '';
-        return `• ${param}${msg}`;
+        const rawArgs = err['args'];
+        const argStrings = Array.isArray(rawArgs)
+          ? rawArgs
+              .map((a: unknown) =>
+                typeof a === 'object' && a !== null && 'value' in a
+                  ? (a as { value: unknown }).value
+                  : a,
+              )
+              .filter((v: unknown) => typeof v === 'string' || typeof v === 'number')
+              .map(String)
+              .filter((v: string) => !String(msg).includes(v))
+          : [];
+        const details = argStrings.length > 0 ? ` (${argStrings.join(', ')})` : '';
+        return `• ${param}${msg}${details}`;
       })
       .join('\n');
 

@@ -26,8 +26,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { BASE_PATH } from '../../api';
 import { DialogService } from '../../core/services/dialog.service';
-import { provideFakeAdapters } from '../../testing/adapters';
+import { FakeOverlayAdapter, provideFakeAdapters } from '../../testing/adapters';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
+import { CenterActionDialogComponent } from './center-action-dialog.component';
 import { CenterDetail } from './center-detail.model';
 import { CenterViewComponent } from './center-view.component';
 
@@ -68,6 +69,7 @@ describe('CenterViewComponent', () => {
   let http: HttpTestingController;
   let dialog: SpyObj<DialogService>;
   let router: SpyObj<Router>;
+  let overlay: FakeOverlayAdapter;
 
   function create(): void {
     fixture = TestBed.createComponent(CenterViewComponent);
@@ -91,6 +93,7 @@ describe('CenterViewComponent', () => {
     dialog = createSpyObj(['open', 'confirm']);
     router = createSpyObj(['navigate']);
     const adapters = provideFakeAdapters();
+    overlay = adapters.overlay;
 
     await TestBed.configureTestingModule({
       imports: [CenterViewComponent],
@@ -159,15 +162,22 @@ describe('CenterViewComponent', () => {
     expect(component.canClose()).toBe(false);
   });
 
-  it('posts activate with the date the dialog returned', async () => {
+  it('posts activate with the date the dialog returned, passing minDate from timeline', async () => {
     create();
-    flushCenter({ ...ACTIVE_CENTER, status: { id: 100, value: 'Pending' } });
+    flushCenter({
+      ...ACTIVE_CENTER,
+      status: { id: 100, value: 'Pending' },
+      timeline: { submittedOnDate: [2026, 1, 10] },
+    });
 
-    // The dialogs seed their picker with `toIsoDate(new Date())` and bind an ion-datetime, so
-    // what comes back is a calendar date, not a UTC instant. A `...Z` fixture here used to pass
-    // only because both the fixture and the formatter agreed to read it as UTC — see #496.
+    // The dialogs seed their picker with PlatformDateService and bind an ion-datetime, so
+    // what comes back is a calendar date, not a UTC instant.
     dialog.open.mockResolvedValue({ date: '2026-02-01' });
     await component.onAction('activate');
+
+    expect(dialog.open).toHaveBeenCalledWith(CenterActionDialogComponent, {
+      data: { command: 'activate', minDate: '2026-01-10' },
+    });
 
     const request = http.expectOne(
       (candidate) => candidate.url === CENTER_URL && candidate.method === 'POST',
@@ -182,12 +192,16 @@ describe('CenterViewComponent', () => {
     flushCenter();
   });
 
-  it('posts close with the reason, which the platform requires', async () => {
+  it('posts close with the reason, passing minDate from timeline', async () => {
     create();
     flushCenter();
 
     dialog.open.mockResolvedValue({ date: '2026-03-02', closureReasonId: 9 });
     await component.onAction('close');
+
+    expect(dialog.open).toHaveBeenCalledWith(CenterActionDialogComponent, {
+      data: { command: 'close', minDate: '2026-01-15' },
+    });
 
     const request = http.expectOne(
       (candidate) => candidate.url === CENTER_URL && candidate.method === 'POST',
@@ -201,6 +215,25 @@ describe('CenterViewComponent', () => {
     });
     request.flush({});
     flushCenter();
+  });
+
+  it('does not mask backend errors with a generic COMMON.ERROR toast', async () => {
+    create();
+    flushCenter();
+
+    dialog.open.mockResolvedValue({ date: '2026-03-02', closureReasonId: 9 });
+    await component.onAction('close');
+
+    const request = http.expectOne(
+      (candidate) => candidate.url === CENTER_URL && candidate.method === 'POST',
+    );
+    request.flush(
+      { defaultUserMessage: 'Validation failed' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+    fixture.detectChanges();
+
+    expect(overlay.toasts.some((t) => t.message === 'COMMON.ERROR')).toBe(false);
   });
 
   /**
