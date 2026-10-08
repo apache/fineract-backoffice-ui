@@ -87,6 +87,21 @@ function unwrapNestedError(err: Record<string, unknown>): Record<string, unknown
  * it rejected; those are stacked into one message so the user sees every problem at once
  * rather than fixing them one round-trip at a time.
  */
+function extractArgsValues(args: unknown): string[] {
+  if (!Array.isArray(args)) return [];
+  const result: string[] = [];
+  for (const item of args) {
+    const val =
+      item && typeof item === 'object' && 'value' in item
+        ? (item as { value: unknown }).value
+        : item;
+    if (val !== undefined && val !== null && typeof val !== 'object') {
+      result.push(String(val));
+    }
+  }
+  return result;
+}
+
 function messageFor(error: HttpErrorResponse, i18n: I18nAdapter): string {
   if (error.error instanceof ErrorEvent) {
     return `Error: ${error.error.message}`;
@@ -115,9 +130,17 @@ function messageFor(error: HttpErrorResponse, i18n: I18nAdapter): string {
     const stacked = error.error.errors
       .map((rawErr: Record<string, unknown>) => {
         const err = unwrapNestedError(rawErr);
-        const msg = err['developerMessage'] || err['defaultUserMessage'] || 'Validation error';
+        let msg = String(
+          err['developerMessage'] || err['defaultUserMessage'] || 'Validation error',
+        );
+        const argValues = extractArgsValues(err['args']);
+        argValues.forEach((val, idx) => {
+          msg = msg.replaceAll(`{${idx}}`, val);
+        });
+        const unmentionedArgs = argValues.filter((v) => !msg.includes(v));
+        const argsSuffix = unmentionedArgs.length > 0 ? ` (${unmentionedArgs.join(', ')})` : '';
         const param = err['parameterName'] ? `[${err['parameterName']}] ` : '';
-        return `• ${param}${msg}`;
+        return `• ${param}${msg}${argsSuffix}`;
       })
       .join('\n');
 

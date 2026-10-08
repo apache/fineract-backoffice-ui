@@ -35,7 +35,7 @@ import {
 import { BASE_PATH } from '../../api';
 import { OVERLAY, TranslatePipe } from '../../core/adapters';
 import { CenterMeeting } from './center-detail.model';
-import { toIsoDate } from '../../core/utils/date-formatter';
+import { PlatformDateService } from '../../core/services/platform-date.service';
 
 export interface CenterMeetingDialogData {
   centerId: number;
@@ -214,6 +214,7 @@ export class CenterMeetingDialogComponent implements OnInit {
   private readonly overlay = inject(OVERLAY);
   private readonly httpClient = inject(HttpClient);
   private readonly basePath = inject(BASE_PATH);
+  private readonly platformDateService = inject(PlatformDateService);
 
   readonly data = input.required<CenterMeetingDialogData>();
 
@@ -222,7 +223,7 @@ export class CenterMeetingDialogComponent implements OnInit {
   readonly dayOptions = signal<CodeOption[]>([]);
 
   title = '';
-  startDate = toIsoDate(new Date());
+  startDate = this.platformDateService.today();
   frequency = 2;
   interval = 1;
   typeId = 1;

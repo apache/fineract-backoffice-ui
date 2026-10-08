@@ -32,11 +32,18 @@ import {
 
 import { CentersService } from '../../api';
 import { OVERLAY, TranslatePipe } from '../../core/adapters';
-import { toIsoDate } from '../../core/utils/date-formatter';
+import { PlatformDateService } from '../../core/services/platform-date.service';
 
 export interface CenterActionDialogData {
   command: 'activate' | 'close';
+  /**
+   * ISO `YYYY-MM-DD`: the earliest date the platform will accept for this command,
+   * e.g. the center's submittedOnDate for an activation, or activatedOnDate for a closure.
+   */
+  minDate?: string;
 }
+
+export { CentersService };
 
 export interface CenterActionResult {
   date: string;
@@ -91,6 +98,8 @@ export interface CenterActionResult {
               data-testid="center-action-date"
               presentation="date"
               [value]="date"
+              [min]="minDate()"
+              [max]="maxDate()"
               (ionChange)="onDateChange($event)"
             ></ion-datetime>
           </ng-template>
@@ -153,14 +162,19 @@ export interface CenterActionResult {
 export class CenterActionDialogComponent implements OnInit {
   private readonly overlay = inject(OVERLAY);
   private readonly centersService = inject(CentersService);
+  private readonly platformDateService = inject(PlatformDateService);
 
   readonly data = input.required<CenterActionDialogData>();
 
   readonly closureReasons = signal<{ id?: number; name?: string }[]>([]);
-  date = toIsoDate(new Date());
+  readonly minDate = signal<string | undefined>(undefined);
+  readonly maxDate = signal<string | undefined>(undefined);
+  date = this.platformDateService.today();
   closureReasonId?: number;
 
   ngOnInit(): void {
+    this.applyMinDate();
+    this.loadPlatformDate();
     if (this.data().command === 'close') {
       this.loadClosureReasons();
     }
@@ -185,6 +199,35 @@ export class CenterActionDialogComponent implements OnInit {
     void this.overlay.dismissModal<CenterActionResult>({
       date: this.date,
       closureReasonId: this.closureReasonId,
+    });
+  }
+
+  /**
+   * Floors the picker at the date the platform has already committed to, and moves the
+   * default up to meet it.
+   */
+  private applyMinDate(): void {
+    const min = this.data().minDate;
+    if (!min) return;
+
+    this.minDate.set(min);
+    if (min > this.date) {
+      this.date = min;
+    }
+  }
+
+  /**
+   * Defaults the date to the platform's business date, and caps the picker there.
+   */
+  private loadPlatformDate(): void {
+    this.platformDateService.getToday().subscribe({
+      next: (today) => {
+        const min = this.minDate();
+        if (!min || today >= min) {
+          this.date = today;
+          this.maxDate.set(today);
+        }
+      },
     });
   }
 

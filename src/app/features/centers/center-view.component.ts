@@ -96,6 +96,7 @@ import {
   CenterDetail,
   CenterGroupMember,
   CenterMeeting,
+  FineractDate,
   isCenterActive,
   isCenterClosed,
   isCenterPending,
@@ -575,8 +576,12 @@ export class CenterViewComponent implements OnInit, OnDestroy {
   }
 
   async onAction(command: 'activate' | 'close'): Promise<void> {
+    const minDate =
+      command === 'activate'
+        ? this.isoDate(this.center()?.timeline?.submittedOnDate)
+        : this.isoDate(this.center()?.timeline?.activatedOnDate);
     const result = await this.dialogService.open<CenterActionResult>(CenterActionDialogComponent, {
-      data: { command } satisfies CenterActionDialogData,
+      data: { command, minDate } satisfies CenterActionDialogData,
     });
     if (!result) return;
 
@@ -674,13 +679,18 @@ export class CenterViewComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/centers']);
   }
 
+  private isoDate(value: FineractDate | undefined): string | undefined {
+    const iso = formatArrayDate(value);
+    return iso === '-' ? undefined : iso;
+  }
+
   private run(request: Observable<unknown>): void {
     request.subscribe({
       next: () => {
         this.notifications.success(this.i18n.translate('COMMON.SUCCESS'));
         this.loadCenter();
       },
-      error: () => this.notifications.error(this.i18n.translate('COMMON.ERROR')),
+      error: () => undefined,
     });
   }
 }

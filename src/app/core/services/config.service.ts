@@ -107,6 +107,12 @@ export interface AppConfig {
   /** The tenant to use when the user has not chosen one */
   defaultTenant: string;
   /**
+   * The tenant's primary timezone (e.g. 'Asia/Kolkata', 'America/New_York').
+   * Used as the platform fallback date timezone when business date is unconfigured.
+   * Defaults to 'Asia/Kolkata' (Fineract's standard default tenant timezone).
+   */
+  defaultTimezone?: string;
+  /**
    * Enables role-based access control in the UI. When `false`, the sidebar shows every
    * navigation item and the permission/institution directives render everything, which is
    * the pre-RBAC behaviour existing deployments were built against.
@@ -260,6 +266,7 @@ function deepMerge<T>(base: T, patch: unknown): T {
 const DEFAULT_CONFIG: AppConfig = {
   fineractApiUrl: environment.fineractApiUrl,
   defaultTenant: 'default',
+  defaultTimezone: 'Asia/Kolkata',
   rbacEnabled: true,
   institutionType: 'universal',
   developerToolsEnabled: false,
