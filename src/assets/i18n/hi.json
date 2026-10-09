@@ -2017,5 +2017,353 @@
     "NO_MATCH": "आपके फ़िल्टर से कोई मुद्रा मेल नहीं खाती।",
     "SAVE": "सहेजें",
     "SAVED_SUCCESS": "मुद्रा कॉन्फ़िगरेशन सफलतापूर्वक सहेजा गया"
+  },
+  "LOAN_CHARGES": {
+    "TITLE": "ऋण प्रभार",
+    "ADD_TITLE": "ऋण प्रभार जोड़ें",
+    "CHARGE": "प्रभार",
+    "AMOUNT": "राशि",
+    "DUE_DATE": "नियत दिनांक",
+    "PAID": "भुगतान किया गया",
+    "SAVE": "सहेजें",
+    "CANCEL": "रद्द करें",
+    "BACK": "ऋण पर वापस जाएं",
+    "DELETE_CONFIRM": "क्या {{amount}} के लिए ऋण प्रभार “{{name}}” को हटाना चाहते हैं?"
+  },
+  "LOANS_POINT_IN_TIME": {
+    "TITLE": "विशिष्ट समय पर ऋण स्थिति",
+    "DATE": "इस दिनांक तक",
+    "LOAN_IDS": "ऋण आईडी (अल्पविराम से अलग, वैकल्पिक)",
+    "SEARCH": "खोजें",
+    "NO_RESULTS": "कोई परिणाम नहीं मिला",
+    "LOAN_ID": "ऋण आईडी",
+    "PRINCIPAL_DISBURSED": "संवितरित मूलधन",
+    "PRINCIPAL_OUTSTANDING": "बकाया मूलधन",
+    "TOTAL_OUTSTANDING": "कुल बकाया"
+  },
+  "LOAN_ORIGINATORS": {
+    "CREATE": "ऋण प्रवर्तक बनाएं",
+    "EDIT": "ऋण प्रवर्तक संपादित करें",
+    "NAME": "नाम",
+    "EXTERNAL_ID": "बाहरी आईडी",
+    "ORIGINATOR_TYPE": "प्रवर्तक प्रकार",
+    "CHANNEL_TYPE": "चैनल प्रकार",
+    "STATUS": "स्थिति",
+    "DELETE": "ऋण प्रवर्तक हटाएं",
+    "CONFIRM_DELETE": "क्या ऋण प्रवर्तक “{{name}}” को हटाना चाहते हैं? किसी ऋण को प्रवर्तक से जोड़ते समय यह अब चयन योग्य नहीं रहेगा।"
+  },
+  "LOAN_SCHEDULE_MODIFY": {
+    "TITLE": "ऋण अनुसूची संशोधन",
+    "LOAN_ID": "ऋण आईडी",
+    "COMMAND": "कमांड",
+    "CALCULATE_REPAYMENT_SCHEDULE": "पुनर्भुगतान अनुसूची की गणना करें",
+    "FORCE_RECALCULATE_REPAYMENT_SCHEDULE": "पुनर्भुगतान अनुसूची की पुनः गणना बाध्य करें",
+    "BODY": "अनुरोध मुख्य भाग (JSON)",
+    "BODY_PLACEHOLDER": "वैकल्पिक JSON मुख्य भाग, उदा. {}",
+    "SUBMIT": "प्रस्तुत करें",
+    "RESPONSE": "प्रतिक्रिया"
+  },
+  "PROGRESSIVE_LOAN": {
+    "TITLE": "प्रगतिशील ऋण मॉडल",
+    "LOAN_ID": "ऋण आईडी",
+    "LOAD": "मॉडल लोड करें",
+    "CREATE": "मॉडल बनाएं",
+    "DELETE": "मॉडल हटाएं",
+    "MODEL": "मॉडल डेटा",
+    "SUCCESS": "कार्रवाई सफल रही।",
+    "ERROR": "कार्रवाई विफल रही।"
+  },
+  "LOAN_ACCOUNT_LOCK": {
+    "TITLE": "ऋण खाता लॉक",
+    "LOAN_ID": "ऋण आईडी",
+    "CHECK_LOCK": "लॉक जांचें",
+    "LOCK_INFO": "लॉक जानकारी",
+    "NO_LOCK": "इस ऋण पर कोई लॉक नहीं है।",
+    "PLACE_LOCK": "लॉक लगाएं",
+    "LOCK_OWNER": "लॉक स्वामी",
+    "SUCCESS": "लॉक सफलतापूर्वक लगाया गया।"
+  },
+  "LOAN_PRODUCT_DETAILS": {
+    "TITLE": "ऋण उत्पाद का मूल विवरण",
+    "ID": "आईडी",
+    "NAME": "नाम",
+    "SHORT_NAME": "संक्षिप्त नाम",
+    "PRODUCT_TYPE": "उत्पाद प्रकार",
+    "CURRENCY": "मुद्रा",
+    "DESCRIPTION": "विवरण"
+  },
+  "BULK_LOANS": {
+    "TITLE": "थोक ऋण पुनर्नियुक्ति",
+    "OFFICE": "कार्यालय",
+    "FROM_OFFICER": "इस ऋण अधिकारी से",
+    "TO_OFFICER": "इस ऋण अधिकारी को",
+    "REASSIGN": "पुनर्आवंटित करें",
+    "SUCCESS": "ऋण सफलतापूर्वक पुनर्आवंटित किए गए"
+  },
+  "BULK_REASSIGNMENT": {
+    "TITLE": "थोक ऋण पुनर्नियुक्ति",
+    "OFFICE": "कार्यालय",
+    "FROM_OFFICER": "इस ऋण अधिकारी से",
+    "TO_OFFICER": "इस ऋण अधिकारी को",
+    "ASSIGNMENT_DATE": "आवंटन दिनांक",
+    "REASSIGN": "पुनर्आवंटित करें"
+  },
+  "INTEREST_PAUSES": {
+    "TITLE": "ब्याज विराम",
+    "CREATE": "ब्याज विराम जोड़ें",
+    "EDIT": "ब्याज विराम संपादित करें",
+    "START_DATE": "आरंभ दिनांक",
+    "END_DATE": "समाप्ति दिनांक",
+    "CONFIRM_DELETE": "क्या {{startDate}} से {{endDate}} तक के ब्याज विराम को हटाना चाहते हैं?"
+  },
+  "CLIENT_CHARGES": {
+    "TITLE": "ग्राहक प्रभार",
+    "CREATE": "प्रभार जोड़ें",
+    "CHARGE": "प्रभार",
+    "NAME": "नाम",
+    "AMOUNT": "राशि",
+    "DUE_DATE": "नियत दिनांक",
+    "PAID": "भुगतान किया गया",
+    "OUTSTANDING": "बकाया",
+    "CONFIRM_DELETE": "क्या नियत दिनांक {{dueDate}} के लिए {{amount}} का ग्राहक प्रभार “{{name}}” हटाना चाहते हैं?"
+  },
+  "CLIENT_COLLATERAL": {
+    "TITLE": "ग्राहक संपार्श्विक (जमानत)",
+    "CREATE": "संपार्श्विक जोड़ें",
+    "EDIT": "संपार्श्विक संपादित करें",
+    "PRODUCT": "संपार्श्विक उत्पाद",
+    "NAME": "नाम",
+    "QUANTITY": "मात्रा",
+    "UNIT_PRICE": "इकाई मूल्य",
+    "TOTAL_COLLATERAL": "कुल संपार्श्विक",
+    "CONFIRM_DELETE": "क्या मात्रा {{quantity}} के साथ संपार्श्विक “{{name}}” को हटाना चाहते हैं?"
+  },
+  "CLIENT_TRANSACTIONS": {
+    "TITLE": "ग्राहक लेन-देन",
+    "ID": "आईडी",
+    "DATE": "दिनांक",
+    "AMOUNT": "राशि",
+    "TYPE": "प्रकार",
+    "UNDO": "पूर्ववत करें",
+    "CONFIRM_UNDO": "क्या दिनांक {{date}} के {{amount}} राशि वाले लेन-देन {{id}} को पूर्ववत करना चाहते हैं? यह खाते पर उलटे (रिवर्स) के रूप में चिह्नित रहेगा।"
+  },
+  "COLLATERAL_MANAGEMENT": {
+    "CREATE": "संपार्श्विक बनाएं",
+    "EDIT": "संपार्श्विक संपादित करें",
+    "NAME": "नाम",
+    "QUALITY": "गुणवत्ता",
+    "UNIT_TYPE": "इकाई प्रकार",
+    "BASE_PRICE": "आधार मूल्य",
+    "PCT_TO_BASE": "आधार का प्रतिशत",
+    "CURRENCY": "मुद्रा",
+    "DELETE": "संपार्श्विक हटाएं",
+    "CONFIRM_DELETE": "क्या संपार्श्विक “{{name}}” (गुणवत्ता {{quality}}) को हटाना चाहते हैं? किसी ऋण के विरुद्ध संपार्श्विक दर्ज करते समय यह अब उपलब्ध नहीं रहेगा।"
+  },
+  "COLLECTION_SHEET": {
+    "TITLE": "संग्रह पत्रक",
+    "OFFICE": "कार्यालय",
+    "DATE": "बैठक दिनांक",
+    "STAFF": "कर्मचारी",
+    "GENERATE": "उत्पन्न करें",
+    "SAVE": "संग्रह पत्रक सहेजें",
+    "BACK": "वापस",
+    "RESULTS": "संग्रह परिणाम",
+    "NOTHING_DUE": "इस दिनांक को इस कार्यालय के लिए कुछ भी देय नहीं है।"
+  },
+  "OFFICE_TRANSACTIONS": {
+    "TITLE": "कार्यालय लेन-देन",
+    "CREATE": "लेन-देन बनाएं",
+    "FROM_OFFICE": "इस कार्यालय से",
+    "TO_OFFICE": "इस कार्यालय को",
+    "DATE": "लेन-देन दिनांक",
+    "AMOUNT": "राशि",
+    "DESC": "विवरण",
+    "DELETE": "हटाएं",
+    "SUCCESS": "लेन-देन सहेजा गया।"
+  },
+  "TRANSFERS": {
+    "HISTORY_TITLE": "अंतरण इतिहास",
+    "ID": "आईडी",
+    "FROM_ACCOUNT": "इस खाते से",
+    "TO_ACCOUNT": "इस खाते में",
+    "CURRENCY": "मुद्रा",
+    "AMOUNT": "राशि",
+    "DATE": "दिनांक",
+    "DESCRIPTION": "विवरण"
+  },
+  "ON_HOLD_TRANSACTIONS": {
+    "TITLE": "रोकी गई निधि लेन-देन",
+    "DATE": "दिनांक",
+    "AMOUNT": "राशि",
+    "TYPE": "प्रकार",
+    "REASON": "कारण"
+  },
+  "MEETINGS": {
+    "TITLE": "बैठकें",
+    "CREATE": "बैठक बनाएं",
+    "EDIT": "बैठक संपादित करें",
+    "MEETING_DATE": "बैठक दिनांक",
+    "PRESENT_COUNT": "उपस्थिति दर्ज की गई",
+    "CALENDAR_ID": "कैलेंडर",
+    "DELETE": "हटाएं",
+    "CONFIRM_DELETE": "क्या \"{{name}}\" की बैठक हटाना चाहते हैं?"
+  },
+  "CALENDARS": {
+    "TITLE": "कैलेंडर",
+    "TITLE_FIELD": "शीर्षक",
+    "CREATE": "कैलेंडर बनाएं",
+    "EDIT": "कैलेंडर संपादित करें",
+    "START_DATE": "प्रारंभ दिनांक",
+    "TYPE": "प्रकार",
+    "DELETE": "हटाएं",
+    "CONFIRM_DELETE": "क्या कैलेंडर \"{{name}}\" को हटाना चाहते हैं?"
+  },
+  "POST_DATED_CHECKS": {
+    "TITLE": "उत्तर-दिनांकित चेक (PDC)",
+    "EDIT": "उत्तर-दिनांकित चेक संपादित करें",
+    "NAME": "नाम",
+    "AMOUNT": "राशि",
+    "ACCOUNT_NO": "खाता संख्या",
+    "DATE": "दिनांक",
+    "CONFIRM_DELETE": "क्या दिनांक {{date}} के {{amount}} राशि वाले उत्तर-दिनांकित चेक “{{name}}” को हटाना चाहते हैं?"
+  },
+  "PAYMENT_TYPES": {
+    "NAME": "नाम",
+    "POSITION": "स्थिति / क्रम",
+    "IS_CASH": "नकद भुगतान",
+    "CREATE": "भुगतान प्रकार बनाएं",
+    "EDIT": "भुगतान प्रकार संपादित करें",
+    "CONFIRM_DELETE": "क्या आप निश्चित रूप से इस भुगतान प्रकार को हटाना चाहते हैं?"
+  },
+  "BATCH_OPERATIONS": {
+    "TITLE": "बैच एपीआई संचालन",
+    "INPUT": "बैच अनुरोध (JSON Array)",
+    "ENCLOSE": "लेन-देन में समाहित करें",
+    "SUBMIT": "बैच सबमिट करें",
+    "RESULTS": "परिणाम",
+    "PARSE_ERROR": "अमान्य JSON"
+  },
+  "FUNDS": {
+    "NAME": "नाम",
+    "EXTERNAL_ID": "बाहरी आईडी",
+    "CREATE_FUND": "निधि बनाएं",
+    "EDIT_FUND": "निधि संपादित करें"
+  },
+  "COB_TOOLS": {
+    "TITLE": "COB आंतरिक उपकरण",
+    "PARTITIONS": "COB विभाजन",
+    "PARTITION_SIZE": "विभाजन आकार",
+    "LOAD_PARTITIONS": "विभाजन लोड करें",
+    "FAST_FORWARD": "COB दिनांक को आगे बढ़ाएं",
+    "FAST_FORWARD_LOAN_ID": "ऋण आईडी",
+    "REPROCESS": "ऋण COB को पुनः संसाधित करें",
+    "REPROCESS_LOAN_ID": "ऋण आईडी",
+    "SUCCESS": "कार्रवाई सफल रही।",
+    "ERROR": "कार्रवाई विफल रही।"
+  },
+  "LOAN_COB_CATCHUP": {
+    "TITLE": "ऋण COB कैच-अप",
+    "CHECK_STATUS": "स्थिति जांचें",
+    "IS_RUNNING": "कैच-अप चल रहा है",
+    "LOAN_ID": "ऋण आईडी",
+    "GET_OLDEST_DATE": "सबसे पुरानी COB तिथि प्राप्त करें",
+    "OLDEST_DATE": "सबसे पुरानी COB तिथि",
+    "RUN_CATCHUP": "COB कैच-अप चलाएं",
+    "SUCCESS": "कैच-अप प्रारंभ किया गया।"
+  },
+  "WC_LOAN_COB_CATCHUP": {
+    "TITLE": "WC ऋण COB कैच-अप",
+    "CHECK_STATUS": "स्थिति जांचें",
+    "IS_RUNNING": "कैच-अप चल रहा है",
+    "LOAN_ID": "ऋण आईडी",
+    "GET_OLDEST_DATE": "सबसे पुरानी COB तिथि प्राप्त करें",
+    "OLDEST_DATE": "सबसे पुरानी COB तिथि",
+    "RUN_CATCHUP": "COB कैच-अप चलाएं",
+    "SUCCESS": "कैच-अप प्रारंभ किया गया।",
+    "ERROR": "कार्रवाई विफल रही।"
+  },
+  "WC_COB_TOOLS": {
+    "TITLE": "WC COB आंतरिक उपकरण",
+    "SET_LAST_RUN": "अंतिम COB निष्पादन सेट करें",
+    "DELETE_LAST_RUN": "अंतिम COB निष्पादन हटाएं",
+    "SUCCESS": "कार्रवाई सफल रही।",
+    "ERROR": "कार्रवाई विफल रही।"
+  },
+  "WC_LOAN_ACCOUNT_LOCK": {
+    "TITLE": "WC ऋण खाता लॉक",
+    "LOAN_ID": "ऋण आईडी",
+    "LOCK_OWNER": "लॉक स्वामी",
+    "PLACE_LOCK": "लॉक लगाएं",
+    "SUCCESS": "लॉक लगाया गया।",
+    "ERROR": "कार्रवाई विफल रही।"
+  },
+  "FLOATING_RATES": {
+    "NAME": "नाम",
+    "CREATE": "फ्लोटिंग दर बनाएं",
+    "EDIT": "फ्लोटिंग दर संपादित करें",
+    "IS_BASE_LENDING_RATE": "आधार ऋण दर",
+    "IS_DIFFERENTIAL": "आधार ऋण दर से अंतर (डिफरेंशियल)",
+    "RATE_PERIODS": "दर अवधियां",
+    "ADD_PERIOD": "अवधि जोड़ें",
+    "FROM_DATE": "आरंभ दिनांक",
+    "INTEREST_RATE": "ब्याज दर"
+  },
+  "RATES": {
+    "CREATE": "दर बनाएं",
+    "EDIT": "दर संपादित करें",
+    "NAME": "नाम",
+    "PERCENTAGE": "प्रतिशत",
+    "PRODUCT_APPLY": "उत्पाद पर लागू करें",
+    "PRODUCT_APPLY_LOAN": "ऋण",
+    "PRODUCT_APPLY_SAVINGS": "बचत"
+  },
+  "PROVISIONING_CRITERIA": {
+    "CREATE": "प्रावधान मानदंड बनाएं",
+    "EDIT": "प्रावधान मानदंड संपादित करें",
+    "NAME": "मानदंड का नाम",
+    "CREATED_BY": "द्वारा निर्मित",
+    "DEFINITIONS_NOTE": "श्रेणी-वार प्रावधान परिभाषाएं और ऋण-उत्पाद मैपिंग एपीआई के माध्यम से प्रबंधित की जाती हैं और मानदंड का नाम संपादित करते समय सुरक्षित रखी जाती हैं।",
+    "DELETE": "हटाएं",
+    "CONFIRM_DELETE": "क्या प्रावधान मानदंड “{{name}}” को हटाना चाहते हैं?"
+  },
+  "PROVISIONING_ENTRIES": {
+    "CREATE": "प्रविष्टि बनाएं",
+    "ID": "आईडी",
+    "CREATED_DATE": "निर्माण दिनांक",
+    "CREATED_USER": "द्वारा निर्मित",
+    "RESERVED_AMOUNT": "आरक्षित राशि",
+    "DATE": "दिनांक",
+    "CREATE_JOURNAL_ENTRIES": "जर्नल प्रविष्टियां बनाएं"
+  },
+  "PROVISIONING_CATEGORIES": {
+    "CREATE": "प्रावधान श्रेणी बनाएं",
+    "EDIT": "प्रावधान श्रेणी संपादित करें",
+    "NAME": "श्रेणी का नाम",
+    "DESCRIPTION": "विवरण",
+    "DELETE": "हटाएं",
+    "CONFIRM_DELETE": "क्या प्रावधान श्रेणी “{{name}}” को हटाना चाहते हैं?"
+  },
+  "SHARE_DIVIDENDS": {
+    "TITLE": "शेयर लाभांश",
+    "CREATE": "लाभांश घोषित करें",
+    "AMOUNT": "राशि",
+    "PERIOD_START_DATE": "अवधि प्रारंभ दिनांक",
+    "PERIOD_END_DATE": "अवधि समाप्ति दिनांक",
+    "DELETE": "लाभांश हटाएं",
+    "CONFIRM_DELETE": "क्या {{startDate}} से {{endDate}} के लिए घोषित {{amount}} का लाभांश हटाना चाहते हैं?"
+  },
+  "FIXED_DEPOSIT_TRANSACTIONS": {
+    "AMOUNT": "राशि",
+    "DATE": "दिनांक",
+    "DEPOSIT": "जमा",
+    "PAYMENT_TYPE": "भुगतान प्रकार",
+    "TITLE": "सावधि जमा लेन-देन",
+    "TYPE": "प्रकार"
+  },
+  "RECURRING_DEPOSIT_TRANSACTIONS": {
+    "CREATE": "जमा",
+    "DATE": "लेन-देन दिनांक",
+    "AMOUNT": "लेन-देन राशि",
+    "PAYMENT_TYPE": "भुगतान प्रकार"
   }
 }
