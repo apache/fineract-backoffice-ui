@@ -8,7 +8,8 @@
       "enabled": true,
       "environment": "all",
       "path": ".angular/cache"
-    }
+    },
+    "analytics": false
   },
   "newProjectRoot": "projects",
   "projects": {

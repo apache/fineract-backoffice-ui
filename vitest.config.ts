@@ -41,6 +41,10 @@ export default defineConfig({
      * once per file, not per test, so a higher ceiling costs nothing on the passing path.
      */
     testTimeout: 30_000,
+    /** Angular TestBed compilation happens in async hooks and needs the same cold-start budget. */
+    hookTimeout: 30_000,
+    /** Avoid Vitest's interactive terminal redraw, which can fail with `write UNKNOWN` on Windows. */
+    reporters: ['minimal'],
     server: {
       deps: {
         inline: [/@ionic\/angular/, /@ionic\/core/],
