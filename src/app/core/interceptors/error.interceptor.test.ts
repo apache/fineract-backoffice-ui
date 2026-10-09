@@ -125,6 +125,32 @@ describe('errorInterceptor', () => {
     expect(notificationsSpy.error).toHaveBeenCalledWith(expectedMessage);
   });
 
+  it('surfaces scalar args such as a refused date in validation errors', () => {
+    const mockRefusalResponse = {
+      errors: [
+        {
+          parameterName: 'submittedOnDate',
+          defaultUserMessage: 'Submitted on date cannot be after the activation date',
+          args: [{ value: '2026-08-16' }],
+        },
+      ],
+    };
+
+    httpClient.get(testUrl).subscribe({
+      next: () => {
+        throw new Error(expectedErrorMsg);
+      },
+      error: () => undefined,
+    });
+
+    const req = httpTestingController.expectOne(testUrl);
+    req.flush(mockRefusalResponse, { status: 400, statusText: 'Bad Request' });
+
+    const expectedMessage =
+      '• [submittedOnDate] Submitted on date cannot be after the activation date (2026-08-16)';
+    expect(notificationsSpy.error).toHaveBeenCalledWith(expectedMessage);
+  });
+
   it('should handle single developerMessage or defaultUserMessage', () => {
     httpClient.get(testUrl).subscribe({
       next: () => {
