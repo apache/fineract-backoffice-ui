@@ -22,10 +22,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClientChargesListComponent } from './client-charges-list.component';
 import { ClientChargesService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { of, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DialogService } from '../../../core/services/dialog.service';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ClientChargesListComponent', () => {
   let component: ClientChargesListComponent;
@@ -49,8 +49,9 @@ describe('ClientChargesListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [ClientChargesListComponent, TranslateModule.forRoot()],
+      imports: [ClientChargesListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: ClientChargesService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: DialogService, useValue: dialogService },
@@ -90,5 +91,39 @@ describe('ClientChargesListComponent', () => {
     component.onDelete({ id: 5, name: 'X' });
     await fixture.whenStable();
     expect(serviceSpy.deleteClientsClientIdChargesChargeId).not.toHaveBeenCalled();
+  });
+
+  it('sets hasError to true when loading client charges fails', () => {
+    serviceSpy.getClientsClientIdCharges.mockReturnValue(
+      throwError(() => new Error('Network error')) as unknown as ReturnType<
+        ClientChargesService['getClientsClientIdCharges']
+      >,
+    );
+    const failedFixture = TestBed.createComponent(ClientChargesListComponent);
+    failedFixture.detectChanges();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(true);
+  });
+
+  it('retries loading client charges and resets hasError on retry', () => {
+    serviceSpy.getClientsClientIdCharges.mockReturnValue(
+      throwError(() => new Error('Network error')) as unknown as ReturnType<
+        ClientChargesService['getClientsClientIdCharges']
+      >,
+    );
+    const failedFixture = TestBed.createComponent(ClientChargesListComponent);
+    failedFixture.detectChanges();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(true);
+
+    serviceSpy.getClientsClientIdCharges.mockReturnValue(
+      of({
+        pageItems: [{ id: 1, name: 'Fee', amount: 100 }],
+      }) as unknown as ReturnType<ClientChargesService['getClientsClientIdCharges']>,
+    );
+    failedFixture.componentInstance.onRetry();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(false);
+    expect(failedFixture.componentInstance.charges()).toHaveLength(1);
   });
 });

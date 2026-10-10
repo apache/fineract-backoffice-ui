@@ -23,9 +23,9 @@ import { GuarantorsListComponent } from './guarantors-list.component';
 import { GuarantorsService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DialogService } from '../../../core/services/dialog.service';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('GuarantorsListComponent', () => {
   let component: GuarantorsListComponent;
@@ -49,8 +49,9 @@ describe('GuarantorsListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [GuarantorsListComponent, TranslateModule.forRoot()],
+      imports: [GuarantorsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: GuarantorsService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: DialogService, useValue: dialogService },

@@ -19,12 +19,11 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective, LoadErrorComponent } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { FineractEntityService } from '../../../api';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
@@ -68,7 +67,7 @@ export function readMappings(body: unknown): EntityToEntityMapping[] {
   selector: 'app-entity-mapping-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -79,8 +78,8 @@ export function readMappings(body: unknown): EntityToEntityMapping[] {
     @if (loadFailed()) {
       <app-load-error
         testId="entity-mapping-load-error"
-        [message]="'ENTITY_MAPPING.LOAD_FAILED' | translate"
-        [actionLabel]="'COMMON.RETRY' | translate"
+        [message]="'ENTITY_MAPPING.LOAD_FAILED' | appTranslate"
+        [actionLabel]="'COMMON.RETRY' | appTranslate"
         (action)="load()"
       ></app-load-error>
     } @else {
@@ -100,18 +99,18 @@ export function readMappings(body: unknown): EntityToEntityMapping[] {
             type="button"
             intent="primary"
             emphasis="quiet"
-            [label]="'COMMON.EDIT' | translate"
+            [label]="'COMMON.EDIT' | appTranslate"
             icon="create-outline"
-            [appTooltip]="'COMMON.EDIT' | translate"
+            [appTooltip]="'COMMON.EDIT' | appTranslate"
             (click)="onEdit(row)"
           />
           <app-button
             type="button"
             intent="danger"
             emphasis="quiet"
-            [label]="'COMMON.DELETE' | translate"
+            [label]="'COMMON.DELETE' | appTranslate"
             icon="trash-outline"
-            [appTooltip]="'COMMON.DELETE' | translate"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
             (click)="onDelete(row)"
           />
         </ng-template>

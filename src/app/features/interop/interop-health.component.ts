@@ -18,7 +18,7 @@
  */
 import { Component, signal, inject } from '@angular/core';
 import { JsonPipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { InterOperationService } from '../../api';
 import {
   IonButton,
@@ -34,7 +34,7 @@ import {
   standalone: true,
   imports: [
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -45,11 +45,11 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'INTEROP.HEALTH_TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'INTEROP.HEALTH_TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-button color="primary" (click)="checkHealth()" [disabled]="isLoading()">
-          {{ 'INTEROP.CHECK_HEALTH' | translate }}
+          {{ 'INTEROP.CHECK_HEALTH' | appTranslate }}
         </ion-button>
 
         @if (isLoading()) {
@@ -57,7 +57,7 @@ import {
         }
 
         @if (health()) {
-          <h3>{{ 'INTEROP.HEALTH_STATUS' | translate }}</h3>
+          <h3>{{ 'INTEROP.HEALTH_STATUS' | appTranslate }}</h3>
           <pre>{{ health() | json }}</pre>
         }
       </ion-card-content>

@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { PasswordPreferencesService, GetPasswordPreferencesTemplateResponse } from '../../../api';
 import {
   IonButton,
@@ -41,7 +41,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -55,7 +55,7 @@ import {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'PASSWORD_PREFERENCES.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'PASSWORD_PREFERENCES.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -80,9 +80,9 @@ import {
             >
               @if (isSaving()) {
                 <ion-spinner name="crescent"></ion-spinner>
-                {{ 'COMMON.SAVING' | translate }}
+                {{ 'COMMON.SAVING' | appTranslate }}
               } @else {
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               }
             </ion-button>
           </div>

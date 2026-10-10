@@ -19,7 +19,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { InternalCOBService, COBPartition } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -42,7 +42,7 @@ import {
     FormsModule,
     JsonPipe,
     CdkTableModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -56,23 +56,25 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'COB_TOOLS.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'COB_TOOLS.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <!-- View COB Partitions -->
         <section>
-          <h3>{{ 'COB_TOOLS.PARTITIONS' | translate }}</h3>
+          <h3>{{ 'COB_TOOLS.PARTITIONS' | appTranslate }}</h3>
           <div class="row-actions">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'COB_TOOLS.PARTITION_SIZE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'COB_TOOLS.PARTITION_SIZE' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'COB_TOOLS.PARTITION_SIZE' | translate"
+                [attr.aria-label]="'COB_TOOLS.PARTITION_SIZE' | appTranslate"
                 type="number"
                 [(ngModel)]="partitionSize"
               ></ion-input>
             </ion-item>
             <ion-button color="primary" (click)="loadPartitions()" [disabled]="isLoading()">
-              {{ 'COB_TOOLS.LOAD_PARTITIONS' | translate }}
+              {{ 'COB_TOOLS.LOAD_PARTITIONS' | appTranslate }}
             </ion-button>
           </div>
 
@@ -96,20 +98,20 @@ import {
 
         <!-- Fast-Forward COB Date -->
         <section>
-          <h3>{{ 'COB_TOOLS.FAST_FORWARD' | translate }}</h3>
+          <h3>{{ 'COB_TOOLS.FAST_FORWARD' | appTranslate }}</h3>
           <div class="row-actions">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'COB_TOOLS.FAST_FORWARD_LOAN_ID' | translate
+                'COB_TOOLS.FAST_FORWARD_LOAN_ID' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'COB_TOOLS.FAST_FORWARD_LOAN_ID' | translate"
+                [attr.aria-label]="'COB_TOOLS.FAST_FORWARD_LOAN_ID' | appTranslate"
                 type="number"
                 [(ngModel)]="fastForwardLoanId"
               ></ion-input>
             </ion-item>
             <ion-button color="secondary" (click)="fastForward()" [disabled]="isLoading()">
-              {{ 'COB_TOOLS.FAST_FORWARD' | translate }}
+              {{ 'COB_TOOLS.FAST_FORWARD' | appTranslate }}
             </ion-button>
           </div>
         </section>
@@ -118,20 +120,20 @@ import {
 
         <!-- Reprocess Loan COB -->
         <section>
-          <h3>{{ 'COB_TOOLS.REPROCESS' | translate }}</h3>
+          <h3>{{ 'COB_TOOLS.REPROCESS' | appTranslate }}</h3>
           <div class="row-actions">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'COB_TOOLS.REPROCESS_LOAN_ID' | translate
+                'COB_TOOLS.REPROCESS_LOAN_ID' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'COB_TOOLS.REPROCESS_LOAN_ID' | translate"
+                [attr.aria-label]="'COB_TOOLS.REPROCESS_LOAN_ID' | appTranslate"
                 type="number"
                 [(ngModel)]="reprocessLoanId"
               ></ion-input>
             </ion-item>
             <ion-button color="danger" (click)="reprocess()" [disabled]="isLoading()">
-              {{ 'COB_TOOLS.REPROCESS' | translate }}
+              {{ 'COB_TOOLS.REPROCESS' | appTranslate }}
             </ion-button>
           </div>
         </section>
@@ -161,7 +163,7 @@ import {
 export class CobToolsComponent {
   private cobService = inject(InternalCOBService);
   private notifications = inject(NotificationService);
-  private translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   partitionSize = 10;
   readonly partitions = signal<COBPartition[]>([]);
@@ -214,10 +216,10 @@ export class CobToolsComponent {
   }
 
   private showSuccess(): void {
-    this.notifications.success(this.translate.instant('COB_TOOLS.SUCCESS'));
+    this.notifications.success(this.i18n.translate('COB_TOOLS.SUCCESS'));
   }
 
   private showError(): void {
-    this.notifications.error(this.translate.instant('COB_TOOLS.ERROR'));
+    this.notifications.error(this.i18n.translate('COB_TOOLS.ERROR'));
   }
 }

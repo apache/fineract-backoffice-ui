@@ -23,8 +23,8 @@ import { CollateralManagementFormComponent } from './collateral-management-form.
 import { CollateralManagementService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('CollateralManagementFormComponent', () => {
   let component: CollateralManagementFormComponent;
@@ -47,8 +47,9 @@ describe('CollateralManagementFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [CollateralManagementFormComponent, TranslateModule.forRoot()],
+      imports: [CollateralManagementFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: CollateralManagementService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },

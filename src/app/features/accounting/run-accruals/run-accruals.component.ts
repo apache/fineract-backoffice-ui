@@ -19,7 +19,7 @@
 
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { PeriodicAccrualAccountingService, PostRunaccrualsRequest } from '../../../api';
 import {
   IonButton,
@@ -50,7 +50,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -67,11 +67,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'RUN_ACCRUALS.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'RUN_ACCRUALS.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
-          <p class="hint">{{ 'HELP.RUN_ACCRUALS_DESC' | translate }}</p>
+          <p class="hint">{{ 'HELP.RUN_ACCRUALS_DESC' | appTranslate }}</p>
 
           @if (successMessage()) {
             <div class="success-message">{{ successMessage() }}</div>
@@ -79,7 +79,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
           <form #accrualForm="ngForm" (ngSubmit)="onSubmit()" class="accrual-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'RUN_ACCRUALS.TILL_DATE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'RUN_ACCRUALS.TILL_DATE' | appTranslate
+              }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="tillDate-picker"></ion-datetime-button>
               }
@@ -105,9 +107,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSubmitting()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'RUN_ACCRUALS.RUNNING' | translate }}
+                  {{ 'RUN_ACCRUALS.RUNNING' | appTranslate }}
                 } @else {
-                  {{ 'RUN_ACCRUALS.RUN' | translate }}
+                  {{ 'RUN_ACCRUALS.RUN' | appTranslate }}
                 }
               </ion-button>
             </div>

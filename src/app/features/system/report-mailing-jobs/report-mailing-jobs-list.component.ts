@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective, LoadErrorComponent } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import {
@@ -33,7 +33,6 @@ import {
 } from '@ionic/angular/standalone';
 import { CdkTableModule } from '@angular/cdk/table';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import {
   ReportMailingJobsService,
@@ -79,7 +78,7 @@ export function readJobs(data: unknown): GetReportMailingJobsResponse[] {
   standalone: true,
   imports: [
     DatePipe,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     DataTableComponent,
     CellTemplateDirective,
@@ -95,10 +94,10 @@ export function readJobs(data: unknown): GetReportMailingJobsResponse[] {
   template: `
     <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
       <ion-segment-button [value]="TAB.jobs">
-        <ion-label>{{ 'nav.reportMailingJobs' | translate }}</ion-label>
+        <ion-label>{{ 'nav.reportMailingJobs' | appTranslate }}</ion-label>
       </ion-segment-button>
       <ion-segment-button [value]="TAB.history">
-        <ion-label>{{ 'REPORT_MAILING.RUN_HISTORY' | translate }}</ion-label>
+        <ion-label>{{ 'REPORT_MAILING.RUN_HISTORY' | appTranslate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
 
@@ -106,8 +105,8 @@ export function readJobs(data: unknown): GetReportMailingJobsResponse[] {
       @if (loadFailed()) {
         <app-load-error
           testId="report-mailing-jobs-load-error"
-          [message]="'REPORT_MAILING.LOAD_FAILED' | translate"
-          [actionLabel]="'COMMON.RETRY' | translate"
+          [message]="'REPORT_MAILING.LOAD_FAILED' | appTranslate"
+          [actionLabel]="'COMMON.RETRY' | appTranslate"
           (action)="load()"
         ></app-load-error>
       } @else {
@@ -123,14 +122,14 @@ export function readJobs(data: unknown): GetReportMailingJobsResponse[] {
           (create)="onCreate()"
         >
           <ng-template appCellTemplate="isActive" let-row>
-            {{ (row.isActive ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+            {{ (row.isActive ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
           </ng-template>
           <ng-template appCellTemplate="actions" let-row>
             <ion-button
               fill="clear"
               color="primary"
-              [attr.aria-label]="'COMMON.EDIT' | translate"
-              [appTooltip]="'COMMON.EDIT' | translate"
+              [attr.aria-label]="'COMMON.EDIT' | appTranslate"
+              [appTooltip]="'COMMON.EDIT' | appTranslate"
               (click)="onEdit(row)"
             >
               <ion-icon name="create-outline"></ion-icon>
@@ -138,8 +137,8 @@ export function readJobs(data: unknown): GetReportMailingJobsResponse[] {
             <ion-button
               fill="clear"
               color="danger"
-              [attr.aria-label]="'COMMON.DELETE' | translate"
-              [appTooltip]="'COMMON.DELETE' | translate"
+              [attr.aria-label]="'COMMON.DELETE' | appTranslate"
+              [appTooltip]="'COMMON.DELETE' | appTranslate"
               (click)="onDelete(row)"
             >
               <ion-icon name="trash-outline"></ion-icon>
@@ -157,33 +156,35 @@ export function readJobs(data: unknown): GetReportMailingJobsResponse[] {
         } @else {
           <table cdk-table [dataSource]="runHistory()" class="history-table">
             <ng-container cdkColumnDef="id">
-              <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ID' | translate }}</th>
+              <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ID' | appTranslate }}</th>
               <td cdk-cell *cdkCellDef="let row">{{ row.id }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="jobName">
               <th cdk-header-cell *cdkHeaderCellDef>
-                {{ 'REPORT_MAILING_JOBS.NAME' | translate }}
+                {{ 'REPORT_MAILING_JOBS.NAME' | appTranslate }}
               </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.jobName }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="scheduledFireTime">
               <th cdk-header-cell *cdkHeaderCellDef>
-                {{ 'REPORT_MAILING.SCHEDULED_FIRE_TIME' | translate }}
+                {{ 'REPORT_MAILING.SCHEDULED_FIRE_TIME' | appTranslate }}
               </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.scheduledFireTime | date: 'medium' }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="triggerType">
               <th cdk-header-cell *cdkHeaderCellDef>
-                {{ 'REPORT_MAILING.TRIGGER_TYPE' | translate }}
+                {{ 'REPORT_MAILING.TRIGGER_TYPE' | appTranslate }}
               </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.triggerType }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="status">
-              <th cdk-header-cell *cdkHeaderCellDef>{{ 'REPORT_MAILING.STATUS' | translate }}</th>
+              <th cdk-header-cell *cdkHeaderCellDef>
+                {{ 'REPORT_MAILING.STATUS' | appTranslate }}
+              </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.status }}</td>
             </ng-container>
 
@@ -197,7 +198,7 @@ export function readJobs(data: unknown): GetReportMailingJobsResponse[] {
                   [attr.colspan]="historyColumns.length"
                   style="text-align:center;padding:1rem;"
                 >
-                  {{ 'COMMON.NO_DATA' | translate }}
+                  {{ 'COMMON.NO_DATA' | appTranslate }}
                 </td>
               </tr>
             }

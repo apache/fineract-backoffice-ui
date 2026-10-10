@@ -447,4 +447,25 @@ describe('DepositAccountViewComponent', () => {
       expect(component.hasError()).toBe(false);
     });
   });
+
+  describe('teardown', () => {
+    it('dismisses popovers when destroyed', async () => {
+      await setup(account({ id: 100, value: 'Active', active: true }));
+
+      const withPopovers = component as unknown as {
+        popovers: () => readonly { dismiss: () => Promise<boolean> }[];
+      };
+      const popovers = withPopovers.popovers();
+      expect(popovers.length).toBeGreaterThan(0);
+      const dismissSpies = popovers.map((popover) =>
+        vi.spyOn(popover, 'dismiss').mockResolvedValue(true),
+      );
+
+      fixture.destroy();
+
+      for (const spy of dismissSpies) {
+        expect(spy).toHaveBeenCalled();
+      }
+    });
+  });
 });

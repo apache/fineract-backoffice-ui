@@ -18,7 +18,6 @@
  */
 
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { LoanProductsDetailsService, LoanProductBasicDetailsData } from '../../../api';
@@ -30,7 +29,7 @@ import { LoanProductsDetailsService, LoanProductBasicDetailsData } from '../../.
 @Component({
   selector: 'app-loan-product-details',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective],
+  imports: [DataTableComponent, CellTemplateDirective],
   template: `
     <app-data-table
       title="LOAN_PRODUCT_DETAILS.TITLE"

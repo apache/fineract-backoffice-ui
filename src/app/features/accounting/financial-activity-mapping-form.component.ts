@@ -23,6 +23,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { MappingFinancialActivitiesToAccountsService } from '../../api/api/mappingFinancialActivitiesToAccounts.service';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonButton,
   IonItem,
@@ -37,6 +38,7 @@ import {
   imports: [
     RouterModule,
     ReactiveFormsModule,
+    TranslatePipe,
     IonButton,
     IonItem,
     IonLabel,
@@ -49,9 +51,11 @@ import {
 
       <form [formGroup]="mappingForm" (ngSubmit)="onSubmit()">
         <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">Financial Activity</ion-label>
+          <ion-label position="stacked">{{
+            'ACCOUNTING.FINANCIAL_ACTIVITY' | appTranslate
+          }}</ion-label>
           <ion-select
-            aria-label="Financial Activity"
+            [attr.aria-label]="'ACCOUNTING.FINANCIAL_ACTIVITY' | appTranslate"
             interface="popover"
             formControlName="financialActivityId"
             required
@@ -65,9 +69,9 @@ import {
         </ion-item>
 
         <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">GL Account</ion-label>
+          <ion-label position="stacked">{{ 'ACCOUNTING.GL_ACCOUNT' | appTranslate }}</ion-label>
           <ion-select
-            aria-label="GL Account"
+            [attr.aria-label]="'ACCOUNTING.GL_ACCOUNT' | appTranslate"
             interface="popover"
             formControlName="glAccountId"
             required

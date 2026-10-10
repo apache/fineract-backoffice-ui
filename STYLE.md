@@ -83,7 +83,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
 
 @Component({
   standalone: true,
-  imports: [TranslateModule, IonButton, IonIcon],
+  imports: [TranslatePipe, IonButton, IonIcon],
   // ...
 })
 ```
@@ -212,10 +212,11 @@ Ionic components inherit the Fineract palette automatically.
 
   ```ts
   import { provideIonicTesting } from '../../testing/ionic-testing';
+  import { provideTranslateTesting } from '../../testing/i18n-testing';
 
   TestBed.configureTestingModule({
-    imports: [MyComponent, TranslateModule.forRoot()],
-    providers: [provideIonicTesting()],
+    imports: [MyComponent],
+    providers: [provideIonicTesting(), ...provideTranslateTesting()],
   });
   ```
 

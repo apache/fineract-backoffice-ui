@@ -19,8 +19,9 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { InlineJobService, InlineJobRequest, InlineJobResponse } from '../../../api';
+export { InlineJobService };
 import {
   IonButton,
   IonCard,
@@ -40,7 +41,7 @@ import {
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -55,22 +56,22 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'INLINE_JOB.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'INLINE_JOB.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">{{ 'INLINE_JOB.JOB_NAME' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'INLINE_JOB.JOB_NAME' | appTranslate }}</ion-label>
           <ion-input
-            [attr.aria-label]="'INLINE_JOB.JOB_NAME' | translate"
+            [attr.aria-label]="'INLINE_JOB.JOB_NAME' | appTranslate"
             [(ngModel)]="jobName"
             required
           ></ion-input>
         </ion-item>
 
         <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">{{ 'INLINE_JOB.BODY' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'INLINE_JOB.BODY' | appTranslate }}</ion-label>
           <ion-textarea
-            [attr.aria-label]="'INLINE_JOB.BODY' | translate"
+            [attr.aria-label]="'INLINE_JOB.BODY' | appTranslate"
             [(ngModel)]="jobBody"
             rows="6"
             placeholder="{}"
@@ -86,7 +87,7 @@ import {
           @if (isRunning()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {
-            {{ 'INLINE_JOB.RUN' | translate }}
+            {{ 'INLINE_JOB.RUN' | appTranslate }}
           }
         </ion-button>
       </div>
@@ -95,7 +96,7 @@ import {
     @if (result() !== null) {
       <ion-card class="results-card">
         <ion-card-header>
-          <ion-card-title>{{ 'INLINE_JOB.RESULT' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'INLINE_JOB.RESULT' | appTranslate }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <pre><code>{{ result() | json }}</code></pre>

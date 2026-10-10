@@ -32,6 +32,7 @@ export interface PostClientsClientIdChargesChargeIdResponse {
     clientId?: number;
     officeId?: number;
     resourceId?: number;
+    subResourceExternalId?: string;
     transactionId?: number;
 }
 

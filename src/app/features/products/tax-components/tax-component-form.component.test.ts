@@ -23,8 +23,8 @@ import { TaxComponentFormComponent } from './tax-component-form.component';
 import { TaxComponentsService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('TaxComponentFormComponent', () => {
   let component: TaxComponentFormComponent;
@@ -41,8 +41,9 @@ describe('TaxComponentFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [TaxComponentFormComponent, TranslateModule.forRoot()],
+      imports: [TaxComponentFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: TaxComponentsService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },

@@ -19,7 +19,7 @@
 
 import { inject, input, signal, Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   DataTableComponent,
   ColumnDef,
@@ -35,7 +35,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     HasPermissionDirective,
     CellTemplateDirective,
@@ -50,7 +50,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
         [link]="['/clients', clientId(), 'identifiers', 'create']"
         icon="add-outline"
         *appHasPermission="'CREATE_CLIENTIDENTIFIER'"
-        >{{ 'CLIENTS.ADD_IDENTIFIER' | translate }}</app-button
+        >{{ 'CLIENTS.ADD_IDENTIFIER' | appTranslate }}</app-button
       >
     </div>
 
@@ -66,21 +66,21 @@ import { ButtonComponent } from '../../../ui/button/button.component';
             type="button"
             intent="primary"
             emphasis="quiet"
-            [label]="'COMMON.EDIT' | translate"
+            [label]="'COMMON.EDIT' | appTranslate"
             [link]="['/clients', clientId(), 'identifiers', 'edit', row.id]"
             icon="create-outline"
             *appHasPermission="'UPDATE_CLIENTIDENTIFIER'"
-            [appTooltip]="'COMMON.EDIT' | translate"
+            [appTooltip]="'COMMON.EDIT' | appTranslate"
           />
           <app-button
             type="button"
             intent="danger"
             emphasis="quiet"
-            [label]="'COMMON.DELETE' | translate"
+            [label]="'COMMON.DELETE' | appTranslate"
             icon="trash-outline"
             (click)="onDelete(row.id)"
             *appHasPermission="'DELETE_CLIENTIDENTIFIER'"
-            [appTooltip]="'COMMON.DELETE' | translate"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
           />
         </div>
       </ng-template>

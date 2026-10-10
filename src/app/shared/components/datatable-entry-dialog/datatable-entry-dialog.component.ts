@@ -19,7 +19,7 @@
 
 import { inject, input, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCheckbox,
@@ -51,7 +51,7 @@ const AUDIT_COLUMN_NAMES = new Set(['created_at', 'updated_at']);
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonItem,
     IonLabel,
     IonInput,
@@ -66,7 +66,7 @@ const AUDIT_COLUMN_NAMES = new Set(['created_at', 'updated_at']);
   ],
   template: `
     <div class="dialog">
-      <h2 class="dialog-title">{{ 'SYSTEM.ADD_ENTRY' | translate }}</h2>
+      <h2 class="dialog-title">{{ 'SYSTEM.ADD_ENTRY' | appTranslate }}</h2>
 
       <form #entryForm="ngForm" class="entry-form">
         @for (col of dataColumns; track col.columnName) {
@@ -160,7 +160,7 @@ const AUDIT_COLUMN_NAMES = new Set(['created_at', 'updated_at']);
           [disabled]="isSaving()"
           (click)="onCancel()"
         >
-          {{ 'COMMON.CANCEL' | translate }}
+          {{ 'COMMON.CANCEL' | appTranslate }}
         </ion-button>
         <ion-button
           data-testid="datatable-entry-submit"
@@ -168,7 +168,7 @@ const AUDIT_COLUMN_NAMES = new Set(['created_at', 'updated_at']);
           [disabled]="entryForm.invalid || isSaving()"
           (click)="onSubmit()"
         >
-          {{ isSaving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+          {{ isSaving() ? ('COMMON.SAVING' | appTranslate) : ('COMMON.SAVE' | appTranslate) }}
         </ion-button>
       </div>
     </div>
@@ -204,7 +204,7 @@ export class DatatableEntryDialogComponent {
   private readonly datatablesService = inject(DataTablesService);
   private readonly modalController = inject(ModalController);
   private readonly notifications = inject(NotificationService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly data = input.required<DatatableEntryDialogData>();
 
@@ -266,7 +266,7 @@ export class DatatableEntryDialogComponent {
         next: () => this.modalController.dismiss(true),
         error: () => {
           this.isSaving.set(false);
-          this.notifications.error(this.translate.instant('COMMON.ERROR'));
+          this.notifications.error(this.i18n.translate('COMMON.ERROR'));
         },
       });
   }

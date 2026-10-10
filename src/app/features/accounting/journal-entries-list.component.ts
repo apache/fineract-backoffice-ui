@@ -18,7 +18,6 @@
  */
 
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
@@ -82,7 +81,6 @@ function defaultFilters(): JournalEntryFilters {
   selector: 'app-journal-entries-list',
   standalone: true,
   imports: [
-    TranslateModule,
     FormsModule,
     DataTableComponent,
     CellTemplateDirective,

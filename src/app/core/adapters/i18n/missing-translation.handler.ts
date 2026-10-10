@@ -17,11 +17,11 @@
  * under the License.
  */
 
-import { Injectable, inject, isDevMode } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import {
   MissingTranslationHandler,
   MissingTranslationHandlerParams,
-  TranslateStore,
+  TranslateService,
 } from '@ngx-translate/core';
 
 /**
@@ -75,8 +75,6 @@ function isKeyShaped(key: string): boolean {
  */
 @Injectable({ providedIn: 'root' })
 export class ReportingMissingTranslationHandler implements MissingTranslationHandler {
-  private readonly store = inject(TranslateStore);
-
   /**
    * Keys already reported. A miss inside a template repeats on every change-detection pass, so
    * without this one broken binding writes thousands of identical lines and the useful ones
@@ -88,7 +86,7 @@ export class ReportingMissingTranslationHandler implements MissingTranslationHan
     if (
       isDevMode() &&
       isKeyShaped(params.key) &&
-      this.isCatalogueLoaded() &&
+      this.isCatalogueLoaded(params.translateService) &&
       !this.reported.has(params.key)
     ) {
       this.reported.add(params.key);
@@ -107,17 +105,19 @@ export class ReportingMissingTranslationHandler implements MissingTranslationHan
    * the state `app.config.ts` describes at length, where the login button reads `login.submit`.
    * Reporting those would bury the real misses under one line per key in the application.
    *
-   * The fallback catalogue is deliberately not consulted here: `TranslateStore.getTranslation`
-   * already tries the fallback language before calling this handler, so a key present in `en`
-   * but absent from `hi` never arrives. Only a key missing from *both* is reported, which is
-   * what makes this safe to enable while the non-English catalogues are still partial.
+   * The fallback catalogue is deliberately not consulted here: the service already tries the
+   * fallback language before calling this handler, so a key present in `en` but absent from
+   * `hi` never arrives. Only a key missing from *both* is reported, which is what makes this
+   * safe to enable while the non-English catalogues are still partial.
+   *
+   * Asked of the service the miss came from, not of the store: the store no longer knows which
+   * language is current (ngx-translate 18 keeps that per service, so an isolated subtree can
+   * have its own), and the service that missed the key is the one whose answer matters.
    */
-  private isCatalogueLoaded(): boolean {
-    const lang = this.store.getCurrentLang();
-    return (
-      !!lang &&
-      this.store.hasTranslationFor(lang) &&
-      Object.keys(this.store.getTranslations(lang)).length > 0
-    );
+  private isCatalogueLoaded(translateService: TranslateService): boolean {
+    const lang = translateService.getCurrentLang();
+    // Typed as always returning an object, but `undefined` until the language has loaded.
+    const catalogue = lang ? translateService.getTranslations(lang) : undefined;
+    return !!catalogue && Object.keys(catalogue).length > 0;
   }
 }

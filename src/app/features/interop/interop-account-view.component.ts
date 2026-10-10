@@ -19,7 +19,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -45,7 +45,7 @@ import {
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonItem,
@@ -59,35 +59,39 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'INTEROP.ACCOUNT_TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'INTEROP.ACCOUNT_TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-item fill="outline">
-          <ion-label position="stacked">{{ 'INTEROP.ACCOUNT_ID' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'INTEROP.ACCOUNT_ID' | appTranslate }}</ion-label>
           <ion-input
-            [attr.aria-label]="'INTEROP.ACCOUNT_ID' | translate"
+            [attr.aria-label]="'INTEROP.ACCOUNT_ID' | appTranslate"
             [(ngModel)]="accountId"
           ></ion-input>
         </ion-item>
 
         <div class="button-row">
           <ion-button color="primary" (click)="loadAccount()" [disabled]="!accountId">
-            {{ 'INTEROP.LOAD_ACCOUNT' | translate }}
+            {{ 'INTEROP.LOAD_ACCOUNT' | appTranslate }}
           </ion-button>
           <ion-button color="primary" (click)="loadIdentifiers()" [disabled]="!accountId">
-            {{ 'INTEROP.LOAD_IDENTIFIERS' | translate }}
+            {{ 'INTEROP.LOAD_IDENTIFIERS' | appTranslate }}
           </ion-button>
           <ion-button color="primary" (click)="loadKyc()" [disabled]="!accountId">
-            {{ 'INTEROP.LOAD_KYC' | translate }}
+            {{ 'INTEROP.LOAD_KYC' | appTranslate }}
           </ion-button>
           <ion-button color="primary" (click)="loadTransactions()" [disabled]="!accountId">
-            {{ 'INTEROP.LOAD_TRANSACTIONS' | translate }}
+            {{ 'INTEROP.LOAD_TRANSACTIONS' | appTranslate }}
           </ion-button>
         </div>
 
         <div class="filter-row">
-          <ion-checkbox [(ngModel)]="debitFilter">{{ 'INTEROP.DEBIT' | translate }}</ion-checkbox>
-          <ion-checkbox [(ngModel)]="creditFilter">{{ 'INTEROP.CREDIT' | translate }}</ion-checkbox>
+          <ion-checkbox [(ngModel)]="debitFilter">{{
+            'INTEROP.DEBIT' | appTranslate
+          }}</ion-checkbox>
+          <ion-checkbox [(ngModel)]="creditFilter">{{
+            'INTEROP.CREDIT' | appTranslate
+          }}</ion-checkbox>
         </div>
 
         @if (accountData()) {

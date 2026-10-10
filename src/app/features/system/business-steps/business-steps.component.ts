@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { BusinessStepConfigurationService, BusinessStep } from '../../../api';
 import {
   IonButton,
@@ -45,7 +45,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonIcon,
     IonButton,
     IonSpinner,
@@ -63,14 +63,14 @@ import {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'BUSINESS_STEPS.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'BUSINESS_STEPS.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'BUSINESS_STEPS.JOB' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'BUSINESS_STEPS.JOB' | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="'BUSINESS_STEPS.JOB' | translate"
+              [attr.aria-label]="'BUSINESS_STEPS.JOB' | appTranslate"
               interface="popover"
               [(ngModel)]="selectedJob"
               (ionChange)="loadSteps()"
@@ -92,7 +92,7 @@ import {
                       type="button"
                       [disabled]="i === 0"
                       (click)="moveUp(i)"
-                      [attr.aria-label]="'COMMON.MOVE_UP' | translate"
+                      [attr.aria-label]="'COMMON.MOVE_UP' | appTranslate"
                     >
                       <ion-icon name="arrow-up-outline"></ion-icon>
                     </ion-button>
@@ -101,7 +101,7 @@ import {
                       type="button"
                       [disabled]="i === steps().length - 1"
                       (click)="moveDown(i)"
-                      [attr.aria-label]="'COMMON.MOVE_DOWN' | translate"
+                      [attr.aria-label]="'COMMON.MOVE_DOWN' | appTranslate"
                     >
                       <ion-icon name="arrow-down-outline"></ion-icon>
                     </ion-button>
@@ -110,7 +110,7 @@ import {
               }
             </ion-list>
           } @else if (selectedJob) {
-            <p>{{ 'BUSINESS_STEPS.NO_STEPS' | translate }}</p>
+            <p>{{ 'BUSINESS_STEPS.NO_STEPS' | appTranslate }}</p>
           }
 
           <div class="form-actions">
@@ -122,9 +122,9 @@ import {
             >
               @if (isSaving()) {
                 <ion-spinner name="crescent"></ion-spinner>
-                {{ 'COMMON.SAVING' | translate }}
+                {{ 'COMMON.SAVING' | appTranslate }}
               } @else {
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               }
             </ion-button>
           </div>
@@ -160,7 +160,7 @@ export class BusinessStepsComponent implements OnInit {
     if (!this.selectedJob) return;
     this.service.getJobsJobNameSteps(this.selectedJob).subscribe((data) => {
       this.steps.set(
-        [...(data.businessSteps ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+        (data.businessSteps ?? []).toSorted((a, b) => (a.order ?? 0) - (b.order ?? 0)),
       );
     });
   }

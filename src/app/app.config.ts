@@ -18,7 +18,6 @@
  */
 
 import {
-  importProvidersFrom,
   isDevMode,
   provideBrowserGlobalErrorListeners,
   provideCheckNoChangesConfig,
@@ -30,7 +29,11 @@ import {
 } from '@angular/core';
 import { TitleStrategy, provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { MissingTranslationHandler, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import {
+  MissingTranslationHandler,
+  provideTranslateLoader,
+  provideTranslateService,
+} from '@ngx-translate/core';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -117,34 +120,31 @@ export const appConfig: ApplicationConfig = {
       },
       deps: [ConfigService],
     },
-    // No language options here, deliberately. `defaultLanguage` was deprecated in
-    // ngx-translate 17 and, without `useDefaultLang: true`, did nothing but print a warning
-    // on every startup — the language has always been set by `AppComponent`, which calls
-    // `addLangs`, `setFallbackLang('en')` and `use(...)`.
+    // No language options here, deliberately. `lang` and `fallbackLang` are the two ways to have
+    // `TranslateService`'s constructor start loading a catalogue, and the language has always been
+    // set by `AppComponent`, which calls `addLangs`, `setFallbackLang('en')` and `use(...)`.
     //
     // Passing `fallbackLang: 'en'` here instead is NOT equivalent, and must not be
-    // reintroduced as a way of clearing that warning. It makes `TranslateService`'s
+    // reintroduced as a way of tidying this up. It makes `TranslateService`'s
     // constructor load the `en` catalogue immediately, and that constructor runs from
     // `errorInterceptor`'s `inject(I18N)` — that is, while the interceptor chain is being
     // built for the application's first request. The catalogue fetch re-enters the
     // half-built chain and never resolves, so every key renders as its own name and the
     // login button reads `login.submit`. Caught by e2e/all-functions-read-shortcut.spec.ts.
-    // The one option passed here. `missingTranslationHandler` does not touch language
-    // selection or catalogue loading — it only observes a lookup that already failed — so it
-    // is exempt from the argument above. See the handler for why an unresolved key needs to
-    // be loud somewhere.
-    importProvidersFrom(
-      TranslateModule.forRoot({
-        missingTranslationHandler: {
-          provide: MissingTranslationHandler,
-          useExisting: ReportingMissingTranslationHandler,
-        },
-      }),
-    ),
-    // Replaces provideTranslateHttpLoader so the shipped catalogue and a deployment's own
+    //
+    // The two plugins passed here do not touch language selection or catalogue loading, so they
+    // are exempt from the argument above. The missing-translation handler only observes a lookup
+    // that already failed (see the handler for why an unresolved key needs to be loud somewhere).
+    // The loader replaces the library's HTTP one, so the shipped catalogue and a deployment's own
     // string overrides arrive as one already-merged object. See DeploymentTranslateLoader for
     // why the merge cannot be applied after the fact.
-    { provide: TranslateLoader, useClass: DeploymentTranslateLoader },
+    provideTranslateService({
+      missingTranslationHandler: {
+        provide: MissingTranslationHandler,
+        useExisting: ReportingMissingTranslationHandler,
+      },
+      loader: provideTranslateLoader(DeploymentTranslateLoader),
+    }),
     // The adapter tokens (`OVERLAY`, `I18N`) resolve to their default implementations
     // without a provider here — see `core/adapters/`. A deployment swapping the component
     // library or the i18n library overrides them at this point in the list.

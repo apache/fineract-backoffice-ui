@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { FundsService, FundRequest } from '../../../api';
 import {
   IonButton,
@@ -43,7 +43,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -59,16 +59,20 @@ import {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode() ? ('FUNDS.EDIT_FUND' | translate) : ('FUNDS.CREATE_FUND' | translate) }}
+            {{
+              isEditMode()
+                ? ('FUNDS.EDIT_FUND' | appTranslate)
+                : ('FUNDS.CREATE_FUND' | appTranslate)
+            }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #fundForm="ngForm" (ngSubmit)="onSubmit()" class="fund-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'FUNDS.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'FUNDS.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'FUNDS.NAME' | translate"
+                [attr.aria-label]="'FUNDS.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="fund().name"
                 required
@@ -76,9 +80,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'FUNDS.EXTERNAL_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'FUNDS.EXTERNAL_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'FUNDS.EXTERNAL_ID' | translate"
+                [attr.aria-label]="'FUNDS.EXTERNAL_ID' | appTranslate"
                 name="externalId"
                 [(ngModel)]="fund().externalId"
               ></ion-input>
@@ -86,14 +90,14 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="fundForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

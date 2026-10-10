@@ -23,8 +23,8 @@ import { GuarantorFormComponent } from './guarantor-form.component';
 import { GuarantorsService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('GuarantorFormComponent', () => {
   let component: GuarantorFormComponent;
@@ -47,8 +47,9 @@ describe('GuarantorFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [GuarantorFormComponent, TranslateModule.forRoot()],
+      imports: [GuarantorFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: GuarantorsService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         {

@@ -27,7 +27,7 @@ import { Observable, map } from 'rxjs';
 import type { I18nAdapter, TranslateParams } from './i18n.adapter';
 
 /**
- * {@link I18nAdapter} backed by `@ngx-translate/core` v17.
+ * {@link I18nAdapter} backed by `@ngx-translate/core` v18.
  *
  * This is the only file in the application permitted to import `@ngx-translate/core`
  * (`eslint.config.js` enforces it). Everything ngx-translate-shaped is confined here: its

@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ProvisioningCriteriaService, PostProvisioningCriteriaRequest } from '../../../api';
 import {
   IonButton,
@@ -62,7 +62,7 @@ interface ProvisioningCriteriaPayload {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -80,8 +80,8 @@ interface ProvisioningCriteriaPayload {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('PROVISIONING_CRITERIA.EDIT' | translate)
-                : ('PROVISIONING_CRITERIA.CREATE' | translate)
+                ? ('PROVISIONING_CRITERIA.EDIT' | appTranslate)
+                : ('PROVISIONING_CRITERIA.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -90,21 +90,21 @@ interface ProvisioningCriteriaPayload {
           <form #criteriaForm="ngForm" (ngSubmit)="onSubmit()" class="provisioning-form">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'PROVISIONING_CRITERIA.NAME' | translate
+                'PROVISIONING_CRITERIA.NAME' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'PROVISIONING_CRITERIA.NAME' | translate"
+                [attr.aria-label]="'PROVISIONING_CRITERIA.NAME' | appTranslate"
                 name="criteriaName"
                 [(ngModel)]="criteria().criteriaName"
                 required
               ></ion-input>
             </ion-item>
 
-            <p class="form-note">{{ 'PROVISIONING_CRITERIA.DEFINITIONS_NOTE' | translate }}</p>
+            <p class="form-note">{{ 'PROVISIONING_CRITERIA.DEFINITIONS_NOTE' | appTranslate }}</p>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -113,9 +113,9 @@ interface ProvisioningCriteriaPayload {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

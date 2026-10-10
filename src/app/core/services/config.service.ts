@@ -107,6 +107,11 @@ export interface AppConfig {
   /** The tenant to use when the user has not chosen one */
   defaultTenant: string;
   /**
+   * The timezone used by the tenant backend when stamping and validating dates.
+   * Defaults to 'Asia/Kolkata' (the standard Fineract seed data timezone).
+   */
+  tenantTimezone?: string;
+  /**
    * Enables role-based access control in the UI. When `false`, the sidebar shows every
    * navigation item and the permission/institution directives render everything, which is
    * the pre-RBAC behaviour existing deployments were built against.
@@ -260,6 +265,7 @@ function deepMerge<T>(base: T, patch: unknown): T {
 const DEFAULT_CONFIG: AppConfig = {
   fineractApiUrl: environment.fineractApiUrl,
   defaultTenant: 'default',
+  tenantTimezone: 'Asia/Kolkata',
   rbacEnabled: true,
   institutionType: 'universal',
   developerToolsEnabled: false,

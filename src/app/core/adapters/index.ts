@@ -32,6 +32,21 @@ export * from './overlay/overlay.adapter';
 export * from './download/download.adapter';
 export * from './storage/storage.adapter';
 
+// ADR 0006's boundary around the generated OpenAPI client. Unlike the tokens above, this one
+// does not isolate a library the application might swap — the generated client stays. It
+// isolates a *shape* the application does not control, regenerated on Fineract's cadence.
+export * from './api/accounting-closure.api';
+export * from './api/office.api';
+export * from './api/entity-notes.api';
+export * from './api/loan.api';
+export * from './api/loan-transaction.api';
+export * from './api/staff.api';
+export * from './api/holiday-rescheduling-type';
+export * from './api/holiday.api';
+export * from './api/teller.api';
+export * from './api/role.api';
+export * from './api/user.api';
+
 // The default implementations each token resolves to. Exported so a deployment swapping one
 // can name what it is replacing, and so a TestBed can ask for the real thing explicitly.
 // Application code should depend on the tokens above, never on these.
@@ -39,3 +54,13 @@ export { NgxTranslateI18nAdapter } from './i18n/ngx-translate-i18n.adapter';
 export { IonicOverlayAdapter } from './overlay/ionic-overlay.adapter';
 export { WebStorageAdapter } from './storage/web-storage.adapter';
 export { BrowserDownloadAdapter } from './download/browser-download.adapter';
+export { FineractAccountingClosureApi } from './api/fineract-accounting-closure.api';
+export { FineractOfficeApi } from './api/fineract-office.api';
+export { FineractEntityNotesApi } from './api/fineract-entity-notes.api';
+export { FineractLoanApi } from './api/fineract-loan.api';
+export { FineractLoanTransactionApi } from './api/fineract-loan-transaction.api';
+export { FineractStaffApi } from './api/fineract-staff.api';
+export { FineractHolidayApi } from './api/fineract-holiday.api';
+export { FineractTellerApi } from './api/fineract-teller.api';
+export { FineractRoleApi } from './api/fineract-role.api';
+export { FineractUserApi } from './api/fineract-user.api';

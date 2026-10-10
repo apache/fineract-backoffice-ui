@@ -20,7 +20,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { OFFICE_API, STAFF_API, TranslatePipe } from '../../../core/adapters';
+import type { Office } from '../../../core/adapters';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
   IonButton,
@@ -38,43 +39,15 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/angular/standalone';
-import {
-  StaffService,
-  StaffCreateRequest,
-  StaffUpdateRequest,
-  OfficesService,
-  GetOfficesResponse,
-} from '../../../api';
-import {
-  formatArrayDate,
-  formatDateToFineract,
-  FINERACT_DATE_FORMAT,
-  FINERACT_LOCALE,
-  toIsoDate,
-} from '../../../core/utils/date-formatter';
+import { toIsoDate } from '../../../core/utils/date-formatter';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
-
-/**
- * Drops optional fields the user left empty.
- *
- * The form seeds `mobileNo`, `externalId` and `emailAddress` to `''` so the inputs bind cleanly,
- * but an empty string is a *value* on the wire, not an omission — and Fineract validates it as
- * one. Leaving the mobile number blank produced "must contain only digits with an optional
- * leading '+'", which named a field the user had deliberately not filled in and left the form
- * unsaveable until they typed something into it.
- */
-function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
-  return Object.fromEntries(
-    Object.entries(payload).filter(([, value]) => value !== '' && value !== null),
-  ) as T;
-}
 
 @Component({
   selector: 'app-staff-form',
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonItem,
@@ -97,8 +70,8 @@ function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
           <ion-card-title>
             {{
               isEditMode
-                ? ('ORGANIZATION.EDIT_STAFF' | translate)
-                : ('ORGANIZATION.CREATE_STAFF' | translate)
+                ? ('ORGANIZATION.EDIT_STAFF' | appTranslate)
+                : ('ORGANIZATION.CREATE_STAFF' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -107,9 +80,9 @@ function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
           <form #staffForm="ngForm" (ngSubmit)="onSubmit()" class="staff-form">
             <div class="form-grid">
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.OFFICE' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.OFFICE' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'COMMON.OFFICE' | translate"
+                  [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
                   interface="popover"
                   name="officeId"
                   [(ngModel)]="staff().officeId"
@@ -123,9 +96,9 @@ function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'CLIENTS.FIRST_NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'CLIENTS.FIRST_NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'CLIENTS.FIRST_NAME' | translate"
+                  [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
                   name="firstname"
                   [(ngModel)]="staff().firstname"
                   required
@@ -134,9 +107,9 @@ function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'CLIENTS.LAST_NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'CLIENTS.LAST_NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'CLIENTS.LAST_NAME' | translate"
+                  [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
                   name="lastname"
                   [(ngModel)]="staff().lastname"
                   required
@@ -145,18 +118,18 @@ function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.EXTERNAL_ID' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.EXTERNAL_ID' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.EXTERNAL_ID' | translate"
+                  [attr.aria-label]="'COMMON.EXTERNAL_ID' | appTranslate"
                   name="externalId"
                   [(ngModel)]="staff().externalId"
                 ></ion-input>
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'CLIENTS.MOBILE_NO' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'CLIENTS.MOBILE_NO' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'CLIENTS.MOBILE_NO' | translate"
+                  [attr.aria-label]="'CLIENTS.MOBILE_NO' | appTranslate"
                   name="mobileNo"
                   [(ngModel)]="staff().mobileNo"
                   [disabled]="isEditMode"
@@ -164,9 +137,9 @@ function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.EMAIL' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.EMAIL' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.EMAIL' | translate"
+                  [attr.aria-label]="'COMMON.EMAIL' | appTranslate"
                   type="email"
                   name="emailAddress"
                   [(ngModel)]="staff().emailAddress"
@@ -175,7 +148,7 @@ function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'ACTIONS.ACTIVATION_DATE' | translate
+                  'ACTIONS.ACTIVATION_DATE' | appTranslate
                 }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="joiningDate-picker"></ion-datetime-button>
@@ -198,26 +171,26 @@ function withoutBlanks<T extends Record<string, unknown>>(payload: T): T {
 
             <div class="checkbox-group">
               <ion-checkbox name="isLoanOfficer" [(ngModel)]="staff().isLoanOfficer">
-                {{ 'ORGANIZATION.IS_LOAN_OFFICER' | translate }}
+                {{ 'ORGANIZATION.IS_LOAN_OFFICER' | appTranslate }}
               </ion-checkbox>
 
               <ion-checkbox name="forceStatus" [(ngModel)]="staff().forceStatus">
-                Force Status
+                {{ 'ORGANIZATION.FORCE_STATUS' | appTranslate }}
               </ion-checkbox>
 
               @if (!isEditMode) {
                 <ion-checkbox name="isActive" [(ngModel)]="staff().isActive">
-                  {{ 'COMMON.ACTIVE' | translate }}
+                  {{ 'COMMON.ACTIVE' | appTranslate }}
                 </ion-checkbox>
               }
             </div>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="!staffForm.form.valid">
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               </ion-button>
             </div>
           </form>
@@ -256,8 +229,8 @@ export class StaffFormComponent implements OnInit {
   /** See `createPickersReady` — the date buttons must not outrun their pickers. */
   readonly pickersReady = createPickersReady();
 
-  private readonly staffService = inject(StaffService);
-  private readonly officesService = inject(OfficesService);
+  private readonly staffApi = inject(STAFF_API);
+  private readonly officeApi = inject(OFFICE_API);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly notifications = inject(NotificationService);
@@ -266,10 +239,20 @@ export class StaffFormComponent implements OnInit {
 
   staffId?: number;
   isEditMode = false;
-  readonly offices = signal<GetOfficesResponse[]>([]);
+  readonly offices = signal<readonly Office[]>([]);
   readonly joiningDate = signal(toIsoDate(new Date()));
 
-  readonly staff = signal<Partial<StaffCreateRequest>>({
+  readonly staff = signal<{
+    officeId?: number;
+    firstname?: string;
+    lastname?: string;
+    externalId?: string | null;
+    mobileNo?: string | null;
+    emailAddress?: string | null;
+    isLoanOfficer?: boolean;
+    isActive?: boolean;
+    forceStatus?: boolean;
+  }>({
     officeId: undefined,
     firstname: '',
     lastname: '',
@@ -290,50 +273,64 @@ export class StaffFormComponent implements OnInit {
   }
 
   loadOffices(): void {
-    this.officesService.getOffices().subscribe((data) => this.offices.set(data));
+    this.officeApi.list().subscribe((data) => this.offices.set(data));
   }
 
   loadStaffData(): void {
-    this.staffService.getStaffStaffId(this.staffId!).subscribe((data) => {
+    this.staffApi.get(this.staffId!).subscribe((member) => {
       this.staff.set({
-        officeId: data.officeId,
-        firstname: data.firstname,
-        lastname: data.lastname,
-        externalId: data.externalId,
-        mobileNo: data.mobileNo,
-        isLoanOfficer: data.isLoanOfficer,
-        isActive: data.isActive,
-        forceStatus:
-          ((data as Record<string, unknown>)['forceStatus'] as boolean | undefined) ?? false,
-        emailAddress: (data as Record<string, unknown>)['emailAddress'] as string | undefined,
+        officeId: member.officeId ?? undefined,
+        firstname: member.firstname,
+        lastname: member.lastname,
+        externalId: member.externalId,
+        mobileNo: member.mobileNo,
+        isLoanOfficer: member.isLoanOfficer,
+        isActive: member.isActive,
+        // Not a field Fineract returns — it is a create-time flag — so it starts false rather
+        // than being read off the response through a cast, as it used to be.
+        forceStatus: false,
+        emailAddress: member.emailAddress,
       });
-      if (data.joiningDate) {
-        this.joiningDate.set(formatArrayDate(data.joiningDate));
-      }
+      // Already `YYYY-MM-DD`. This line used to run the value through `formatArrayDate()`,
+      // which answers '-' for the string this endpoint actually sends, so the picker showed a
+      // dash instead of the joining date.
+      if (member.joiningDate) this.joiningDate.set(member.joiningDate);
     });
   }
 
   onSubmit(): void {
+    const done = {
+      next: () => void this.router.navigate([this.staffListPath]),
+      error: () => this.notifications.error('Operation failed. Please try again.'),
+    };
+
     if (this.isEditMode) {
-      const updatePayload: StaffUpdateRequest = {
-        externalId: this.staff().externalId,
-        isLoanOfficer: this.staff().isLoanOfficer,
-      };
-      this.staffService.putStaffStaffId(this.staffId!, updatePayload).subscribe({
-        next: () => this.router.navigate([this.staffListPath]),
-        error: () => this.notifications.error('Operation failed. Please try again.'),
-      });
+      this.staffApi
+        .update(this.staffId!, {
+          externalId: this.staff().externalId,
+          isLoanOfficer: this.staff().isLoanOfficer,
+        })
+        .subscribe(done);
     } else {
-      const payload = {
-        ...withoutBlanks(this.staff()),
-        joiningDate: formatDateToFineract(this.joiningDate()),
-        dateFormat: FINERACT_DATE_FORMAT,
-        locale: FINERACT_LOCALE,
-      } as StaffCreateRequest;
-      this.staffService.postStaff(payload).subscribe({
-        next: () => this.router.navigate([this.staffListPath]),
-        error: () => this.notifications.error('Operation failed. Please try again.'),
-      });
+      // Two things that used to live here are the adapter's now: converting the joining date
+      // to Fineract's own format and pairing it with the format and locale, and dropping the
+      // optional text fields the form seeds to '' so its inputs bind. An empty string is a
+      // value on the wire, not an omission, and Fineract validates it as one.
+      const entered = this.staff();
+      this.staffApi
+        .create({
+          officeId: entered.officeId!,
+          firstname: entered.firstname ?? '',
+          lastname: entered.lastname ?? '',
+          externalId: entered.externalId,
+          mobileNo: entered.mobileNo,
+          emailAddress: entered.emailAddress,
+          isLoanOfficer: entered.isLoanOfficer === true,
+          isActive: entered.isActive === true,
+          forceStatus: entered.forceStatus,
+          joiningDate: this.joiningDate(),
+        })
+        .subscribe(done);
     }
   }
 

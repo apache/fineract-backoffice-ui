@@ -21,39 +21,45 @@ import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CreateOfficeDialogComponent } from './create-office-dialog.component';
 import { ModalController } from '@ionic/angular/standalone';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
-import { OfficesService, GetOfficesResponse, PostOfficesResponse } from '../../../api';
+import { OFFICE_API } from '../../../core/adapters';
+import type { Office } from '../../../core/adapters';
 import { Observable, of, throwError } from 'rxjs';
-import { HttpEvent } from '@angular/common/http';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('CreateOfficeDialogComponent', () => {
   let component: CreateOfficeDialogComponent;
   let fixture: ComponentFixture<CreateOfficeDialogComponent>;
   let mockModalController: SpyObj<ModalController>;
-  let mockOfficesService: SpyObj<OfficesService>;
+  let mockOfficeApi: SpyObj<{ list: (all?: boolean) => unknown; create: (d: unknown) => unknown }>;
 
   beforeEach(async () => {
     mockModalController = createSpyObj<ModalController>(['dismiss']);
-    mockOfficesService = createSpyObj(['getOffices', 'postOffices']);
+    mockOfficeApi = createSpyObj(['list', 'create']);
 
-    mockOfficesService.getOffices.mockReturnValue(
-      of([{ id: 1, name: 'Head Office' }] as GetOfficesResponse[]) as unknown as Observable<
-        HttpEvent<GetOfficesResponse[]>
-      >,
-    );
-    mockOfficesService.postOffices.mockReturnValue(
-      of({ resourceId: 10, officeId: 10 } as PostOfficesResponse) as unknown as Observable<
-        HttpEvent<PostOfficesResponse>
-      >,
-    );
+    // `Office` as the adapter maps it, not `GetOfficesResponse`: every field present, absence
+    // as null, and the opening date already an ISO string.
+    const headOffice: Office = {
+      id: 1,
+      name: 'Head Office',
+      nameDecorated: 'Head Office',
+      externalId: null,
+      hierarchy: '.',
+      parentId: null,
+      parentName: null,
+      openingDate: '2009-01-01',
+    };
+    mockOfficeApi.list.mockReturnValue(of([headOffice]) as unknown as Observable<never>);
+    // The contract answers the new office's id, which this dialog hands back to its caller.
+    mockOfficeApi.create.mockReturnValue(of(10) as unknown as Observable<never>);
 
     await TestBed.configureTestingModule({
-      imports: [CreateOfficeDialogComponent, TranslateModule.forRoot()],
+      imports: [CreateOfficeDialogComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideIonicTesting(),
         { provide: ModalController, useValue: mockModalController },
-        { provide: OfficesService, useValue: mockOfficesService },
+        { provide: OFFICE_API, useValue: mockOfficeApi },
       ],
     }).compileComponents();
 
@@ -64,7 +70,7 @@ describe('CreateOfficeDialogComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-    expect(mockOfficesService.getOffices).toHaveBeenCalledWith(true);
+    expect(mockOfficeApi.list).toHaveBeenCalledWith(true);
     expect(component.offices()).toHaveLength(1);
   });
 
@@ -80,16 +86,20 @@ describe('CreateOfficeDialogComponent', () => {
     component.onSubmit();
 
     expect(component.isSaving()).toBe(true);
-    expect(mockOfficesService.postOffices).toHaveBeenCalled();
-    const args = mockOfficesService.postOffices.mock.lastCall![0];
-    expect(args.name).toBe('Test Office');
-    expect(args.openingDate).toBe('2026-01-15');
+    // The draft carries no dateFormat or locale: those are the adapter's business now, and the
+    // spec asserting their absence is what would catch them creeping back into the dialog.
+    expect(mockOfficeApi.create).toHaveBeenCalledWith({
+      name: 'Test Office',
+      externalId: undefined,
+      openingDate: '2026-01-15',
+      parentId: 1,
+    });
 
     expect(mockModalController.dismiss).toHaveBeenCalledWith(10);
   });
 
   it('should reset isSaving to false on error during submit', () => {
-    mockOfficesService.postOffices.mockReturnValue(throwError(() => new Error('Error')));
+    mockOfficeApi.create.mockReturnValue(throwError(() => new Error('Error')));
 
     component.onSubmit();
 

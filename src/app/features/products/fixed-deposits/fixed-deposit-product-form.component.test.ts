@@ -28,8 +28,8 @@ import {
 } from '../../../api';
 import { of, throwError, Observable } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('FixedDepositProductFormComponent', () => {
   let component: FixedDepositProductFormComponent;
@@ -52,8 +52,9 @@ describe('FixedDepositProductFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [FixedDepositProductFormComponent, TranslateModule.forRoot()],
+      imports: [FixedDepositProductFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         { provide: FixedDepositProductService, useValue: productServiceSpy },
         { provide: Router, useValue: routerSpy },

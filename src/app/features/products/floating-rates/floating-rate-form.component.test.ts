@@ -23,9 +23,9 @@ import { FloatingRateFormComponent } from './floating-rate-form.component';
 import { FloatingRatesService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 const PERIOD_FROM_DATE_PICKER_0 = 'periodfromDate-picker-0';
 const PERIOD_FROM_DATE_PICKER_1 = 'periodfromDate-picker-1';
@@ -45,8 +45,9 @@ describe('FloatingRateFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [FloatingRateFormComponent, TranslateModule.forRoot()],
+      imports: [FloatingRateFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: FloatingRatesService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },

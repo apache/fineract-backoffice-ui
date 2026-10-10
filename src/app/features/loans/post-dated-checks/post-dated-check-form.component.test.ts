@@ -23,8 +23,8 @@ import { PostDatedCheckFormComponent } from './post-dated-check-form.component';
 import { RepaymentWithPostDatedChecksService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('PostDatedCheckFormComponent', () => {
   let component: PostDatedCheckFormComponent;
@@ -47,8 +47,9 @@ describe('PostDatedCheckFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [PostDatedCheckFormComponent, TranslateModule.forRoot()],
+      imports: [PostDatedCheckFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: RepaymentWithPostDatedChecksService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         {

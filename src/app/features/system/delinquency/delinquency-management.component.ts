@@ -19,9 +19,8 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import {
   IonButton,
@@ -61,7 +60,7 @@ export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_T
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     HasPermissionDirective,
     CellTemplateDirective,
@@ -76,10 +75,10 @@ export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_T
     <div class="management-container">
       <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
         <ion-segment-button [value]="TAB.ranges">
-          <ion-label>{{ 'SYSTEM.DELINQUENCY_RANGES' | translate }}</ion-label>
+          <ion-label>{{ 'SYSTEM.DELINQUENCY_RANGES' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.buckets">
-          <ion-label>{{ 'SYSTEM.DELINQUENCY_BUCKETS' | translate }}</ion-label>
+          <ion-label>{{ 'SYSTEM.DELINQUENCY_BUCKETS' | appTranslate }}</ion-label>
         </ion-segment-button>
       </ion-segment>
 
@@ -99,7 +98,7 @@ export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_T
               *appHasPermission="'CREATE_DELINQUENCY_RANGE'"
             >
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'SYSTEM.CREATE_RANGE' | translate }}
+              {{ 'SYSTEM.CREATE_RANGE' | appTranslate }}
             </ion-button>
 
             <ng-template appCellTemplate="actions" let-row>
@@ -109,8 +108,8 @@ export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_T
                   color="primary"
                   [routerLink]="['ranges', 'edit', row.id]"
                   *appHasPermission="'UPDATE_DELINQUENCY_RANGE'"
-                  [attr.aria-label]="'COMMON.EDIT' | translate"
-                  [appTooltip]="'COMMON.EDIT' | translate"
+                  [attr.aria-label]="'COMMON.EDIT' | appTranslate"
+                  [appTooltip]="'COMMON.EDIT' | appTranslate"
                 >
                   <ion-icon name="create-outline"></ion-icon>
                 </ion-button>
@@ -119,8 +118,8 @@ export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_T
                   color="danger"
                   (click)="onDeleteRange(row)"
                   *appHasPermission="'DELETE_DELINQUENCY_RANGE'"
-                  [attr.aria-label]="'COMMON.DELETE' | translate"
-                  [appTooltip]="'COMMON.DELETE' | translate"
+                  [attr.aria-label]="'COMMON.DELETE' | appTranslate"
+                  [appTooltip]="'COMMON.DELETE' | appTranslate"
                 >
                   <ion-icon name="trash-outline"></ion-icon>
                 </ion-button>
@@ -145,7 +144,7 @@ export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_T
               *appHasPermission="'CREATE_DELINQUENCY_BUCKET'"
             >
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'SYSTEM.CREATE_BUCKET' | translate }}
+              {{ 'SYSTEM.CREATE_BUCKET' | appTranslate }}
             </ion-button>
 
             <ng-template appCellTemplate="ranges" let-row>
@@ -161,8 +160,8 @@ export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_T
                   color="primary"
                   [routerLink]="['buckets', 'edit', row.id]"
                   *appHasPermission="'UPDATE_DELINQUENCY_BUCKET'"
-                  [attr.aria-label]="'COMMON.EDIT' | translate"
-                  [appTooltip]="'COMMON.EDIT' | translate"
+                  [attr.aria-label]="'COMMON.EDIT' | appTranslate"
+                  [appTooltip]="'COMMON.EDIT' | appTranslate"
                 >
                   <ion-icon name="create-outline"></ion-icon>
                 </ion-button>
@@ -171,8 +170,8 @@ export type DelinquencyTab = (typeof DELINQUENCY_TAB)[keyof typeof DELINQUENCY_T
                   color="danger"
                   (click)="onDeleteBucket(row)"
                   *appHasPermission="'DELETE_DELINQUENCY_BUCKET'"
-                  [attr.aria-label]="'COMMON.DELETE' | translate"
-                  [appTooltip]="'COMMON.DELETE' | translate"
+                  [attr.aria-label]="'COMMON.DELETE' | appTranslate"
+                  [appTooltip]="'COMMON.DELETE' | appTranslate"
                 >
                   <ion-icon name="trash-outline"></ion-icon>
                 </ion-button>

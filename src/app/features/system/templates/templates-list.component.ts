@@ -19,10 +19,10 @@
 
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { TemplatesService, TemplateData } from '../../../api';
 import { DialogService } from '../../../core/services/dialog.service';
 import { CellTemplateDirective, ColumnDef } from '../../../shared';
@@ -31,7 +31,7 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
 @Component({
   selector: 'app-templates-list',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective, IonIcon, IonButton],
+  imports: [TranslatePipe, DataTableComponent, CellTemplateDirective, IonIcon, IonButton],
   template: `
     <app-data-table
       title="TEMPLATES.TITLE"
@@ -52,7 +52,7 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
           fill="clear"
           color="primary"
           (click)="onEdit(row)"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
+          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
         >
           <ion-icon name="create-outline" slot="icon-only"></ion-icon>
         </ion-button>
@@ -60,7 +60,7 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
           fill="clear"
           color="danger"
           (click)="onDelete(row)"
-          [attr.aria-label]="'COMMON.DELETE' | translate"
+          [attr.aria-label]="'COMMON.DELETE' | appTranslate"
         >
           <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
         </ion-button>
@@ -72,7 +72,7 @@ export class TemplatesListComponent implements OnInit {
   private readonly templatesService = inject(TemplatesService);
   private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly templates = signal<TemplateData[]>([]);
   readonly loading = signal(false);
@@ -145,8 +145,8 @@ export class TemplatesListComponent implements OnInit {
   async onDelete(row: TemplateData): Promise<void> {
     if (row.id === undefined) return;
     const confirmed = await this.dialogService.confirm({
-      title: this.translate.instant('TEMPLATES.DELETE'),
-      message: this.translate.instant('TEMPLATES.DELETE_CONFIRM', { name: row.name ?? '' }),
+      title: this.i18n.translate('TEMPLATES.DELETE'),
+      message: this.i18n.translate('TEMPLATES.DELETE_CONFIRM', { name: row.name ?? '' }),
       destructive: true,
     });
     if (!confirmed) return;

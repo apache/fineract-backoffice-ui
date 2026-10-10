@@ -23,7 +23,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { StaffFormComponent } from './staff-form.component';
 
-import { StaffService, OfficesService } from '../../../api';
+import { OFFICE_API, STAFF_API } from '../../../core/adapters';
+import type { Staff } from '../../../core/adapters';
 
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 
@@ -33,42 +34,59 @@ import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
-import {
-  formatDateToFineract,
-  FINERACT_DATE_FORMAT,
-  FINERACT_LOCALE,
-} from '../../../core/utils/date-formatter';
+/** `Staff` as the adapter maps it: every field present, absence as `null`. */
+function staffMember(overrides: Partial<Staff>): Staff {
+  return {
+    id: 7,
+    firstname: 'Ada',
+    lastname: 'Lovelace',
+    displayName: 'Lovelace, Ada',
+    officeId: 1,
+    officeName: 'Head Office',
+    externalId: null,
+    mobileNo: null,
+    emailAddress: null,
+    isLoanOfficer: true,
+    isActive: true,
+    joiningDate: '2026-01-05',
+    ...overrides,
+  };
+}
 
 describe('StaffFormComponent', () => {
   let component: StaffFormComponent;
 
   let fixture: ComponentFixture<StaffFormComponent>;
 
-  let staffServiceSpy: SpyObj<StaffService>;
+  let staffApiSpy: SpyObj<{
+    get: (id: number) => unknown;
+    create: (d: unknown) => unknown;
+    update: (id: number, u: unknown) => unknown;
+  }>;
 
-  let officesServiceSpy: SpyObj<OfficesService>;
+  let officeApiSpy: SpyObj<{ list: (all?: boolean) => unknown }>;
 
   let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    staffServiceSpy = createSpyObj(['getStaffStaffId', 'putStaffStaffId', 'postStaff']);
+    staffApiSpy = createSpyObj(['get', 'create', 'update']);
+    staffApiSpy.create.mockReturnValue(of(undefined));
+    staffApiSpy.update.mockReturnValue(of(undefined));
 
-    officesServiceSpy = createSpyObj(['getOffices']);
+    officeApiSpy = createSpyObj(['list']);
 
     routerSpy = createSpyObj(['navigate']);
 
-    officesServiceSpy.getOffices.mockReturnValue(
-      of([]) as unknown as ReturnType<OfficesService['getOffices']>,
-    );
+    officeApiSpy.list.mockReturnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [StaffFormComponent],
 
       providers: [
         ...provideTranslateTesting(),
-        { provide: StaffService, useValue: staffServiceSpy },
+        { provide: STAFF_API, useValue: staffApiSpy },
 
-        { provide: OfficesService, useValue: officesServiceSpy },
+        { provide: OFFICE_API, useValue: officeApiSpy },
 
         { provide: Router, useValue: routerSpy },
 
@@ -90,28 +108,42 @@ describe('StaffFormComponent', () => {
   });
 
   it('should load offices on init', () => {
-    expect(officesServiceSpy.getOffices).toHaveBeenCalled();
+    expect(officeApiSpy.list).toHaveBeenCalled();
   });
 
-  it('should format the joining date returned by the API', () => {
-    staffServiceSpy.getStaffStaffId.mockReturnValue(
-      of({ joiningDate: [2026, 1, 5] }) as unknown as ReturnType<StaffService['getStaffStaffId']>,
-    );
+  /**
+   * The regression this file exists for.
+   *
+   * This used to pass `joiningDate: [2026, 1, 5]` — an array `GET /staff/{id}` never sends — and
+   * so confirmed a form that rendered '-' in a browser: the component ran the real string value
+   * through `formatArrayDate()`, which answers '-' for anything that is not an array. The
+   * contract hands over an ISO date whichever encoding the platform used, so the component no
+   * longer converts anything and the fixture no longer has to lie.
+   */
+  it('shows the joining date the platform actually returns', () => {
+    staffApiSpy.get.mockReturnValue(of(staffMember({ joiningDate: '2026-01-05' })));
 
     component.staffId = 7;
 
     component.loadStaffData();
 
-    expect(staffServiceSpy.getStaffStaffId).toHaveBeenCalledWith(7);
+    expect(staffApiSpy.get).toHaveBeenCalledWith(7);
 
     expect(component.joiningDate()).toBe('2026-01-05');
   });
 
-  it('should create staff with a StaffCreateRequest payload on submit', () => {
-    staffServiceSpy.postStaff.mockReturnValue(
-      of({}) as unknown as ReturnType<StaffService['postStaff']>,
-    );
+  it('leaves today standing when the staff member has no joining date', () => {
+    staffApiSpy.get.mockReturnValue(of(staffMember({ joiningDate: null })));
 
+    component.staffId = 7;
+    const before = component.joiningDate();
+
+    component.loadStaffData();
+
+    expect(component.joiningDate()).toBe(before);
+  });
+
+  it('hands the adapter a draft, not a Fineract request body', () => {
     component.staff.set({
       officeId: 1,
       firstname: 'Ada',
@@ -123,28 +155,29 @@ describe('StaffFormComponent', () => {
 
     component.onSubmit();
 
-    expect(staffServiceSpy.postStaff).toHaveBeenCalledWith(
+    // No dateFormat and no locale, and the date still ISO: converting it and pairing it with
+    // the format Fineract parses against is the adapter's business. Asserting their absence is
+    // what would catch them creeping back into the form.
+    expect(staffApiSpy.create).toHaveBeenCalledWith(
       expect.objectContaining({
         officeId: 1,
         firstname: 'Ada',
         lastname: 'Lovelace',
-        joiningDate: formatDateToFineract(new Date(2026, 0, 15)),
-        dateFormat: FINERACT_DATE_FORMAT,
-        locale: FINERACT_LOCALE,
+        joiningDate: '2026-01-15T12:00:00',
       }),
     );
+    const draft = staffApiSpy.create.mock.lastCall![0] as Record<string, unknown>;
+    expect('dateFormat' in draft).toBe(false);
+    expect('locale' in draft).toBe(false);
 
-    expect(staffServiceSpy.putStaffStaffId).not.toHaveBeenCalled();
+    expect(staffApiSpy.update).not.toHaveBeenCalled();
   });
 
-  it('omits optional fields the user left blank', () => {
-    staffServiceSpy.postStaff.mockReturnValue(
-      of({}) as unknown as ReturnType<StaffService['postStaff']>,
-    );
-
-    // The form seeds these to '' so the inputs bind. Sending the empty string made Fineract
-    // reject the whole submission with "mobileNo must contain only digits", naming a field the
-    // user had deliberately left blank — so a staff member could not be created without one.
+  it('passes the blanks through for the adapter to drop', () => {
+    // The form seeds these to '' so its inputs bind. Dropping them is the adapter's promise now
+    // — sending `mobileNo: ''` makes Fineract reject the whole submission — and is tested where
+    // it happens, in fineract-staff.api.test.ts. What this asserts is that the form stops
+    // pre-filtering, so there is exactly one place that decides.
     component.staff.set({
       officeId: 1,
       firstname: 'Ada',
@@ -158,18 +191,14 @@ describe('StaffFormComponent', () => {
 
     component.onSubmit();
 
-    const payload = staffServiceSpy.postStaff.mock.lastCall![0] as unknown as Record<
-      string,
-      unknown
-    >;
-
-    expect('mobileNo' in payload).toBe(false);
-
-    expect('externalId' in payload).toBe(false);
-
-    expect(payload['firstname']).toBe('Ada');
-
-    // false is a real value, not a blank — it must survive.
-    expect(payload['isLoanOfficer']).toBe(false);
+    expect(staffApiSpy.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstname: 'Ada',
+        mobileNo: '',
+        externalId: '',
+        // false is a real value, not a blank — it must survive.
+        isLoanOfficer: false,
+      }),
+    );
   });
 });

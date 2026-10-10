@@ -20,7 +20,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../../shared';
 import { ChargesService, ChargeData } from '../../../api';
@@ -36,7 +35,6 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-charges-list',
   standalone: true,
   imports: [
-    TranslateModule,
     DataTableComponent,
     CellTemplateDirective,
     TranslatePipe,
@@ -71,11 +69,11 @@ import { ButtonComponent } from '../../../ui/button/button.component';
       </ng-template>
 
       <ng-template appCellTemplate="penalty" let-charge>
-        {{ (charge.penalty ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+        {{ (charge.penalty ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
       </ng-template>
 
       <ng-template appCellTemplate="active" let-charge>
-        {{ (charge.active ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+        {{ (charge.active ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-charge>

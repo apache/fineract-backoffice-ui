@@ -19,7 +19,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { LoanAccountLockService, LoanAccountLockResponseDTO } from '../../../api';
 import { ConfigService } from '../../../core/services/config.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -41,7 +41,7 @@ import {
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -55,14 +55,16 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'LOAN_ACCOUNT_LOCK.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'LOAN_ACCOUNT_LOCK.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="section">
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'LOAN_ACCOUNT_LOCK.LOAN_ID' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'LOAN_ACCOUNT_LOCK.LOAN_ID' | appTranslate
+            }}</ion-label>
             <ion-input
-              [attr.aria-label]="'LOAN_ACCOUNT_LOCK.LOAN_ID' | translate"
+              [attr.aria-label]="'LOAN_ACCOUNT_LOCK.LOAN_ID' | appTranslate"
               type="number"
               [(ngModel)]="loanId"
               required
@@ -73,17 +75,17 @@ import {
             @if (isLoading()) {
               <ion-spinner name="crescent"></ion-spinner>
             } @else {
-              {{ 'LOAN_ACCOUNT_LOCK.CHECK_LOCK' | translate }}
+              {{ 'LOAN_ACCOUNT_LOCK.CHECK_LOCK' | appTranslate }}
             }
           </ion-button>
 
           @if (lockChecked()) {
             <div class="lock-info">
-              <h4>{{ 'LOAN_ACCOUNT_LOCK.LOCK_INFO' | translate }}</h4>
+              <h4>{{ 'LOAN_ACCOUNT_LOCK.LOCK_INFO' | appTranslate }}</h4>
               @if (lockInfo()) {
                 <pre>{{ lockInfo() | json }}</pre>
               } @else {
-                <p>{{ 'LOAN_ACCOUNT_LOCK.NO_LOCK' | translate }}</p>
+                <p>{{ 'LOAN_ACCOUNT_LOCK.NO_LOCK' | appTranslate }}</p>
               }
             </div>
           }
@@ -99,14 +101,14 @@ import {
           <hr class="divider" />
 
           <div class="section">
-            <h3>{{ 'LOAN_ACCOUNT_LOCK.PLACE_LOCK' | translate }}</h3>
+            <h3>{{ 'LOAN_ACCOUNT_LOCK.PLACE_LOCK' | appTranslate }}</h3>
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'LOAN_ACCOUNT_LOCK.LOCK_OWNER' | translate
+                'LOAN_ACCOUNT_LOCK.LOCK_OWNER' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'LOAN_ACCOUNT_LOCK.LOCK_OWNER' | translate"
+                [attr.aria-label]="'LOAN_ACCOUNT_LOCK.LOCK_OWNER' | appTranslate"
                 type="text"
                 [(ngModel)]="lockOwner"
               ></ion-input>
@@ -117,7 +119,7 @@ import {
               [disabled]="isLoading() || !loanId || !lockOwner"
               (click)="placeLock()"
             >
-              {{ 'LOAN_ACCOUNT_LOCK.PLACE_LOCK' | translate }}
+              {{ 'LOAN_ACCOUNT_LOCK.PLACE_LOCK' | appTranslate }}
             </ion-button>
           </div>
         }
@@ -152,7 +154,7 @@ export class LoanAccountLockComponent {
   /** Gates the place-lock half of this screen; see the note in the template. */
   readonly developerToolsEnabled = this.config.developerToolsEnabled;
   private readonly notifications = inject(NotificationService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly lockInfo = signal<LoanAccountLockResponseDTO | null>(null);
   readonly lockChecked = signal(false);
@@ -183,7 +185,7 @@ export class LoanAccountLockComponent {
       .subscribe({
         next: () => {
           this.isLoading.set(false);
-          this.translate.get('LOAN_ACCOUNT_LOCK.SUCCESS').subscribe((msg) => {
+          this.i18n.translateAsync('LOAN_ACCOUNT_LOCK.SUCCESS').subscribe((msg) => {
             this.notifications.success(msg);
           });
         },

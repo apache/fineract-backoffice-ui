@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   FloatingRatesService,
   FloatingRateCreateRequest,
@@ -65,7 +65,7 @@ interface RatePeriodRow {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonIcon,
     IonButton,
     IonSpinner,
@@ -88,8 +88,8 @@ interface RatePeriodRow {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('FLOATING_RATES.EDIT' | translate)
-                : ('FLOATING_RATES.CREATE' | translate)
+                ? ('FLOATING_RATES.EDIT' | appTranslate)
+                : ('FLOATING_RATES.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -97,9 +97,9 @@ interface RatePeriodRow {
         <ion-card-content>
           <form #frForm="ngForm" (ngSubmit)="onSubmit()" class="fr-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'FLOATING_RATES.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'FLOATING_RATES.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'FLOATING_RATES.NAME' | translate"
+                [attr.aria-label]="'FLOATING_RATES.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="rate().name"
                 required
@@ -108,19 +108,19 @@ interface RatePeriodRow {
 
             <div class="checkboxes">
               <ion-checkbox name="isBaseLendingRate" [(ngModel)]="rate().isBaseLendingRate">
-                {{ 'FLOATING_RATES.IS_BASE_LENDING_RATE' | translate }}
+                {{ 'FLOATING_RATES.IS_BASE_LENDING_RATE' | appTranslate }}
               </ion-checkbox>
               <ion-checkbox name="isActive" [(ngModel)]="rate().isActive">
-                {{ 'COMMON.ACTIVE' | translate }}
+                {{ 'COMMON.ACTIVE' | appTranslate }}
               </ion-checkbox>
             </div>
 
             <div class="periods">
               <div class="periods-header">
-                <h3>{{ 'FLOATING_RATES.RATE_PERIODS' | translate }}</h3>
+                <h3>{{ 'FLOATING_RATES.RATE_PERIODS' | appTranslate }}</h3>
                 <ion-button fill="outline" type="button" (click)="addPeriod()">
                   <ion-icon name="add-outline"></ion-icon>
-                  {{ 'FLOATING_RATES.ADD_PERIOD' | translate }}
+                  {{ 'FLOATING_RATES.ADD_PERIOD' | appTranslate }}
                 </ion-button>
               </div>
 
@@ -128,7 +128,7 @@ interface RatePeriodRow {
                 <div class="period-row">
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'FLOATING_RATES.FROM_DATE' | translate
+                      'FLOATING_RATES.FROM_DATE' | appTranslate
                     }}</ion-label>
                     <app-deferred-datetime-button [datetimeId]="periodFromDatePickerId($index)" />
                     <ion-modal [keepContentsMounted]="true">
@@ -147,10 +147,10 @@ interface RatePeriodRow {
 
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'FLOATING_RATES.INTEREST_RATE' | translate
+                      'FLOATING_RATES.INTEREST_RATE' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'FLOATING_RATES.INTEREST_RATE' | translate"
+                      [attr.aria-label]="'FLOATING_RATES.INTEREST_RATE' | appTranslate"
                       type="number"
                       [name]="'interestRate' + $index"
                       [(ngModel)]="period.interestRate"
@@ -162,14 +162,14 @@ interface RatePeriodRow {
                     [name]="'isDifferential' + $index"
                     [(ngModel)]="period.isDifferentialToBaseLendingRate"
                   >
-                    {{ 'FLOATING_RATES.IS_DIFFERENTIAL' | translate }}
+                    {{ 'FLOATING_RATES.IS_DIFFERENTIAL' | appTranslate }}
                   </ion-checkbox>
 
                   <ion-button
                     fill="clear"
                     color="danger"
                     type="button"
-                    [attr.aria-label]="'COMMON.DELETE' | translate"
+                    [attr.aria-label]="'COMMON.DELETE' | appTranslate"
                     (click)="removePeriod($index)"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
@@ -180,14 +180,14 @@ interface RatePeriodRow {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="frForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

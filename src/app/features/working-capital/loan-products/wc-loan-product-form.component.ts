@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -70,7 +70,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -97,8 +97,8 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
           <ion-card-title>
             {{
               isEditMode()
-                ? ('WC_LOAN_PRODUCTS.EDIT' | translate)
-                : ('WC_LOAN_PRODUCTS.CREATE' | translate)
+                ? ('WC_LOAN_PRODUCTS.EDIT' | appTranslate)
+                : ('WC_LOAN_PRODUCTS.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -110,10 +110,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.NAME' | translate
+                      'WC_LOAN_PRODUCTS.NAME' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.NAME' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.NAME' | appTranslate"
                       id="wc-product-name"
                       data-testid="wc-product-name"
                       name="name"
@@ -127,10 +127,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.SHORT_NAME' | translate
+                      'WC_LOAN_PRODUCTS.SHORT_NAME' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.SHORT_NAME' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.SHORT_NAME' | appTranslate"
                       id="wc-product-short-name"
                       data-testid="wc-product-short-name"
                       name="shortName"
@@ -144,10 +144,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.DESCRIPTION' | translate
+                      'WC_LOAN_PRODUCTS.DESCRIPTION' | appTranslate
                     }}</ion-label>
                     <ion-textarea
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.DESCRIPTION' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.DESCRIPTION' | appTranslate"
                       id="wc-product-description"
                       data-testid="wc-product-description"
                       name="description"
@@ -160,10 +160,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.CURRENCY' | translate
+                      'WC_LOAN_PRODUCTS.CURRENCY' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.CURRENCY' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.CURRENCY' | appTranslate"
                       interface="popover"
                       id="wc-product-currency-code"
                       data-testid="wc-product-currency-code"
@@ -184,10 +184,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.DIGITS_AFTER_DECIMAL' | translate
+                      'WC_LOAN_PRODUCTS.DIGITS_AFTER_DECIMAL' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.DIGITS_AFTER_DECIMAL' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.DIGITS_AFTER_DECIMAL' | appTranslate"
                       id="wc-product-digits-after-decimal"
                       data-testid="wc-product-digits-after-decimal"
                       type="number"
@@ -202,10 +202,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.IN_MULTIPLES_OF' | translate
+                      'WC_LOAN_PRODUCTS.IN_MULTIPLES_OF' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.IN_MULTIPLES_OF' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.IN_MULTIPLES_OF' | appTranslate"
                       id="wc-product-in-multiples-of"
                       data-testid="wc-product-in-multiples-of"
                       type="number"
@@ -219,10 +219,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.PRINCIPAL' | translate
+                      'WC_LOAN_PRODUCTS.PRINCIPAL' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.PRINCIPAL' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.PRINCIPAL' | appTranslate"
                       id="wc-product-principal"
                       data-testid="wc-product-principal"
                       type="number"
@@ -237,10 +237,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.PERIOD_PAYMENT_RATE' | translate
+                      'WC_LOAN_PRODUCTS.PERIOD_PAYMENT_RATE' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.PERIOD_PAYMENT_RATE' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.PERIOD_PAYMENT_RATE' | appTranslate"
                       id="wc-product-period-payment-rate"
                       data-testid="wc-product-period-payment-rate"
                       type="number"
@@ -255,10 +255,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.REPAYMENT_EVERY' | translate
+                      'WC_LOAN_PRODUCTS.REPAYMENT_EVERY' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.REPAYMENT_EVERY' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.REPAYMENT_EVERY' | appTranslate"
                       id="wc-product-repayment-every"
                       data-testid="wc-product-repayment-every"
                       type="number"
@@ -273,10 +273,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.REPAYMENT_FREQUENCY' | translate
+                      'WC_LOAN_PRODUCTS.REPAYMENT_FREQUENCY' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.REPAYMENT_FREQUENCY' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.REPAYMENT_FREQUENCY' | appTranslate"
                       interface="popover"
                       id="wc-product-repayment-frequency"
                       data-testid="wc-product-repayment-frequency"
@@ -295,10 +295,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.AMORTIZATION_TYPE' | translate
+                      'WC_LOAN_PRODUCTS.AMORTIZATION_TYPE' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.AMORTIZATION_TYPE' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.AMORTIZATION_TYPE' | appTranslate"
                       interface="popover"
                       id="wc-product-amortization-type"
                       data-testid="wc-product-amortization-type"
@@ -317,10 +317,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.NPV_DAY_COUNT' | translate
+                      'WC_LOAN_PRODUCTS.NPV_DAY_COUNT' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.NPV_DAY_COUNT' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.NPV_DAY_COUNT' | appTranslate"
                       id="wc-product-npv-day-count"
                       data-testid="wc-product-npv-day-count"
                       type="number"
@@ -335,10 +335,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.MIN_PRINCIPAL' | translate
+                      'WC_LOAN_PRODUCTS.MIN_PRINCIPAL' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.MIN_PRINCIPAL' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.MIN_PRINCIPAL' | appTranslate"
                       id="wc-product-min-principal"
                       data-testid="wc-product-min-principal"
                       type="number"
@@ -352,10 +352,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.MAX_PRINCIPAL' | translate
+                      'WC_LOAN_PRODUCTS.MAX_PRINCIPAL' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.MAX_PRINCIPAL' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.MAX_PRINCIPAL' | appTranslate"
                       id="wc-product-max-principal"
                       data-testid="wc-product-max-principal"
                       type="number"
@@ -369,10 +369,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.MIN_PERIOD_PAYMENT_RATE' | translate
+                      'WC_LOAN_PRODUCTS.MIN_PERIOD_PAYMENT_RATE' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.MIN_PERIOD_PAYMENT_RATE' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.MIN_PERIOD_PAYMENT_RATE' | appTranslate"
                       id="wc-product-min-period-payment-rate"
                       data-testid="wc-product-min-period-payment-rate"
                       type="number"
@@ -386,10 +386,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.MAX_PERIOD_PAYMENT_RATE' | translate
+                      'WC_LOAN_PRODUCTS.MAX_PERIOD_PAYMENT_RATE' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.MAX_PERIOD_PAYMENT_RATE' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.MAX_PERIOD_PAYMENT_RATE' | appTranslate"
                       id="wc-product-max-period-payment-rate"
                       data-testid="wc-product-max-period-payment-rate"
                       type="number"
@@ -403,10 +403,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.ACCOUNTING_RULE' | translate
+                      'WC_LOAN_PRODUCTS.ACCOUNTING_RULE' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.ACCOUNTING_RULE' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.ACCOUNTING_RULE' | appTranslate"
                       interface="popover"
                       id="wc-product-accounting-rule"
                       data-testid="wc-product-accounting-rule"
@@ -424,10 +424,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.BREACH' | translate
+                      'WC_LOAN_PRODUCTS.BREACH' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.BREACH' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.BREACH' | appTranslate"
                       interface="popover"
                       id="wc-product-breach-id"
                       data-testid="wc-product-breach-id"
@@ -445,10 +445,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.NEAR_BREACH' | translate
+                      'WC_LOAN_PRODUCTS.NEAR_BREACH' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.NEAR_BREACH' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.NEAR_BREACH' | appTranslate"
                       interface="popover"
                       id="wc-product-near-breach-id"
                       data-testid="wc-product-near-breach-id"
@@ -466,10 +466,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.DELINQUENCY_BUCKET' | translate
+                      'WC_LOAN_PRODUCTS.DELINQUENCY_BUCKET' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.DELINQUENCY_BUCKET' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.DELINQUENCY_BUCKET' | appTranslate"
                       interface="popover"
                       id="wc-product-delinquency-bucket-id"
                       data-testid="wc-product-delinquency-bucket-id"
@@ -487,10 +487,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.FUND' | translate
+                      'WC_LOAN_PRODUCTS.FUND' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.FUND' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.FUND' | appTranslate"
                       interface="popover"
                       id="wc-product-fund-id"
                       data-testid="wc-product-fund-id"
@@ -508,7 +508,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.START_DATE' | translate
+                      'WC_LOAN_PRODUCTS.START_DATE' | appTranslate
                     }}</ion-label>
                     @if (pickersReady()) {
                       <ion-datetime-button datetime="wc-product-start-date"></ion-datetime-button>
@@ -530,7 +530,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.CLOSE_DATE' | translate
+                      'WC_LOAN_PRODUCTS.CLOSE_DATE' | appTranslate
                     }}</ion-label>
                     @if (pickersReady()) {
                       <ion-datetime-button datetime="wc-product-close-date"></ion-datetime-button>
@@ -553,10 +553,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.EXTERNAL_ID' | translate
+                      'WC_LOAN_PRODUCTS.EXTERNAL_ID' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'WC_LOAN_PRODUCTS.EXTERNAL_ID' | translate"
+                      [attr.aria-label]="'WC_LOAN_PRODUCTS.EXTERNAL_ID' | appTranslate"
                       id="wc-product-external-id"
                       data-testid="wc-product-external-id"
                       name="externalId"
@@ -578,7 +578,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 (click)="onCancel()"
                 [disabled]="isSaving()"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 id="wc-product-submit-btn"
@@ -589,9 +589,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>
@@ -613,7 +613,6 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
         gap: 16px;
       }
       .form-item {
-        --background: var(--ion-color-light, #f8f9fa);
         --border-radius: 8px;
         margin-bottom: 12px;
       }

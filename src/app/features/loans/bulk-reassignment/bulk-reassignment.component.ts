@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { BulkLoansService } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -73,7 +73,7 @@ interface ReassignmentTemplate {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonItem,
@@ -92,15 +92,17 @@ interface ReassignmentTemplate {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'BULK_REASSIGNMENT.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'BULK_REASSIGNMENT.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #reassignForm="ngForm" (ngSubmit)="onSubmit()" class="reassign-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'BULK_REASSIGNMENT.OFFICE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'BULK_REASSIGNMENT.OFFICE' | appTranslate
+              }}</ion-label>
               <ion-select
-                [attr.aria-label]="'BULK_REASSIGNMENT.OFFICE' | translate"
+                [attr.aria-label]="'BULK_REASSIGNMENT.OFFICE' | appTranslate"
                 interface="popover"
                 name="officeId"
                 [(ngModel)]="officeId"
@@ -115,10 +117,10 @@ interface ReassignmentTemplate {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'BULK_REASSIGNMENT.FROM_OFFICER' | translate
+                'BULK_REASSIGNMENT.FROM_OFFICER' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'BULK_REASSIGNMENT.FROM_OFFICER' | translate"
+                [attr.aria-label]="'BULK_REASSIGNMENT.FROM_OFFICER' | appTranslate"
                 interface="popover"
                 name="fromLoanOfficerId"
                 [(ngModel)]="fromLoanOfficerId"
@@ -132,10 +134,10 @@ interface ReassignmentTemplate {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'BULK_REASSIGNMENT.TO_OFFICER' | translate
+                'BULK_REASSIGNMENT.TO_OFFICER' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'BULK_REASSIGNMENT.TO_OFFICER' | translate"
+                [attr.aria-label]="'BULK_REASSIGNMENT.TO_OFFICER' | appTranslate"
                 interface="popover"
                 name="toLoanOfficerId"
                 [(ngModel)]="toLoanOfficerId"
@@ -149,7 +151,7 @@ interface ReassignmentTemplate {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'BULK_REASSIGNMENT.ASSIGNMENT_DATE' | translate
+                'BULK_REASSIGNMENT.ASSIGNMENT_DATE' | appTranslate
               }}</ion-label>
               <ion-datetime-button datetime="assignmentDate-picker"></ion-datetime-button>
               <ion-modal [keepContentsMounted]="true">
@@ -168,7 +170,7 @@ interface ReassignmentTemplate {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -177,9 +179,9 @@ interface ReassignmentTemplate {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'BULK_REASSIGNMENT.REASSIGN' | translate }}
+                  {{ 'BULK_REASSIGNMENT.REASSIGN' | appTranslate }}
                 }
               </ion-button>
             </div>

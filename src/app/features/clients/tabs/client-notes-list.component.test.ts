@@ -21,13 +21,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import type { Observable } from 'rxjs';
 import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { provideTestConfig } from '../../../testing/config';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { AuthService } from '../../../core/services/auth.service';
-import { NotesService } from '../../../api';
+import { ENTITY_NOTES_API } from '../../../core/adapters';
+import type { EntityNote, EntityNotesApi } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { ClientNotesListComponent } from './client-notes-list.component';
@@ -41,11 +41,26 @@ import { ClientNotesListComponent } from './client-notes-list.component';
  */
 describe('ClientNotesListComponent button contract after the ui migration', () => {
   let fixture: ComponentFixture<ClientNotesListComponent>;
-  let notesService: SpyObj<NotesService>;
+  let notesApi: SpyObj<EntityNotesApi>;
   let dialogService: SpyObj<DialogService>;
   let authService: SpyObj<AuthService>;
 
-  const NOTE = { id: 3, note: 'Called the client', createdOn: 1_757_000_000_000 };
+  /**
+   * A note in the application's shape.
+   *
+   * `createdOn` was `1_757_000_000_000` here — epoch millis, which is neither what the generated
+   * type declares (`string`) nor what Fineract sends (an ISO-8601 timestamp with offset). It
+   * reached the component through an `as unknown as Observable<never>` cast, so nothing checked
+   * it. The contract types it, so the fixture now has to be a real value.
+   */
+  const NOTE: EntityNote = {
+    id: 3,
+    note: 'Called the client',
+    createdOn: '2026-10-02T14:13:53.322357+05:30',
+    createdByUsername: 'mifos',
+    updatedOn: null,
+    updatedByUsername: null,
+  };
 
   /**
    * Read from the component instances, not the DOM: Ionic lifts `aria-label` into its shadow
@@ -57,10 +72,8 @@ describe('ClientNotesListComponent button contract after the ui migration', () =
   const labelled = (name: string): ButtonComponent => rendered().find((b) => b.label() === name)!;
 
   async function render(permitted: (permission: string) => boolean): Promise<void> {
-    notesService = createSpyObj<NotesService>(['getResourceTypeResourceIdNotes']);
-    notesService.getResourceTypeResourceIdNotes.mockReturnValue(
-      of([NOTE]) as unknown as Observable<never>,
-    );
+    notesApi = createSpyObj<EntityNotesApi>(['list', 'get', 'create', 'update', 'remove']);
+    notesApi.list.mockReturnValue(of([NOTE]));
     dialogService = createSpyObj<DialogService>(['open', 'confirm']);
     authService = Object.assign(createSpyObj<AuthService>(['hasPermission']), {
       currentUser: () => ({ permissions: [] }),
@@ -72,7 +85,7 @@ describe('ClientNotesListComponent button contract after the ui migration', () =
     await TestBed.configureTestingModule({
       imports: [ClientNotesListComponent],
       providers: [
-        { provide: NotesService, useValue: notesService },
+        { provide: ENTITY_NOTES_API, useValue: notesApi },
         { provide: DialogService, useValue: dialogService },
         { provide: AuthService, useValue: authService },
         provideTestConfig({ rbacEnabled: true }),

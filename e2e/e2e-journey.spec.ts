@@ -134,9 +134,18 @@ async function mockDashboardCounts(page: Page) {
   });
 }
 
+// The header leaves out the business date when the instance has none (GET /businessdate
+// answers []), so the header checks below need one to be configured.
+async function mockBusinessDate(page: Page) {
+  await page.route('**/api/v1/businessdate**', async (route) => {
+    await route.fulfill({ json: [{ type: 'BUSINESS_DATE', date: [2026, 10, 2] }] });
+  });
+}
+
 async function loginAndGoToDashboard(page: Page) {
   await mockConfig(page);
   await mockAuth(page);
+  await mockBusinessDate(page);
   await mockDashboardCounts(page);
   await page.goto('/login');
 

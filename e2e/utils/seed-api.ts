@@ -36,7 +36,7 @@
  */
 
 import { randomInt } from 'node:crypto';
-import { APIRequestContext, request as playwrightRequest } from '@playwright/test';
+import { APIRequestContext, APIResponse, request as playwrightRequest } from '@playwright/test';
 
 import { API_BASE, PASSWORD, TENANT_ID, USERNAME, assertBackendReachable } from './backend-env';
 
@@ -438,18 +438,29 @@ export interface SeededSavingsAccount {
  * `transactionAmount` rather than `amount`, and needs a `reasonForBlock` from the
  * `SavingsAccountBlockReasons` code.
  */
-export async function seedSavingsAccountWithTransactions(
+/**
+ * Seeds a client and a savings account left in `Submitted and pending approval`.
+ *
+ * The state in which the platform refuses a deposit or a withdrawal:
+ *
+ *     POST /savingsaccounts/{id}/transactions?command=deposit
+ *     400 error.msg.savingsaccount.transaction.account.is.not.active
+ *
+ * Note this is an ordinary savings account, not a deposit product — a fixed deposit in the same
+ * status answers a different error (`Fixed Depositaccount deposit transaction not allowed`),
+ * from a different code path.
+ */
+export async function seedSubmittedSavingsAccount(
   api: APIRequestContext,
   namePrefix = 'E2ESavings',
 ): Promise<SeededSavingsAccount> {
   const client = await seedClient(api, namePrefix);
   const suffix = seedSuffix();
-  const today = fineractDate();
 
   const { resourceId: productId } = await post<{ resourceId: number }>(api, '/savingsproducts', {
     name: `${namePrefix} Savings ${suffix}`,
     shortName: `V${suffix.slice(-3).toUpperCase()}`,
-    description: 'Seeded for savings transaction correction coverage',
+    description: 'Seeded for savings transaction coverage',
     currencyCode: 'USD',
     digitsAfterDecimal: 2,
     inMultiplesOf: 0,
@@ -465,20 +476,40 @@ export async function seedSavingsAccountWithTransactions(
   const { savingsId } = await post<{ savingsId: number }>(api, '/savingsaccounts', {
     clientId: client.clientId,
     productId,
-    submittedOnDate: today,
+    submittedOnDate: fineractDate(),
     dateFormat: DATE_FORMAT,
     locale: LOCALE,
   });
+
+  return { savingsId, clientId: client.clientId, clientName: client.displayName };
+}
+
+/** Approves and activates a savings account, which is what makes transactions legal on it. */
+export async function activateSavingsAccount(
+  api: APIRequestContext,
+  savingsId: number,
+): Promise<void> {
   for (const [command, field] of [
     ['approve', 'approvedOnDate'],
     ['activate', 'activatedOnDate'],
   ] as const) {
     await post(api, `/savingsaccounts/${savingsId}?command=${command}`, {
-      [field]: today,
+      [field]: fineractDate(),
       dateFormat: DATE_FORMAT,
       locale: LOCALE,
     });
   }
+}
+
+export async function seedSavingsAccountWithTransactions(
+  api: APIRequestContext,
+  namePrefix = 'E2ESavings',
+): Promise<SeededSavingsAccount> {
+  const seeded = await seedSubmittedSavingsAccount(api, namePrefix);
+  const { savingsId } = seeded;
+  const today = fineractDate();
+
+  await activateSavingsAccount(api, savingsId);
 
   await post(api, `/savingsaccounts/${savingsId}/transactions?command=deposit`, {
     transactionDate: today,
@@ -495,7 +526,7 @@ export async function seedSavingsAccountWithTransactions(
     locale: LOCALE,
   });
 
-  return { savingsId, clientId: client.clientId, clientName: client.displayName };
+  return seeded;
 }
 
 /**
@@ -676,11 +707,17 @@ export interface SeededLoan extends SeededClient, SeededLoanProduct {
 }
 
 /**
- * Creates a client, a loan product and a loan application, then approves and
- * disburses it — leaving an Active loan, the starting point the servicing specs
- * (repayment, notes, adjustment, write-off) assume.
+ * Creates a client, a loan product and a loan application, and **stops there** — the loan is left
+ * in `Submitted and pending approval`.
+ *
+ * This is the state in which the platform refuses a repayment outright:
+ *
+ *     POST /loans/{id}/transactions?command=repayment
+ *     400 error.msg.loan.must.be.active.fully.paid.or.overpaid
+ *
+ * so it is the starting point for anything asserting on what a non-active loan may be offered.
  */
-export async function seedActiveLoan(
+export async function seedSubmittedLoan(
   api: APIRequestContext,
   namePrefix = 'E2ESeed',
 ): Promise<SeededLoan> {
@@ -709,18 +746,40 @@ export async function seedActiveLoan(
     locale: LOCALE,
   });
 
-  await post(api, `/loans/${loanId}?command=approve`, {
-    approvedOnDate: today,
-    dateFormat: DATE_FORMAT,
-    locale: LOCALE,
-  });
-  await post(api, `/loans/${loanId}?command=disburse`, {
-    actualDisbursementDate: today,
-    dateFormat: DATE_FORMAT,
-    locale: LOCALE,
-  });
-
   return { ...client, ...product, loanId };
+}
+
+/** Approves a loan application. Separate from the seeding so a spec can watch the state change. */
+export async function approveLoan(api: APIRequestContext, loanId: number): Promise<void> {
+  await post(api, `/loans/${loanId}?command=approve`, {
+    approvedOnDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+}
+
+/** Disburses an approved loan, which is what makes it Active. */
+export async function disburseLoan(api: APIRequestContext, loanId: number): Promise<void> {
+  await post(api, `/loans/${loanId}?command=disburse`, {
+    actualDisbursementDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+}
+
+/**
+ * Creates a client, a loan product and a loan application, then approves and
+ * disburses it — leaving an Active loan, the starting point the servicing specs
+ * (repayment, notes, adjustment, write-off) assume.
+ */
+export async function seedActiveLoan(
+  api: APIRequestContext,
+  namePrefix = 'E2ESeed',
+): Promise<SeededLoan> {
+  const loan = await seedSubmittedLoan(api, namePrefix);
+  await approveLoan(api, loan.loanId);
+  await disburseLoan(api, loan.loanId);
+  return loan;
 }
 
 /**
@@ -862,6 +921,7 @@ export interface SeededGroup {
 export async function seedGroup(
   api: APIRequestContext,
   namePrefix = 'E2EGroup',
+  clientIds: number[] = [],
 ): Promise<SeededGroup> {
   const groupName = `${namePrefix} ${seedSuffix()}`;
   const { resourceId } = await post<{ resourceId: number }>(api, '/groups', {
@@ -870,6 +930,10 @@ export async function seedGroup(
     active: false,
     locale: LOCALE,
     dateFormat: DATE_FORMAT,
+    // `clientMembers` at creation rather than a follow-up association command: the group screen
+    // reads `clientMembers` from the `associations=all` fetch, and this is the shorter path to a
+    // group that has one.
+    ...(clientIds.length ? { clientMembers: clientIds } : {}),
   });
   return { groupId: resourceId, groupName };
 }
@@ -911,6 +975,8 @@ export interface SeededRestrictedUser {
   userId: number;
   /** Exactly the permission codes the user holds, as granted to their role. */
   permissions: string[];
+  /** The office the user belongs to, which scopes the records they can see at all. */
+  officeId: number;
 }
 
 /**
@@ -987,12 +1053,19 @@ export function generatePassword(): string {
  * class, no whitespace, and no character repeated consecutively — which rejects most obvious
  * literals with a validation error that does not mention the rule until you read `args`.
  *
+ * Permission codes are only half of what Fineract decides with. The other half is the user's
+ * **office**: every query is scoped to the office hierarchy beneath the one the user belongs to,
+ * so two users holding an identical role see different records. `officeId` defaults to Head
+ * Office, whose subtree is everything — which is why a spec about scoping has to pass a branch.
+ *
  * @param api - an API context authenticated as a user who may administer roles and users
  * @param permissions - permission codes the user should hold, and only those
+ * @param officeId - the office the user belongs to; Head Office (1) unless given
  */
 export async function seedRestrictedUser(
   api: APIRequestContext,
   permissions: string[],
+  officeId = 1,
 ): Promise<SeededRestrictedUser> {
   const roleId = await seedRole(api, permissions);
   const suffix = seedSuffix();
@@ -1004,14 +1077,14 @@ export async function seedRestrictedUser(
     firstname: 'Restricted',
     lastname: `User${suffix}`,
     email: `${username}@example.invalid`,
-    officeId: 1,
+    officeId,
     roles: [roleId],
     sendPasswordToEmail: false,
     password,
     repeatPassword: password,
   });
 
-  return { username, password, roleId, userId: resourceId, permissions };
+  return { username, password, roleId, userId: resourceId, permissions, officeId };
 }
 
 /**
@@ -1065,10 +1138,25 @@ export interface SeededJournalEntry {
  * or savings transaction — so a spec covering the reverse action cannot reuse whatever the other
  * specs happen to have posted. It has to make one by hand, which is what this does.
  */
-export async function seedManualJournalEntry(
+export interface SeededGlAccountPair {
+  debitId: number;
+  creditId: number;
+  debitAccountName: string;
+  creditAccountName: string;
+}
+
+/**
+ * Two manual-entry GL accounts, one asset and one income, that a journal entry can be posted
+ * against.
+ *
+ * `manualEntriesAllowed` is the part that matters: the platform refuses a hand-written entry
+ * against an account that does not carry it, and the stock chart of accounts cannot be relied on
+ * to hold a pair that does.
+ */
+export async function seedGlAccountPair(
   api: APIRequestContext,
   namePrefix = 'E2EJournal',
-): Promise<SeededJournalEntry> {
+): Promise<SeededGlAccountPair> {
   const suffix = seedSuffix();
   const debitAccountName = `${namePrefix} Cash ${suffix}`;
   const creditAccountName = `${namePrefix} Income ${suffix}`;
@@ -1088,16 +1176,57 @@ export async function seedManualJournalEntry(
     manualEntriesAllowed: true,
   });
 
-  const { transactionId } = await post<{ transactionId: string }>(api, '/journalentries', {
-    officeId: 1,
-    currencyCode: 'USD',
-    transactionDate: fineractDate(),
-    dateFormat: DATE_FORMAT,
-    locale: LOCALE,
-    comments: 'Seeded for reversal coverage',
-    debits: [{ glAccountId: debitId, amount: 100 }],
-    credits: [{ glAccountId: creditId, amount: 100 }],
+  return { debitId, creditId, debitAccountName, creditAccountName };
+}
+
+/**
+ * Posts a balanced manual journal entry and hands back the raw response.
+ *
+ * Raw, rather than parsed, because the interesting cases are the refusals: an accounting closure
+ * covering the transaction date makes the platform reject this, and a caller proving that needs
+ * the status and the body rather than an exception. {@link seedManualJournalEntry} wraps it for
+ * the callers that only want the entry to exist.
+ */
+export async function attemptJournalEntry(
+  api: APIRequestContext,
+  options: {
+    pair: SeededGlAccountPair;
+    officeId?: number;
+    date?: Date;
+    amount?: number;
+    comments?: string;
+  },
+): Promise<APIResponse> {
+  const { pair, officeId = 1, date = new Date(), amount = 100, comments = '' } = options;
+  return api.post(`${API_BASE}/journalentries`, {
+    data: {
+      officeId,
+      currencyCode: 'USD',
+      transactionDate: fineractDate(date),
+      dateFormat: DATE_FORMAT,
+      locale: LOCALE,
+      comments,
+      debits: [{ glAccountId: pair.debitId, amount }],
+      credits: [{ glAccountId: pair.creditId, amount }],
+    },
   });
+}
+
+export async function seedManualJournalEntry(
+  api: APIRequestContext,
+  namePrefix = 'E2EJournal',
+): Promise<SeededJournalEntry> {
+  const pair = await seedGlAccountPair(api, namePrefix);
+  const response = await attemptJournalEntry(api, {
+    pair,
+    comments: 'Seeded for reversal coverage',
+  });
+  if (!response.ok()) {
+    throw new Error(
+      `POST /journalentries -> ${response.status()}: ${(await response.text()).slice(0, 400)}`,
+    );
+  }
+  const { transactionId } = (await response.json()) as { transactionId: string };
 
   const page = await get<{ pageItems: { id: number }[] }>(
     api,
@@ -1106,9 +1235,56 @@ export async function seedManualJournalEntry(
   return {
     entryId: page.pageItems[0].id,
     transactionId,
-    debitAccountName,
-    creditAccountName,
+    debitAccountName: pair.debitAccountName,
+    creditAccountName: pair.creditAccountName,
   };
+}
+
+export interface SeededAccountingClosure {
+  closureId: number;
+  officeId: number;
+}
+
+/**
+ * Closes an accounting period for one office.
+ *
+ * Always pass a seeded branch rather than Head Office. A closure is enforced over the office's
+ * whole subtree, so closing Head Office would make the platform refuse every posting the rest of
+ * the backend suite makes — including the loan and savings specs, which post through the
+ * accounting rules rather than by hand and would fail for a reason nothing in them names.
+ */
+export async function seedAccountingClosure(
+  api: APIRequestContext,
+  officeId: number,
+  date: Date = new Date(),
+  comments = 'Seeded for closure coverage',
+): Promise<SeededAccountingClosure> {
+  const { resourceId } = await post<{ resourceId: number }>(api, '/glclosures', {
+    officeId,
+    closingDate: fineractDate(date),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+    comments,
+  });
+  return { closureId: resourceId, officeId };
+}
+
+/**
+ * Re-opens a closed period, so a spec does not leave one behind.
+ *
+ * Tolerates a closure that is already gone: a spec that re-opens through the UI and then cleans
+ * up should not fail in teardown for having succeeded.
+ */
+export async function deleteAccountingClosure(
+  api: APIRequestContext,
+  closureId: number,
+): Promise<void> {
+  const response = await api.delete(`${API_BASE}/glclosures/${closureId}`);
+  if (!response.ok() && response.status() !== 404) {
+    throw new Error(
+      `DELETE /glclosures/${closureId} -> ${response.status()}: ${(await response.text()).slice(0, 200)}`,
+    );
+  }
 }
 
 export interface SeededReportDefinition {

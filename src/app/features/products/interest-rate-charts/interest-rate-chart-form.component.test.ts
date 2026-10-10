@@ -23,8 +23,8 @@ import { InterestRateChartFormComponent } from './interest-rate-chart-form.compo
 import { InterestRateChartService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('InterestRateChartFormComponent', () => {
   let component: InterestRateChartFormComponent;
@@ -41,8 +41,9 @@ describe('InterestRateChartFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [InterestRateChartFormComponent, TranslateModule.forRoot()],
+      imports: [InterestRateChartFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: InterestRateChartService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },

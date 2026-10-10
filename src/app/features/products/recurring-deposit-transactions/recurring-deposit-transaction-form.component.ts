@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -58,7 +58,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -83,7 +83,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               (command() === 'withdrawal'
                 ? 'SAVINGS.WITHDRAWAL'
                 : 'RECURRING_DEPOSIT_TRANSACTIONS.CREATE'
-              ) | translate
+              ) | appTranslate
             }}
           </ion-card-title>
         </ion-card-header>
@@ -92,7 +92,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
           <form #transactionForm="ngForm" (ngSubmit)="onSubmit()" class="rd-form">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'RECURRING_DEPOSIT_TRANSACTIONS.DATE' | translate
+                'RECURRING_DEPOSIT_TRANSACTIONS.DATE' | appTranslate
               }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="transactionDate-picker"></ion-datetime-button>
@@ -113,10 +113,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'RECURRING_DEPOSIT_TRANSACTIONS.AMOUNT' | translate
+                'RECURRING_DEPOSIT_TRANSACTIONS.AMOUNT' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'RECURRING_DEPOSIT_TRANSACTIONS.AMOUNT' | translate"
+                [attr.aria-label]="'RECURRING_DEPOSIT_TRANSACTIONS.AMOUNT' | appTranslate"
                 type="number"
                 name="transactionAmount"
                 [(ngModel)]="transactionAmount"
@@ -126,10 +126,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'RECURRING_DEPOSIT_TRANSACTIONS.PAYMENT_TYPE' | translate
+                'RECURRING_DEPOSIT_TRANSACTIONS.PAYMENT_TYPE' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'RECURRING_DEPOSIT_TRANSACTIONS.PAYMENT_TYPE' | translate"
+                [attr.aria-label]="'RECURRING_DEPOSIT_TRANSACTIONS.PAYMENT_TYPE' | appTranslate"
                 interface="popover"
                 name="paymentTypeId"
                 [(ngModel)]="paymentTypeId"
@@ -142,7 +142,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -151,9 +151,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

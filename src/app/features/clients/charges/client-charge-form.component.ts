@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ClientChargesService, PostClientsClientIdChargesRequest, ChargeData } from '../../../api';
 import {
   IonButton,
@@ -51,7 +51,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -68,15 +68,15 @@ import {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'CLIENT_CHARGES.CREATE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'CLIENT_CHARGES.CREATE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #chargeForm="ngForm" (ngSubmit)="onSubmit()" class="charge-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CLIENT_CHARGES.CHARGE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'CLIENT_CHARGES.CHARGE' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'CLIENT_CHARGES.CHARGE' | translate"
+                [attr.aria-label]="'CLIENT_CHARGES.CHARGE' | appTranslate"
                 interface="popover"
                 name="chargeId"
                 [(ngModel)]="charge.chargeId"
@@ -89,9 +89,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CLIENT_CHARGES.AMOUNT' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'CLIENT_CHARGES.AMOUNT' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'CLIENT_CHARGES.AMOUNT' | translate"
+                [attr.aria-label]="'CLIENT_CHARGES.AMOUNT' | appTranslate"
                 type="number"
                 name="amount"
                 [(ngModel)]="charge.amount"
@@ -100,9 +100,11 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CLIENT_CHARGES.DUE_DATE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'CLIENT_CHARGES.DUE_DATE' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'CLIENT_CHARGES.DUE_DATE' | translate"
+                [attr.aria-label]="'CLIENT_CHARGES.DUE_DATE' | appTranslate"
                 type="date"
                 name="dueDate"
                 [(ngModel)]="dueDate"
@@ -112,7 +114,7 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -121,9 +123,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

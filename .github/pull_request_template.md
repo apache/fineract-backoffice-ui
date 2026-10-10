@@ -19,6 +19,21 @@ under the License.
 
 <!-- Commits must be signed to merge — see CONTRIBUTING.md#commit-signing if you haven't set this up. -->
 
+<!--
+  New feature, or a change to how a screen works?
+
+  Apache Fineract decides those on its developer mailing list, not in a pull request. A PR
+  that arrives with a thread behind it is reviewed on its merits; one that proposes something
+  nobody has seen spends its first round of review on the proposal instead of the code.
+
+    Subscribe  dev-subscribe@fineract.apache.org   (blank email)
+    Post       dev@fineract.apache.org
+    Archive    https://lists.apache.org/list.html?dev@fineract.apache.org
+    Chat       https://matrix.to/#/%23apache-fineract-dev:matrix.org
+
+  Bug fixes, refactors and test work need none of this — open away.
+-->
+
 ## What and why
 
 <!-- One or two sentences explaining what changed and why. -->
@@ -54,3 +69,6 @@ the harness or workflow used. The contributor remains responsible for the submit
 - [ ] UI workflow changes include suitable e2e coverage, including real-backend testing where relevant.
 - [ ] Commits are signed — see [Commit Signing](CONTRIBUTING.md#commit-signing) in CONTRIBUTING.md.
 - [ ] I followed the [AI-assisted contributions guidance](CONTRIBUTING.md#ai-assisted-contributions).
+- [ ] If this adds a feature or changes a workflow, I raised it on
+      [dev@fineract.apache.org](https://lists.apache.org/list.html?dev@fineract.apache.org) first —
+      or it is a bug fix, refactor or test change, where that does not apply.

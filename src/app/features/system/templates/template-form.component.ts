@@ -20,7 +20,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -46,7 +46,7 @@ import {
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonTextarea,
@@ -63,49 +63,53 @@ import {
     <ion-card>
       <ion-card-header>
         <ion-card-title>
-          {{ (isEditMode ? 'TEMPLATES.EDIT_TITLE' : 'TEMPLATES.CREATE_TITLE') | translate }}
+          {{ (isEditMode ? 'TEMPLATES.EDIT_TITLE' : 'TEMPLATES.CREATE_TITLE') | appTranslate }}
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'TEMPLATES.NAME' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'TEMPLATES.NAME' | appTranslate }}</ion-label>
             <ion-input
-              [attr.aria-label]="'TEMPLATES.NAME' | translate"
+              [attr.aria-label]="'TEMPLATES.NAME' | appTranslate"
               formControlName="name"
             ></ion-input>
           </ion-item>
 
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'TEMPLATES.ENTITY' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'TEMPLATES.ENTITY' | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="'TEMPLATES.ENTITY' | translate"
+              [attr.aria-label]="'TEMPLATES.ENTITY' | appTranslate"
               interface="popover"
               formControlName="entity"
             >
               @for (opt of entityOptions; track opt.id) {
-                <ion-select-option [value]="opt.id">{{ opt.label | translate }}</ion-select-option>
+                <ion-select-option [value]="opt.id">{{
+                  opt.label | appTranslate
+                }}</ion-select-option>
               }
             </ion-select>
           </ion-item>
 
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'TEMPLATES.TYPE' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'TEMPLATES.TYPE' | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="'TEMPLATES.TYPE' | translate"
+              [attr.aria-label]="'TEMPLATES.TYPE' | appTranslate"
               interface="popover"
               formControlName="type"
             >
               @for (opt of typeOptions; track opt.id) {
-                <ion-select-option [value]="opt.id">{{ opt.label | translate }}</ion-select-option>
+                <ion-select-option [value]="opt.id">{{
+                  opt.label | appTranslate
+                }}</ion-select-option>
               }
             </ion-select>
           </ion-item>
 
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'TEMPLATES.TEXT' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'TEMPLATES.TEXT' | appTranslate }}</ion-label>
             <ion-textarea
-              [attr.aria-label]="'TEMPLATES.TEXT' | translate"
+              [attr.aria-label]="'TEMPLATES.TEXT' | appTranslate"
               formControlName="text"
               rows="10"
             ></ion-textarea>
@@ -113,10 +117,10 @@ import {
 
           <div class="form-actions">
             <ion-button color="primary" type="submit" [disabled]="form.invalid">
-              {{ 'TEMPLATES.SAVE' | translate }}
+              {{ 'TEMPLATES.SAVE' | appTranslate }}
             </ion-button>
             <ion-button fill="clear" type="button" (click)="onCancel()">
-              {{ 'TEMPLATES.CANCEL' | translate }}
+              {{ 'TEMPLATES.CANCEL' | appTranslate }}
             </ion-button>
           </div>
         </form>

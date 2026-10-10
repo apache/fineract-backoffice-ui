@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { FineractEntityService } from '../../../api';
 import {
   IonButton,
@@ -61,7 +61,7 @@ export function readMappingPayload(body: unknown): EntityMappingPayload {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -79,8 +79,8 @@ export function readMappingPayload(body: unknown): EntityMappingPayload {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('ENTITY_MAPPING.EDIT' | translate)
-                : ('ENTITY_MAPPING.CREATE' | translate)
+                ? ('ENTITY_MAPPING.EDIT' | appTranslate)
+                : ('ENTITY_MAPPING.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -88,9 +88,9 @@ export function readMappingPayload(body: unknown): EntityMappingPayload {
         <ion-card-content>
           <form #mappingForm="ngForm" (ngSubmit)="onSubmit()" class="entity-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'ENTITY_MAPPING.REL_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'ENTITY_MAPPING.REL_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'ENTITY_MAPPING.REL_ID' | translate"
+                [attr.aria-label]="'ENTITY_MAPPING.REL_ID' | appTranslate"
                 type="number"
                 name="relId"
                 [ngModel]="relId()"
@@ -101,9 +101,11 @@ export function readMappingPayload(body: unknown): EntityMappingPayload {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'ENTITY_MAPPING.FROM_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'ENTITY_MAPPING.FROM_ID' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'ENTITY_MAPPING.FROM_ID' | translate"
+                [attr.aria-label]="'ENTITY_MAPPING.FROM_ID' | appTranslate"
                 type="number"
                 name="fromId"
                 [(ngModel)]="payload().fromId"
@@ -112,9 +114,9 @@ export function readMappingPayload(body: unknown): EntityMappingPayload {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'ENTITY_MAPPING.TO_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'ENTITY_MAPPING.TO_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'ENTITY_MAPPING.TO_ID' | translate"
+                [attr.aria-label]="'ENTITY_MAPPING.TO_ID' | appTranslate"
                 type="number"
                 name="toId"
                 [(ngModel)]="payload().toId"
@@ -124,7 +126,7 @@ export function readMappingPayload(body: unknown): EntityMappingPayload {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -133,9 +135,9 @@ export function readMappingPayload(body: unknown): EntityMappingPayload {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

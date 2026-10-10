@@ -18,7 +18,7 @@
  */
 
 import { Component, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { Subject, merge, of } from 'rxjs';
@@ -31,7 +31,7 @@ import { ButtonComponent } from '../../ui/button/button.component';
 @Component({
   selector: 'app-asset-owners-list',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective, NgClass, ButtonComponent],
+  imports: [TranslatePipe, DataTableComponent, CellTemplateDirective, NgClass, ButtonComponent],
   template: `
     <app-data-table
       [hasError]="hasError()"
@@ -56,7 +56,7 @@ import { ButtonComponent } from '../../ui/button/button.component';
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.VIEW_DETAILS' | translate"
+          [label]="'COMMON.VIEW_DETAILS' | appTranslate"
           icon="eye-outline"
           (click)="onViewDetails(transfer)"
         />

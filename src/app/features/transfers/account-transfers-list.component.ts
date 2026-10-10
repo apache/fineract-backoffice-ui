@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent } from '@ionic/angular/standalone';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../shared';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 
 import {
   AccountTransfersService,
@@ -39,14 +39,14 @@ import {
     IonCardContent,
     DataTableComponent,
     CellTemplateDirective,
-    TranslateModule,
+    TranslatePipe,
     DecimalPipe,
     DatePipe,
   ],
   template: `
     <ion-card id="account-transfers-card" data-testid="account-transfers-card">
       <ion-card-header>
-        <ion-card-title>{{ 'TRANSFERS.HISTORY_TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'TRANSFERS.HISTORY_TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <app-data-table

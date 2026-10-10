@@ -27,7 +27,6 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { TranslateModule } from '@ngx-translate/core';
 import {
   IonButton,
   IonCard,
@@ -41,6 +40,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { GuidanceService } from '../../../core/services/guidance.service';
 import { MOBILE_MEDIA_QUERY } from '../../../core/services/viewport.service';
+import { TranslatePipe } from '../../../core/adapters';
 
 /**
  * How long to keep looking for a step's target before giving up.
@@ -70,7 +70,7 @@ const CARD_VIEWPORT_MARGIN_PX = 24;
   selector: 'app-guidance-tour',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -102,12 +102,12 @@ const CARD_VIEWPORT_MARGIN_PX = 24;
           <ion-card-header>
             <ion-card-title id="guidance-title">
               <ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon>
-              {{ guidanceService.currentStep()?.titleKey | translate }}
+              {{ guidanceService.currentStep()?.titleKey | appTranslate }}
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <p id="guidance-description">
-              {{ guidanceService.currentStep()?.descriptionKey | translate }}
+              {{ guidanceService.currentStep()?.descriptionKey | appTranslate }}
             </p>
             <!--
               Announced rather than merely shown: Next replaces the card's text in place, and
@@ -116,7 +116,7 @@ const CARD_VIEWPORT_MARGIN_PX = 24;
             <div class="progress-info" aria-live="polite">
               {{
                 'GUIDE.STEP_OF'
-                  | translate
+                  | appTranslate
                     : {
                         current: guidanceService.currentStepIndex() + 1,
                         total: guidanceService.activeSteps().length,
@@ -126,7 +126,7 @@ const CARD_VIEWPORT_MARGIN_PX = 24;
           </ion-card-content>
           <div class="guidance-actions">
             <ion-button fill="clear" color="medium" (click)="onExit()">
-              {{ 'COMMON.EXIT' | translate }}
+              {{ 'COMMON.EXIT' | appTranslate }}
             </ion-button>
             <span class="guidance-spacer"></span>
             <ion-button
@@ -134,10 +134,10 @@ const CARD_VIEWPORT_MARGIN_PX = 24;
               [disabled]="guidanceService.currentStepIndex() === 0"
               (click)="onBack()"
             >
-              {{ 'COMMON.BACK' | translate }}
+              {{ 'COMMON.BACK' | appTranslate }}
             </ion-button>
             <ion-button color="primary" (click)="onNext()">
-              {{ (guidanceService.isLastStep() ? 'COMMON.FINISH' : 'COMMON.NEXT') | translate }}
+              {{ (guidanceService.isLastStep() ? 'COMMON.FINISH' : 'COMMON.NEXT') | appTranslate }}
             </ion-button>
           </div>
         </ion-card>

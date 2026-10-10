@@ -92,7 +92,7 @@ describe('ProductAccountingSectionComponent', () => {
   it('shows the nine cash slots under CASH, and none of the receivables', async () => {
     await setup(ACCOUNTING_RULE.CASH);
 
-    expect(renderedKeys().sort()).toEqual([...CASH_KEYS].sort());
+    expect(renderedKeys().toSorted()).toEqual([...CASH_KEYS].toSorted());
     for (const key of RECEIVABLE_KEYS) {
       expect(renderedKeys()).not.toContain(key);
     }
@@ -101,7 +101,7 @@ describe('ProductAccountingSectionComponent', () => {
   it('adds the receivables under both accrual rules', async () => {
     for (const rule of [ACCOUNTING_RULE.ACCRUAL_PERIODIC, ACCOUNTING_RULE.ACCRUAL_UPFRONT]) {
       await setup(rule);
-      expect(renderedKeys().sort()).toEqual([...CASH_KEYS, ...RECEIVABLE_KEYS].sort());
+      expect(renderedKeys().toSorted()).toEqual([...CASH_KEYS, ...RECEIVABLE_KEYS].toSorted());
       TestBed.resetTestingModule();
     }
   });

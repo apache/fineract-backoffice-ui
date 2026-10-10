@@ -20,9 +20,9 @@
 import { inject, input, signal, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { NotesService, NoteData } from '../../../api';
+import { ENTITY_NOTES_API, I18N, TranslatePipe } from '../../../core/adapters';
+import type { EntityNote, NoteResourceType } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
-import { I18N, TranslatePipe } from '../../../core/adapters';
 import { IonButton, IonIcon, IonItem, IonLabel, IonTextarea } from '@ionic/angular/standalone';
 
 /**
@@ -144,15 +144,20 @@ import { IonButton, IonIcon, IonItem, IonLabel, IonTextarea } from '@ionic/angul
   ],
 })
 export class EntityNotesComponent implements OnInit {
-  /** The path segment Fineract knows this entity by: `clients`, `groups`, `loans`, `savings`. */
-  readonly resourceType = input.required<string>();
+  /**
+   * The path segment Fineract knows this entity by.
+   *
+   * A closed union rather than `string`: a typo here used to be a runtime 404 on a tab that
+   * rendered empty. See `NoteResourceType`.
+   */
+  readonly resourceType = input.required<NoteResourceType>();
   readonly resourceId = input.required<number>();
 
-  private readonly notesService = inject(NotesService);
+  private readonly notesApi = inject(ENTITY_NOTES_API);
   private readonly dialogService = inject(DialogService);
   private readonly i18n = inject(I18N);
 
-  readonly notes = signal<NoteData[]>([]);
+  readonly notes = signal<EntityNote[]>([]);
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
   readonly newNoteText = signal('');
@@ -163,37 +168,33 @@ export class EntityNotesComponent implements OnInit {
 
   loadNotes(): void {
     this.isLoading.set(true);
-    this.notesService
-      .getResourceTypeResourceIdNotes(this.resourceType(), this.resourceId())
-      .subscribe({
-        next: (data) => {
-          this.notes.set(data);
-          this.isLoading.set(false);
-        },
-        error: (err) => {
-          console.error('Failed to load notes', err);
-          this.isLoading.set(false);
-        },
-      });
+    this.notesApi.list(this.resourceType(), this.resourceId()).subscribe({
+      next: (data) => {
+        this.notes.set(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load notes', err);
+        this.isLoading.set(false);
+      },
+    });
   }
 
   onAddNote(): void {
     const note = this.newNoteText().trim();
     if (!note) return;
     this.isSaving.set(true);
-    this.notesService
-      .postResourceTypeResourceIdNotes(this.resourceType(), this.resourceId(), { note })
-      .subscribe({
-        next: () => {
-          this.newNoteText.set('');
-          this.isSaving.set(false);
-          this.loadNotes();
-        },
-        error: (err) => {
-          console.error('Failed to add note', err);
-          this.isSaving.set(false);
-        },
-      });
+    this.notesApi.create(this.resourceType(), this.resourceId(), note).subscribe({
+      next: () => {
+        this.newNoteText.set('');
+        this.isSaving.set(false);
+        this.loadNotes();
+      },
+      error: (err) => {
+        console.error('Failed to add note', err);
+        this.isSaving.set(false);
+      },
+    });
   }
 
   onDeleteNote(noteId: number): void {
@@ -205,12 +206,10 @@ export class EntityNotesComponent implements OnInit {
       })
       .then((confirmed) => {
         if (!confirmed) return;
-        this.notesService
-          .deleteResourceTypeResourceIdNotesNoteId(this.resourceType(), this.resourceId(), noteId)
-          .subscribe({
-            next: () => this.loadNotes(),
-            error: (err) => console.error('Failed to delete note', err),
-          });
+        this.notesApi.remove(this.resourceType(), this.resourceId(), noteId).subscribe({
+          next: () => this.loadNotes(),
+          error: (err) => console.error('Failed to delete note', err),
+        });
       });
   }
 }

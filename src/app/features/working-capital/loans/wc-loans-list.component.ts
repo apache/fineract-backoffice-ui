@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { WorkingCapitalLoansService, GetWorkingCapitalLoansLoanIdResponse } from '../../../api';
@@ -47,7 +47,7 @@ interface WcLoanRow {
   selector: 'app-wc-loans-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -70,9 +70,9 @@ interface WcLoanRow {
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.VIEW' | translate"
+          [label]="'COMMON.VIEW' | appTranslate"
           icon="eye-outline"
-          [appTooltip]="'COMMON.VIEW' | translate"
+          [appTooltip]="'COMMON.VIEW' | appTranslate"
           (click)="onView(row)"
         />
       </ng-template>

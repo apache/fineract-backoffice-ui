@@ -27,10 +27,10 @@ import {
 } from '../../../api';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { HttpEvent } from '@angular/common/http';
 import { PageEvent } from '../../../shared/models/table.model';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ShareAccountsListComponent', () => {
   let component: ShareAccountsListComponent;
@@ -43,8 +43,9 @@ describe('ShareAccountsListComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [ShareAccountsListComponent, TranslateModule.forRoot()],
+      imports: [ShareAccountsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         { provide: ShareAccountService, useValue: shareServiceSpy },
         { provide: Router, useValue: routerSpy },

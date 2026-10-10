@@ -23,14 +23,14 @@
  * Do not edit the class manually.
  */
 
-import { PutFinancialActivityAccountscommentsSwagger } from './putFinancialActivityAccountscommentsSwagger';
+import { PutFinancialActivityAccountsChanges } from './putFinancialActivityAccountsChanges';
 
 
 /**
  * PutFinancialActivityAccountsResponse
  */
 export interface PutFinancialActivityAccountsResponse { 
-    comments?: PutFinancialActivityAccountscommentsSwagger;
+    changes?: PutFinancialActivityAccountsChanges;
     resourceId?: number;
 }
 

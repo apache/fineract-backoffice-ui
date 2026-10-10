@@ -19,29 +19,29 @@
 
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N } from './core/adapters';
 import { IdleService } from './core/services/idle.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TranslateModule],
+  imports: [RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
   private readonly idleService = inject(IdleService);
   protected readonly title = signal('fineract-backoffice-ui');
 
   constructor() {
-    this.translate.addLangs(['en', 'hi', 'ko']);
-    this.translate.setFallbackLang('en');
+    this.i18n.registerLangs(['en', 'hi', 'ko']);
+    this.i18n.setFallbackLang('en');
 
-    const browserLang = this.translate.getBrowserLang();
-    this.translate.use(browserLang?.match(/en|hi|ko/) ? browserLang : 'en');
+    const browserLang = this.i18n.detectBrowserLang();
+    this.i18n.use(browserLang ?? 'en');
   }
 
   switchLanguage(lang: string) {
-    this.translate.use(lang);
+    this.i18n.use(lang);
   }
 }

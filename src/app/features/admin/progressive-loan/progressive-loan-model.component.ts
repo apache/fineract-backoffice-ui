@@ -19,7 +19,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ProgressiveLoanService, ProgressiveLoanInterestScheduleModel } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -40,7 +40,7 @@ import {
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -54,26 +54,28 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'PROGRESSIVE_LOAN.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'PROGRESSIVE_LOAN.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="row-actions">
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'PROGRESSIVE_LOAN.LOAN_ID' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'PROGRESSIVE_LOAN.LOAN_ID' | appTranslate
+            }}</ion-label>
             <ion-input
-              [attr.aria-label]="'PROGRESSIVE_LOAN.LOAN_ID' | translate"
+              [attr.aria-label]="'PROGRESSIVE_LOAN.LOAN_ID' | appTranslate"
               type="number"
               [(ngModel)]="loanId"
             ></ion-input>
           </ion-item>
           <ion-button color="primary" (click)="loadModel()" [disabled]="isLoading()">
-            {{ 'PROGRESSIVE_LOAN.LOAD' | translate }}
+            {{ 'PROGRESSIVE_LOAN.LOAD' | appTranslate }}
           </ion-button>
           <ion-button color="secondary" (click)="createModel()" [disabled]="isLoading()">
-            {{ 'PROGRESSIVE_LOAN.CREATE' | translate }}
+            {{ 'PROGRESSIVE_LOAN.CREATE' | appTranslate }}
           </ion-button>
           <ion-button color="danger" (click)="deleteModel()" [disabled]="isLoading()">
-            {{ 'PROGRESSIVE_LOAN.DELETE' | translate }}
+            {{ 'PROGRESSIVE_LOAN.DELETE' | appTranslate }}
           </ion-button>
         </div>
 
@@ -83,7 +85,7 @@ import {
 
         @if (model() !== null) {
           <div class="model-container">
-            <h4>{{ 'PROGRESSIVE_LOAN.MODEL' | translate }}</h4>
+            <h4>{{ 'PROGRESSIVE_LOAN.MODEL' | appTranslate }}</h4>
             <pre>{{ model() | json }}</pre>
           </div>
         }
@@ -112,7 +114,7 @@ import {
 export class ProgressiveLoanModelComponent {
   private progressiveLoanService = inject(ProgressiveLoanService);
   private notifications = inject(NotificationService);
-  private translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   loanId = 0;
   readonly model = signal<ProgressiveLoanInterestScheduleModel | null>(null);
@@ -162,10 +164,10 @@ export class ProgressiveLoanModelComponent {
   }
 
   private showSuccess(): void {
-    this.notifications.success(this.translate.instant('PROGRESSIVE_LOAN.SUCCESS'));
+    this.notifications.success(this.i18n.translate('PROGRESSIVE_LOAN.SUCCESS'));
   }
 
   private showError(): void {
-    this.notifications.error(this.translate.instant('PROGRESSIVE_LOAN.ERROR'));
+    this.notifications.error(this.i18n.translate('PROGRESSIVE_LOAN.ERROR'));
   }
 }

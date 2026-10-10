@@ -34,7 +34,7 @@ import { filter } from 'rxjs';
 import { NgTemplateOutlet } from '@angular/common';
 
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../core/adapters';
 import { IonIcon } from '@ionic/angular/standalone';
 import { SidebarService } from '../core/services/sidebar.service';
 import { ViewportService } from '../core/services/viewport.service';
@@ -66,7 +66,7 @@ const NAV_ROUTE_MATCH_OPTIONS = {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterModule, TranslateModule, IonIcon, NgTemplateOutlet],
+  imports: [RouterModule, TranslatePipe, IonIcon, NgTemplateOutlet],
   template: `
     <!--
       One element, two components. Wide: a permanent navigation landmark. Narrow: a modal drawer,
@@ -84,14 +84,14 @@ const NAV_ROUTE_MATCH_OPTIONS = {
       [attr.role]="viewport.isMobile() ? 'dialog' : 'navigation'"
       [attr.aria-modal]="viewport.isMobile() ? 'true' : null"
       [attr.inert]="viewport.isMobile() && !sidebarService.isDrawerOpen() ? '' : null"
-      [attr.aria-label]="'nav.main' | translate"
+      [attr.aria-label]="'nav.main' | appTranslate"
     >
       @if (viewport.isMobile()) {
         <button
           type="button"
           class="drawer-close"
           (click)="sidebarService.closeDrawer()"
-          [attr.aria-label]="'nav.closeMenu' | translate"
+          [attr.aria-label]="'nav.closeMenu' | appTranslate"
         >
           <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
         </button>
@@ -168,9 +168,9 @@ const NAV_ROUTE_MATCH_OPTIONS = {
               @if (item.icon) {
                 <ion-icon class="nav-icon" [name]="item.icon"></ion-icon>
               }
-              <span class="nav-text">{{ item.labelKey | translate }}</span>
+              <span class="nav-text">{{ item.labelKey | appTranslate }}</span>
               <ion-icon class="nav-external" name="open-outline" aria-hidden="true"></ion-icon>
-              <span class="sr-only">{{ 'nav.opensInNewTab' | translate }}</span>
+              <span class="sr-only">{{ 'nav.opensInNewTab' | appTranslate }}</span>
             </a>
           </li>
         } @else {
@@ -186,7 +186,7 @@ const NAV_ROUTE_MATCH_OPTIONS = {
               @if (item.icon) {
                 <ion-icon class="nav-icon" [name]="item.icon"></ion-icon>
               }
-              <span class="nav-text">{{ item.labelKey | translate }}</span>
+              <span class="nav-text">{{ item.labelKey | appTranslate }}</span>
             </a>
           </li>
         }

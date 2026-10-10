@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { CurrencyPipe } from '@angular/common';
 import {
   DataTableComponent,
@@ -36,7 +36,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
   selector: 'app-fixed-deposits-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     StatusBadgeComponent,
@@ -46,7 +46,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
   ],
   template: `
     <app-data-table
-      title="Fixed Deposit Accounts"
+      title="nav.fixedDeposits"
       helpTextKey="HELP.FIXED_DEPOSITS_DESC"
       createButtonLabel="FIXED_DEPOSITS.CREATE"
       createPermission="CREATE_FIXEDDEPOSITACCOUNT"
@@ -76,8 +76,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
             emphasis="quiet"
             intent="secondary"
             icon="checkmark-circle-outline"
-            [label]="'LOANS.APPROVE' | translate"
-            [appTooltip]="'LOANS.APPROVE' | translate"
+            [label]="'LOANS.APPROVE' | appTranslate"
+            [appTooltip]="'LOANS.APPROVE' | appTranslate"
             (click)="onApprove(account)"
           />
         }
@@ -86,7 +86,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
           emphasis="quiet"
           intent="primary"
           icon="create-outline"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           (click)="onEditAccount(account)"
         />
       </ng-template>

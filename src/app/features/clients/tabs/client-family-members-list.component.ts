@@ -19,7 +19,7 @@
 
 import { inject, input, signal, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   DataTableComponent,
   ColumnDef,
@@ -35,7 +35,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     HasPermissionDirective,
     CellTemplateDirective,
@@ -50,7 +50,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
         [link]="['/clients', clientId(), 'family-members', 'create']"
         icon="add-outline"
         *appHasPermission="'CREATE_FAMILYMEMBERS'"
-        >{{ 'CLIENTS.ADD_FAMILY_MEMBER' | translate }}</app-button
+        >{{ 'CLIENTS.ADD_FAMILY_MEMBER' | appTranslate }}</app-button
       >
     </div>
 
@@ -70,21 +70,21 @@ import { ButtonComponent } from '../../../ui/button/button.component';
             type="button"
             intent="primary"
             emphasis="quiet"
-            [label]="'COMMON.EDIT' | translate"
+            [label]="'COMMON.EDIT' | appTranslate"
             [link]="['/clients', clientId(), 'family-members', 'edit', row.id]"
             icon="create-outline"
             *appHasPermission="'UPDATE_FAMILYMEMBERS'"
-            [appTooltip]="'COMMON.EDIT' | translate"
+            [appTooltip]="'COMMON.EDIT' | appTranslate"
           />
           <app-button
             type="button"
             intent="danger"
             emphasis="quiet"
-            [label]="'COMMON.DELETE' | translate"
+            [label]="'COMMON.DELETE' | appTranslate"
             icon="trash-outline"
             (click)="onDelete(row.id)"
             *appHasPermission="'DELETE_FAMILYMEMBERS'"
-            [appTooltip]="'COMMON.DELETE' | translate"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
           />
         </div>
       </ng-template>

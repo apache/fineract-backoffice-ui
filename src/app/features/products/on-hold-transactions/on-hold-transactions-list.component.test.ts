@@ -23,8 +23,8 @@ import { OnHoldTransactionsListComponent } from './on-hold-transactions-list.com
 import { DepositAccountOnHoldFundTransactionsService } from '../../../api';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('OnHoldTransactionsListComponent', () => {
   let component: OnHoldTransactionsListComponent;
@@ -51,8 +51,9 @@ describe('OnHoldTransactionsListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [OnHoldTransactionsListComponent, TranslateModule.forRoot()],
+      imports: [OnHoldTransactionsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: DepositAccountOnHoldFundTransactionsService, useValue: serviceSpy },
         {
           provide: ActivatedRoute,

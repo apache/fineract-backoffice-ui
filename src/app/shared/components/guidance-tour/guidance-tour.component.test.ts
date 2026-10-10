@@ -18,12 +18,12 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
 import { GuidanceTourComponent } from './guidance-tour.component';
 import { GuidanceService } from '../../../core/services/guidance.service';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('GuidanceTourComponent', () => {
   let fixture: ComponentFixture<GuidanceTourComponent>;
@@ -77,10 +77,11 @@ describe('GuidanceTourComponent', () => {
     routerEvents = new Subject<NavigationEnd>();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
-      imports: [GuidanceTourComponent, TranslateModule.forRoot()],
+      imports: [GuidanceTourComponent],
       // No animations provider: `provideNoopAnimations` is deprecated as of Angular 20.2, and
       // app.config.ts deliberately provides none — there is nothing to no-op.
       providers: [
+        ...provideTranslateTesting(),
         provideIonicTesting(),
         GuidanceService,
         { provide: Router, useValue: { events: routerEvents } },

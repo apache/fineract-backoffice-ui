@@ -20,11 +20,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TELLER_API, Teller, TranslatePipe } from '../../core/adapters';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { ColumnDef, CellTemplateDirective } from '../../shared';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
-import { TellerCashManagementService, GetTellersResponse } from '../../api';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 
 /**
@@ -41,7 +40,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
   selector: 'app-tellers-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonIcon,
     DataTableComponent,
@@ -62,14 +61,14 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
       (create)="onCreateTeller()"
     >
       <ng-template appCellTemplate="startDate" let-teller>
-        {{ formatArrayDate(teller.startDate) }}
+        {{ teller.startDate ?? '-' }}
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-teller>
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
+          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
           [appTooltip]="'Edit Teller Details'"
           (click)="onEditTeller(teller)"
           [id]="'edit-teller-btn-' + teller.id"
@@ -80,7 +79,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
         <ion-button
           fill="clear"
           color="secondary"
-          [attr.aria-label]="'TELLERS.CASHIERS' | translate"
+          [attr.aria-label]="'TELLERS.CASHIERS' | appTranslate"
           [appTooltip]="'Manage Cashiers'"
           (click)="onManageCashiers(teller)"
           [id]="'manage-cashiers-btn-' + teller.id"
@@ -93,8 +92,8 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
   `,
 })
 export class TellersListComponent implements OnInit {
-  /** Service for teller and cashier management operations */
-  private readonly tellerService = inject(TellerCashManagementService);
+  /** Teller and cashier operations, through the contract rather than the generated client */
+  private readonly tellerApi = inject(TELLER_API);
   /** Router for navigating to creation and edit forms */
   private readonly router = inject(Router);
 
@@ -108,7 +107,7 @@ export class TellersListComponent implements OnInit {
   ];
 
   /** List of tellers retrieved from the API */
-  readonly tellers = signal<GetTellersResponse[]>([]);
+  readonly tellers = signal<Teller[]>([]);
 
   /**
    * Initializes the component by loading teller data.
@@ -121,9 +120,9 @@ export class TellersListComponent implements OnInit {
    * Retrieves all tellers from the Fineract API.
    */
   private loadTellers(): void {
-    this.tellerService.getTellers().subscribe({
-      next: (data: GetTellersResponse[]) => {
-        this.tellers.set(data || []);
+    this.tellerApi.list().subscribe({
+      next: (data) => {
+        this.tellers.set(data);
       },
       error: (err: unknown) => {
         console.error('Failed to load tellers', err);
@@ -143,7 +142,7 @@ export class TellersListComponent implements OnInit {
    *
    * @param teller - The teller entity to edit.
    */
-  onEditTeller(teller: GetTellersResponse): void {
+  onEditTeller(teller: Teller): void {
     this.router.navigate(['/tellers/edit', teller.id]);
   }
 
@@ -152,22 +151,7 @@ export class TellersListComponent implements OnInit {
    *
    * @param teller - The teller entity.
    */
-  onManageCashiers(teller: GetTellersResponse): void {
+  onManageCashiers(teller: Teller): void {
     this.router.navigate(['/tellers', teller.id, 'cashiers']);
-  }
-  /**
-   * Formats a Fineract array date [YYYY, MM, DD] into a readable string.
-   *
-   * @param dateArray - The raw date value from the API.
-   * @returns A formatted date string or a placeholder if invalid.
-   */
-  formatArrayDate(dateArray: unknown): string {
-    if (!dateArray || !Array.isArray(dateArray) || dateArray.length < 3) {
-      return '-';
-    }
-    const year = dateArray[0];
-    const month = String(dateArray[1]).padStart(2, '0');
-    const day = String(dateArray[2]).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   }
 }

@@ -26,12 +26,14 @@ export const REPORTING_ROUTES: Routes = [
     path: '',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_REPORT' },
+    title: 'nav.reports',
     loadComponent: () => import('./reports-list.component').then((m) => m.ReportsListComponent),
   },
   {
     path: 'run/:reportName',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_REPORT' },
+    title: 'REPORTS.RUN',
     loadComponent: () => import('./run-report.component').then((m) => m.RunReportComponent),
   },
 ];

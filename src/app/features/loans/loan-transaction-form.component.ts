@@ -22,7 +22,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../core/adapters';
 import {
   LoanTransactionsService,
   LoansService,
@@ -152,7 +152,7 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
   imports: [
     FormsModule,
     DecimalPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -176,13 +176,13 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ transactionTitleKey | translate }}
+            {{ transactionTitleKey | appTranslate }}
           </ion-card-title>
           @if (loanSummary(); as summary) {
             <ion-card-subtitle>
-              {{ 'LOANS.ACCOUNT_NO' | translate }}: {{ summary.accountNo }} &middot;
-              {{ 'COMMON.CLIENT' | translate }}: {{ summary.clientName }} &middot;
-              {{ 'LOANS.PRODUCT_NAME' | translate }}: {{ summary.loanProductName }}
+              {{ 'LOANS.ACCOUNT_NO' | appTranslate }}: {{ summary.accountNo }} &middot;
+              {{ 'COMMON.CLIENT' | appTranslate }}: {{ summary.clientName }} &middot;
+              {{ 'LOANS.PRODUCT_NAME' | appTranslate }}: {{ summary.loanProductName }}
             </ion-card-subtitle>
           }
         </ion-card-header>
@@ -192,12 +192,12 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
             <div class="form-grid">
               @if (dateVisible) {
                 <!-- Transaction Date -->
-                <ion-item fill="outline" [appTooltip]="'HELP.TRANSACTION_DATE_DESC' | translate">
+                <ion-item fill="outline" [appTooltip]="'HELP.TRANSACTION_DATE_DESC' | appTranslate">
                   <ion-label position="stacked">
                     {{
                       transactionType() === 'approve'
-                        ? ('COMMON.ACTIVATION_DATE' | translate)
-                        : ('COMMON.TRANSACTION_DATE' | translate)
+                        ? ('COMMON.ACTIVATION_DATE' | appTranslate)
+                        : ('COMMON.TRANSACTION_DATE' | appTranslate)
                     }}
                   </ion-label>
                   @if (pickersReady()) {
@@ -221,12 +221,15 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
 
               @if (amountVisible) {
                 <!-- Transaction Amount -->
-                <ion-item fill="outline" [appTooltip]="'HELP.TRANSACTION_AMOUNT_DESC' | translate">
+                <ion-item
+                  fill="outline"
+                  [appTooltip]="'HELP.TRANSACTION_AMOUNT_DESC' | appTranslate"
+                >
                   <ion-label position="stacked">{{
-                    'COMMON.TRANSACTION_AMOUNT' | translate
+                    'COMMON.TRANSACTION_AMOUNT' | appTranslate
                   }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'COMMON.TRANSACTION_AMOUNT' | translate"
+                    [attr.aria-label]="'COMMON.TRANSACTION_AMOUNT' | appTranslate"
                     type="number"
                     name="transactionAmount"
                     [(ngModel)]="transaction.transactionAmount"
@@ -235,10 +238,12 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
                 </ion-item>
 
                 <!-- Payment Type -->
-                <ion-item fill="outline" [appTooltip]="'HELP.PAYMENT_TYPE_DESC' | translate">
-                  <ion-label position="stacked">{{ 'COMMON.PAYMENT_TYPE' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.PAYMENT_TYPE_DESC' | appTranslate">
+                  <ion-label position="stacked">{{
+                    'COMMON.PAYMENT_TYPE' | appTranslate
+                  }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.PAYMENT_TYPE' | translate"
+                    [attr.aria-label]="'COMMON.PAYMENT_TYPE' | appTranslate"
                     interface="popover"
                     name="paymentTypeId"
                     [(ngModel)]="transaction.paymentTypeId"
@@ -253,10 +258,10 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
               @if (transactionType() === 'chargeRefund') {
                 <ion-item fill="outline" class="full-width">
                   <ion-label position="stacked">{{
-                    'LOANS.CHARGE_REFUND_CHARGE' | translate
+                    'LOANS.CHARGE_REFUND_CHARGE' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'LOANS.CHARGE_REFUND_CHARGE' | translate"
+                    [attr.aria-label]="'LOANS.CHARGE_REFUND_CHARGE' | appTranslate"
                     interface="popover"
                     name="loanChargeId"
                     data-testid="charge-refund-charge"
@@ -277,9 +282,11 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
               @if (transactionType() === 'repayment') {
                 <!-- Receipt Number -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'LOANS.RECEIPT_NUMBER' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'LOANS.RECEIPT_NUMBER' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.RECEIPT_NUMBER' | translate"
+                    [attr.aria-label]="'LOANS.RECEIPT_NUMBER' | appTranslate"
                     name="receiptNumber"
                     [(ngModel)]="transaction.receiptNumber"
                   ></ion-input>
@@ -287,9 +294,9 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
 
                 <!-- Bank Number -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'LOANS.BANK_NUMBER' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'LOANS.BANK_NUMBER' | appTranslate }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.BANK_NUMBER' | translate"
+                    [attr.aria-label]="'LOANS.BANK_NUMBER' | appTranslate"
                     name="bankNumber"
                     [(ngModel)]="transaction.bankNumber"
                   ></ion-input>
@@ -297,9 +304,11 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
 
                 <!-- Check Number -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'LOANS.CHECK_NUMBER' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'LOANS.CHECK_NUMBER' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.CHECK_NUMBER' | translate"
+                    [attr.aria-label]="'LOANS.CHECK_NUMBER' | appTranslate"
                     name="checkNumber"
                     [(ngModel)]="transaction.checkNumber"
                   ></ion-input>
@@ -307,9 +316,11 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
 
                 <!-- Routing Code -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'LOANS.ROUTING_CODE' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'LOANS.ROUTING_CODE' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.ROUTING_CODE' | translate"
+                    [attr.aria-label]="'LOANS.ROUTING_CODE' | appTranslate"
                     name="routingCode"
                     [(ngModel)]="transaction.routingCode"
                   ></ion-input>
@@ -321,14 +332,14 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
               @if (chargeOffReasonOptions().length) {
                 <ion-item
                   fill="outline"
-                  [appTooltip]="'HELP.CHARGE_OFF_REASON_DESC' | translate"
+                  [appTooltip]="'HELP.CHARGE_OFF_REASON_DESC' | appTranslate"
                   class="full-width"
                 >
                   <ion-label position="stacked">{{
-                    'LOANS.CHARGE_OFF_REASON' | translate
+                    'LOANS.CHARGE_OFF_REASON' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'LOANS.CHARGE_OFF_REASON' | translate"
+                    [attr.aria-label]="'LOANS.CHARGE_OFF_REASON' | appTranslate"
                     interface="popover"
                     data-testid="charge-off-reason"
                     name="chargeOffReasonId"
@@ -344,12 +355,12 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
               <!-- Note -->
               <ion-item
                 fill="outline"
-                [appTooltip]="'HELP.NOTE_DESC' | translate"
+                [appTooltip]="'HELP.NOTE_DESC' | appTranslate"
                 class="full-width"
               >
-                <ion-label position="stacked">{{ 'COMMON.NOTE' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.NOTE' | appTranslate }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'COMMON.NOTE' | translate"
+                  [attr.aria-label]="'COMMON.NOTE' | appTranslate"
                   name="note"
                   [(ngModel)]="transaction.note"
                   rows="3"
@@ -359,7 +370,7 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -368,9 +379,9 @@ const CONFIRM_MESSAGE_KEYS: Record<string, string> = {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>
@@ -410,7 +421,7 @@ export class LoanTransactionFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly notifications = inject(NotificationService);
   private readonly dialogService = inject(DialogService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   private readonly DATE_FORMAT = 'yyyy-MM-dd';
 
@@ -550,8 +561,8 @@ export class LoanTransactionFormComponent implements OnInit {
     if (DESTRUCTIVE_TYPES.has(this.transactionType())) {
       this.dialogService
         .confirm({
-          title: this.translate.instant(this.transactionTitleKey),
-          message: this.translate.instant(
+          title: this.i18n.translate(this.transactionTitleKey),
+          message: this.i18n.translate(
             CONFIRM_MESSAGE_KEYS[this.transactionType()] || 'COMMON.CONFIRM',
           ),
           destructive: true,

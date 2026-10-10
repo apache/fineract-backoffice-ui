@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { PaymentTypeService, PaymentTypeCreateRequest } from '../../../api';
 import {
   IonButton,
@@ -43,7 +43,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -62,8 +62,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('PAYMENT_TYPES.EDIT' | translate)
-                : ('PAYMENT_TYPES.CREATE' | translate)
+                ? ('PAYMENT_TYPES.EDIT' | appTranslate)
+                : ('PAYMENT_TYPES.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -71,9 +71,9 @@ import {
         <ion-card-content>
           <form #ptForm="ngForm" (ngSubmit)="onSubmit()" class="pt-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'PAYMENT_TYPES.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'PAYMENT_TYPES.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'PAYMENT_TYPES.NAME' | translate"
+                [attr.aria-label]="'PAYMENT_TYPES.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="paymentType().name"
                 required
@@ -81,18 +81,20 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'COMMON.DESCRIPTION' | translate"
+                [attr.aria-label]="'COMMON.DESCRIPTION' | appTranslate"
                 name="description"
                 [(ngModel)]="paymentType().description"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'PAYMENT_TYPES.POSITION' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'PAYMENT_TYPES.POSITION' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'PAYMENT_TYPES.POSITION' | translate"
+                [attr.aria-label]="'PAYMENT_TYPES.POSITION' | appTranslate"
                 type="number"
                 name="position"
                 [(ngModel)]="paymentType().position"
@@ -100,19 +102,19 @@ import {
             </ion-item>
 
             <ion-checkbox name="isCashPayment" [(ngModel)]="paymentType().isCashPayment">
-              {{ 'PAYMENT_TYPES.IS_CASH' | translate }}
+              {{ 'PAYMENT_TYPES.IS_CASH' | appTranslate }}
             </ion-checkbox>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="ptForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

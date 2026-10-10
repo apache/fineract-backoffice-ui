@@ -20,30 +20,28 @@
 import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClientNoteFormComponent } from './client-note-form.component';
-import { NotesService } from '../../../api';
+import { ENTITY_NOTES_API } from '../../../core/adapters';
+import type { EntityNotesApi } from '../../../core/adapters';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ClientNoteFormComponent', () => {
   let component: ClientNoteFormComponent;
   let fixture: ComponentFixture<ClientNoteFormComponent>;
-  let noteServiceSpy: SpyObj<NotesService>;
+  let notesApiSpy: SpyObj<EntityNotesApi>;
   let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    noteServiceSpy = createSpyObj([
-      'getResourceTypeResourceIdNotesNoteId',
-      'putResourceTypeResourceIdNotesNoteId',
-      'postResourceTypeResourceIdNotes',
-    ]);
+    notesApiSpy = createSpyObj(['list', 'get', 'create', 'update', 'remove']);
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [ClientNoteFormComponent, TranslateModule.forRoot()],
+      imports: [ClientNoteFormComponent],
       providers: [
-        { provide: NotesService, useValue: noteServiceSpy },
+        ...provideTranslateTesting(),
+        { provide: ENTITY_NOTES_API, useValue: notesApiSpy },
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
@@ -64,18 +62,24 @@ describe('ClientNoteFormComponent', () => {
     expect(component.clientId).toBe(7);
   });
 
-  it('should post a NoteCreateRequest on submit', () => {
-    noteServiceSpy.postResourceTypeResourceIdNotes.mockReturnValue(
-      of({}) as unknown as ReturnType<NotesService['postResourceTypeResourceIdNotes']>,
-    );
-    component.note.set({ note: 'Follow up next week' });
+  it('asks the API to add the note the form holds', () => {
+    // No cast: the generated overloads used to need
+    // `as unknown as ReturnType<NotesService['postResourceTypeResourceIdNotes']>` here.
+    notesApiSpy.create.mockReturnValue(of(undefined));
+    component.note.set('Follow up next week');
 
     component.onSubmit();
 
-    expect(noteServiceSpy.postResourceTypeResourceIdNotes).toHaveBeenCalledWith(
-      'clients',
-      7,
-      expect.objectContaining({ note: 'Follow up next week' }),
-    );
+    // The request body is the adapter's business, so the screen passes text, not `{ note }`.
+    expect(notesApiSpy.create).toHaveBeenCalledWith('clients', 7, 'Follow up next week');
+  });
+
+  it('navigates back to the client once the note is saved', () => {
+    notesApiSpy.create.mockReturnValue(of(undefined));
+    component.note.set('Follow up next week');
+
+    component.onSubmit();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/clients/view', 7]);
   });
 });

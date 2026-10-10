@@ -19,17 +19,17 @@
 
 import { inject, input, Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { GlobalConfigurationService, PutGlobalConfigurationsRequest } from '../../api';
 import { IonButton, IonInput, IonItem, IonLabel, ModalController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-edit-configuration-dialog',
   standalone: true,
-  imports: [FormsModule, TranslateModule, IonButton, IonInput, IonItem, IonLabel],
+  imports: [FormsModule, TranslatePipe, IonButton, IonInput, IonItem, IonLabel],
   template: `
     <h2 class="dialog-title">
-      {{ 'SETTINGS.EDIT_CONFIG_TITLE' | translate: { name: config['name'] } }}
+      {{ 'SETTINGS.EDIT_CONFIG_TITLE' | appTranslate: { name: config['name'] } }}
     </h2>
     <div class="dialog-content">
       <div class="config-details">
@@ -40,9 +40,9 @@ import { IonButton, IonInput, IonItem, IonLabel, ModalController } from '@ionic/
 
       <form #configForm="ngForm" class="config-form">
         <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">{{ 'COMMON.VALUE' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'COMMON.VALUE' | appTranslate }}</ion-label>
           <ion-input
-            [attr.aria-label]="'COMMON.VALUE' | translate"
+            [attr.aria-label]="'COMMON.VALUE' | appTranslate"
             type="number"
             name="value"
             [(ngModel)]="value"
@@ -52,13 +52,15 @@ import { IonButton, IonInput, IonItem, IonLabel, ModalController } from '@ionic/
       </form>
     </div>
     <div class="dialog-actions">
-      <ion-button fill="clear" (click)="onCancel()">{{ 'COMMON.CANCEL' | translate }}</ion-button>
+      <ion-button fill="clear" (click)="onCancel()">{{
+        'COMMON.CANCEL' | appTranslate
+      }}</ion-button>
       <ion-button
         color="primary"
         [disabled]="configForm.invalid || isSaving()"
         (click)="onSubmit()"
       >
-        {{ isSaving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+        {{ isSaving() ? ('COMMON.SAVING' | appTranslate) : ('COMMON.SAVE' | appTranslate) }}
       </ion-button>
     </div>
   `,

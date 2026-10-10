@@ -20,12 +20,15 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { FakeStorageAdapter, provideFakeAdapters } from '../../testing/adapters';
 import { AuthService, UserSession } from './auth.service';
 import { ConfigService } from './config.service';
 
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
+  let storage: FakeStorageAdapter;
+  let adapterProviders: ReturnType<typeof provideFakeAdapters>['providers'];
 
   const mockSession: UserSession = {
     username: 'mifos',
@@ -38,10 +41,17 @@ describe('AuthService', () => {
   };
 
   beforeEach(() => {
-    sessionStorage.clear();
-    localStorage.clear();
+    const fakes = provideFakeAdapters();
+    storage = fakes.storage;
+    adapterProviders = fakes.providers;
     TestBed.configureTestingModule({
-      providers: [AuthService, ConfigService, provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        AuthService,
+        ConfigService,
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        ...adapterProviders,
+      ],
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -76,7 +86,7 @@ describe('AuthService', () => {
     service.logout();
     expect(service.isAuthenticated()).toBe(false);
     expect(service.currentUser()).toBeNull();
-    expect(sessionStorage.getItem('fineract_session')).toBeNull();
+    expect(storage.readRaw('session')).toBeNull();
   });
 
   describe('hasPermission', () => {
@@ -267,21 +277,23 @@ describe('AuthService', () => {
       expect(service.hasPermission('READ_CLIENT')).toBe(true);
     });
 
-    it('normalizes a dirty session read back from sessionStorage on init', () => {
-      sessionStorage.setItem(
-        'fineract_session',
-        JSON.stringify({
-          ...mockSession,
-          permissions: ['CREATE_STANDINGINSTRUCTION', 'CREATE_STANDINGINSTRUCTION ', 'READ_X '],
-        }),
-      );
+    it('normalizes a dirty session read back from storage on init', () => {
+      storage.write('session', {
+        ...mockSession,
+        permissions: ['CREATE_STANDINGINSTRUCTION', 'CREATE_STANDINGINSTRUCTION ', 'READ_X '],
+      });
 
-      // Reset and reconfigure the testing module so AuthService is
-      // constructed fresh, reading the dirty sessionStorage entry above via
-      // getStoredSession() during its signal initialization.
+      // Reset and reconfigure so AuthService is constructed fresh, reading the
+      // dirty session entry above via getStoredSession() during signal init.
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
-        providers: [AuthService, ConfigService, provideHttpClient(), provideHttpClientTesting()],
+        providers: [
+          AuthService,
+          ConfigService,
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          ...adapterProviders,
+        ],
       });
       const freshService = TestBed.inject(AuthService);
 

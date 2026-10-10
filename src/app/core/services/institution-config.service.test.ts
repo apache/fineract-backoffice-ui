@@ -18,27 +18,26 @@
  */
 
 import { TestBed } from '@angular/core/testing';
+import { FakeStorageAdapter, provideFakeAdapters } from '../../testing/adapters';
 import { InstitutionConfigService, InstitutionType } from './institution-config.service';
 
 describe('InstitutionConfigService', () => {
-  const STORAGE_KEY = 'fineract_institution_type';
-
   let service: InstitutionConfigService;
+  let storage: FakeStorageAdapter;
+  let adapterProviders: ReturnType<typeof provideFakeAdapters>['providers'];
 
   const createService = () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [InstitutionConfigService],
+      providers: [InstitutionConfigService, ...adapterProviders],
     });
     service = TestBed.inject(InstitutionConfigService);
   };
 
   beforeEach(() => {
-    localStorage.clear();
-  });
-
-  afterEach(() => {
-    localStorage.clear();
+    const fakes = provideFakeAdapters();
+    storage = fakes.storage;
+    adapterProviders = fakes.providers;
   });
 
   it('should be created', () => {
@@ -55,22 +54,22 @@ describe('InstitutionConfigService', () => {
   });
 
   it('should read a valid persisted institution type on init', () => {
-    localStorage.setItem(STORAGE_KEY, 'cb');
+    storage.writeRaw('institutionType', 'cb');
     createService();
     expect(service.institutionType()).toBe('cb');
   });
 
   it('should fall back to "universal" when the stored value is invalid', () => {
-    localStorage.setItem(STORAGE_KEY, 'not-a-real-type');
+    storage.writeRaw('institutionType', 'not-a-real-type');
     createService();
     expect(service.institutionType()).toBe('universal');
   });
 
-  it('should persist to local storage and update the signal on set', () => {
+  it('should persist the institution type and update the signal on set', () => {
     createService();
     service.setInstitutionType('mfis');
     expect(service.institutionType()).toBe('mfis');
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('mfis');
+    expect(storage.readRaw('institutionType')).toBe('mfis');
   });
 
   describe('isFeatureEnabled matrix', () => {

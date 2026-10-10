@@ -20,7 +20,6 @@
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular/standalone';
-import { TranslateModule } from '@ngx-translate/core';
 import { of, Observable } from 'rxjs';
 import {
   ClientActionDialogComponent,
@@ -28,6 +27,7 @@ import {
 } from './client-action-dialog.component';
 import { CodesService, CodeValuesService, BusinessDateManagementService } from '../../api';
 import { provideIonicTesting } from '../../testing/ionic-testing';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
 
 describe('ClientActionDialogComponent', () => {
   let component: ClientActionDialogComponent;
@@ -50,8 +50,9 @@ describe('ClientActionDialogComponent', () => {
     businessDateServiceSpy = createSpyObj(['getBusinessdate']);
 
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot(), ClientActionDialogComponent],
+      imports: [ClientActionDialogComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideIonicTesting(),
         { provide: ModalController, useValue: modalControllerSpy },
         { provide: CodesService, useValue: codesServiceSpy },

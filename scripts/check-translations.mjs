@@ -152,23 +152,24 @@ const LITERAL = new RegExp(String.raw`['"]${KEY}['"]`);
 const TRANSLATE_PIPE = /\|\s*(?:app)?[Tt]ranslate/;
 
 /**
- * `ColumnDef.label` literals that are phrases rather than keys.
+ * `label:` literals that are phrases rather than keys.
  *
- * `data-table.component.ts` renders every column header as `col.label | translate`, so the
- * field is a translation key by contract — but its type is `string`, and eight components
- * filled it with English: `label: 'Office'`, `label: 'Closing Date'`. Each one reached
- * `translate()`, missed, and rendered the phrase back unchanged, which is indistinguishable
- * from working until the language changes.
+ * `data-table.component.ts` renders every column header as `col.label | translate`, so
+ * `ColumnDef.label` is a translation key by contract — but its type is `string`, and eight
+ * components filled it with English: `label: 'Office'`, `label: 'Closing Date'`. Each one
+ * reached `translate()`, missed, and rendered the phrase back unchanged, which is
+ * indistinguishable from working until the language changes.
  *
- * Checking the whole file rather than parsing the array is deliberate: a component that
- * imports ColumnDef has declared that its labels are keys, and `label:` means the same thing
- * everywhere in such a file.
+ * The check applies to every `label:` literal, not only to files importing ColumnDef. It was
+ * contract-specific at first because 46 literals outside those files were phrases; #627 turned
+ * the last of them into keys, so the narrow form now only leaves room for the defect to come
+ * back somewhere the contract does not reach — `{{ day.label }}` rendered with no pipe at all
+ * stayed English in every language and nothing reported it.
  */
 function phraseLabels(files) {
   const found = [];
   for (const file of files) {
     const text = readFileSync(file, 'utf8');
-    if (!text.includes('ColumnDef')) continue;
     for (const match of text.matchAll(/label: '([^']*)'/g)) {
       const label = match[1];
       if (label === '' || KEY_SHAPED.test(label)) continue;
@@ -271,14 +272,16 @@ if (unwrapped.length) {
   console.log('✓ No untranslated key interpolations.');
 }
 
-// 3. Column headers that are phrases rather than keys.
+// 3. Labels that are phrases rather than keys.
 const phrases = phraseLabels(files);
 if (phrases.length) {
-  console.error(`\n✖ ${phrases.length} ColumnDef label(s) hold a phrase, not a key:\n`);
+  console.error(`\n✖ ${phrases.length} label(s) hold a phrase, not a key:\n`);
   for (const [label, where] of phrases) console.error(`  ${label}  (${where})`);
-  console.error('\n  data-table renders these through `| translate`; a phrase renders unchanged.');
+  console.error(
+    '\n  A label is rendered through `| translate` or `| appTranslate`; a phrase renders unchanged.',
+  );
 } else {
-  console.log('✓ No phrase column labels.');
+  console.log('✓ No phrase labels.');
 }
 
 // 4. The other catalogues.

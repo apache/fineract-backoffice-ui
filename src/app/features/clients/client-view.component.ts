@@ -17,10 +17,18 @@
  * under the License.
  */
 
-import { Component, OnInit, computed, signal, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  computed,
+  signal,
+  inject,
+  viewChildren,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../core/adapters';
 import { DecimalPipe } from '@angular/common';
 import {
   ClientService,
@@ -33,6 +41,7 @@ import {
 } from '../../api';
 import { StatusBadgeComponent, LoadErrorComponent } from '../../shared';
 import { RequiresPermissionDirective } from '../../shared/directives/requires-permission.directive';
+import { createPermissionCheck } from '../../shared/utils/permission-check';
 import { skipErrorToast } from '../../core/http/http-context';
 import { resolveAccountActionType } from '../../core/utils/account-type-resolver';
 import { ClientActionDialogComponent } from './client-action-dialog.component';
@@ -65,7 +74,6 @@ import { DateTimePipe } from '../../shared/pipes/date-time.pipe';
 import { EntityDatatablesComponent } from '../../shared/components/entity-datatables/entity-datatables.component';
 import { CdkTableModule } from '@angular/cdk/table';
 import { DialogService } from '../../core/services/dialog.service';
-import { I18N } from '../../core/adapters';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import {
   IonButton,
@@ -145,7 +153,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     StatusBadgeComponent,
     LoadErrorComponent,
@@ -179,15 +187,15 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
         <app-load-error
           testId="client-load-error"
           icon="person-remove-outline"
-          [message]="'CLIENTS.ERRORS.NOT_FOUND' | translate"
-          [actionLabel]="'CLIENTS.BACK_TO_CLIENTS' | translate"
+          [message]="'CLIENTS.ERRORS.NOT_FOUND' | appTranslate"
+          [actionLabel]="'CLIENTS.BACK_TO_CLIENTS' | appTranslate"
           (action)="onBackToClients()"
         ></app-load-error>
       } @else if (loadError() === 'failed') {
         <app-load-error
           testId="client-load-error"
-          [message]="'CLIENTS.LOAD_FAILED' | translate"
-          [actionLabel]="'COMMON.RETRY' | translate"
+          [message]="'CLIENTS.LOAD_FAILED' | appTranslate"
+          [actionLabel]="'COMMON.RETRY' | appTranslate"
           (action)="loadClientData()"
         ></app-load-error>
       } @else if (client()) {
@@ -222,7 +230,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                 appRequiresPermission="UPDATE_CLIENT"
               >
                 <ion-icon name="create-outline"></ion-icon>
-                {{ 'COMMON.EDIT' | translate }}
+                {{ 'COMMON.EDIT' | appTranslate }}
               </ion-button>
 
               <ion-button
@@ -237,7 +245,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                   'DELETE_CLIENT',
                   'REACTIVATE_CLIENT',
                   'UNDOREJECT_CLIENT',
-                  'UNDOWITHDRAW_CLIENT',
+                  'UNDOWITHDRAWAL_CLIENT',
                   'PROPOSETRANSFER_CLIENT',
                   'PROPOSEANDACCEPTTRANSFER_CLIENT',
                   'ACCEPTTRANSFER_CLIENT',
@@ -249,7 +257,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                 ]"
               >
                 <ion-icon name="settings-outline"></ion-icon>
-                {{ 'COMMON.ACTIONS' | translate }}
+                {{ 'COMMON.ACTIONS' | appTranslate }}
               </ion-button>
 
               <ion-popover trigger="clientActionsMenu-trigger" [dismissOnSelect]="true">
@@ -262,7 +270,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="ACTIVATE_CLIENT"
                       >
                         <ion-icon slot="start" name="play-circle-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.ACTIVATE_CLIENT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.ACTIVATE_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -270,7 +278,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="REJECT_CLIENT"
                       >
                         <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.REJECT_CLIENT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.REJECT_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -278,7 +286,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="WITHDRAW_CLIENT"
                       >
                         <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.WITHDRAW_CLIENT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.WITHDRAW_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -286,7 +294,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="DELETE_CLIENT"
                       >
                         <ion-icon slot="start" name="trash-outline"></ion-icon>
-                        <ion-label>{{ 'COMMON.DELETE' | translate }}</ion-label>
+                        <ion-label>{{ 'COMMON.DELETE' | appTranslate }}</ion-label>
                       </ion-item>
                     }
                     @if (client()?.status?.id === CLIENT_STATUS.ACTIVE) {
@@ -296,7 +304,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="CLOSE_CLIENT"
                       >
                         <ion-icon slot="start" name="close-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.CLOSE_CLIENT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.CLOSE_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -305,7 +313,9 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="PROPOSETRANSFER_CLIENT"
                       >
                         <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
-                        <ion-label>{{ 'CLIENTS.ACTIONS.PROPOSE_TRANSFER' | translate }}</ion-label>
+                        <ion-label>{{
+                          'CLIENTS.ACTIONS.PROPOSE_TRANSFER' | appTranslate
+                        }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -315,7 +325,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       >
                         <ion-icon slot="start" name="git-compare-outline"></ion-icon>
                         <ion-label>
-                          {{ 'CLIENTS.ACTIONS.PROPOSE_AND_ACCEPT_TRANSFER' | translate }}
+                          {{ 'CLIENTS.ACTIONS.PROPOSE_AND_ACCEPT_TRANSFER' | appTranslate }}
                         </ion-label>
                       </ion-item>
                     }
@@ -328,7 +338,9 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="ACCEPTTRANSFER_CLIENT"
                       >
                         <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-                        <ion-label>{{ 'CLIENTS.ACTIONS.ACCEPT_TRANSFER' | translate }}</ion-label>
+                        <ion-label>{{
+                          'CLIENTS.ACTIONS.ACCEPT_TRANSFER' | appTranslate
+                        }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -337,7 +349,9 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="REJECTTRANSFER_CLIENT"
                       >
                         <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-                        <ion-label>{{ 'CLIENTS.ACTIONS.REJECT_TRANSFER' | translate }}</ion-label>
+                        <ion-label>{{
+                          'CLIENTS.ACTIONS.REJECT_TRANSFER' | appTranslate
+                        }}</ion-label>
                       </ion-item>
                     }
 
@@ -354,7 +368,9 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="WITHDRAWTRANSFER_CLIENT"
                       >
                         <ion-icon slot="start" name="arrow-undo-outline"></ion-icon>
-                        <ion-label>{{ 'CLIENTS.ACTIONS.WITHDRAW_TRANSFER' | translate }}</ion-label>
+                        <ion-label>{{
+                          'CLIENTS.ACTIONS.WITHDRAW_TRANSFER' | appTranslate
+                        }}</ion-label>
                       </ion-item>
                     }
 
@@ -366,7 +382,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="ASSIGNSTAFF_CLIENT"
                       >
                         <ion-icon slot="start" name="person-add-outline"></ion-icon>
-                        <ion-label>{{ 'CLIENTS.ACTIONS.ASSIGN_STAFF' | translate }}</ion-label>
+                        <ion-label>{{ 'CLIENTS.ACTIONS.ASSIGN_STAFF' | appTranslate }}</ion-label>
                       </ion-item>
                       @if (assignedStaffId() !== undefined) {
                         <ion-item
@@ -376,7 +392,9 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                           appRequiresPermission="UNASSIGNSTAFF_CLIENT"
                         >
                           <ion-icon slot="start" name="person-remove-outline"></ion-icon>
-                          <ion-label>{{ 'CLIENTS.ACTIONS.UNASSIGN_STAFF' | translate }}</ion-label>
+                          <ion-label>{{
+                            'CLIENTS.ACTIONS.UNASSIGN_STAFF' | appTranslate
+                          }}</ion-label>
                         </ion-item>
                       }
                       <ion-item
@@ -387,7 +405,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       >
                         <ion-icon slot="start" name="wallet-outline"></ion-icon>
                         <ion-label>
-                          {{ 'CLIENTS.ACTIONS.UPDATE_SAVINGS_ACCOUNT' | translate }}
+                          {{ 'CLIENTS.ACTIONS.UPDATE_SAVINGS_ACCOUNT' | appTranslate }}
                         </ion-label>
                       </ion-item>
                     }
@@ -398,7 +416,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="REACTIVATE_CLIENT"
                       >
                         <ion-icon slot="start" name="refresh-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.REACTIVATE_CLIENT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.REACTIVATE_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                     }
                     @if (client()?.status?.id === CLIENT_STATUS.REJECTED) {
@@ -408,17 +426,17 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="UNDOREJECT_CLIENT"
                       >
                         <ion-icon slot="start" name="arrow-undo-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.UNDO_REJECT_CLIENT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.UNDO_REJECT_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                     }
                     @if (client()?.status?.id === CLIENT_STATUS.WITHDRAWN) {
                       <ion-item
                         button
                         (click)="onClientAction('undoWithdraw')"
-                        appRequiresPermission="UNDOWITHDRAW_CLIENT"
+                        appRequiresPermission="UNDOWITHDRAWAL_CLIENT"
                       >
                         <ion-icon slot="start" name="arrow-undo-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.UNDO_WITHDRAW_CLIENT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.UNDO_WITHDRAW_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                     }
                   </ion-list>
@@ -427,7 +445,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
 
               <ion-button color="primary" id="createMenu-trigger">
                 <ion-icon name="add-outline"></ion-icon>
-                {{ 'ACTIONS.NEW_ACCOUNT' | translate }}
+                {{ 'ACTIONS.NEW_ACCOUNT' | appTranslate }}
               </ion-button>
 
               <ion-popover trigger="createMenu-trigger" [dismissOnSelect]="true">
@@ -435,7 +453,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                   <ion-list>
                     <ion-item button (click)="onCreateLoan()" appRequiresPermission="CREATE_LOAN">
                       <ion-icon slot="start" name="business-outline"></ion-icon>
-                      <ion-label>{{ 'ACTIONS.LOAN_ACCOUNT' | translate }}</ion-label>
+                      <ion-label>{{ 'ACTIONS.LOAN_ACCOUNT' | appTranslate }}</ion-label>
                     </ion-item>
                     <ion-item
                       button
@@ -443,7 +461,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       appRequiresPermission="CREATE_SAVINGSACCOUNT"
                     >
                       <ion-icon slot="start" name="wallet-outline"></ion-icon>
-                      <ion-label>{{ 'ACTIONS.SAVINGS_ACCOUNT' | translate }}</ion-label>
+                      <ion-label>{{ 'ACTIONS.SAVINGS_ACCOUNT' | appTranslate }}</ion-label>
                     </ion-item>
                     <ion-item
                       button
@@ -451,7 +469,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       appRequiresPermission="CREATE_FIXEDDEPOSITACCOUNT"
                     >
                       <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
-                      <ion-label>{{ 'ACTIONS.FIXED_DEPOSIT' | translate }}</ion-label>
+                      <ion-label>{{ 'ACTIONS.FIXED_DEPOSIT' | appTranslate }}</ion-label>
                     </ion-item>
                     <ion-item
                       button
@@ -459,7 +477,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       appRequiresPermission="CREATE_RECURRINGDEPOSITACCOUNT"
                     >
                       <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
-                      <ion-label>{{ 'ACTIONS.RECURRING_DEPOSIT' | translate }}</ion-label>
+                      <ion-label>{{ 'ACTIONS.RECURRING_DEPOSIT' | appTranslate }}</ion-label>
                     </ion-item>
                   </ion-list>
                 </ng-template>
@@ -467,7 +485,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
 
               <ion-button fill="clear" (click)="onBack()">
                 <ion-icon name="arrow-back-outline"></ion-icon>
-                {{ 'COMMON.BACK' | translate }}
+                {{ 'COMMON.BACK' | appTranslate }}
               </ion-button>
             </div>
           </ion-card-content>
@@ -476,43 +494,43 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
         <div class="content-body">
           <ion-segment [value]="activeTab()" (ionChange)="onTabChange($any($event).detail.value)">
             <ion-segment-button [value]="TAB.details">
-              <ion-label>{{ 'CLIENTS.DETAILS' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.DETAILS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.savings">
-              <ion-label>{{ 'CLIENTS.SAVINGS_ACCOUNTS' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.SAVINGS_ACCOUNTS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.loans">
-              <ion-label>{{ 'CLIENTS.LOAN_ACCOUNTS' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.LOAN_ACCOUNTS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.identifiers">
-              <ion-label>{{ 'CLIENTS.IDENTIFIERS' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.IDENTIFIERS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.addresses">
-              <ion-label>{{ 'CLIENTS.ADDRESSES' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.ADDRESSES' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.familyMembers">
-              <ion-label>{{ 'CLIENTS.FAMILY_MEMBERS' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.FAMILY_MEMBERS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.notes">
-              <ion-label>{{ 'CLIENTS.NOTES' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.NOTES' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.documents">
-              <ion-label>{{ 'CLIENTS.DOCUMENTS' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.DOCUMENTS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.customFields">
-              <ion-label>{{ 'SYSTEM.CUSTOM_FIELDS' | translate }}</ion-label>
+              <ion-label>{{ 'SYSTEM.CUSTOM_FIELDS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.deposits" data-testid="client-tab-deposits">
-              <ion-label>{{ 'CLIENTS.DEPOSIT_ACCOUNTS' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.DEPOSIT_ACCOUNTS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button [value]="TAB.shares" data-testid="client-tab-shares">
-              <ion-label>{{ 'CLIENTS.SHARE_ACCOUNTS' | translate }}</ion-label>
+              <ion-label>{{ 'CLIENTS.SHARE_ACCOUNTS' | appTranslate }}</ion-label>
             </ion-segment-button>
             <ion-segment-button
               [value]="TAB.standingInstructions"
               data-testid="client-tab-standing-instructions"
             >
-              <ion-label>{{ 'SAVINGS.STANDING_INSTRUCTIONS' | translate }}</ion-label>
+              <ion-label>{{ 'SAVINGS.STANDING_INSTRUCTIONS' | appTranslate }}</ion-label>
             </ion-segment-button>
           </ion-segment>
 
@@ -523,25 +541,25 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                   <ion-card-header>
                     <ion-card-title>
                       <ion-icon name="id-card-outline"></ion-icon>
-                      {{ 'CLIENTS.GENERAL_PROFILE' | translate }}
+                      {{ 'CLIENTS.GENERAL_PROFILE' | appTranslate }}
                     </ion-card-title>
                   </ion-card-header>
                   <ion-card-content class="details-list">
                     <div class="detail-item">
-                      <span class="label">{{ 'CLIENTS.FIRST_NAME' | translate }}</span>
+                      <span class="label">{{ 'CLIENTS.FIRST_NAME' | appTranslate }}</span>
                       <span class="value">{{ client()?.firstname || '-' }}</span>
                     </div>
                     <div class="detail-item">
-                      <span class="label">{{ 'CLIENTS.LAST_NAME' | translate }}</span>
+                      <span class="label">{{ 'CLIENTS.LAST_NAME' | appTranslate }}</span>
                       <span class="value">{{ client()?.lastname || '-' }}</span>
                     </div>
                     <div class="detail-item">
-                      <span class="label">{{ 'COMMON.EXTERNAL_ID' | translate }}</span>
+                      <span class="label">{{ 'COMMON.EXTERNAL_ID' | appTranslate }}</span>
                       <span class="value">{{ client()?.externalId || '-' }}</span>
                     </div>
                     <div class="detail-item">
-                      <span class="label">{{ 'CLIENTS.LEGAL_FORM' | translate }}</span>
-                      <span class="value">{{ 'CLIENTS.PERSON' | translate }}</span>
+                      <span class="label">{{ 'CLIENTS.LEGAL_FORM' | appTranslate }}</span>
+                      <span class="value">{{ 'CLIENTS.PERSON' | appTranslate }}</span>
                     </div>
                   </ion-card-content>
                 </ion-card>
@@ -550,20 +568,20 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                   <ion-card-header>
                     <ion-card-title>
                       <ion-icon name="mail-open-outline"></ion-icon>
-                      {{ 'CLIENTS.CONTACT_STATUS' | translate }}
+                      {{ 'CLIENTS.CONTACT_STATUS' | appTranslate }}
                     </ion-card-title>
                   </ion-card-header>
                   <ion-card-content class="details-list">
                     <div class="detail-item">
-                      <span class="label">{{ 'COMMON.EMAIL' | translate }}</span>
+                      <span class="label">{{ 'COMMON.EMAIL' | appTranslate }}</span>
                       <span class="value">{{ client()?.emailAddress || '-' }}</span>
                     </div>
                     <div class="detail-item">
-                      <span class="label">{{ 'COMMON.ACTIVATION_DATE' | translate }}</span>
+                      <span class="label">{{ 'COMMON.ACTIVATION_DATE' | appTranslate }}</span>
                       <span class="value">{{ this.client()?.activationDate | dateTime }}</span>
                     </div>
                     <div class="detail-item">
-                      <span class="label">{{ 'CLIENTS.TIMELINE_SUBMITTED' | translate }}</span>
+                      <span class="label">{{ 'CLIENTS.TIMELINE_SUBMITTED' | appTranslate }}</span>
                       <span class="value">{{
                         this.client()?.timeline?.submittedOnDate | dateTime
                       }}</span>
@@ -581,28 +599,32 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                     <table cdk-table [dataSource]="plainSavingsAccounts()" class="full-width-table">
                       <ng-container cdkColumnDef="accountNo">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.ACCOUNT_NO' | translate }}
+                          {{ 'COMMON.ACCOUNT_NO' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">
-                          <a
-                            class="clickable-link"
-                            [routerLink]="['/products/savings-accounts/view', account.id]"
-                          >
+                          @if (canViewSavings()) {
+                            <a
+                              class="clickable-link"
+                              [routerLink]="['/products/savings-accounts/view', account.id]"
+                            >
+                              {{ account.accountNo }}
+                            </a>
+                          } @else {
                             {{ account.accountNo }}
-                          </a>
+                          }
                         </td>
                       </ng-container>
 
                       <ng-container cdkColumnDef="productName">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.PRODUCT' | translate }}
+                          {{ 'COMMON.PRODUCT' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">{{ account.productName }}</td>
                       </ng-container>
 
                       <ng-container cdkColumnDef="balance">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.BALANCE' | translate }}
+                          {{ 'COMMON.BALANCE' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">
                           {{ account.currency?.displaySymbol }}
@@ -612,7 +634,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
 
                       <ng-container cdkColumnDef="status">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.STATUS' | translate }}
+                          {{ 'COMMON.STATUS' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">
                           <app-status-badge [status]="account.status"></app-status-badge>
@@ -621,7 +643,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
 
                       <ng-container cdkColumnDef="actions">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.ACTIONS' | translate }}
+                          {{ 'COMMON.ACTIONS' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">
                           <ion-button
@@ -629,8 +651,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                             color="primary"
                             (click)="onSavingsTransaction(account.id, 'deposit')"
                             appRequiresPermission="DEPOSIT_SAVINGSACCOUNT"
-                            [attr.aria-label]="'SAVINGS.DEPOSIT' | translate"
-                            [appTooltip]="'SAVINGS.DEPOSIT' | translate"
+                            [attr.aria-label]="'SAVINGS.DEPOSIT' | appTranslate"
+                            [appTooltip]="'SAVINGS.DEPOSIT' | appTranslate"
                           >
                             <ion-icon name="add-circle-outline"></ion-icon>
                           </ion-button>
@@ -641,8 +663,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                               color="secondary"
                               (click)="onSavingsAction(account.id, 'approve', account)"
                               appRequiresPermission="APPROVE_SAVINGSACCOUNT"
-                              [attr.aria-label]="'LOANS.APPROVE' | translate"
-                              [appTooltip]="'LOANS.APPROVE' | translate"
+                              [attr.aria-label]="'LOANS.APPROVE' | appTranslate"
+                              [appTooltip]="'LOANS.APPROVE' | appTranslate"
                             >
                               <ion-icon name="checkmark-circle-outline"></ion-icon>
                             </ion-button>
@@ -654,8 +676,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                               color="primary"
                               (click)="onSavingsAction(account.id, 'activate', account)"
                               appRequiresPermission="ACTIVATE_SAVINGSACCOUNT"
-                              [attr.aria-label]="'LOANS.ACTIVATE' | translate"
-                              [appTooltip]="'LOANS.ACTIVATE' | translate"
+                              [attr.aria-label]="'LOANS.ACTIVATE' | appTranslate"
+                              [appTooltip]="'LOANS.ACTIVATE' | appTranslate"
                             >
                               <ion-icon name="play-circle-outline"></ion-icon>
                             </ion-button>
@@ -667,8 +689,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                               color="danger"
                               (click)="onSavingsAction(account.id, 'close', account)"
                               appRequiresPermission="CLOSE_SAVINGSACCOUNT"
-                              [attr.aria-label]="'LOANS.CLOSE' | translate"
-                              [appTooltip]="'LOANS.CLOSE' | translate"
+                              [attr.aria-label]="'LOANS.CLOSE' | appTranslate"
+                              [appTooltip]="'LOANS.CLOSE' | appTranslate"
                             >
                               <ion-icon name="close-circle-outline"></ion-icon>
                             </ion-button>
@@ -679,8 +701,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                             color="danger"
                             (click)="onSavingsTransaction(account.id, 'withdrawal')"
                             appRequiresPermission="WITHDRAW_SAVINGSACCOUNT"
-                            [attr.aria-label]="'SAVINGS.WITHDRAWAL' | translate"
-                            [appTooltip]="'SAVINGS.WITHDRAWAL' | translate"
+                            [attr.aria-label]="'SAVINGS.WITHDRAWAL' | appTranslate"
+                            [appTooltip]="'SAVINGS.WITHDRAWAL' | appTranslate"
                           >
                             <ion-icon name="remove-circle-outline"></ion-icon>
                           </ion-button>
@@ -693,7 +715,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                   } @else {
                     <div class="empty-state">
                       <ion-icon name="wallet-outline"></ion-icon>
-                      <p>{{ 'CLIENTS.NO_SAVINGS_ACCOUNTS' | translate }}</p>
+                      <p>{{ 'CLIENTS.NO_SAVINGS_ACCOUNTS' | appTranslate }}</p>
                       <ion-button
                         color="primary"
                         data-testid="client-create-savings-account"
@@ -701,7 +723,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="CREATE_SAVINGSACCOUNT"
                       >
                         <ion-icon slot="start" name="add-outline"></ion-icon>
-                        {{ 'ACTIONS.CREATE_SAVINGS_ACCOUNT' | translate }}
+                        {{ 'ACTIONS.CREATE_SAVINGS_ACCOUNT' | appTranslate }}
                       </ion-button>
                     </div>
                   }
@@ -717,25 +739,29 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                     <table cdk-table [dataSource]="loanAccounts()" class="full-width-table">
                       <ng-container cdkColumnDef="accountNo">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.ACCOUNT_NO' | translate }}
+                          {{ 'COMMON.ACCOUNT_NO' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">
-                          <a class="clickable-link" [routerLink]="['/loans/view', account.id]">
+                          @if (canViewLoan()) {
+                            <a class="clickable-link" [routerLink]="['/loans/view', account.id]">
+                              {{ account.accountNo }}
+                            </a>
+                          } @else {
                             {{ account.accountNo }}
-                          </a>
+                          }
                         </td>
                       </ng-container>
 
                       <ng-container cdkColumnDef="productName">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.PRODUCT' | translate }}
+                          {{ 'COMMON.PRODUCT' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">{{ account.productName }}</td>
                       </ng-container>
 
                       <ng-container cdkColumnDef="principal">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'LOANS.PRINCIPAL' | translate }}
+                          {{ 'LOANS.PRINCIPAL' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">
                           {{ account.currency?.displaySymbol }}
@@ -745,7 +771,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
 
                       <ng-container cdkColumnDef="status">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.STATUS' | translate }}
+                          {{ 'COMMON.STATUS' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">
                           <app-status-badge [status]="account.status"></app-status-badge>
@@ -754,7 +780,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
 
                       <ng-container cdkColumnDef="actions">
                         <th cdk-header-cell *cdkHeaderCellDef>
-                          {{ 'COMMON.ACTIONS' | translate }}
+                          {{ 'COMMON.ACTIONS' | appTranslate }}
                         </th>
                         <td cdk-cell *cdkCellDef="let account">
                           <ion-button
@@ -762,8 +788,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                             color="primary"
                             (click)="onLoanTransaction(account.id, 'repayment')"
                             appRequiresPermission="REPAYMENT_LOAN"
-                            [attr.aria-label]="'LOANS.REPAYMENT' | translate"
-                            [appTooltip]="'LOANS.REPAYMENT' | translate"
+                            [attr.aria-label]="'LOANS.REPAYMENT' | appTranslate"
+                            [appTooltip]="'LOANS.REPAYMENT' | appTranslate"
                           >
                             <ion-icon name="card-outline"></ion-icon>
                           </ion-button>
@@ -773,8 +799,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                               fill="clear"
                               color="secondary"
                               (click)="onLoanAction(account.id, 'approve')"
-                              [attr.aria-label]="'LOANS.APPROVE' | translate"
-                              [appTooltip]="'LOANS.APPROVE' | translate"
+                              [attr.aria-label]="'LOANS.APPROVE' | appTranslate"
+                              [appTooltip]="'LOANS.APPROVE' | appTranslate"
                             >
                               <ion-icon name="checkmark-circle-outline"></ion-icon>
                             </ion-button>
@@ -785,8 +811,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                               fill="clear"
                               color="secondary"
                               (click)="onLoanAction(account.id, 'disburse')"
-                              [attr.aria-label]="'LOANS.DISBURSE' | translate"
-                              [appTooltip]="'LOANS.DISBURSE' | translate"
+                              [attr.aria-label]="'LOANS.DISBURSE' | appTranslate"
+                              [appTooltip]="'LOANS.DISBURSE' | appTranslate"
                             >
                               <ion-icon name="open-outline"></ion-icon>
                             </ion-button>
@@ -798,8 +824,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                               color="danger"
                               (click)="onLoanAction(account.id, 'close')"
                               appRequiresPermission="CLOSE_LOAN"
-                              [attr.aria-label]="'LOANS.CLOSE' | translate"
-                              [appTooltip]="'LOANS.CLOSE' | translate"
+                              [attr.aria-label]="'LOANS.CLOSE' | appTranslate"
+                              [appTooltip]="'LOANS.CLOSE' | appTranslate"
                             >
                               <ion-icon name="close-circle-outline"></ion-icon>
                             </ion-button>
@@ -813,7 +839,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                   } @else {
                     <div class="empty-state">
                       <ion-icon name="card-outline"></ion-icon>
-                      <p>{{ 'CLIENTS.NO_LOAN_ACCOUNTS' | translate }}</p>
+                      <p>{{ 'CLIENTS.NO_LOAN_ACCOUNTS' | appTranslate }}</p>
                       <ion-button
                         color="primary"
                         data-testid="client-create-loan-account"
@@ -821,7 +847,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         appRequiresPermission="CREATE_LOAN"
                       >
                         <ion-icon slot="start" name="add-outline"></ion-icon>
-                        {{ 'LOANS.CREATE_LOAN' | translate }}
+                        {{ 'LOANS.CREATE_LOAN' | appTranslate }}
                       </ion-button>
                     </div>
                   }
@@ -867,10 +893,10 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
 
           @if (activeTab() === TAB.deposits) {
             <div class="tab-content">
-              <h2>{{ 'CLIENTS.FIXED_DEPOSITS' | translate }}</h2>
+              <h2>{{ 'CLIENTS.FIXED_DEPOSITS' | appTranslate }}</h2>
               @if (fixedDepositAccounts().length === 0) {
                 <p class="empty-state" data-testid="client-fixed-deposits-empty">
-                  {{ 'CLIENTS.NO_FIXED_DEPOSITS' | translate }}
+                  {{ 'CLIENTS.NO_FIXED_DEPOSITS' | appTranslate }}
                 </p>
               } @else {
                 <table class="accounts-table" data-testid="client-fixed-deposits">
@@ -878,11 +904,15 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                     @for (account of fixedDepositAccounts(); track account.id) {
                       <tr>
                         <td>
-                          <a
-                            class="clickable-link"
-                            [routerLink]="['/products/fixed-deposits/view', account.id]"
-                            >{{ account.accountNo }}</a
-                          >
+                          @if (canViewFixedDeposit()) {
+                            <a
+                              class="clickable-link"
+                              [routerLink]="['/products/fixed-deposits/view', account.id]"
+                              >{{ account.accountNo }}</a
+                            >
+                          } @else {
+                            {{ account.accountNo }}
+                          }
                         </td>
                         <td>{{ account.productName }}</td>
                         <td>{{ account.status?.value }}</td>
@@ -892,10 +922,10 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                 </table>
               }
 
-              <h2>{{ 'CLIENTS.RECURRING_DEPOSITS' | translate }}</h2>
+              <h2>{{ 'CLIENTS.RECURRING_DEPOSITS' | appTranslate }}</h2>
               @if (recurringDepositAccounts().length === 0) {
                 <p class="empty-state" data-testid="client-recurring-deposits-empty">
-                  {{ 'CLIENTS.NO_RECURRING_DEPOSITS' | translate }}
+                  {{ 'CLIENTS.NO_RECURRING_DEPOSITS' | appTranslate }}
                 </p>
               } @else {
                 <table class="accounts-table" data-testid="client-recurring-deposits">
@@ -903,11 +933,15 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                     @for (account of recurringDepositAccounts(); track account.id) {
                       <tr>
                         <td>
-                          <a
-                            class="clickable-link"
-                            [routerLink]="['/products/recurring-deposits/view', account.id]"
-                            >{{ account.accountNo }}</a
-                          >
+                          @if (canViewRecurringDeposit()) {
+                            <a
+                              class="clickable-link"
+                              [routerLink]="['/products/recurring-deposits/view', account.id]"
+                              >{{ account.accountNo }}</a
+                            >
+                          } @else {
+                            {{ account.accountNo }}
+                          }
                         </td>
                         <td>{{ account.productName }}</td>
                         <td>{{ account.status?.value }}</td>
@@ -923,7 +957,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
             <div class="tab-content">
               @if (shareAccounts().length === 0) {
                 <p class="empty-state" data-testid="client-share-accounts-empty">
-                  {{ 'CLIENTS.NO_SHARE_ACCOUNTS' | translate }}
+                  {{ 'CLIENTS.NO_SHARE_ACCOUNTS' | appTranslate }}
                 </p>
               } @else {
                 <table class="accounts-table" data-testid="client-share-accounts">
@@ -1108,10 +1142,12 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
     `,
   ],
 })
-export class ClientViewComponent implements OnInit {
+export class ClientViewComponent implements OnInit, OnDestroy {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
   /** Exposed so the template names its tabs instead of numbering them. */
   protected readonly TAB = CLIENT_TAB;
+
+  private readonly popovers = viewChildren(IonPopover);
 
   readonly activeTab = signal<ClientTab>(CLIENT_TAB.details);
   private readonly clientService = inject(ClientService);
@@ -1121,6 +1157,20 @@ export class ClientViewComponent implements OnInit {
   private readonly dialogService = inject(DialogService);
   private readonly shareAccountService = inject(ShareAccountService);
   private readonly i18n = inject(I18N);
+
+  /**
+   * Whether the account screens this client's tables link to can actually be opened.
+   *
+   * A client's accounts come back with READ_CLIENT alone, but each account screen is gated on its
+   * own code, so a reader was shown account numbers as links whose only destination was
+   * `/forbidden`. The number still renders; only the link is withheld.
+   */
+  protected readonly canViewLoan = createPermissionCheck('READ_LOAN');
+  protected readonly canViewSavings = createPermissionCheck('READ_SAVINGSACCOUNT');
+  protected readonly canViewFixedDeposit = createPermissionCheck('READ_FIXEDDEPOSITACCOUNT');
+  protected readonly canViewRecurringDeposit = createPermissionCheck(
+    'READ_RECURRINGDEPOSITACCOUNT',
+  );
 
   readonly clientId = signal(0);
   readonly client = signal<GetClientsClientIdResponse | null>(null);
@@ -1194,15 +1244,28 @@ export class ClientViewComponent implements OnInit {
       if (id) {
         this.clientId.set(+id);
         this.loadClientData();
-        this.loadClientAccounts();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    for (const popover of this.popovers()) {
+      void popover.dismiss().catch(() => false);
+    }
   }
 
   /**
    * `skipErrorToast()` because this screen renders the failure itself — the global toast
    * otherwise prints Fineract's raw `defaultUserMessage`/parameter name (e.g. "[id] Client not
    * found with valuer 99999") over a blank page.
+   *
+   * The accounts are fetched from here rather than beside this call for the same reason. They
+   * are derived from the client, so when the client cannot be read — a different office's
+   * record, or a role without READ_CLIENT — the accounts request is refused identically, and it
+   * does *not* skip the toast. Firing the two in parallel therefore put exactly the toast this
+   * method suppresses back on the screen, beside the page's own "this client doesn't exist, or
+   * you don't have permission to view it". Ordering them removes the duplicate and the
+   * request that could never have succeeded.
    */
   loadClientData() {
     this.clientService
@@ -1213,6 +1276,7 @@ export class ClientViewComponent implements OnInit {
         next: (data) => {
           this.client.set(data);
           this.loadError.set(null);
+          this.loadClientAccounts();
         },
         error: (err: HttpErrorResponse) => {
           this.loadError.set(err.status === 404 || err.status === 403 ? 'not-found' : 'failed');

@@ -19,11 +19,10 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClientTransactionService, GetClientsPageItems } from '../../../api';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { formatArrayDate } from '../../../core/utils/date-formatter';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
@@ -38,7 +37,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-client-transactions-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -64,9 +63,9 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'CLIENT_TRANSACTIONS.UNDO' | translate"
+          [label]="'CLIENT_TRANSACTIONS.UNDO' | appTranslate"
           icon="arrow-undo-outline"
-          [appTooltip]="'CLIENT_TRANSACTIONS.UNDO' | translate"
+          [appTooltip]="'CLIENT_TRANSACTIONS.UNDO' | appTranslate"
           [disabled]="row.reversed"
           (click)="onUndo(row)"
         />

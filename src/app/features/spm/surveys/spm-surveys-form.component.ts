@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { CdkTableModule } from '@angular/cdk/table';
 import {
   IonButton,
@@ -49,7 +49,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     IonButton,
     IonSpinner,
@@ -67,7 +67,9 @@ import {
         <ion-card-header>
           <ion-card-title>
             {{
-              isEditMode() ? ('SPM_SURVEYS.EDIT' | translate) : ('SPM_SURVEYS.CREATE' | translate)
+              isEditMode()
+                ? ('SPM_SURVEYS.EDIT' | appTranslate)
+                : ('SPM_SURVEYS.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -75,9 +77,9 @@ import {
         <ion-card-content>
           <form #surveyForm="ngForm" (ngSubmit)="onSubmit()" class="spm-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SPM_SURVEYS.KEY' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'SPM_SURVEYS.KEY' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'SPM_SURVEYS.KEY' | translate"
+                [attr.aria-label]="'SPM_SURVEYS.KEY' | appTranslate"
                 name="key"
                 [(ngModel)]="survey().key"
                 required
@@ -85,9 +87,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SPM_SURVEYS.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'SPM_SURVEYS.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'SPM_SURVEYS.NAME' | translate"
+                [attr.aria-label]="'SPM_SURVEYS.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="survey().name"
                 required
@@ -95,18 +97,22 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SPM_SURVEYS.COUNTRY_CODE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'SPM_SURVEYS.COUNTRY_CODE' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'SPM_SURVEYS.COUNTRY_CODE' | translate"
+                [attr.aria-label]="'SPM_SURVEYS.COUNTRY_CODE' | appTranslate"
                 name="countryCode"
                 [(ngModel)]="survey().countryCode"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SPM_SURVEYS.DESCRIPTION' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'SPM_SURVEYS.DESCRIPTION' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'SPM_SURVEYS.DESCRIPTION' | translate"
+                [attr.aria-label]="'SPM_SURVEYS.DESCRIPTION' | appTranslate"
                 name="description"
                 [(ngModel)]="survey().description"
               ></ion-input>
@@ -114,7 +120,7 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -123,9 +129,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>
@@ -133,17 +139,19 @@ import {
 
           @if (isEditMode() && surveyId()) {
             <hr class="divider" />
-            <h3>{{ 'SPM.LOOKUP_TABLES' | translate }}</h3>
+            <h3>{{ 'SPM.LOOKUP_TABLES' | appTranslate }}</h3>
             @if (lookupTables().length === 0) {
-              <p class="empty-state">{{ 'COMMON.NO_DATA' | translate }}</p>
+              <p class="empty-state">{{ 'COMMON.NO_DATA' | appTranslate }}</p>
             } @else {
               <table cdk-table [dataSource]="lookupTables()" class="full-width-table">
                 <ng-container cdkColumnDef="key">
-                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'SPM.LOOKUP_KEY' | translate }}</th>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'SPM.LOOKUP_KEY' | appTranslate }}</th>
                   <td cdk-cell *cdkCellDef="let row">{{ row.key }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="description">
-                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.DESCRIPTION' | translate }}</th>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'COMMON.DESCRIPTION' | appTranslate }}
+                  </th>
                   <td cdk-cell *cdkCellDef="let row">{{ row.description }}</td>
                 </ng-container>
                 <tr cdk-header-row *cdkHeaderRowDef="lookupTableColumns"></tr>

@@ -20,7 +20,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
 import {
   IonButton,
   IonDatetime,
@@ -33,7 +32,8 @@ import {
   IonSelectOption,
   ModalController,
 } from '@ionic/angular/standalone';
-import { OfficesService, PostOfficesRequest, GetOfficesResponse } from '../../../api';
+import { OFFICE_API, TranslatePipe } from '../../../core/adapters';
+import type { Office } from '../../../core/adapters';
 import { toIsoDate } from '../../../core/utils/date-formatter';
 
 /**
@@ -44,7 +44,7 @@ import { toIsoDate } from '../../../core/utils/date-formatter';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonItem,
     IonLabel,
     IonInput,
@@ -57,13 +57,13 @@ import { toIsoDate } from '../../../core/utils/date-formatter';
   ],
   template: `
     <div class="dialog">
-      <h2 class="dialog-title">{{ 'OFFICES.CREATE_OFFICE' | translate }}</h2>
+      <h2 class="dialog-title">{{ 'OFFICES.CREATE_OFFICE' | appTranslate }}</h2>
 
       <form #officeForm="ngForm" class="office-form">
         <ion-item fill="outline">
-          <ion-label position="stacked">{{ 'OFFICES.NAME' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'OFFICES.NAME' | appTranslate }}</ion-label>
           <ion-input
-            [attr.aria-label]="'OFFICES.NAME' | translate"
+            [attr.aria-label]="'OFFICES.NAME' | appTranslate"
             id="office-name"
             data-testid="office-name"
             name="name"
@@ -73,9 +73,9 @@ import { toIsoDate } from '../../../core/utils/date-formatter';
         </ion-item>
 
         <ion-item fill="outline">
-          <ion-label position="stacked">{{ 'OFFICES.PARENT' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'OFFICES.PARENT' | appTranslate }}</ion-label>
           <ion-select
-            [attr.aria-label]="'OFFICES.PARENT' | translate"
+            [attr.aria-label]="'OFFICES.PARENT' | appTranslate"
             interface="popover"
             id="office-parent"
             data-testid="office-parent"
@@ -90,7 +90,7 @@ import { toIsoDate } from '../../../core/utils/date-formatter';
         </ion-item>
 
         <ion-item fill="outline">
-          <ion-label position="stacked">{{ 'OFFICES.OPENING_DATE' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'OFFICES.OPENING_DATE' | appTranslate }}</ion-label>
           <ion-datetime-button datetime="office-opening-date"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
@@ -108,7 +108,7 @@ import { toIsoDate } from '../../../core/utils/date-formatter';
 
       <div class="dialog-actions">
         <ion-button data-testid="office-cancel" fill="clear" color="medium" (click)="onCancel()">
-          {{ 'COMMON.CANCEL' | translate }}
+          {{ 'COMMON.CANCEL' | appTranslate }}
         </ion-button>
         <ion-button
           data-testid="office-submit"
@@ -116,7 +116,7 @@ import { toIsoDate } from '../../../core/utils/date-formatter';
           [disabled]="officeForm.invalid || isSaving()"
           (click)="onSubmit()"
         >
-          {{ isSaving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+          {{ isSaving() ? ('COMMON.SAVING' | appTranslate) : ('COMMON.SAVE' | appTranslate) }}
         </ion-button>
       </div>
     </div>
@@ -149,18 +149,17 @@ import { toIsoDate } from '../../../core/utils/date-formatter';
   ],
 })
 export class CreateOfficeDialogComponent implements OnInit {
-  private readonly officesService = inject(OfficesService);
+  private readonly officeApi = inject(OFFICE_API);
   private readonly modalController = inject(ModalController);
 
-  office: PostOfficesRequest = {
-    parentId: 1, // Default to head office
-  };
+  /** Head office by default, which is the only parent a first branch can have. */
+  office: { name?: string; externalId?: string; parentId: number } = { parentId: 1 };
   openingDate = toIsoDate(new Date());
-  readonly offices = signal<GetOfficesResponse[]>([]);
+  readonly offices = signal<readonly Office[]>([]);
   readonly isSaving = signal(false);
 
   ngOnInit() {
-    this.officesService.getOffices(true).subscribe((offices) => {
+    this.officeApi.list(true).subscribe((offices) => {
       this.offices.set(offices);
     });
   }
@@ -174,14 +173,20 @@ export class CreateOfficeDialogComponent implements OnInit {
 
   onSubmit() {
     this.isSaving.set(true);
-    this.office.openingDate = this.openingDate;
-    this.office.dateFormat = 'yyyy-MM-dd';
-    this.office.locale = 'en';
 
-    this.officesService.postOffices(this.office).subscribe({
-      next: (response) => this.modalController.dismiss(response.resourceId),
-      error: () => this.isSaving.set(false),
-    });
+    // The date format and locale Fineract parses the opening date against are the adapter's
+    // business now, not this dialog's.
+    this.officeApi
+      .create({
+        name: this.office.name ?? '',
+        externalId: this.office.externalId,
+        openingDate: this.openingDate,
+        parentId: this.office.parentId,
+      })
+      .subscribe({
+        next: (officeId) => this.modalController.dismiss(officeId),
+        error: () => this.isSaving.set(false),
+      });
   }
 
   onCancel() {

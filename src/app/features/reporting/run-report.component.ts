@@ -21,7 +21,6 @@ import { CdkTableModule } from '@angular/cdk/table';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   IonButton,
   IonCard,
@@ -41,7 +40,7 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 
-import { DOWNLOAD } from '../../core/adapters';
+import { DOWNLOAD, I18N, TranslatePipe } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
 import { toIsoDate } from '../../core/utils/date-formatter';
 import { HelpIconComponent } from '../../shared';
@@ -129,7 +128,7 @@ interface ReportParameterView {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     PaginatorComponent,
     HelpIconComponent,
@@ -157,7 +156,7 @@ interface ReportParameterView {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ 'REPORTS.RUN_TITLE' | translate }}: {{ reportName() }}
+            {{ 'REPORTS.RUN_TITLE' | appTranslate }}: {{ reportName() }}
             <app-help-icon [helpTextKey]="'HELP.REPORTS_DESC'"></app-help-icon>
           </ion-card-title>
         </ion-card-header>
@@ -166,15 +165,15 @@ interface ReportParameterView {
           @if (isParametersLoading()) {
             <div class="parameter-status" data-testid="report-parameters-loading">
               <ion-spinner name="crescent"></ion-spinner>
-              <span>{{ 'REPORTS.PARAMETERS_LOADING' | translate }}</span>
+              <span>{{ 'REPORTS.PARAMETERS_LOADING' | appTranslate }}</span>
             </div>
           } @else if (parameterLoadFailed()) {
             <ion-note color="danger" data-testid="report-parameters-error">
-              {{ 'REPORTS.PARAMETERS_LOAD_FAILED' | translate }}
+              {{ 'REPORTS.PARAMETERS_LOAD_FAILED' | appTranslate }}
             </ion-note>
           } @else if (unsupportedParameters().length > 0) {
             <ion-note color="danger" data-testid="report-parameters-unsupported">
-              {{ 'REPORTS.PARAMETERS_UNSUPPORTED' | translate }}:
+              {{ 'REPORTS.PARAMETERS_UNSUPPORTED' | appTranslate }}:
               {{ unsupportedParameterNames() }}
             </ion-note>
           }
@@ -197,7 +196,7 @@ interface ReportParameterView {
                       >
                         @for (option of view.options; track option.id) {
                           <ion-select-option [value]="option.id">
-                            {{ option.isAll ? ('COMMON.ALL' | translate) : option.name }}
+                            {{ option.isAll ? ('COMMON.ALL' | appTranslate) : option.name }}
                           </ion-select-option>
                         }
                       </ion-select>
@@ -207,12 +206,12 @@ interface ReportParameterView {
                       <ion-note class="field-note" [attr.data-testid]="view.testId + '-waiting'">
                         {{
                           'REPORTS.PARAMETER_SELECT_PARENT_FIRST'
-                            | translate: { parameter: view.parentLabel }
+                            | appTranslate: { parameter: view.parentLabel }
                         }}
                       </ion-note>
                     } @else if (view.loading) {
                       <ion-note class="field-note" [attr.data-testid]="view.testId + '-loading'">
-                        {{ 'REPORTS.PARAMETER_OPTIONS_LOADING' | translate }}
+                        {{ 'REPORTS.PARAMETER_OPTIONS_LOADING' | appTranslate }}
                       </ion-note>
                     } @else if (view.failed) {
                       <ion-note
@@ -220,7 +219,7 @@ interface ReportParameterView {
                         color="danger"
                         [attr.data-testid]="view.testId + '-error'"
                       >
-                        {{ 'REPORTS.PARAMETER_OPTIONS_FAILED' | translate }}
+                        {{ 'REPORTS.PARAMETER_OPTIONS_FAILED' | appTranslate }}
                       </ion-note>
                     }
                   </div>
@@ -271,7 +270,7 @@ interface ReportParameterView {
 
           @if (parametersLoaded() && !parameterLoadFailed() && !canRun()) {
             <ion-note data-testid="report-parameters-incomplete">
-              {{ 'REPORTS.PARAMETERS_INCOMPLETE' | translate }}
+              {{ 'REPORTS.PARAMETERS_INCOMPLETE' | appTranslate }}
             </ion-note>
           }
 
@@ -281,7 +280,7 @@ interface ReportParameterView {
               data-testid="cancel-report"
               fill="clear"
               (click)="onCancel()"
-              >{{ 'COMMON.CANCEL' | translate }}</ion-button
+              >{{ 'COMMON.CANCEL' | appTranslate }}</ion-button
             >
             <ion-button
               id="download-report-csv"
@@ -291,7 +290,7 @@ interface ReportParameterView {
               [disabled]="!canRun() || isLoading()"
             >
               <ion-icon name="download-outline"></ion-icon>
-              {{ 'REPORTS.DOWNLOAD_CSV' | translate }}
+              {{ 'REPORTS.DOWNLOAD_CSV' | appTranslate }}
             </ion-button>
             <ion-button
               id="run-report"
@@ -300,7 +299,7 @@ interface ReportParameterView {
               (click)="onRun()"
               [disabled]="!canRun() || isLoading()"
             >
-              {{ isLoading() ? ('COMMON.LOADING' | translate) : ('REPORTS.RUN' | translate) }}
+              {{ isLoading() ? ('COMMON.LOADING' | appTranslate) : ('REPORTS.RUN' | appTranslate) }}
             </ion-button>
           </div>
 
@@ -308,7 +307,7 @@ interface ReportParameterView {
             <div class="report-results mt-4">
               <hr class="divider" />
               <div class="results-header">
-                <h3 class="mt-2">{{ 'REPORTS.RESULTS' | translate }}</h3>
+                <h3 class="mt-2">{{ 'REPORTS.RESULTS' | appTranslate }}</h3>
                 <ion-button
                   id="download-report-results-csv"
                   data-testid="download-report-results-csv"
@@ -316,12 +315,12 @@ interface ReportParameterView {
                   (click)="downloadCSV()"
                 >
                   <ion-icon name="download-outline"></ion-icon>
-                  {{ 'REPORTS.DOWNLOAD_RESULTS_CSV' | translate }}
+                  {{ 'REPORTS.DOWNLOAD_RESULTS_CSV' | appTranslate }}
                 </ion-button>
               </div>
               @if (chartUnavailable()) {
                 <ion-note color="warning" data-testid="report-chart-unavailable">
-                  {{ 'REPORTS.CHART_UNAVAILABLE' | translate }}
+                  {{ 'REPORTS.CHART_UNAVAILABLE' | appTranslate }}
                 </ion-note>
               }
 
@@ -435,7 +434,7 @@ export class RunReportComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly reportName = signal('');
   /** Declared by the report definition and carried on the query string by the list screen. */
@@ -782,7 +781,7 @@ export class RunReportComponent implements OnInit {
       error: () => {
         this.parameterLoadFailed.set(true);
         this.isParametersLoading.set(false);
-        this.notifications.error(this.translate.instant('REPORTS.PARAMETERS_LOAD_FAILED'));
+        this.notifications.error(this.i18n.translate('REPORTS.PARAMETERS_LOAD_FAILED'));
       },
     });
   }
@@ -805,7 +804,7 @@ export class RunReportComponent implements OnInit {
   }
 
   private handleRunError(): void {
-    this.notifications.error(this.translate.instant('COMMON.ERROR'));
+    this.notifications.error(this.i18n.translate('COMMON.ERROR'));
     this.isLoading.set(false);
   }
 

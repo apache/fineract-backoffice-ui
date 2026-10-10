@@ -19,7 +19,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   IonButton,
@@ -46,7 +46,7 @@ const ERROR_OCCURRED = 'Error occurred';
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonTextarea,
@@ -60,25 +60,25 @@ const ERROR_OCCURRED = 'Error occurred';
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'INTEROP.QUOTES_TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'INTEROP.QUOTES_TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <!-- Section 1: Get Quote -->
         <section>
-          <h3>{{ 'INTEROP.GET_QUOTE' | translate }}</h3>
+          <h3>{{ 'INTEROP.GET_QUOTE' | appTranslate }}</h3>
           <div class="form-row">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'INTEROP.TX_CODE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'INTEROP.TX_CODE' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEROP.TX_CODE' | translate"
+                [attr.aria-label]="'INTEROP.TX_CODE' | appTranslate"
                 [(ngModel)]="transactionCode"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'INTEROP.QUOTE_CODE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'INTEROP.QUOTE_CODE' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEROP.QUOTE_CODE' | translate"
+                [attr.aria-label]="'INTEROP.QUOTE_CODE' | appTranslate"
                 [(ngModel)]="quoteCode"
               ></ion-input>
             </ion-item>
@@ -89,7 +89,7 @@ const ERROR_OCCURRED = 'Error occurred';
             (click)="loadQuote()"
             [disabled]="!transactionCode || !quoteCode"
           >
-            {{ 'INTEROP.GET_QUOTE' | translate }}
+            {{ 'INTEROP.GET_QUOTE' | appTranslate }}
           </ion-button>
         </section>
 
@@ -97,18 +97,18 @@ const ERROR_OCCURRED = 'Error occurred';
 
         <!-- Section 2: Create Quote -->
         <section>
-          <h3>{{ 'INTEROP.CREATE_QUOTE' | translate }}</h3>
+          <h3>{{ 'INTEROP.CREATE_QUOTE' | appTranslate }}</h3>
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'INTEROP.QUOTE_BODY' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'INTEROP.QUOTE_BODY' | appTranslate }}</ion-label>
             <ion-textarea
-              [attr.aria-label]="'INTEROP.QUOTE_BODY' | translate"
+              [attr.aria-label]="'INTEROP.QUOTE_BODY' | appTranslate"
               rows="10"
               [(ngModel)]="quoteBodyJson"
             ></ion-textarea>
           </ion-item>
 
           <ion-button color="secondary" (click)="createQuote()">
-            {{ 'INTEROP.CREATE_QUOTE' | translate }}
+            {{ 'INTEROP.CREATE_QUOTE' | appTranslate }}
           </ion-button>
         </section>
 

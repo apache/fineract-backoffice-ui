@@ -41,8 +41,11 @@
  * officesServiceSpy.getOffices.and.returnValue(asyncOf([{ id: 1, name: 'Head Office' }]));
  *
  * const fixture = await renderComponent(OfficeFormComponent, {
- *   imports: [TranslateModule.forRoot()],
- *   providers: [provideIonicTesting(), { provide: OfficesService, useValue: officesServiceSpy }],
+ *   providers: [
+ *     ...provideTranslateTesting(),
+ *     provideIonicTesting(),
+ *     { provide: OfficesService, useValue: officesServiceSpy },
+ *   ],
  * });
  *
  * // Fails while `offices` is a plain field, passes once it is a signal.

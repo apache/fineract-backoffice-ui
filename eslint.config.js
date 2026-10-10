@@ -27,6 +27,7 @@ const security = require('eslint-plugin-security');
 const importPlugin = require('eslint-plugin-import');
 const cognitiveComplexity = require('./eslint-rules/cognitive-complexity.js');
 const noVendorUiImport = require('./eslint-rules/no-vendor-ui-import.js');
+const noGeneratedApiImport = require('./eslint-rules/no-generated-api-import.js');
 
 /**
  * Rules written for this repository, kept here rather than published.
@@ -39,11 +40,15 @@ const noVendorUiImport = require('./eslint-rules/no-vendor-ui-import.js');
  * than another `no-restricted-imports` pattern because suppression counts are per rule id, and
  * sharing one counter with the Material and i18n backlogs let an Ionic violation be traded for
  * an i18n one without the ratchet moving. See the rule's own header.
+ *
+ * `no-generated-api-import` holds the ADR 0006 generated-client boundary, a separate rule id for
+ * the same reason.
  */
 const local = {
   rules: {
     'cognitive-complexity': cognitiveComplexity,
     'no-vendor-ui-import': noVendorUiImport,
+    'no-generated-api-import': noGeneratedApiImport,
   },
 };
 
@@ -88,6 +93,19 @@ const VENDOR_UI_ALLOWED = [
   // configure the library rather than call it.
   'src/app/core/adapters/**/*.ts',
   'src/app/app.config.ts',
+];
+
+/**
+ * ADR 0006's generated-client boundary. `dir` is matched on the *resolved* path, so it catches
+ * `'../../api'` and `'../api/model/x'` alike without a glob per directory depth.
+ */
+const generatedApiImport = [
+  'error',
+  {
+    dir: 'src/app/api',
+    message:
+      "Depend on an application contract in 'app/core/adapters/api' instead of the generated client. See DOCS/adr/0006-generated-api-boundary.md.",
+  },
 ];
 
 const vendorUiImport = [
@@ -241,6 +259,11 @@ module.exports = tseslint.config(
           patterns: restrictedImportPatterns,
         },
       ],
+      // The generated OpenAPI client is regenerated from an upstream spec on Fineract's
+      // cadence, so a change to an emitted shape reaches every file that binds one. ADR 0001
+      // stabilised the generated *names*; this holds the line on how far the generated *types*
+      // spread. Shrinking baseline, same as the Ionic one.
+      'local/no-generated-api-import': generatedApiImport,
       // Web Storage is a trust boundary (security.md §4) and reached through globals rather
       // than imports, so the boundary needs a second rule to hold. `STORAGE_KEYS` is the
       // reviewable inventory of what this origin persists; a direct `localStorage.setItem`
@@ -276,15 +299,15 @@ module.exports = tseslint.config(
     // that is what makes them adapters. Nothing else may reach past the boundary.
     files: [
       'src/app/core/adapters/**/*.ts',
-      // `TranslateModule.forRoot()` and `provideTranslateHttpLoader()` configure the library
-      // itself, which is composition-root work rather than a call site.
+      // `provideTranslateService()` and the loader and missing-translation plugins configure the
+      // library itself, which is composition-root work rather than a call site.
       'src/app/app.config.ts',
       // The fakes must implement the same contracts, and the storage spec asserts against
       // real Web Storage to prove the adapter writes where its scope says it does.
       'src/app/testing/adapters.ts',
       // Same composition-root argument as app.config.ts, for specs: a spec that renders a
       // shared component still using `| translate` needs the library configured. Keeping that
-      // in one helper stops `TranslateModule.forRoot()` from being re-imported by every spec,
+      // in one helper stops `provideTranslateService()` from being re-imported by every spec,
       // which is what would actually erode the boundary.
       'src/app/testing/i18n-testing.ts',
     ],
@@ -292,6 +315,19 @@ module.exports = tseslint.config(
       'no-restricted-imports': 'off',
       'no-restricted-globals': 'off',
       'no-restricted-properties': 'off',
+    },
+  },
+  {
+    // The places allowed to name the generated OpenAPI client: the adapters that map its types
+    // onto application models — including their specs, which must build generated payloads to
+    // prove the mapping — and the composition root that configures `BASE_PATH`.
+    //
+    // Feature specs are deliberately *not* exempt. A component's spec names the same generated
+    // types its component does, so exempting specs would let the coupling stay while the count
+    // said otherwise, and migrating a component means migrating its spec with it.
+    files: ['src/app/core/adapters/api/**/*.ts', 'src/app/app.config.ts'],
+    rules: {
+      'local/no-generated-api-import': 'off',
     },
   },
   {

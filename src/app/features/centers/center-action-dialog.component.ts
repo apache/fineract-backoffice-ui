@@ -32,10 +32,13 @@ import {
 
 import { CentersService } from '../../api';
 import { OVERLAY, TranslatePipe } from '../../core/adapters';
-import { toIsoDate } from '../../core/utils/date-formatter';
+import { PlatformDateService } from '../../core/services/platform-date.service';
+
+export { CentersService };
 
 export interface CenterActionDialogData {
   command: 'activate' | 'close';
+  minDate?: string;
 }
 
 export interface CenterActionResult {
@@ -45,6 +48,11 @@ export interface CenterActionResult {
 
 /**
  * Collects the date, and for a closure the reason, that `activate` and `close` require.
+ *
+ * Dates are seeded from the platform date service rather than the browser's local `new Date()`,
+ * preventing refusals when the browser timezone is behind the tenant (e.g. UTC vs Asia/Kolkata).
+ * The picker is floored at `minDate` (the center's submission date for activation, activation date
+ * for closure), ensuring the command cannot submit a date earlier than what the platform committed to.
  *
  * Closure reasons come from `GET /centers/template?command=close` rather than from the plain
  * template, which carries only office and staff options. They are code values of
@@ -91,6 +99,8 @@ export interface CenterActionResult {
               data-testid="center-action-date"
               presentation="date"
               [value]="date"
+              [min]="minDate()"
+              [max]="maxDate()"
               (ionChange)="onDateChange($event)"
             ></ion-datetime>
           </ng-template>
@@ -153,14 +163,19 @@ export interface CenterActionResult {
 export class CenterActionDialogComponent implements OnInit {
   private readonly overlay = inject(OVERLAY);
   private readonly centersService = inject(CentersService);
+  private readonly platformDateService = inject(PlatformDateService);
 
   readonly data = input.required<CenterActionDialogData>();
 
+  readonly minDate = signal<string | undefined>(undefined);
+  readonly maxDate = signal<string | undefined>(undefined);
   readonly closureReasons = signal<{ id?: number; name?: string }[]>([]);
-  date = toIsoDate(new Date());
+  date = '';
   closureReasonId?: number;
 
   ngOnInit(): void {
+    this.applyMinDate();
+    this.loadBusinessDate();
     if (this.data().command === 'close') {
       this.loadClosureReasons();
     }
@@ -173,7 +188,12 @@ export class CenterActionDialogComponent implements OnInit {
 
   canConfirm(): boolean {
     if (this.data().command === 'close' && !this.closureReasonId) return false;
-    return Boolean(this.date);
+    if (!this.date) return false;
+    const min = this.minDate();
+    if (min && this.date < min) return false;
+    const max = this.maxDate();
+    if (max && this.date > max) return false;
+    return true;
   }
 
   onCancel(): void {
@@ -185,6 +205,30 @@ export class CenterActionDialogComponent implements OnInit {
     void this.overlay.dismissModal<CenterActionResult>({
       date: this.date,
       closureReasonId: this.closureReasonId,
+    });
+  }
+
+  private applyMinDate(): void {
+    const min = this.data().minDate;
+    if (min) {
+      this.minDate.set(min);
+    }
+    this.date = this.platformDateService.getDateWithFloor(min);
+  }
+
+  private loadBusinessDate(): void {
+    this.platformDateService.loadBusinessDate().subscribe({
+      next: () => {
+        const bd = this.platformDateService.getBusinessDate();
+        if (bd) {
+          const min = this.minDate();
+          if (!min || bd >= min) {
+            this.date = bd;
+            this.maxDate.set(bd);
+          }
+        }
+      },
+      error: () => undefined,
     });
   }
 

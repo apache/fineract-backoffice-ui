@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -46,7 +46,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -65,8 +65,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('CODE_VALUES.EDIT_TITLE' | translate)
-                : ('CODE_VALUES.CREATE_TITLE' | translate)
+                ? ('CODE_VALUES.EDIT_TITLE' | appTranslate)
+                : ('CODE_VALUES.CREATE_TITLE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -74,9 +74,9 @@ import {
         <ion-card-content>
           <form #codeValueForm="ngForm" (ngSubmit)="onSubmit()" class="code-value-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CODE_VALUES.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'CODE_VALUES.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'CODE_VALUES.NAME' | translate"
+                [attr.aria-label]="'CODE_VALUES.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="codeValue().name"
                 required
@@ -84,18 +84,20 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CODE_VALUES.DESCRIPTION' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'CODE_VALUES.DESCRIPTION' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'CODE_VALUES.DESCRIPTION' | translate"
+                [attr.aria-label]="'CODE_VALUES.DESCRIPTION' | appTranslate"
                 name="description"
                 [(ngModel)]="codeValue().description"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CODE_VALUES.POSITION' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'CODE_VALUES.POSITION' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'CODE_VALUES.POSITION' | translate"
+                [attr.aria-label]="'CODE_VALUES.POSITION' | appTranslate"
                 type="number"
                 name="position"
                 [(ngModel)]="codeValue().position"
@@ -104,13 +106,13 @@ import {
 
             <div class="checkbox-field">
               <ion-checkbox name="isActive" [(ngModel)]="codeValue().isActive">
-                {{ 'CODE_VALUES.ACTIVE' | translate }}
+                {{ 'CODE_VALUES.ACTIVE' | appTranslate }}
               </ion-checkbox>
             </div>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'CODE_VALUES.CANCEL' | translate }}
+                {{ 'CODE_VALUES.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -119,9 +121,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'CODE_VALUES.SAVE' | translate }}
+                  {{ 'CODE_VALUES.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

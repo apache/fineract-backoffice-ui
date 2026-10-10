@@ -31,6 +31,7 @@ export const TASKS_ROUTES: Routes = [
     path: 'work-queues',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: ['READ_LOAN', 'READ_CLIENT'] },
+    title: 'nav.workQueues',
     loadComponent: () =>
       import('./work-queues/work-queues.component').then((m) => m.WorkQueuesComponent),
   },
@@ -38,6 +39,7 @@ export const TASKS_ROUTES: Routes = [
     path: 'checker-inbox',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_AUDIT' },
+    title: 'nav.checker_inbox',
     loadComponent: () =>
       import('./checker-inbox/checker-inbox.component').then((m) => m.CheckerInboxComponent),
   },

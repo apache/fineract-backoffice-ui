@@ -23,8 +23,8 @@ import { RatesListComponent } from './rates-list.component';
 import { RateService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('RatesListComponent', () => {
   let component: RatesListComponent;
@@ -42,8 +42,9 @@ describe('RatesListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [RatesListComponent, TranslateModule.forRoot()],
+      imports: [RatesListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: RateService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         provideNoopAnimations(),

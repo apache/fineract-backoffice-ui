@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -53,7 +53,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -79,8 +79,8 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
           <ion-card-title>
             {{
               isEditMode
-                ? ('CLIENTS.EDIT_FAMILY_MEMBER' | translate)
-                : ('CLIENTS.ADD_FAMILY_MEMBER' | translate)
+                ? ('CLIENTS.EDIT_FAMILY_MEMBER' | appTranslate)
+                : ('CLIENTS.ADD_FAMILY_MEMBER' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -91,9 +91,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               <ion-row>
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
-                    <ion-label position="stacked">{{ 'CLIENTS.FIRST_NAME' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'CLIENTS.FIRST_NAME' | appTranslate
+                    }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'CLIENTS.FIRST_NAME' | translate"
+                      [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
                       type="text"
                       name="firstName"
                       [(ngModel)]="member().firstName"
@@ -106,10 +108,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'CLIENTS.MIDDLE_NAME' | translate
+                      'CLIENTS.MIDDLE_NAME' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'CLIENTS.MIDDLE_NAME' | translate"
+                      [attr.aria-label]="'CLIENTS.MIDDLE_NAME' | appTranslate"
                       type="text"
                       name="middleName"
                       [(ngModel)]="member().middleName"
@@ -120,9 +122,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 </ion-col>
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
-                    <ion-label position="stacked">{{ 'CLIENTS.LAST_NAME' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'CLIENTS.LAST_NAME' | appTranslate
+                    }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'CLIENTS.LAST_NAME' | translate"
+                      [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
                       type="text"
                       name="lastName"
                       [(ngModel)]="member().lastName"
@@ -135,10 +139,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'CLIENTS.RELATIONSHIP' | translate
+                      'CLIENTS.RELATIONSHIP' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'CLIENTS.RELATIONSHIP' | translate"
+                      [attr.aria-label]="'CLIENTS.RELATIONSHIP' | appTranslate"
                       interface="popover"
                       name="relationshipId"
                       [(ngModel)]="member().relationshipId"
@@ -154,9 +158,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 </ion-col>
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
-                    <ion-label position="stacked">{{ 'CLIENTS.GENDER' | translate }}</ion-label>
+                    <ion-label position="stacked">{{ 'CLIENTS.GENDER' | appTranslate }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'CLIENTS.GENDER' | translate"
+                      [attr.aria-label]="'CLIENTS.GENDER' | appTranslate"
                       interface="popover"
                       name="genderId"
                       [(ngModel)]="member().genderId"
@@ -172,10 +176,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'CLIENTS.MARITAL_STATUS' | translate
+                      'CLIENTS.MARITAL_STATUS' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'CLIENTS.MARITAL_STATUS' | translate"
+                      [attr.aria-label]="'CLIENTS.MARITAL_STATUS' | appTranslate"
                       interface="popover"
                       name="maritalStatusId"
                       [(ngModel)]="member().maritalStatusId"
@@ -190,9 +194,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 </ion-col>
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
-                    <ion-label position="stacked">{{ 'CLIENTS.PROFESSION' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'CLIENTS.PROFESSION' | appTranslate
+                    }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'CLIENTS.PROFESSION' | translate"
+                      [attr.aria-label]="'CLIENTS.PROFESSION' | appTranslate"
                       interface="popover"
                       name="professionId"
                       [(ngModel)]="member().professionId"
@@ -208,10 +214,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'CLIENTS.QUALIFICATION' | translate
+                      'CLIENTS.QUALIFICATION' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'CLIENTS.QUALIFICATION' | translate"
+                      [attr.aria-label]="'CLIENTS.QUALIFICATION' | appTranslate"
                       type="text"
                       name="qualification"
                       [(ngModel)]="member().qualification"
@@ -222,9 +228,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 </ion-col>
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
-                    <ion-label position="stacked">{{ 'CLIENTS.MOBILE_NO' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'CLIENTS.MOBILE_NO' | appTranslate
+                    }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'CLIENTS.MOBILE_NO' | translate"
+                      [attr.aria-label]="'CLIENTS.MOBILE_NO' | appTranslate"
                       type="text"
                       name="mobileNumber"
                       [(ngModel)]="member().mobileNumber"
@@ -236,7 +244,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'CLIENTS.DATE_OF_BIRTH' | translate
+                      'CLIENTS.DATE_OF_BIRTH' | appTranslate
                     }}</ion-label>
                     @if (pickersReady()) {
                       <ion-datetime-button datetime="family-dob-picker"></ion-datetime-button>
@@ -255,9 +263,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 </ion-col>
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline">
-                    <ion-label position="stacked">{{ 'CLIENTS.AGE' | translate }}</ion-label>
+                    <ion-label position="stacked">{{ 'CLIENTS.AGE' | appTranslate }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'CLIENTS.AGE' | translate"
+                      [attr.aria-label]="'CLIENTS.AGE' | appTranslate"
                       type="number"
                       name="age"
                       [(ngModel)]="member().age"
@@ -268,7 +276,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 </ion-col>
                 <ion-col size="12">
                   <ion-item>
-                    <ion-label>{{ 'CLIENTS.IS_DEPENDENT' | translate }}</ion-label>
+                    <ion-label>{{ 'CLIENTS.IS_DEPENDENT' | appTranslate }}</ion-label>
                     <ion-toggle
                       name="isDependent"
                       [(ngModel)]="member().isDependent"
@@ -290,7 +298,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 id="family-cancel-btn"
                 data-testid="family-cancel-btn"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -299,7 +307,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 id="family-submit-btn"
                 data-testid="family-submit-btn"
               >
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               </ion-button>
             </div>
           </form>

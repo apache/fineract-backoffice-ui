@@ -19,7 +19,7 @@
 
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { HelpIconComponent } from '../../../shared';
 import { PovertyLineService } from '../../../api';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -51,7 +51,7 @@ interface PovertyLineRow {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     HelpIconComponent,
     IonButton,
@@ -69,23 +69,23 @@ interface PovertyLineRow {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ 'POVERTY_LINE.TITLE' | translate }}
+            {{ 'POVERTY_LINE.TITLE' | appTranslate }}
             <app-help-icon helpTextKey="HELP.POVERTY_LINE_DESC"></app-help-icon>
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <form #plForm="ngForm" (ngSubmit)="load()" class="pl-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'POVERTY_LINE.PPI_NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'POVERTY_LINE.PPI_NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'POVERTY_LINE.PPI_NAME' | translate"
+                [attr.aria-label]="'POVERTY_LINE.PPI_NAME' | appTranslate"
                 name="ppiName"
                 [(ngModel)]="ppiName"
                 required
               ></ion-input>
             </ion-item>
             <ion-button color="primary" type="submit" [disabled]="plForm.invalid || isLoading()">
-              {{ 'POVERTY_LINE.LOAD' | translate }}
+              {{ 'POVERTY_LINE.LOAD' | appTranslate }}
             </ion-button>
           </form>
 
@@ -95,22 +95,26 @@ interface PovertyLineRow {
             <table cdk-table [dataSource]="rows()" class="pl-table">
               <ng-container cdkColumnDef="scoreFrom">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'POVERTY_LINE.SCORE_FROM' | translate }}
+                  {{ 'POVERTY_LINE.SCORE_FROM' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.scoreFrom }}</td>
               </ng-container>
               <ng-container cdkColumnDef="scoreTo">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'POVERTY_LINE.SCORE_TO' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>
+                  {{ 'POVERTY_LINE.SCORE_TO' | appTranslate }}
+                </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.scoreTo }}</td>
               </ng-container>
               <ng-container cdkColumnDef="povertyLine">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'POVERTY_LINE.POVERTY_LINE' | translate }}
+                  {{ 'POVERTY_LINE.POVERTY_LINE' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.povertyLine }}</td>
               </ng-container>
               <ng-container cdkColumnDef="enabled">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'POVERTY_LINE.ENABLED' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>
+                  {{ 'POVERTY_LINE.ENABLED' | appTranslate }}
+                </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.enabled }}</td>
               </ng-container>
               <tr cdk-header-row *cdkHeaderRowDef="columns"></tr>

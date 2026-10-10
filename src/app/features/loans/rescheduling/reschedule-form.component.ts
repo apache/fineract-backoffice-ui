@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -61,7 +61,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -84,17 +84,19 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>Request Loan Reschedule</ion-card-title>
+          <ion-card-title>{{ 'LOANS.RESCHEDULE_FORM.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #rescheduleForm="ngForm" (ngSubmit)="onSubmit()" class="reschedule-form">
             <div class="form-grid">
               <!-- Reschedule From Date (Select Unpaid Installment) -->
-              <ion-item fill="outline" [appTooltip]="'HELP.RESCHEDULE_FROM_DESC' | translate">
-                <ion-label position="stacked">Reschedule From Date</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.RESCHEDULE_FROM_DESC' | appTranslate">
+                <ion-label position="stacked">{{
+                  'LOANS.RESCHEDULE_FORM.FROM_DATE' | appTranslate
+                }}</ion-label>
                 <ion-select
-                  aria-label="Reschedule From Date"
+                  [attr.aria-label]="'LOANS.RESCHEDULE_FORM.FROM_DATE' | appTranslate"
                   interface="popover"
                   name="rescheduleFromDate"
                   [(ngModel)]="rescheduleFromDateString"
@@ -108,16 +110,18 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                     </ion-select-option>
                   }
                 </ion-select>
-                <ion-note>Must be an existing installment date</ion-note>
+                <ion-note>{{ 'LOANS.RESCHEDULE_FORM.FROM_DATE_HINT' | appTranslate }}</ion-note>
               </ion-item>
 
               <!-- Reason Container (Dropdown or Custom entry) -->
               <div class="reason-container">
                 @if (isAddingCustomReason()) {
                   <ion-item fill="outline">
-                    <ion-label position="stacked">Reason Name (Manual)</ion-label>
+                    <ion-label position="stacked">{{
+                      'LOANS.RESCHEDULE_FORM.REASON_NAME_MANUAL' | appTranslate
+                    }}</ion-label>
                     <ion-input
-                      aria-label="Reason Name (Manual)"
+                      [attr.aria-label]="'LOANS.RESCHEDULE_FORM.REASON_NAME_MANUAL' | appTranslate"
                       name="customReasonName"
                       [(ngModel)]="customReasonName"
                       required
@@ -158,7 +162,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
               <!-- Submitted On Date -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Submitted On Date</ion-label>
+                <ion-label position="stacked">{{
+                  'COMMON.SUBMITTED_ON_DATE' | appTranslate
+                }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
                 }
@@ -178,7 +184,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
               <!-- Adjusted Due Date (Optional) -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Adjusted Due Date (Optional)</ion-label>
+                <ion-label position="stacked">{{
+                  'LOANS.RESCHEDULE_FORM.ADJUSTED_DUE_DATE' | appTranslate
+                }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="adjustedDueDate-picker"></ion-datetime-button>
                 }
@@ -208,9 +216,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
               <!-- Grace on Principal -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Grace on Principal</ion-label>
+                <ion-label position="stacked">{{
+                  'LOANS.RESCHEDULE_FORM.GRACE_ON_PRINCIPAL' | appTranslate
+                }}</ion-label>
                 <ion-input
-                  aria-label="Grace on Principal"
+                  [attr.aria-label]="'LOANS.RESCHEDULE_FORM.GRACE_ON_PRINCIPAL' | appTranslate"
                   type="number"
                   name="graceOnPrincipal"
                   [(ngModel)]="request.graceOnPrincipal"
@@ -219,9 +229,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
               <!-- Grace on Interest -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Grace on Interest</ion-label>
+                <ion-label position="stacked">{{
+                  'LOANS.RESCHEDULE_FORM.GRACE_ON_INTEREST' | appTranslate
+                }}</ion-label>
                 <ion-input
-                  aria-label="Grace on Interest"
+                  [attr.aria-label]="'LOANS.RESCHEDULE_FORM.GRACE_ON_INTEREST' | appTranslate"
                   type="number"
                   name="graceOnInterest"
                   [(ngModel)]="request.graceOnInterest"
@@ -230,9 +242,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
               <!-- Extra Terms -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Extra Terms</ion-label>
+                <ion-label position="stacked">{{
+                  'LOANS.RESCHEDULE_FORM.EXTRA_TERMS' | appTranslate
+                }}</ion-label>
                 <ion-input
-                  aria-label="Extra Terms"
+                  [attr.aria-label]="'LOANS.RESCHEDULE_FORM.EXTRA_TERMS' | appTranslate"
                   type="number"
                   name="extraTerms"
                   [(ngModel)]="request.extraTerms"
@@ -241,9 +255,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
               <!-- New Interest Rate -->
               <ion-item fill="outline">
-                <ion-label position="stacked">New Interest Rate</ion-label>
+                <ion-label position="stacked">{{
+                  'LOANS.RESCHEDULE_FORM.NEW_INTEREST_RATE' | appTranslate
+                }}</ion-label>
                 <ion-input
-                  aria-label="New Interest Rate"
+                  [attr.aria-label]="'LOANS.RESCHEDULE_FORM.NEW_INTEREST_RATE' | appTranslate"
                   type="number"
                   name="newInterestRate"
                   [(ngModel)]="request.newInterestRate"
@@ -253,7 +269,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -262,9 +278,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

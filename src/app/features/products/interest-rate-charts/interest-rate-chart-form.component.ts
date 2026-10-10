@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -59,7 +59,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -80,8 +80,8 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
           <ion-card-title>
             {{
               isEditMode()
-                ? ('INTEREST_RATE_CHARTS.EDIT' | translate)
-                : ('INTEREST_RATE_CHARTS.CREATE' | translate)
+                ? ('INTEREST_RATE_CHARTS.EDIT' | appTranslate)
+                : ('INTEREST_RATE_CHARTS.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -90,10 +90,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
           <form #chartForm="ngForm" (ngSubmit)="onSubmit()" class="chart-form">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'INTEREST_RATE_CHARTS.NAME' | translate
+                'INTEREST_RATE_CHARTS.NAME' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEREST_RATE_CHARTS.NAME' | translate"
+                [attr.aria-label]="'INTEREST_RATE_CHARTS.NAME' | appTranslate"
                 name="name"
                 [ngModel]="name()"
                 (ngModelChange)="name.set($event)"
@@ -103,10 +103,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'INTEREST_RATE_CHARTS.DESCRIPTION' | translate
+                'INTEREST_RATE_CHARTS.DESCRIPTION' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEREST_RATE_CHARTS.DESCRIPTION' | translate"
+                [attr.aria-label]="'INTEREST_RATE_CHARTS.DESCRIPTION' | appTranslate"
                 name="description"
                 [ngModel]="description()"
                 (ngModelChange)="description.set($event)"
@@ -116,7 +116,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             @if (!isEditMode()) {
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'INTEREST_RATE_CHARTS.FROM_DATE' | translate
+                  'INTEREST_RATE_CHARTS.FROM_DATE' | appTranslate
                 }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="fromDate-picker"></ion-datetime-button>
@@ -139,7 +139,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -148,9 +148,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

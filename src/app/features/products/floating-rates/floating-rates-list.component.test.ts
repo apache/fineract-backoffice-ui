@@ -23,8 +23,8 @@ import { FloatingRatesListComponent } from './floating-rates-list.component';
 import { FloatingRatesService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('FloatingRatesListComponent', () => {
   let component: FloatingRatesListComponent;
@@ -42,8 +42,9 @@ describe('FloatingRatesListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [FloatingRatesListComponent, TranslateModule.forRoot()],
+      imports: [FloatingRatesListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: FloatingRatesService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         provideNoopAnimations(),

@@ -21,8 +21,8 @@ import { createSpyObj, SpyObj } from '../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InactivityDialogComponent } from './inactivity-dialog.component';
 import { ModalController } from '@ionic/angular/standalone';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideIonicTesting } from '../testing/ionic-testing';
+import { provideTranslateTesting } from '../testing/i18n-testing';
 
 describe('InactivityDialogComponent', () => {
   let component: InactivityDialogComponent;
@@ -33,8 +33,9 @@ describe('InactivityDialogComponent', () => {
     mockModalController = createSpyObj<ModalController>(['dismiss']);
 
     await TestBed.configureTestingModule({
-      imports: [InactivityDialogComponent, TranslateModule.forRoot()],
+      imports: [InactivityDialogComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideIonicTesting(),
         { provide: ModalController, useValue: mockModalController },
       ],

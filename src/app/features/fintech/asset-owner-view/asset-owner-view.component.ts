@@ -18,9 +18,11 @@
  */
 
 import { Component, OnInit, inject, signal } from '@angular/core';
+
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { Observable, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import {
@@ -65,7 +67,8 @@ export type AssetOwnerTab = (typeof ASSET_OWNER_TAB)[keyof typeof ASSET_OWNER_TA
   imports: [
     CommonModule,
     RouterModule,
-    TranslateModule,
+    HasPermissionDirective,
+    TranslatePipe,
     CdkTableModule,
     DataTableComponent,
     StatusBadgeComponent,
@@ -89,13 +92,20 @@ export type AssetOwnerTab = (typeof ASSET_OWNER_TAB)[keyof typeof ASSET_OWNER_TA
               <app-status-badge [status]="transfer.status"></app-status-badge>
             </ion-card-title>
             <div class="header-actions">
+              <!--
+                Removed rather than disabled: it navigates elsewhere, and the loan screen is
+                gated on READ_LOAN while this one is not, so a reader without it was offered a
+                button whose only destination was Access Denied.
+              -->
               <ion-button
+                *appHasPermission="'READ_LOAN'"
                 fill="outline"
                 color="primary"
+                data-testid="asset-owner-view-loan"
                 [routerLink]="['/loans/view', transfer.loan?.loanId]"
               >
                 <ion-icon name="business-outline"></ion-icon>
-                View Loan Account
+                {{ 'ASSET_OWNERS.VIEW_LOAN_ACCOUNT' | appTranslate }}
               </ion-button>
             </div>
           </ion-card-header>
@@ -130,10 +140,10 @@ export type AssetOwnerTab = (typeof ASSET_OWNER_TAB)[keyof typeof ASSET_OWNER_TA
         </ion-card>
         <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
           <ion-segment-button [value]="TAB.details">
-            <ion-label>Journal Entries</ion-label>
+            <ion-label>{{ 'nav.journalEntries' | appTranslate }}</ion-label>
           </ion-segment-button>
           <ion-segment-button [value]="TAB.loanProductAttributes">
-            <ion-label>{{ 'ASSET_OWNERS.LOAN_PRODUCT_ATTRIBUTES' | translate }}</ion-label>
+            <ion-label>{{ 'ASSET_OWNERS.LOAN_PRODUCT_ATTRIBUTES' | appTranslate }}</ion-label>
           </ion-segment-button>
         </ion-segment>
 
@@ -150,18 +160,18 @@ export type AssetOwnerTab = (typeof ASSET_OWNER_TAB)[keyof typeof ASSET_OWNER_TA
         @if (activeTab() === TAB.loanProductAttributes) {
           <div class="tab-content">
             @if (attributes().length === 0) {
-              <p class="empty-state">{{ 'COMMON.NO_DATA' | translate }}</p>
+              <p class="empty-state">{{ 'COMMON.NO_DATA' | appTranslate }}</p>
             } @else {
               <table cdk-table [dataSource]="attributes()" class="full-width-table">
                 <ng-container cdkColumnDef="attributeKey">
                   <th cdk-header-cell *cdkHeaderCellDef>
-                    {{ 'ASSET_OWNERS.ATTRIBUTE_KEY' | translate }}
+                    {{ 'ASSET_OWNERS.ATTRIBUTE_KEY' | appTranslate }}
                   </th>
                   <td cdk-cell *cdkCellDef="let row">{{ row.attributeKey }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="attributeValue">
                   <th cdk-header-cell *cdkHeaderCellDef>
-                    {{ 'ASSET_OWNERS.ATTRIBUTE_VALUE' | translate }}
+                    {{ 'ASSET_OWNERS.ATTRIBUTE_VALUE' | appTranslate }}
                   </th>
                   <td cdk-cell *cdkCellDef="let row">{{ row.attributeValue }}</td>
                 </ng-container>

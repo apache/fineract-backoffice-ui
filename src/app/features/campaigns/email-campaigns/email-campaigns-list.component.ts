@@ -21,7 +21,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { DefaultService } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -50,7 +50,7 @@ interface EmailCampaign {
     FormsModule,
     RouterModule,
     CdkTableModule,
-    TranslateModule,
+    TranslatePipe,
     IonIcon,
     IonButton,
     IonSpinner,
@@ -63,11 +63,11 @@ interface EmailCampaign {
     <div class="container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'EMAIL_CAMPAIGNS.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'EMAIL_CAMPAIGNS.TITLE' | appTranslate }}</ion-card-title>
           <div class="actions-header">
             <ion-button color="primary" (click)="navigateToCreate()">
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'EMAIL_CAMPAIGNS.CREATE' | translate }}
+              {{ 'EMAIL_CAMPAIGNS.CREATE' | appTranslate }}
             </ion-button>
           </div>
         </ion-card-header>
@@ -80,27 +80,27 @@ interface EmailCampaign {
           } @else {
             <table cdk-table [dataSource]="campaigns()">
               <ng-container cdkColumnDef="id">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'EMAIL_CAMPAIGNS.ID' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'EMAIL_CAMPAIGNS.ID' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let campaign">{{ campaign.id }}</td>
               </ng-container>
 
               <ng-container cdkColumnDef="campaignName">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'EMAIL_CAMPAIGNS.CAMPAIGN_NAME' | translate }}
+                  {{ 'EMAIL_CAMPAIGNS.CAMPAIGN_NAME' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let campaign">{{ campaign.campaignName }}</td>
               </ng-container>
 
               <ng-container cdkColumnDef="campaignType">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'EMAIL_CAMPAIGNS.CAMPAIGN_TYPE' | translate }}
+                  {{ 'EMAIL_CAMPAIGNS.CAMPAIGN_TYPE' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let campaign">{{ campaign.campaignType }}</td>
               </ng-container>
 
               <ng-container cdkColumnDef="status">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'EMAIL_CAMPAIGNS.STATUS' | translate }}
+                  {{ 'EMAIL_CAMPAIGNS.STATUS' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let campaign">
                   {{ campaign.status?.value ?? campaign.status }}
@@ -109,42 +109,42 @@ interface EmailCampaign {
 
               <ng-container cdkColumnDef="actions">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'EMAIL_CAMPAIGNS.ACTIONS' | translate }}
+                  {{ 'EMAIL_CAMPAIGNS.ACTIONS' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let campaign">
                   <ion-button
                     fill="clear"
                     color="primary"
-                    [title]="'EMAIL_CAMPAIGNS.EDIT' | translate"
+                    [title]="'EMAIL_CAMPAIGNS.EDIT' | appTranslate"
                     (click)="navigateToEdit(campaign.id)"
-                    [attr.aria-label]="'EMAIL_CAMPAIGNS.EDIT' | translate"
+                    [attr.aria-label]="'EMAIL_CAMPAIGNS.EDIT' | appTranslate"
                   >
                     <ion-icon name="create-outline"></ion-icon>
                   </ion-button>
                   <ion-button
                     fill="clear"
                     color="secondary"
-                    [title]="'EMAIL_CAMPAIGNS.ACTIVATE' | translate"
+                    [title]="'EMAIL_CAMPAIGNS.ACTIVATE' | appTranslate"
                     (click)="activate(campaign.id)"
-                    [attr.aria-label]="'EMAIL_CAMPAIGNS.ACTIVATE' | translate"
+                    [attr.aria-label]="'EMAIL_CAMPAIGNS.ACTIVATE' | appTranslate"
                   >
                     <ion-icon name="play-outline"></ion-icon>
                   </ion-button>
                   <ion-button
                     fill="clear"
                     color="danger"
-                    [title]="'EMAIL_CAMPAIGNS.DEACTIVATE' | translate"
+                    [title]="'EMAIL_CAMPAIGNS.DEACTIVATE' | appTranslate"
                     (click)="deactivate(campaign.id)"
-                    [attr.aria-label]="'EMAIL_CAMPAIGNS.DEACTIVATE' | translate"
+                    [attr.aria-label]="'EMAIL_CAMPAIGNS.DEACTIVATE' | appTranslate"
                   >
                     <ion-icon name="pause-outline"></ion-icon>
                   </ion-button>
                   <ion-button
                     fill="clear"
                     color="danger"
-                    [title]="'EMAIL_CAMPAIGNS.DELETE' | translate"
+                    [title]="'EMAIL_CAMPAIGNS.DELETE' | appTranslate"
                     (click)="delete(campaign.id)"
-                    [attr.aria-label]="'EMAIL_CAMPAIGNS.DELETE' | translate"
+                    [attr.aria-label]="'EMAIL_CAMPAIGNS.DELETE' | appTranslate"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>
@@ -156,7 +156,7 @@ interface EmailCampaign {
 
               <tr *cdkNoDataRow>
                 <td class="no-data-cell" [attr.colspan]="displayedColumns.length">
-                  {{ 'EMAIL_CAMPAIGNS.NO_DATA' | translate }}
+                  {{ 'EMAIL_CAMPAIGNS.NO_DATA' | appTranslate }}
                 </td>
               </tr>
             </table>
@@ -200,7 +200,7 @@ export class EmailCampaignsListComponent implements OnInit {
   private readonly api = inject(DefaultService);
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly campaigns = signal<EmailCampaign[]>([]);
   readonly isLoading = signal(false);
@@ -270,13 +270,13 @@ export class EmailCampaignsListComponent implements OnInit {
   }
 
   private showSuccess(key: string): void {
-    this.translate.get(key).subscribe((msg: string) => {
+    this.i18n.translateAsync(key).subscribe((msg: string) => {
       this.notifications.success(msg);
     });
   }
 
   private showError(key: string): void {
-    this.translate.get(key).subscribe((msg: string) => {
+    this.i18n.translateAsync(key).subscribe((msg: string) => {
       this.notifications.error(msg);
     });
   }

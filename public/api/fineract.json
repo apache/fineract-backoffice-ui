@@ -3084,7 +3084,10 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/GetClientObligeeDetailsResponse" }
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GetObligeeData" }
+                }
               }
             },
             "description": "OK"
@@ -4182,7 +4185,10 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/GetClientObligeeDetailsResponse" }
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GetObligeeData" }
+                }
               }
             },
             "description": "OK"
@@ -10170,9 +10176,13 @@
           }
         ],
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ClientAuditFieldsData" }
+              }
+            },
+            "description": "OK"
           }
         },
         "summary": "Get internal client audit fields",
@@ -31070,28 +31080,9 @@
           },
           "feeInterval": { "type": "integer", "format": "int32" },
           "feeOnMonthDay": {
-            "type": "object",
-            "properties": {
-              "dayOfMonth": { "type": "integer", "format": "int32" },
-              "month": {
-                "type": "string",
-                "enum": [
-                  "JANUARY",
-                  "FEBRUARY",
-                  "MARCH",
-                  "APRIL",
-                  "MAY",
-                  "JUNE",
-                  "JULY",
-                  "AUGUST",
-                  "SEPTEMBER",
-                  "OCTOBER",
-                  "NOVEMBER",
-                  "DECEMBER"
-                ]
-              },
-              "monthValue": { "type": "integer", "format": "int32" }
-            }
+            "type": "string",
+            "description": "The recurring day the fee falls due, as an ISO-8601 month-day",
+            "example": "--03-04"
           },
           "freeWithdrawal": { "type": "boolean" },
           "freeWithdrawalChargeFrequency": { "type": "integer", "format": "int32" },
@@ -31278,6 +31269,15 @@
           "townVillage": { "type": "string" },
           "updatedBy": { "type": "string" },
           "updatedOn": { "type": "string" }
+        }
+      },
+      "ClientAuditFieldsData": {
+        "type": "object",
+        "properties": {
+          "createdBy": { "type": "integer", "format": "int64" },
+          "createdDate": { "type": "string", "format": "date-time" },
+          "lastModifiedBy": { "type": "integer", "format": "int64" },
+          "lastModifiedDate": { "type": "string", "format": "date-time" }
         }
       },
       "ClientCollateralCreateRequest": {
@@ -34200,6 +34200,14 @@
           "nameCode": { "type": "string", "example": "currency.USD" }
         }
       },
+      "GetChargesFeeFrequencyResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "periodFrequencyType.months" },
+          "id": { "type": "integer", "format": "int64", "example": 2 },
+          "value": { "type": "string", "example": "Monthly" }
+        }
+      },
       "GetChargesPaymentModeResponse": {
         "type": "object",
         "properties": {
@@ -34221,6 +34229,7 @@
           "chargePaymentMode": { "$ref": "#/components/schemas/GetChargesPaymentModeResponse" },
           "chargeTimeType": { "$ref": "#/components/schemas/GetChargesTimeTypeResponse" },
           "currency": { "$ref": "#/components/schemas/GetChargesCurrencyResponse" },
+          "feeFrequency": { "$ref": "#/components/schemas/GetChargesFeeFrequencyResponse" },
           "id": { "type": "integer", "format": "int64", "example": 1 },
           "maxCap": { "type": "number" },
           "minCap": { "type": "number" },
@@ -34276,17 +34285,6 @@
           "code": { "type": "string", "example": "chargeTimeType.specifiedDueDate" },
           "description": { "type": "string", "example": "Specified due date" },
           "id": { "type": "integer", "format": "int32", "example": 2 }
-        }
-      },
-      "GetClientObligeeDetailsResponse": {
-        "type": "object",
-        "description": "GetClientObligeeDetailsResponse",
-        "properties": {
-          "obligees": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/GetObligeeData" },
-            "uniqueItems": true
-          }
         }
       },
       "GetClientStatus": {
@@ -38702,6 +38700,7 @@
       },
       "GetObligeeData": {
         "type": "object",
+        "description": "GetObligeeData",
         "properties": {
           "accountNumber": { "type": "string", "example": "00000002" },
           "amountReleased": { "type": "number", "format": "double", "example": 10000.0 },
@@ -45936,8 +45935,18 @@
             "description": "command=activate",
             "example": "01 January 2026"
           },
+          "approvedDate": {
+            "type": "string",
+            "description": "command=approve",
+            "example": "01 January 2026"
+          },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "locale": { "type": "string", "example": "en" },
+          "note": {
+            "type": "string",
+            "description": "command=approve",
+            "example": "Share Account Approval Note"
+          },
           "requestedShares": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/PostAccountsRequestedShares" },
@@ -46147,6 +46156,10 @@
           "clientId": { "type": "integer", "format": "int64", "example": 189 },
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
           "resourceId": { "type": "integer", "format": "int64", "example": 157 },
+          "subResourceExternalId": {
+            "type": "string",
+            "example": "95174ff9-1a75-4d72-a413-6f9b1cb988b7"
+          },
           "transactionId": { "type": "integer", "format": "int64", "example": 221 }
         }
       },
@@ -46243,6 +46256,10 @@
           "registeredTableName": { "type": "string", "example": "Client Beneficiary information" }
         }
       },
+      "PostClientsNonPersonDetails": {
+        "type": "object",
+        "properties": { "constitutionId": { "type": "integer", "format": "int64", "example": 17 } }
+      },
       "PostClientsRequest": {
         "type": "object",
         "description": "PostClientsRequest",
@@ -46254,6 +46271,7 @@
             "description": "Address requests",
             "items": { "$ref": "#/components/schemas/ClientAddressRequest" }
           },
+          "clientNonPersonDetails": { "$ref": "#/components/schemas/PostClientsNonPersonDetails" },
           "datatables": {
             "type": "array",
             "description": "List of PostClientsDatatable",
@@ -50181,11 +50199,25 @@
         "description": "PutClientClientIdAddressesResponse",
         "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 67 } }
       },
+      "PutClientsClientIdIdentifiersIdentifierIdChanges": {
+        "type": "object",
+        "description": "PutClientsClientIdIdentifiersIdentifierIdChanges",
+        "properties": {
+          "description": { "type": "string", "example": "Document has been verified" },
+          "documentKey": { "type": "string", "example": "KA-54677" },
+          "documentTypeId": { "type": "integer", "format": "int64", "example": 1 },
+          "expiryDate": { "type": "string", "format": "date" },
+          "issuanceDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "ACTIVE" }
+        }
+      },
       "PutClientsClientIdIdentifiersIdentifierIdResponse": {
         "type": "object",
         "description": "PutClientsClientIdIdentifiersIdentifierIdResponse",
         "properties": {
-          "changes": { "$ref": "#/components/schemas/ClientIdentifierRequest" },
+          "changes": {
+            "$ref": "#/components/schemas/PutClientsClientIdIdentifiersIdentifierIdChanges"
+          },
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
           "resourceId": { "type": "integer", "format": "int64", "example": 3 }
@@ -50198,6 +50230,7 @@
           "externalId": { "type": "string", "example": "786444UUUYYH7" },
           "firstname": { "type": "string", "example": "Client_FirstName" },
           "lastname": { "type": "string", "example": "Client_LastName" },
+          "mobileNo": { "type": "string", "example": "+353851239876" },
           "resourceExternalId": { "type": "string", "example": "123-456" }
         }
       },
@@ -50368,19 +50401,17 @@
           "username": { "type": "string", "example": "test@mifos.org" }
         }
       },
+      "PutFinancialActivityAccountsChanges": {
+        "type": "object",
+        "properties": { "glAccountId": { "type": "integer", "format": "int64", "example": 1 } }
+      },
       "PutFinancialActivityAccountsResponse": {
         "type": "object",
         "description": "PutFinancialActivityAccountsResponse",
         "properties": {
-          "comments": {
-            "$ref": "#/components/schemas/PutFinancialActivityAccountscommentsSwagger"
-          },
+          "changes": { "$ref": "#/components/schemas/PutFinancialActivityAccountsChanges" },
           "resourceId": { "type": "integer", "format": "int64", "example": 1 }
         }
-      },
-      "PutFinancialActivityAccountscommentsSwagger": {
-        "type": "object",
-        "properties": { "glAccountId": { "type": "integer", "format": "int64", "example": 1 } }
       },
       "PutFixedDepositAccountsAccountIdRequest": {
         "type": "object",

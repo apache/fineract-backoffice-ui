@@ -20,9 +20,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { ROLE_API, TranslatePipe } from '../../../core/adapters';
+import type { Role } from '../../../core/adapters';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../../shared';
-import { RolesService, GetRolesResponse } from '../../../api';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
@@ -30,7 +30,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-roles-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -54,9 +54,9 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEditRole(role)"
         />
       </ng-template>
@@ -64,7 +64,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   `,
 })
 export class RolesListComponent implements OnInit {
-  private readonly rolesService = inject(RolesService);
+  private readonly roleApi = inject(ROLE_API);
   private readonly router = inject(Router);
 
   readonly columns: ColumnDef[] = [
@@ -73,17 +73,15 @@ export class RolesListComponent implements OnInit {
     { key: 'actions', label: 'COMMON.ACTIONS', sortable: false },
   ];
 
-  readonly roles = signal<GetRolesResponse[]>([]);
+  readonly roles = signal<Role[]>([]);
 
   ngOnInit(): void {
     this.loadRoles();
   }
 
   private loadRoles(): void {
-    this.rolesService.getRoles().subscribe({
-      next: (data) => {
-        this.roles.set(data || []);
-      },
+    this.roleApi.list().subscribe({
+      next: (roles) => this.roles.set(roles),
       error: (err) => console.error('Failed to load roles', err),
     });
   }
@@ -92,7 +90,7 @@ export class RolesListComponent implements OnInit {
     this.router.navigate(['/security/roles/create']);
   }
 
-  onEditRole(role: GetRolesResponse): void {
+  onEditRole(role: Role): void {
     this.router.navigate(['/security/roles/edit', role.id]);
   }
 }

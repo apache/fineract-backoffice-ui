@@ -23,8 +23,8 @@ import { ShareAccountFormComponent } from './share-account-form.component';
 import { ShareAccountService, AccountRequest, ClientService } from '../../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ShareAccountFormComponent', () => {
   let component: ShareAccountFormComponent;
@@ -44,8 +44,9 @@ describe('ShareAccountFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [ShareAccountFormComponent, TranslateModule.forRoot()],
+      imports: [ShareAccountFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         { provide: ShareAccountService, useValue: shareServiceSpy },
         { provide: ClientService, useValue: clientServiceSpy },

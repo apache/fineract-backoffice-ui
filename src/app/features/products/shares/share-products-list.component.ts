@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { CurrencyPipe } from '@angular/common';
 import { of } from 'rxjs';
@@ -31,7 +31,7 @@ import { ProductsService, GetProductsTypeResponse, GetProductsPageItems } from '
   selector: 'app-share-products-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonIcon,
     DataTableComponent,
@@ -42,7 +42,7 @@ import { ProductsService, GetProductsTypeResponse, GetProductsPageItems } from '
     <app-data-table
       [hasError]="hasError()"
       (retry)="onRetry()"
-      title="nav.shares"
+      title="nav.shareProducts"
       createButtonLabel="PRODUCTS.CREATE_SHARE_PRODUCT"
       createPermission="CREATE_SHAREPRODUCT"
       [columns]="columns"
@@ -60,7 +60,7 @@ import { ProductsService, GetProductsTypeResponse, GetProductsPageItems } from '
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
+          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(product)"
         >
           <ion-icon name="create-outline" slot="icon-only"></ion-icon>

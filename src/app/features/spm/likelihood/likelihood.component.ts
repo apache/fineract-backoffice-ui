@@ -19,7 +19,7 @@
 
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { HelpIconComponent } from '../../../shared';
 import { LikelihoodService } from '../../../api';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -54,7 +54,7 @@ interface LikelihoodRow {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     HelpIconComponent,
     IonButton,
@@ -73,23 +73,23 @@ interface LikelihoodRow {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ 'LIKELIHOOD.TITLE' | translate }}
+            {{ 'LIKELIHOOD.TITLE' | appTranslate }}
             <app-help-icon helpTextKey="HELP.LIKELIHOOD_DESC"></app-help-icon>
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <form #lkForm="ngForm" (ngSubmit)="load()" class="lk-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'LIKELIHOOD.PPI_NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'LIKELIHOOD.PPI_NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'LIKELIHOOD.PPI_NAME' | translate"
+                [attr.aria-label]="'LIKELIHOOD.PPI_NAME' | appTranslate"
                 name="ppiName"
                 [(ngModel)]="ppiName"
                 required
               ></ion-input>
             </ion-item>
             <ion-button color="primary" type="submit" [disabled]="lkForm.invalid || isLoading()">
-              {{ 'LIKELIHOOD.LOAD' | translate }}
+              {{ 'LIKELIHOOD.LOAD' | appTranslate }}
             </ion-button>
           </form>
 
@@ -98,12 +98,12 @@ interface LikelihoodRow {
           } @else if (rows().length) {
             <table cdk-table [dataSource]="rows()" class="lk-table">
               <ng-container cdkColumnDef="name">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'LIKELIHOOD.NAME' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'LIKELIHOOD.NAME' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.name }}</td>
               </ng-container>
               <ng-container cdkColumnDef="likelihood">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'LIKELIHOOD.LIKELIHOOD' | translate }}
+                  {{ 'LIKELIHOOD.LIKELIHOOD' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">
                   <ion-item fill="outline" class="lk-inline">
@@ -116,7 +116,7 @@ interface LikelihoodRow {
                 </td>
               </ng-container>
               <ng-container cdkColumnDef="enabled">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'LIKELIHOOD.ENABLED' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'LIKELIHOOD.ENABLED' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let row">
                   <ion-checkbox
                     [ngModel]="row.enabled === 100"
@@ -126,7 +126,7 @@ interface LikelihoodRow {
                 </td>
               </ng-container>
               <ng-container cdkColumnDef="actions">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACTIONS' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACTIONS' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let row">
                   <ion-button
                     fill="clear"
@@ -135,7 +135,7 @@ interface LikelihoodRow {
                     [disabled]="isSaving()"
                     (click)="onSave(row)"
                   >
-                    {{ 'COMMON.SAVE' | translate }}
+                    {{ 'COMMON.SAVE' | appTranslate }}
                   </ion-button>
                 </td>
               </ng-container>

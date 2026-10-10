@@ -28,7 +28,6 @@ import { CurrencyData } from './currencyData';
 import { GLAccountData } from './gLAccountData';
 import { TaxGroupData } from './taxGroupData';
 import { EnumOptionData } from './enumOptionData';
-import { ChargeFeeOnMonthDay } from './chargeFeeOnMonthDay';
 
 
 export interface ChargeData { 
@@ -52,7 +51,10 @@ export interface ChargeData {
     feeFrequency?: EnumOptionData;
     feeFrequencyOptions?: Array<EnumOptionData>;
     feeInterval?: number;
-    feeOnMonthDay?: ChargeFeeOnMonthDay;
+    /**
+     * The recurring day the fee falls due, as an ISO-8601 month-day
+     */
+    feeOnMonthDay?: string;
     freeWithdrawal?: boolean;
     freeWithdrawalChargeFrequency?: number;
     id?: number;

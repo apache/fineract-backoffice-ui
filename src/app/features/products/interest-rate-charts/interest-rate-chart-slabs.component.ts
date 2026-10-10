@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import {
   InterestRateSlabAKAInterestBandsService,
   InterestRateChartSlabData,
@@ -28,7 +28,6 @@ import {
   EnumOptionData,
 } from '../../../api';
 import { FINERACT_LOCALE } from '../../../core/utils/date-formatter';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import {
@@ -65,7 +64,7 @@ interface SlabRow {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonIcon,
     IonButton,
     IonInput,
@@ -83,20 +82,20 @@ interface SlabRow {
     <div class="slabs-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'INTEREST_RATE_CHARTS.SLABS' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'INTEREST_RATE_CHARTS.SLABS' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <table class="slabs-table">
             <thead>
               <tr>
-                <th>{{ 'INTEREST_RATE_CHARTS.PERIOD_TYPE' | translate }}</th>
-                <th>{{ 'INTEREST_RATE_CHARTS.FROM_PERIOD' | translate }}</th>
-                <th>{{ 'INTEREST_RATE_CHARTS.TO_PERIOD' | translate }}</th>
-                <th>{{ 'INTEREST_RATE_CHARTS.AMOUNT_RANGE_FROM' | translate }}</th>
-                <th>{{ 'INTEREST_RATE_CHARTS.AMOUNT_RANGE_TO' | translate }}</th>
-                <th>{{ 'INTEREST_RATE_CHARTS.ANNUAL_INTEREST_RATE' | translate }}</th>
-                <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+                <th>{{ 'INTEREST_RATE_CHARTS.PERIOD_TYPE' | appTranslate }}</th>
+                <th>{{ 'INTEREST_RATE_CHARTS.FROM_PERIOD' | appTranslate }}</th>
+                <th>{{ 'INTEREST_RATE_CHARTS.TO_PERIOD' | appTranslate }}</th>
+                <th>{{ 'INTEREST_RATE_CHARTS.AMOUNT_RANGE_FROM' | appTranslate }}</th>
+                <th>{{ 'INTEREST_RATE_CHARTS.AMOUNT_RANGE_TO' | appTranslate }}</th>
+                <th>{{ 'INTEREST_RATE_CHARTS.ANNUAL_INTEREST_RATE' | appTranslate }}</th>
+                <th>{{ 'COMMON.ACTIONS' | appTranslate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -113,8 +112,8 @@ interface SlabRow {
                       fill="clear"
                       color="danger"
                       type="button"
-                      [attr.aria-label]="'COMMON.DELETE' | translate"
-                      [appTooltip]="'COMMON.DELETE' | translate"
+                      [attr.aria-label]="'COMMON.DELETE' | appTranslate"
+                      [appTooltip]="'COMMON.DELETE' | appTranslate"
                       (click)="onDelete(slab)"
                     >
                       <ion-icon name="trash-outline"></ion-icon>
@@ -128,10 +127,10 @@ interface SlabRow {
           <form #slabForm="ngForm" (ngSubmit)="onAdd()" class="add-row">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'INTEREST_RATE_CHARTS.PERIOD_TYPE' | translate
+                'INTEREST_RATE_CHARTS.PERIOD_TYPE' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'INTEREST_RATE_CHARTS.PERIOD_TYPE' | translate"
+                [attr.aria-label]="'INTEREST_RATE_CHARTS.PERIOD_TYPE' | appTranslate"
                 interface="popover"
                 name="periodType"
                 [(ngModel)]="newSlab().periodType"
@@ -144,10 +143,10 @@ interface SlabRow {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'INTEREST_RATE_CHARTS.FROM_PERIOD' | translate
+                'INTEREST_RATE_CHARTS.FROM_PERIOD' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEREST_RATE_CHARTS.FROM_PERIOD' | translate"
+                [attr.aria-label]="'INTEREST_RATE_CHARTS.FROM_PERIOD' | appTranslate"
                 type="number"
                 name="fromPeriod"
                 [(ngModel)]="newSlab().fromPeriod"
@@ -156,10 +155,10 @@ interface SlabRow {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'INTEREST_RATE_CHARTS.TO_PERIOD' | translate
+                'INTEREST_RATE_CHARTS.TO_PERIOD' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEREST_RATE_CHARTS.TO_PERIOD' | translate"
+                [attr.aria-label]="'INTEREST_RATE_CHARTS.TO_PERIOD' | appTranslate"
                 type="number"
                 name="toPeriod"
                 [(ngModel)]="newSlab().toPeriod"
@@ -168,10 +167,10 @@ interface SlabRow {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'INTEREST_RATE_CHARTS.AMOUNT_RANGE_FROM' | translate
+                'INTEREST_RATE_CHARTS.AMOUNT_RANGE_FROM' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEREST_RATE_CHARTS.AMOUNT_RANGE_FROM' | translate"
+                [attr.aria-label]="'INTEREST_RATE_CHARTS.AMOUNT_RANGE_FROM' | appTranslate"
                 type="number"
                 name="amountRangeFrom"
                 [(ngModel)]="newSlab().amountRangeFrom"
@@ -180,10 +179,10 @@ interface SlabRow {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'INTEREST_RATE_CHARTS.AMOUNT_RANGE_TO' | translate
+                'INTEREST_RATE_CHARTS.AMOUNT_RANGE_TO' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEREST_RATE_CHARTS.AMOUNT_RANGE_TO' | translate"
+                [attr.aria-label]="'INTEREST_RATE_CHARTS.AMOUNT_RANGE_TO' | appTranslate"
                 type="number"
                 name="amountRangeTo"
                 [(ngModel)]="newSlab().amountRangeTo"
@@ -192,10 +191,10 @@ interface SlabRow {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'INTEREST_RATE_CHARTS.ANNUAL_INTEREST_RATE' | translate
+                'INTEREST_RATE_CHARTS.ANNUAL_INTEREST_RATE' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEREST_RATE_CHARTS.ANNUAL_INTEREST_RATE' | translate"
+                [attr.aria-label]="'INTEREST_RATE_CHARTS.ANNUAL_INTEREST_RATE' | appTranslate"
                 type="number"
                 name="annualInterestRate"
                 [(ngModel)]="newSlab().annualInterestRate"
@@ -210,13 +209,13 @@ interface SlabRow {
               [disabled]="slabForm.invalid || isSaving()"
             >
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'INTEREST_RATE_CHARTS.ADD_SLAB' | translate }}
+              {{ 'INTEREST_RATE_CHARTS.ADD_SLAB' | appTranslate }}
             </ion-button>
           </form>
 
           <div class="back-action">
             <ion-button fill="clear" type="button" (click)="onBack()">
-              {{ 'COMMON.BACK' | translate }}
+              {{ 'COMMON.BACK' | appTranslate }}
             </ion-button>
           </div>
         </ion-card-content>

@@ -23,8 +23,8 @@ import { TaxGroupsListComponent } from './tax-groups-list.component';
 import { TaxGroupService, GetTaxesGroupResponse } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('TaxGroupsListComponent', () => {
   let component: TaxGroupsListComponent;
@@ -42,8 +42,9 @@ describe('TaxGroupsListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [TaxGroupsListComponent, TranslateModule.forRoot()],
+      imports: [TaxGroupsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: TaxGroupService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         provideNoopAnimations(),

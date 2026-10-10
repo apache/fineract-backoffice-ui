@@ -19,9 +19,9 @@
 
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 import { IdleService } from './core/services/idle.service';
+import { provideTranslateTesting } from './testing/i18n-testing';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -31,8 +31,8 @@ describe('AppComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [AppComponent, TranslateModule.forRoot(), RouterModule.forRoot([])],
-      providers: [{ provide: IdleService, useValue: idleServiceSpy }],
+      imports: [AppComponent, RouterModule.forRoot([])],
+      providers: [...provideTranslateTesting(), { provide: IdleService, useValue: idleServiceSpy }],
     }).compileComponents();
   });
 

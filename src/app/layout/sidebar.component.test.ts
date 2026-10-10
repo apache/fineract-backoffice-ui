@@ -27,6 +27,7 @@ import { ViewportService } from '../core/services/viewport.service';
 import { AuthService } from '../core/services/auth.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { Router, RouterModule } from '@angular/router';
+import { provideTranslateTesting } from '../testing/i18n-testing';
 
 @Component({ standalone: true, template: '' })
 class SidebarNavigationTestRoute {}
@@ -54,6 +55,7 @@ describe('SidebarComponent', () => {
         SidebarComponent,
       ],
       providers: [
+        ...provideTranslateTesting(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ViewportService, useValue: { isMobile } },

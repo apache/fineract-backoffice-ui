@@ -19,10 +19,9 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TenantOIDCConfigurationService } from '../../../api';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -104,7 +103,7 @@ const DEFAULTS: OidcConfig = {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonItem,
@@ -120,30 +119,30 @@ const DEFAULTS: OidcConfig = {
     <div class="oidc-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'OIDC_CONFIG.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'OIDC_CONFIG.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <form class="oidc-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.TENANT_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'OIDC_CONFIG.TENANT_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.TENANT_ID' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.TENANT_ID' | appTranslate"
                 name="tenantId"
                 [(ngModel)]="tenantId"
               ></ion-input>
             </ion-item>
             <div class="load-action">
               <ion-button fill="clear" type="button" (click)="load()">
-                {{ 'OIDC_CONFIG.LOAD' | translate }}
+                {{ 'OIDC_CONFIG.LOAD' | appTranslate }}
               </ion-button>
             </div>
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'OIDC_CONFIG.PROVIDER_TYPE' | translate
+                'OIDC_CONFIG.PROVIDER_TYPE' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'OIDC_CONFIG.PROVIDER_TYPE' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.PROVIDER_TYPE' | appTranslate"
                 name="providerType"
                 interface="popover"
                 [(ngModel)]="config().providerType"
@@ -154,73 +153,73 @@ const DEFAULTS: OidcConfig = {
               </ion-select>
             </ion-item>
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.ISSUER' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'OIDC_CONFIG.ISSUER' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.ISSUER' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.ISSUER' | appTranslate"
                 name="issuerUri"
                 [(ngModel)]="config().issuerUri"
               ></ion-input>
             </ion-item>
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.CLIENT_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'OIDC_CONFIG.CLIENT_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.CLIENT_ID' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.CLIENT_ID' | appTranslate"
                 name="clientId"
                 [(ngModel)]="config().clientId"
               ></ion-input>
             </ion-item>
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'OIDC_CONFIG.CLIENT_SECRET' | translate
+                'OIDC_CONFIG.CLIENT_SECRET' | appTranslate
               }}</ion-label>
               <ion-input
                 type="password"
-                [attr.aria-label]="'OIDC_CONFIG.CLIENT_SECRET' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.CLIENT_SECRET' | appTranslate"
                 name="clientSecret"
-                [placeholder]="exists ? ('OIDC_CONFIG.SECRET_UNCHANGED' | translate) : ''"
+                [placeholder]="exists ? ('OIDC_CONFIG.SECRET_UNCHANGED' | appTranslate) : ''"
                 [(ngModel)]="config().clientSecret"
               ></ion-input>
             </ion-item>
-            <p class="field-hint">{{ 'OIDC_CONFIG.SECRET_HINT' | translate }}</p>
+            <p class="field-hint">{{ 'OIDC_CONFIG.SECRET_HINT' | appTranslate }}</p>
             <!--
               No authorization or token endpoint: the platform does not store them, because a
               provider publishes both in its discovery document at
               {issuerUri}/.well-known/openid-configuration. Fields for them were previously
               offered here and silently discarded.
             -->
-            <p class="field-hint">{{ 'OIDC_CONFIG.JWKS_HINT' | translate }}</p>
+            <p class="field-hint">{{ 'OIDC_CONFIG.JWKS_HINT' | appTranslate }}</p>
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.JWKS_URI' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'OIDC_CONFIG.JWKS_URI' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.JWKS_URI' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.JWKS_URI' | appTranslate"
                 name="jwksUri"
                 [(ngModel)]="config().jwksUri"
               ></ion-input>
             </ion-item>
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'OIDC_CONFIG.USERNAME_CLAIM' | translate
+                'OIDC_CONFIG.USERNAME_CLAIM' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.USERNAME_CLAIM' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.USERNAME_CLAIM' | appTranslate"
                 name="usernameClaim"
                 [(ngModel)]="config().usernameClaim"
               ></ion-input>
             </ion-item>
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.SCOPES' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'OIDC_CONFIG.SCOPES' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.SCOPES' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.SCOPES' | appTranslate"
                 name="scopes"
                 [(ngModel)]="config().scopes"
               ></ion-input>
             </ion-item>
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'OIDC_CONFIG.POST_LOGOUT_URI' | translate
+                'OIDC_CONFIG.POST_LOGOUT_URI' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.POST_LOGOUT_URI' | translate"
+                [attr.aria-label]="'OIDC_CONFIG.POST_LOGOUT_URI' | appTranslate"
                 name="postLogoutRedirectUri"
                 [(ngModel)]="config().postLogoutRedirectUri"
               ></ion-input>
@@ -228,10 +227,10 @@ const DEFAULTS: OidcConfig = {
 
             <div class="actions">
               <ion-button fill="clear" type="button" color="danger" (click)="onDelete()">
-                {{ 'COMMON.DELETE' | translate }}
+                {{ 'COMMON.DELETE' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="button" [disabled]="isSaving()" (click)="onSave()">
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               </ion-button>
             </div>
           </form>

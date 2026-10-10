@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -61,7 +61,7 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     ProductAccountingSectionComponent,
     IonButton,
     IonSpinner,
@@ -83,8 +83,8 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
           <ion-card-title>
             {{
               isEditMode()
-                ? ('PRODUCTS.EDIT_FIXED_DEPOSIT_PRODUCT' | translate)
-                : ('PRODUCTS.CREATE_FIXED_DEPOSIT_PRODUCT' | translate)
+                ? ('PRODUCTS.EDIT_FIXED_DEPOSIT_PRODUCT' | appTranslate)
+                : ('PRODUCTS.CREATE_FIXED_DEPOSIT_PRODUCT' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -93,9 +93,9 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
           <form #productForm="ngForm" (ngSubmit)="onSubmit()" class="product-form">
             <div class="form-grid">
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.NAME' | translate"
+                  [attr.aria-label]="'COMMON.NAME' | appTranslate"
                   name="name"
                   [(ngModel)]="product()['name']"
                   required
@@ -103,9 +103,9 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'PRODUCTS.SHORT_NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'PRODUCTS.SHORT_NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'PRODUCTS.SHORT_NAME' | translate"
+                  [attr.aria-label]="'PRODUCTS.SHORT_NAME' | appTranslate"
                   name="shortName"
                   [(ngModel)]="product()['shortName']"
                   required
@@ -114,9 +114,11 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
               </ion-item>
 
               <ion-item fill="outline" class="full-width">
-                <ion-label position="stacked">{{ 'PRODUCTS.DESCRIPTION' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'PRODUCTS.DESCRIPTION' | appTranslate
+                }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'PRODUCTS.DESCRIPTION' | translate"
+                  [attr.aria-label]="'PRODUCTS.DESCRIPTION' | appTranslate"
                   name="description"
                   [(ngModel)]="product()['description']"
                   rows="2"
@@ -125,9 +127,9 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'PRODUCTS.CURRENCY' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'PRODUCTS.CURRENCY' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'PRODUCTS.CURRENCY' | translate"
+                  [attr.aria-label]="'PRODUCTS.CURRENCY' | appTranslate"
                   interface="popover"
                   name="currencyCode"
                   [(ngModel)]="product()['currencyCode']"
@@ -143,10 +145,10 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'PRODUCTS.DECIMAL_PLACES' | translate
+                  'PRODUCTS.DECIMAL_PLACES' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'PRODUCTS.DECIMAL_PLACES' | translate"
+                  [attr.aria-label]="'PRODUCTS.DECIMAL_PLACES' | appTranslate"
                   type="number"
                   name="digitsAfterDecimal"
                   [(ngModel)]="product()['digitsAfterDecimal']"
@@ -155,9 +157,9 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.AMOUNT' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.AMOUNT' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.AMOUNT' | translate"
+                  [attr.aria-label]="'COMMON.AMOUNT' | appTranslate"
                   type="number"
                   name="depositAmount"
                   [(ngModel)]="product()['depositAmount']"
@@ -167,10 +169,10 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'PRODUCTS.MIN_DEPOSIT_TERM' | translate
+                  'PRODUCTS.MIN_DEPOSIT_TERM' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'PRODUCTS.MIN_DEPOSIT_TERM' | translate"
+                  [attr.aria-label]="'PRODUCTS.MIN_DEPOSIT_TERM' | appTranslate"
                   type="number"
                   name="minDepositTerm"
                   [(ngModel)]="product()['minDepositTerm']"
@@ -179,23 +181,27 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'PRODUCTS.MIN_TERM_TYPE' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'PRODUCTS.MIN_TERM_TYPE' | appTranslate
+                }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'PRODUCTS.MIN_TERM_TYPE' | translate"
+                  [attr.aria-label]="'PRODUCTS.MIN_TERM_TYPE' | appTranslate"
                   interface="popover"
                   name="minDepositTermTypeId"
                   [(ngModel)]="product()['minDepositTermTypeId']"
                   required
                 >
-                  <ion-select-option [value]="0">{{ 'COMMON.DAYS' | translate }}</ion-select-option>
+                  <ion-select-option [value]="0">{{
+                    'COMMON.DAYS' | appTranslate
+                  }}</ion-select-option>
                   <ion-select-option [value]="1">{{
-                    'COMMON.WEEKS' | translate
+                    'COMMON.WEEKS' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="2">{{
-                    'COMMON.MONTHS' | translate
+                    'COMMON.MONTHS' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="3">{{
-                    'COMMON.YEARS' | translate
+                    'COMMON.YEARS' | appTranslate
                   }}</ion-select-option>
                 </ion-select>
               </ion-item>
@@ -213,7 +219,7 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -222,9 +228,9 @@ const FIXED_PRODUCTS_PATH = '/products/fixed';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

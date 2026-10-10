@@ -20,11 +20,11 @@
 import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError, Observable } from 'rxjs';
 import { ClientDocumentsListComponent } from './client-documents-list.component';
 import { DocumentsService, DocumentData } from '../../../api';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ClientDocumentsListComponent', () => {
   let component: ClientDocumentsListComponent;
@@ -44,13 +44,11 @@ describe('ClientDocumentsListComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot(),
-        RouterTestingModule,
-        NoopAnimationsModule,
-        ClientDocumentsListComponent,
+      imports: [RouterTestingModule, NoopAnimationsModule, ClientDocumentsListComponent],
+      providers: [
+        ...provideTranslateTesting(),
+        { provide: DocumentsService, useValue: documentsServiceSpy },
       ],
-      providers: [{ provide: DocumentsService, useValue: documentsServiceSpy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ClientDocumentsListComponent);

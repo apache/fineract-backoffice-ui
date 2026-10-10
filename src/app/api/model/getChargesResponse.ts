@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { GetChargesFeeFrequencyResponse } from './getChargesFeeFrequencyResponse';
 import { GetChargesAppliesToResponse } from './getChargesAppliesToResponse';
 import { GetChargesPaymentModeResponse } from './getChargesPaymentModeResponse';
 import { GetChargesTaxGroup } from './getChargesTaxGroup';
@@ -42,6 +43,7 @@ export interface GetChargesResponse {
     chargePaymentMode?: GetChargesPaymentModeResponse;
     chargeTimeType?: GetChargesTimeTypeResponse;
     currency?: GetChargesCurrencyResponse;
+    feeFrequency?: GetChargesFeeFrequencyResponse;
     id?: number;
     maxCap?: number;
     minCap?: number;

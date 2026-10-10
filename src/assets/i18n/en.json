@@ -194,6 +194,7 @@
     "CLIENT_ID": "Client ID",
     "CLOSE": "Close",
     "CLOSED": "Closed",
+    "OPEN": "Open",
     "COMMENT": "Comment",
     "CONFIRM": "Confirm",
     "CREATE": "Create",
@@ -213,7 +214,8 @@
       "FORBIDDEN": "You do not have permission to perform this action. Contact an administrator if you believe this is a mistake.",
       "NETWORK": "Unable to connect to the server. Please check your network or CORS settings.",
       "UNEXPECTED": "Something went wrong. The action was not completed — please try again.",
-      "LOAD_FAILED": "This list could not be loaded."
+      "LOAD_FAILED": "This list could not be loaded.",
+      "LOAD_FORBIDDEN": "Your role does not cover this list. Contact an administrator if you believe this is a mistake."
     },
     "EVERY": "every",
     "EXIT": "Exit",
@@ -282,6 +284,7 @@
     "SUBMIT": "Submit",
     "SUBMITTED_BY": "Submitted By",
     "SUBMITTED_ON": "Submitted On",
+    "SUBMITTED_ON_DATE": "Submitted On Date",
     "SUCCESS": "Done.",
     "SUNDAY": "Sunday",
     "TERM": "Term",
@@ -505,7 +508,10 @@
   },
   "CHARGES": {
     "CREATE": "Create Charge",
-    "EDIT": "Edit Charge"
+    "EDIT": "Edit Charge",
+    "APPLIES_TO": "Applies To",
+    "TIME_TYPE": "Charge Time Type",
+    "CALCULATION_TYPE": "Calculation Type"
   },
   "LOANS": {
     "ACCOUNT_NO": "Account No",
@@ -555,6 +561,7 @@
     "REQUEST_RESCHEDULE": "Request Reschedule",
     "RESCHEDULE_FROM": "Reschedule From",
     "RESCHEDULE_REQUEST_DETAILS": "Reschedule Request Details",
+    "RESCHEDULE_REQUESTS": "Loan Reschedule Requests",
     "OVERVIEW": "Overview",
     "REPAYMENT_SCHEDULE": "Repayment Schedule",
     "TRANSACTIONS": "Transactions",
@@ -663,6 +670,8 @@
     "BUY_DOWN_FEE_AMOUNT": "Buy Down Fee Amount",
     "NOT_YET_AMORTIZED_AMOUNT": "Not Yet Amortized Amount",
     "UNRECOGNIZED_AMOUNT": "Unrecognized Amount",
+    "AMOUNT_ADJUSTMENT": "Amount Adjustment",
+    "CHARGED_OFF_AMOUNT": "Charged Off Amount",
     "NOTES": "Notes",
     "ADD_NOTE": "Add a note",
     "DELETE_NOTE": "Delete note",
@@ -712,6 +721,16 @@
     "LIFTED_ON": "Lifted On",
     "PAUSE_START": "Pause Start",
     "PAUSE_END": "Pause End",
+    "PAUSE_IN_EFFECT": "In effect",
+    "PAUSE_NOT_IN_EFFECT": "Not in effect",
+    "PAUSE_DELINQUENCY": "Pause Delinquency",
+    "PAUSE_DELINQUENCY_HINT": "While delinquency is paused, the loan's delinquency classification is not re-evaluated, so its arrears stop ageing. Use it for an agreed payment holiday or moratorium.",
+    "PAUSE_END_AFTER_START": "The pause must end after it starts.",
+    "DELINQUENCY_PAUSED": "Delinquency paused.",
+    "RESUME_DELINQUENCY": "Resume Delinquency",
+    "CONFIRM_RESUME_DELINQUENCY": "Resume delinquency now? The pause ends on the current business date, and delinquency is evaluated again at the next close of business.",
+    "RESUME_DATE": "Resumes on",
+    "DELINQUENCY_RESUMED": "Delinquency resumed.",
     "TERM_VARIATIONS": "Term Variations",
     "TERM_VARIATION_TYPE": "Variation Type",
     "APPLICABLE_FROM": "Applicable From",
@@ -738,7 +757,18 @@
     "OWNER": "Owner",
     "PURCHASE_PRICE_RATIO": "Purchase Price Ratio",
     "SETTLEMENT_DATE": "Settlement Date",
-    "EFFECTIVE_FROM": "Effective From"
+    "EFFECTIVE_FROM": "Effective From",
+    "RESCHEDULE_FORM": {
+      "TITLE": "Request Loan Reschedule",
+      "FROM_DATE": "Reschedule From Date",
+      "FROM_DATE_HINT": "Must be an existing installment date",
+      "REASON_NAME_MANUAL": "Reason Name (Manual)",
+      "ADJUSTED_DUE_DATE": "Adjusted Due Date (Optional)",
+      "GRACE_ON_PRINCIPAL": "Grace on Principal",
+      "GRACE_ON_INTEREST": "Grace on Interest",
+      "EXTRA_TERMS": "Extra Terms",
+      "NEW_INTEREST_RATE": "New Interest Rate"
+    }
   },
   "TEMPLATES": {
     "TITLE": "Document Templates",
@@ -906,7 +936,9 @@
     "BACK_TO_CLIENTS": "Back to clients",
     "ERRORS": {
       "NOT_FOUND": "This client doesn't exist, or you don't have permission to view it."
-    }
+    },
+    "TRANSFER_TYPE_ACCOUNT_TRANSFER": "Account Transfer",
+    "TRANSFER_TYPE_LOAN_REPAYMENT": "Loan Repayment"
   },
   "SAVINGS": {
     "CREATE_ACCOUNT": "Create Savings Account",
@@ -973,7 +1005,15 @@
     "TRANSFER_IN": "Into this account",
     "TRANSFER_OUT": "Out of this account",
     "ACCOUNT_DETAILS": "Savings Account Details",
-    "TRANSACTION": "Savings Transaction"
+    "TRANSACTION": "Savings Transaction",
+    "INTEREST_SETTINGS": "Interest Settings",
+    "NOMINAL_ANNUAL_INTEREST_RATE": "Nominal Annual Interest Rate",
+    "COMPOUNDING_PERIOD": "Compounding Period",
+    "POSTING_PERIOD": "Posting Period",
+    "INTEREST_CALC_DAYS_IN_YEAR": "Interest Calculation Day-in-Year",
+    "TIMELINE_AND_BALANCE": "Timeline & Balance",
+    "ACTIVATED_ON_DATE": "Activated On Date",
+    "FIELD_OFFICER": "Field Officer"
   },
   "USERS": {
     "CREATE": "Create User",
@@ -991,6 +1031,7 @@
     "CREATE_STAFF": "Create Staff Member",
     "EDIT_STAFF": "Edit Staff Member",
     "IS_LOAN_OFFICER": "Is Loan Officer",
+    "FORCE_STATUS": "Force Status",
     "LOAN_PORTFOLIO_SUMMARY": "Loan Portfolio Summary",
     "LOAN_STATUS": "Loan Status",
     "LOAN_STATUS_CLOSED": "Closed (Obligations Met)",
@@ -1016,7 +1057,13 @@
   },
   "SECURITY": {
     "AUDIT_LOGS": "Audit Logs",
-    "RESOURCE_ID": "Resource ID"
+    "RESOURCE_ID": "Resource ID",
+    "ACTION_NAME": "Action Name",
+    "ENTITY_NAME": "Entity Name",
+    "MAKER_ID": "Maker ID",
+    "MAKER_DATE_FROM": "Maker Date From",
+    "MAKER_DATE_TO": "Maker Date To",
+    "PROCESSING_RESULT": "Processing Result"
   },
   "SYSTEM": {
     "DATA_TABLES": "Data Tables",
@@ -1080,7 +1127,17 @@
     "NAME": "Rule Name",
     "OFFICE": "Office",
     "DEBITS": "Debit Accounts",
-    "CREDITS": "Credit Accounts"
+    "CREDITS": "Credit Accounts",
+    "DEBIT_DETAILS": "Debit Details",
+    "CREDIT_DETAILS": "Credit Details",
+    "FIXED_ACCOUNT": "Fixed Account",
+    "ACCOUNT_TAGS": "Account Tags",
+    "ACCOUNT_TO_DEBIT": "Account to Debit",
+    "DEBIT_TAGS": "Debit Tags",
+    "ALLOW_MULTIPLE_DEBIT_ENTRIES": "Allow Multiple Debit Entries",
+    "ACCOUNT_TO_CREDIT": "Account to Credit",
+    "CREDIT_TAGS": "Credit Tags",
+    "ALLOW_MULTIPLE_CREDIT_ENTRIES": "Allow Multiple Credit Entries"
   },
   "ROLES": {
     "CREATE": "Create Role",
@@ -1332,12 +1389,19 @@
     "DELETE_TITLE": "Delete Holiday",
     "DELETE_CONFIRM": "Delete the holiday “{{name}}”? Repayment dates it moved return to their original schedule."
   },
+  "WORKING_DAYS": {
+    "TITLE": "Working Days & Reschedule Rules",
+    "REPAYMENTS_RESCHEDULING_RULE": "Repayments Rescheduling Rule",
+    "EXTEND_TERM_DAILY_REPAYMENTS": "Extend Term for Daily Repayments",
+    "EXTEND_TERM_HOLIDAY_REPAYMENTS": "Extend Term for Repayments on Holidays"
+  },
   "ACCOUNTING_CLOSURES": {
     "CREATE": "Close Period",
     "REOPEN": "Re-open Period",
     "CLOSING_DATE": "Closing Date",
     "IS_CLOSED": "Is Closed",
-    "COMMENTS": "Comments"
+    "COMMENTS": "Comments",
+    "CLOSE_ACCOUNTING_PERIOD": "Close Accounting Period"
   },
   "JOURNAL_ENTRIES": {
     "CREATE": "Add Journal Entry",
@@ -1369,7 +1433,9 @@
     "ALL_ACCOUNTS": "All Accounts",
     "ALL_ENTRIES": "All Entries",
     "MANUAL_ENTRIES": "Manual Entries Only",
-    "LEDGER_ACCOUNT": "Ledger Account"
+    "LEDGER_ACCOUNT": "Ledger Account",
+    "ADD_DEBIT": "Add Debit",
+    "ADD_CREDIT": "Add Credit"
   },
   "OFFICES": {
     "CREATE_OFFICE": "Create Office",
@@ -1501,7 +1567,8 @@
     "HEADER": "Header",
     "DETAIL": "Detail",
     "ACCOUNT_NAME": "Account Name",
-    "FINANCIAL_ACTIVITY": "Financial Activity"
+    "FINANCIAL_ACTIVITY": "Financial Activity",
+    "GL_ACCOUNT": "GL Account"
   },
   "MODULES": {
     "CLIENTS_CONTRACTS": "Clients & Contracts",
@@ -1674,7 +1741,11 @@
     "proxyOption": "Local proxy (same origin)",
     "customOption": "Custom URL…",
     "errors": {
-      "endpointNotAllowed": "That API endpoint is not permitted by this deployment. Ask your administrator to add it to the allowed list."
+      "endpointNotAllowed": "That API endpoint is not permitted by this deployment. Ask your administrator to add it to the allowed list.",
+      "invalidCredentials": "The username or password was not accepted.",
+      "endpointNotFound": "No sign-in endpoint was found at this address. Check the API endpoint selected above.",
+      "serverUnreachable": "The server could not be reached. Check the API endpoint selected above and your connection.",
+      "failed": "Sign-in failed. Check your credentials and the API endpoint selected above."
     },
     "twoFactor": {
       "title": "Two-step verification",
@@ -1899,7 +1970,11 @@
     "DATE": "As of Date",
     "LOAN_IDS": "Loan IDs (comma-separated, optional)",
     "SEARCH": "Search",
-    "NO_RESULTS": "No results found"
+    "NO_RESULTS": "No results found",
+    "LOAN_ID": "Loan ID",
+    "PRINCIPAL_DISBURSED": "Principal Disbursed",
+    "PRINCIPAL_OUTSTANDING": "Principal Outstanding",
+    "TOTAL_OUTSTANDING": "Total Outstanding"
   },
   "NOTIFICATIONS": {
     "TITLE": "Notifications",
@@ -1977,7 +2052,8 @@
     "GENERATE": "Generate",
     "SAVE": "Save Collection Sheet",
     "BACK": "Back",
-    "RESULTS": "Collection Results"
+    "RESULTS": "Collection Results",
+    "NOTHING_DUE": "Nothing is due for this office on this date."
   },
   "COLLATERAL_MANAGEMENT": {
     "CREATE": "Create Collateral",
@@ -2318,7 +2394,8 @@
     "REJECT_TITLE": "Reject task",
     "CONFIRM_REJECT": "Are you sure you want to reject this task?",
     "REJECT_SUCCESS": "Task rejected successfully",
-    "REJECT_ERROR": "Failed to reject task"
+    "REJECT_ERROR": "Failed to reject task",
+    "COMMAND_PAYLOAD": "Command Payload"
   },
   "BUSINESS_DATES": {
     "TITLE": "Business Date Management",
@@ -2536,11 +2613,13 @@
   },
   "ASSET_OWNERS": {
     "TITLE": "External Asset Owners",
+    "DETAILS": "Asset Owner Details",
     "LOAN_PRODUCT_ATTRIBUTES": "Loan Product Attributes",
     "ATTRIBUTE_KEY": "Key",
     "ATTRIBUTE_VALUE": "Value",
     "OWNER_ID": "Owner ID",
-    "PURCHASE_RATIO": "Purchase Ratio"
+    "PURCHASE_RATIO": "Purchase Ratio",
+    "VIEW_LOAN_ACCOUNT": "View Loan Account"
   },
   "SPM": {
     "LOOKUP_TABLES": "Lookup Tables",
@@ -2601,7 +2680,8 @@
     "DELETE": "Delete",
     "SAVE": "Save",
     "SUCCESS": "Operation successful.",
-    "NO_DATA": "No data found."
+    "NO_DATA": "No data found.",
+    "PARAMETERIZED_MESSAGE": "Parameterized Message"
   },
   "EMAIL_MESSAGES": {
     "TITLE": "Email Messages",
@@ -2617,7 +2697,8 @@
     "SAVE_CONFIG": "Save Config",
     "DELETE": "Delete",
     "SUCCESS": "Operation successful.",
-    "SENT_DATE": "Sent Date"
+    "SENT_DATE": "Sent Date",
+    "CONFIGURATION_JSON": "Configuration JSON"
   },
   "OFFICE_TRANSACTIONS": {
     "TITLE": "Office Transactions",
@@ -2758,7 +2839,8 @@
     "TX_CODE": "Transaction Code",
     "QUOTE_CODE": "Quote Code",
     "CREATE_QUOTE": "Create Quote",
-    "QUOTE_BODY": "Quote Request (JSON)"
+    "QUOTE_BODY": "Quote Request (JSON)",
+    "DISBURSE_REPAY": "Disburse / Repay"
   },
   "FORGOT_PASSWORD": {
     "TITLE": "Forgot Password",

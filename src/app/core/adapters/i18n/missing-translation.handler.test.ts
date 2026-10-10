@@ -19,7 +19,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { TranslateStore } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import {
   MISSING_TRANSLATION_PREFIX,
   ReportingMissingTranslationHandler,
@@ -29,20 +29,28 @@ const LANG = 'en';
 const KEY = 'SAVINGS.CONFIRM_UNDO';
 
 describe('ReportingMissingTranslationHandler', () => {
-  let store: TranslateStore;
   let handler: ReportingMissingTranslationHandler;
   let warn: ReturnType<typeof vi.spyOn>;
 
-  /** A loaded catalogue, which is the state in which a miss means something. */
-  function loadCatalogue(): void {
-    store.setCurrentLang(LANG);
-    store.setTranslations(LANG, { COMMON: { SAVE: 'Save' } }, false);
+  /**
+   * The service a miss came from, in the state the handler asks about: which language is
+   * current, and what that language has loaded. `getTranslations` answers `undefined` for a
+   * language that has not loaded, whatever its declared type says.
+   */
+  function serviceWith(catalogue: Record<string, unknown> | undefined): TranslateService {
+    return {
+      getCurrentLang: () => LANG,
+      getTranslations: () => catalogue,
+    } as unknown as TranslateService;
   }
+
+  /** A loaded catalogue, which is the state in which a miss means something. */
+  const loaded = () => serviceWith({ COMMON: { SAVE: 'Save' } });
+  const miss = (key: string, translateService: TranslateService) =>
+    handler.handle({ key, translateService });
 
   beforeEach(() => {
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [TranslateStore] });
-    store = TestBed.inject(TranslateStore);
     handler = TestBed.inject(ReportingMissingTranslationHandler);
     warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   });
@@ -51,13 +59,11 @@ describe('ReportingMissingTranslationHandler', () => {
 
   /** Callers render whatever comes back, so this is the assertion a user would notice. */
   it('returns the key, leaving what the user sees unchanged', () => {
-    loadCatalogue();
-    expect(handler.handle({ key: KEY, translateService: null as never })).toBe(KEY);
+    expect(miss(KEY, loaded())).toBe(KEY);
   });
 
   it('reports a key missing from a catalogue that has loaded', () => {
-    loadCatalogue();
-    handler.handle({ key: KEY, translateService: null as never });
+    miss(KEY, loaded());
 
     expect(warn).toHaveBeenCalledWith(`${MISSING_TRANSLATION_PREFIX} ${KEY}`);
   });
@@ -67,16 +73,13 @@ describe('ReportingMissingTranslationHandler', () => {
    * the application misses; reporting that window would bury the real misses.
    */
   it('stays silent while no catalogue has loaded yet', () => {
-    store.setCurrentLang(LANG);
-    handler.handle({ key: KEY, translateService: null as never });
+    miss(KEY, serviceWith(undefined));
 
     expect(warn).not.toHaveBeenCalled();
   });
 
   it('stays silent when the catalogue loaded empty', () => {
-    store.setCurrentLang(LANG);
-    store.setTranslations(LANG, {}, false);
-    handler.handle({ key: KEY, translateService: null as never });
+    miss(KEY, serviceWith({}));
 
     expect(warn).not.toHaveBeenCalled();
   });
@@ -87,17 +90,16 @@ describe('ReportingMissingTranslationHandler', () => {
    * returned verbatim — so every branded deployment sends its own labels through here.
    */
   it('stays silent for a phrase, which is a deployment override doing its job', () => {
-    loadCatalogue();
+    const service = loaded();
     for (const phrase of ['Members', 'Member Groups', 'Field CRM']) {
-      handler.handle({ key: phrase, translateService: null as never });
+      miss(phrase, service);
     }
 
     expect(warn).not.toHaveBeenCalled();
   });
 
   it('still returns the phrase, so the override renders', () => {
-    loadCatalogue();
-    expect(handler.handle({ key: 'Members', translateService: null as never })).toBe('Members');
+    expect(miss('Members', loaded())).toBe('Members');
   });
 
   /**
@@ -105,9 +107,9 @@ describe('ReportingMissingTranslationHandler', () => {
    * broken binding writes thousands of identical lines.
    */
   it('reports each key once however often it misses', () => {
-    loadCatalogue();
+    const service = loaded();
     for (let i = 0; i < 5; i++) {
-      handler.handle({ key: KEY, translateService: null as never });
+      miss(KEY, service);
     }
 
     expect(warn).toHaveBeenCalledTimes(1);

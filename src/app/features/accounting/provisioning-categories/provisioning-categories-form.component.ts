@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ProvisioningCategoryService, ProvisioningCategoryData } from '../../../api';
 import {
   IonButton,
@@ -42,7 +42,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -60,8 +60,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('PROVISIONING_CATEGORIES.EDIT' | translate)
-                : ('PROVISIONING_CATEGORIES.CREATE' | translate)
+                ? ('PROVISIONING_CATEGORIES.EDIT' | appTranslate)
+                : ('PROVISIONING_CATEGORIES.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -70,10 +70,10 @@ import {
           <form #categoryForm="ngForm" (ngSubmit)="onSubmit()" class="provisioning-form">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'PROVISIONING_CATEGORIES.NAME' | translate
+                'PROVISIONING_CATEGORIES.NAME' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'PROVISIONING_CATEGORIES.NAME' | translate"
+                [attr.aria-label]="'PROVISIONING_CATEGORIES.NAME' | appTranslate"
                 name="categoryName"
                 [(ngModel)]="category().categoryName"
                 required
@@ -82,10 +82,10 @@ import {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'PROVISIONING_CATEGORIES.DESCRIPTION' | translate
+                'PROVISIONING_CATEGORIES.DESCRIPTION' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'PROVISIONING_CATEGORIES.DESCRIPTION' | translate"
+                [attr.aria-label]="'PROVISIONING_CATEGORIES.DESCRIPTION' | appTranslate"
                 name="categoryDescription"
                 [(ngModel)]="category().categoryDescription"
               ></ion-input>
@@ -93,7 +93,7 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -102,9 +102,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

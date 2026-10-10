@@ -19,7 +19,7 @@
 
 import { inject, input, signal, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   DataTableComponent,
   ColumnDef,
@@ -36,7 +36,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     HasPermissionDirective,
     CellTemplateDirective,
@@ -53,7 +53,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
         *appHasPermission="'CREATE_ADDRESS'"
       >
         <ion-icon name="add-outline"></ion-icon>
-        {{ 'CLIENTS.ADD_ADDRESS' | translate }}
+        {{ 'CLIENTS.ADD_ADDRESS' | appTranslate }}
       </ion-button>
     </div>
 
@@ -82,8 +82,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
             color="primary"
             [routerLink]="['/clients', clientId(), 'addresses', 'edit', row.addressId]"
             *appHasPermission="'UPDATE_ADDRESS'"
-            [attr.aria-label]="'COMMON.EDIT' | translate"
-            [appTooltip]="'COMMON.EDIT' | translate"
+            [attr.aria-label]="'COMMON.EDIT' | appTranslate"
+            [appTooltip]="'COMMON.EDIT' | appTranslate"
           >
             <ion-icon name="create-outline"></ion-icon>
           </ion-button>

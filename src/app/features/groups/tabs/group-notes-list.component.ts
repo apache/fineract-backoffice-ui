@@ -29,8 +29,8 @@ import {
   HasPermissionDirective,
 } from '../../../shared';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { NotesService, NoteData } from '../../../api';
-import { I18N, TranslatePipe } from '../../../core/adapters';
+import { ENTITY_NOTES_API, I18N, TranslatePipe } from '../../../core/adapters';
+import type { EntityNote } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
@@ -135,12 +135,12 @@ export class GroupNotesListComponent implements OnInit {
    */
   readonly basePath = input<string>('/groups');
 
-  private readonly noteService = inject(NotesService);
+  private readonly notesApi = inject(ENTITY_NOTES_API);
   private readonly dialogService = inject(DialogService);
   private readonly notifications = inject(NotificationService);
   private readonly i18n = inject(I18N);
 
-  readonly notes = signal<NoteData[]>([]);
+  readonly notes = signal<EntityNote[]>([]);
   readonly isLoading = signal(false);
   readonly hasError = signal(false);
 
@@ -157,9 +157,9 @@ export class GroupNotesListComponent implements OnInit {
 
   loadNotes(): void {
     this.isLoading.set(true);
-    this.noteService.getResourceTypeResourceIdNotes('groups', this.groupId()).subscribe({
+    this.notesApi.list('groups', this.groupId()).subscribe({
       next: (data) => {
-        this.notes.set(data ?? []);
+        this.notes.set(data);
         this.hasError.set(false);
         this.isLoading.set(false);
       },
@@ -178,15 +178,13 @@ export class GroupNotesListComponent implements OnInit {
     });
     if (!confirmed) return;
 
-    this.noteService
-      .deleteResourceTypeResourceIdNotesNoteId('groups', this.groupId(), noteId)
-      .subscribe({
-        next: () => {
-          void this.notifications.success(this.i18n.translate('GROUPS.NOTE_DELETED'));
-          this.loadNotes();
-        },
-        // No toast: errorInterceptor already raises one with the platform's message.
-        error: () => undefined,
-      });
+    this.notesApi.remove('groups', this.groupId(), noteId).subscribe({
+      next: () => {
+        void this.notifications.success(this.i18n.translate('GROUPS.NOTE_DELETED'));
+        this.loadNotes();
+      },
+      // No toast: errorInterceptor already raises one with the platform's message.
+      error: () => undefined,
+    });
   }
 }

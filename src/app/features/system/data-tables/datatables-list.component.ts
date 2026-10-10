@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import {
   DataTableComponent,
   ColumnDef,
@@ -28,7 +28,6 @@ import {
 } from '../../../shared';
 import { DataTablesService, GetDataTablesResponse } from '../../../api';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
@@ -37,7 +36,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     HasPermissionDirective,
     CellTemplateDirective,
@@ -59,7 +58,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
         icon="add-outline"
         headerActions
         *appHasPermission="'CREATE_DATATABLE'"
-        >{{ 'SYSTEM.CREATE_DATA_TABLE' | translate }}</app-button
+        >{{ 'SYSTEM.CREATE_DATA_TABLE' | appTranslate }}</app-button
       >
 
       <ng-template appCellTemplate="actions" let-row>
@@ -68,21 +67,21 @@ import { ButtonComponent } from '../../../ui/button/button.component';
             type="button"
             intent="primary"
             emphasis="quiet"
-            [label]="'COMMON.EDIT' | translate"
+            [label]="'COMMON.EDIT' | appTranslate"
             [link]="['edit', row.registeredTableName]"
             icon="create-outline"
             *appHasPermission="'UPDATE_DATATABLE'"
-            [appTooltip]="'COMMON.EDIT' | translate"
+            [appTooltip]="'COMMON.EDIT' | appTranslate"
           />
           <app-button
             type="button"
             intent="danger"
             emphasis="quiet"
-            [label]="'COMMON.DELETE' | translate"
+            [label]="'COMMON.DELETE' | appTranslate"
             icon="trash-outline"
             (click)="onDelete(row.registeredTableName)"
             *appHasPermission="'DELETE_DATATABLE'"
-            [appTooltip]="'COMMON.DELETE' | translate"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
           />
         </div>
       </ng-template>

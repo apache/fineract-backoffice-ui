@@ -22,10 +22,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClientCollateralListComponent } from './client-collateral-list.component';
 import { ClientCollateralManagementService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { of, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DialogService } from '../../../core/services/dialog.service';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ClientCollateralListComponent', () => {
   let component: ClientCollateralListComponent;
@@ -49,8 +49,9 @@ describe('ClientCollateralListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [ClientCollateralListComponent, TranslateModule.forRoot()],
+      imports: [ClientCollateralListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: ClientCollateralManagementService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: DialogService, useValue: dialogService },
@@ -92,5 +93,39 @@ describe('ClientCollateralListComponent', () => {
     component.onDelete({ id: 5, name: 'Y' });
     await fixture.whenStable();
     expect(serviceSpy.deleteClientsClientIdCollateralsCollateralId).not.toHaveBeenCalled();
+  });
+
+  it('sets hasError to true when loading client collaterals fails', () => {
+    serviceSpy.getClientsClientIdCollaterals.mockReturnValue(
+      throwError(() => new Error('Network error')) as unknown as ReturnType<
+        ClientCollateralManagementService['getClientsClientIdCollaterals']
+      >,
+    );
+    const failedFixture = TestBed.createComponent(ClientCollateralListComponent);
+    failedFixture.detectChanges();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(true);
+  });
+
+  it('retries loading client collaterals and resets hasError on retry', () => {
+    serviceSpy.getClientsClientIdCollaterals.mockReturnValue(
+      throwError(() => new Error('Network error')) as unknown as ReturnType<
+        ClientCollateralManagementService['getClientsClientIdCollaterals']
+      >,
+    );
+    const failedFixture = TestBed.createComponent(ClientCollateralListComponent);
+    failedFixture.detectChanges();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(true);
+
+    serviceSpy.getClientsClientIdCollaterals.mockReturnValue(
+      of([{ id: 1, name: 'Gold', quantity: 5 }]) as unknown as ReturnType<
+        ClientCollateralManagementService['getClientsClientIdCollaterals']
+      >,
+    );
+    failedFixture.componentInstance.onRetry();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(false);
+    expect(failedFixture.componentInstance.collaterals()).toHaveLength(1);
   });
 });

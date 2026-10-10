@@ -22,6 +22,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { HasInstitutionFeatureDirective } from './has-institution-feature.directive';
 import { InstitutionConfigService } from '../../core/services/institution-config.service';
+import { provideFakeAdapters } from '../../testing/adapters';
 import { provideTestConfig } from '../../testing/config';
 
 @Component({
@@ -52,18 +53,17 @@ describe('HasInstitutionFeatureDirective', () => {
   function configure(rbacEnabled: boolean): void {
     TestBed.configureTestingModule({
       imports: [TestComponent],
-      providers: [InstitutionConfigService, provideTestConfig({ rbacEnabled })],
+      providers: [
+        InstitutionConfigService,
+        provideTestConfig({ rbacEnabled }),
+        ...provideFakeAdapters().providers,
+      ],
     });
     service = TestBed.inject(InstitutionConfigService);
   }
 
   beforeEach(() => {
-    localStorage.clear();
     configure(true);
-  });
-
-  afterEach(() => {
-    localStorage.clear();
   });
 
   it('should render all feature items for "universal"', () => {

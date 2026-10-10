@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -65,7 +65,7 @@ export interface MiniAccount {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonItem,
@@ -87,8 +87,8 @@ export interface MiniAccount {
           <ion-card-title>
             {{
               isEditMode
-                ? ('CLIENTS.EDIT_STANDING_INSTRUCTION' | translate)
-                : ('CLIENTS.CREATE_STANDING_INSTRUCTION' | translate)
+                ? ('CLIENTS.EDIT_STANDING_INSTRUCTION' | appTranslate)
+                : ('CLIENTS.CREATE_STANDING_INSTRUCTION' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -98,9 +98,9 @@ export interface MiniAccount {
             <div class="form-grid">
               <!-- Header Info -->
               <ion-item fill="outline" class="full-width">
-                <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.NAME' | translate"
+                  [attr.aria-label]="'COMMON.NAME' | appTranslate"
                   name="name"
                   [(ngModel)]="request.name"
                   required
@@ -109,11 +109,11 @@ export interface MiniAccount {
 
               <!-- From Account Section -->
               <div class="section-group">
-                <h3>{{ 'CLIENTS.TRANSFER_FROM' | translate }}</h3>
+                <h3>{{ 'CLIENTS.TRANSFER_FROM' | appTranslate }}</h3>
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.OFFICE' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'COMMON.OFFICE' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.OFFICE' | translate"
+                    [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
                     interface="popover"
                     name="fromOfficeId"
                     [(ngModel)]="request.fromOfficeId"
@@ -127,9 +127,9 @@ export interface MiniAccount {
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.CLIENT' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'COMMON.CLIENT' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.CLIENT' | translate"
+                    [attr.aria-label]="'COMMON.CLIENT' | appTranslate"
                     interface="popover"
                     name="fromClientId"
                     [(ngModel)]="request.fromClientId"
@@ -145,9 +145,11 @@ export interface MiniAccount {
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'CLIENTS.ACCOUNT_TYPE' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'CLIENTS.ACCOUNT_TYPE' | appTranslate
+                  }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'CLIENTS.ACCOUNT_TYPE' | translate"
+                    [attr.aria-label]="'CLIENTS.ACCOUNT_TYPE' | appTranslate"
                     interface="popover"
                     name="fromAccountType"
                     [(ngModel)]="request.fromAccountType"
@@ -155,18 +157,20 @@ export interface MiniAccount {
                     required
                   >
                     <ion-select-option [value]="'2'">{{
-                      'nav.savingsAccounts' | translate
+                      'nav.savingsAccounts' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="'1'">{{
-                      'nav.loanAccounts' | translate
+                      'nav.loanAccounts' | appTranslate
                     }}</ion-select-option>
                   </ion-select>
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'CLIENTS.ACCOUNT_NO' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'CLIENTS.ACCOUNT_NO' | appTranslate
+                  }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'CLIENTS.ACCOUNT_NO' | translate"
+                    [attr.aria-label]="'CLIENTS.ACCOUNT_NO' | appTranslate"
                     interface="popover"
                     name="fromAccountId"
                     [(ngModel)]="request.fromAccountId"
@@ -183,11 +187,11 @@ export interface MiniAccount {
 
               <!-- To Account Section -->
               <div class="section-group">
-                <h3>{{ 'CLIENTS.TRANSFER_TO' | translate }}</h3>
+                <h3>{{ 'CLIENTS.TRANSFER_TO' | appTranslate }}</h3>
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.OFFICE' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'COMMON.OFFICE' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.OFFICE' | translate"
+                    [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
                     interface="popover"
                     name="toOfficeId"
                     [(ngModel)]="request.toOfficeId"
@@ -201,9 +205,9 @@ export interface MiniAccount {
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.CLIENT' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'COMMON.CLIENT' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.CLIENT' | translate"
+                    [attr.aria-label]="'COMMON.CLIENT' | appTranslate"
                     interface="popover"
                     name="toClientId"
                     [(ngModel)]="request.toClientId"
@@ -219,9 +223,11 @@ export interface MiniAccount {
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'CLIENTS.ACCOUNT_TYPE' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'CLIENTS.ACCOUNT_TYPE' | appTranslate
+                  }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'CLIENTS.ACCOUNT_TYPE' | translate"
+                    [attr.aria-label]="'CLIENTS.ACCOUNT_TYPE' | appTranslate"
                     interface="popover"
                     name="toAccountType"
                     [(ngModel)]="request.toAccountType"
@@ -229,18 +235,20 @@ export interface MiniAccount {
                     required
                   >
                     <ion-select-option [value]="'2'">{{
-                      'nav.savingsAccounts' | translate
+                      'nav.savingsAccounts' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="'1'">{{
-                      'nav.loanAccounts' | translate
+                      'nav.loanAccounts' | appTranslate
                     }}</ion-select-option>
                   </ion-select>
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'CLIENTS.ACCOUNT_NO' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'CLIENTS.ACCOUNT_NO' | appTranslate
+                  }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'CLIENTS.ACCOUNT_NO' | translate"
+                    [attr.aria-label]="'CLIENTS.ACCOUNT_NO' | appTranslate"
                     interface="popover"
                     name="toAccountId"
                     [(ngModel)]="request.toAccountId"
@@ -259,24 +267,28 @@ export interface MiniAccount {
               <div class="section-group full-width details-row">
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'CLIENTS.TRANSFER_TYPE' | translate
+                    'CLIENTS.TRANSFER_TYPE' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'CLIENTS.TRANSFER_TYPE' | translate"
+                    [attr.aria-label]="'CLIENTS.TRANSFER_TYPE' | appTranslate"
                     interface="popover"
                     name="transferType"
                     [(ngModel)]="request.transferType"
                     required
                   >
-                    <ion-select-option [value]="'1'">Account Transfer</ion-select-option>
-                    <ion-select-option [value]="'2'">Loan Repayment</ion-select-option>
+                    <ion-select-option [value]="'1'">{{
+                      'CLIENTS.TRANSFER_TYPE_ACCOUNT_TRANSFER' | appTranslate
+                    }}</ion-select-option>
+                    <ion-select-option [value]="'2'">{{
+                      'CLIENTS.TRANSFER_TYPE_LOAN_REPAYMENT' | appTranslate
+                    }}</ion-select-option>
                   </ion-select>
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.AMOUNT' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'COMMON.AMOUNT' | appTranslate }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'COMMON.AMOUNT' | translate"
+                    [attr.aria-label]="'COMMON.AMOUNT' | appTranslate"
                     type="number"
                     name="amount"
                     [(ngModel)]="request.amount"
@@ -286,10 +298,10 @@ export interface MiniAccount {
 
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'CLIENTS.INSTRUCTION_TYPE' | translate
+                    'CLIENTS.INSTRUCTION_TYPE' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'CLIENTS.INSTRUCTION_TYPE' | translate"
+                    [attr.aria-label]="'CLIENTS.INSTRUCTION_TYPE' | appTranslate"
                     interface="popover"
                     name="instructionType"
                     [(ngModel)]="request.instructionType"
@@ -301,9 +313,9 @@ export interface MiniAccount {
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.PRIORITY' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'COMMON.PRIORITY' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.PRIORITY' | translate"
+                    [attr.aria-label]="'COMMON.PRIORITY' | appTranslate"
                     interface="popover"
                     name="priority"
                     [(ngModel)]="request.priority"
@@ -320,10 +332,10 @@ export interface MiniAccount {
               <div class="section-group full-width recurrence-row">
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'CLIENTS.RECURRENCE_TYPE' | translate
+                    'CLIENTS.RECURRENCE_TYPE' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'CLIENTS.RECURRENCE_TYPE' | translate"
+                    [attr.aria-label]="'CLIENTS.RECURRENCE_TYPE' | appTranslate"
                     interface="popover"
                     name="recurrenceType"
                     [(ngModel)]="request.recurrenceType"
@@ -335,10 +347,10 @@ export interface MiniAccount {
 
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'CLIENTS.RECURRENCE_FREQUENCY' | translate
+                    'CLIENTS.RECURRENCE_FREQUENCY' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'CLIENTS.RECURRENCE_FREQUENCY' | translate"
+                    [attr.aria-label]="'CLIENTS.RECURRENCE_FREQUENCY' | appTranslate"
                     interface="popover"
                     name="recurrenceFrequency"
                     [(ngModel)]="request.recurrenceFrequency"
@@ -353,10 +365,10 @@ export interface MiniAccount {
 
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'CLIENTS.RECURRENCE_INTERVAL' | translate
+                    'CLIENTS.RECURRENCE_INTERVAL' | appTranslate
                   }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'CLIENTS.RECURRENCE_INTERVAL' | translate"
+                    [attr.aria-label]="'CLIENTS.RECURRENCE_INTERVAL' | appTranslate"
                     type="number"
                     name="recurrenceInterval"
                     [(ngModel)]="request.recurrenceInterval"
@@ -365,7 +377,9 @@ export interface MiniAccount {
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'CLIENTS.VALID_FROM' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'CLIENTS.VALID_FROM' | appTranslate
+                  }}</ion-label>
                   @if (pickersReady()) {
                     <ion-datetime-button datetime="validFrom-picker"></ion-datetime-button>
                   }
@@ -384,7 +398,9 @@ export interface MiniAccount {
                 </ion-item>
 
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'CLIENTS.VALID_TILL' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'CLIENTS.VALID_TILL' | appTranslate
+                  }}</ion-label>
                   @if (pickersReady()) {
                     <ion-datetime-button datetime="validTill-picker"></ion-datetime-button>
                   }
@@ -405,10 +421,10 @@ export interface MiniAccount {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="!instructionForm.form.valid">
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               </ion-button>
             </div>
           </form>

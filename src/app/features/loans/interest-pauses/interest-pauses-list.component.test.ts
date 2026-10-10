@@ -23,9 +23,9 @@ import { InterestPausesListComponent } from './interest-pauses-list.component';
 import { LoanInterestPauseService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DialogService } from '../../../core/services/dialog.service';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('InterestPausesListComponent', () => {
   let component: InterestPausesListComponent;
@@ -49,8 +49,9 @@ describe('InterestPausesListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [InterestPausesListComponent, TranslateModule.forRoot()],
+      imports: [InterestPausesListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: LoanInterestPauseService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: DialogService, useValue: dialogService },

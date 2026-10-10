@@ -25,6 +25,9 @@
 
 
 
+/**
+ * GetObligeeData
+ */
 export interface GetObligeeData { 
     accountNumber?: string;
     amountReleased?: number;

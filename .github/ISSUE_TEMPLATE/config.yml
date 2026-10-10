@@ -23,6 +23,15 @@ contact_links:
     about: Wrong balances, rejected API payloads, scheduler or accounting behaviour — anything the
       back end decides. Those belong in the ASF Jira project for apache/fineract. Issues here
       are for the back-office web UI.
-  - name: Question or discussion
+  - name: Fineract developer mailing list
     url: https://lists.apache.org/list.html?dev@fineract.apache.org
-    about: For design questions and anything that is not yet a specific bug or request.
+    about: Where the project makes decisions. Design questions, anything not yet a specific bug,
+      and feature ideas worth discussing before they become an issue. Subscribe by emailing
+      dev-subscribe@fineract.apache.org, then post to dev@fineract.apache.org.
+  - name: Fineract chat on Matrix
+    url: https://matrix.to/#/%23apache-fineract-home:matrix.org
+    about: >-
+      Day-to-day conversation with the people building Fineract. Worth asking here whether
+      something is already being worked on before you open anything. The developer room is
+      apache-fineract-dev on matrix.org. Conclusions that affect other people still belong
+      on the dev list.

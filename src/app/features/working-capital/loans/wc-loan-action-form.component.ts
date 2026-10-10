@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -63,7 +63,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCheckbox,
@@ -83,7 +83,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ title | translate }}</ion-card-title>
+          <ion-card-title>{{ title | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -91,7 +91,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             @if (command === 'approve') {
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.APPROVED_ON_DATE' | translate
+                  'WC_LOANS.ACTIONS.APPROVED_ON_DATE' | appTranslate
                 }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="approvedOnDate-picker"></ion-datetime-button>
@@ -111,10 +111,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               </ion-item>
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.APPROVED_AMOUNT' | translate
+                  'WC_LOANS.ACTIONS.APPROVED_AMOUNT' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.APPROVED_AMOUNT' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.APPROVED_AMOUNT' | appTranslate"
                   type="number"
                   name="approvedLoanAmount"
                   [(ngModel)]="lifecycle.approvedLoanAmount"
@@ -125,7 +125,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             @if (command === 'disburse') {
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.EXPECTED_DISBURSEMENT_DATE' | translate
+                  'WC_LOANS.ACTIONS.EXPECTED_DISBURSEMENT_DATE' | appTranslate
                 }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button
@@ -146,7 +146,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               </ion-item>
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.ACTUAL_DISBURSEMENT_DATE' | translate
+                  'WC_LOANS.ACTIONS.ACTUAL_DISBURSEMENT_DATE' | appTranslate
                 }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button
@@ -168,10 +168,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               </ion-item>
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.TRANSACTION_AMOUNT' | translate
+                  'WC_LOANS.ACTIONS.TRANSACTION_AMOUNT' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.TRANSACTION_AMOUNT' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.TRANSACTION_AMOUNT' | appTranslate"
                   type="number"
                   name="transactionAmount"
                   [(ngModel)]="lifecycle.transactionAmount"
@@ -180,10 +180,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               </ion-item>
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.DISCOUNT_AMOUNT' | translate
+                  'WC_LOANS.ACTIONS.DISCOUNT_AMOUNT' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.DISCOUNT_AMOUNT' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.DISCOUNT_AMOUNT' | appTranslate"
                   type="number"
                   name="discountAmount"
                   [(ngModel)]="lifecycle.discountAmount"
@@ -194,7 +194,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             @if (command === 'reject') {
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.REJECTED_ON_DATE' | translate
+                  'WC_LOANS.ACTIONS.REJECTED_ON_DATE' | appTranslate
                 }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="rejectedOnDate-picker"></ion-datetime-button>
@@ -217,7 +217,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             @if (command === 'repayment') {
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.TRANSACTION_DATE' | translate
+                  'WC_LOANS.ACTIONS.TRANSACTION_DATE' | appTranslate
                 }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="transactionDate-picker"></ion-datetime-button>
@@ -237,10 +237,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               </ion-item>
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.TRANSACTION_AMOUNT' | translate
+                  'WC_LOANS.ACTIONS.TRANSACTION_AMOUNT' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.TRANSACTION_AMOUNT' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.TRANSACTION_AMOUNT' | appTranslate"
                   type="number"
                   name="repaymentAmount"
                   [(ngModel)]="repayment.transactionAmount"
@@ -248,9 +248,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 ></ion-input>
               </ion-item>
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'WC_LOANS.ACTIONS.NOTE' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'WC_LOANS.ACTIONS.NOTE' | appTranslate
+                }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.NOTE' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.NOTE' | appTranslate"
                   name="repaymentNote"
                   [(ngModel)]="repayment.note"
                 ></ion-textarea>
@@ -260,7 +262,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             @if (command === 'markasfraud') {
               <ion-item>
                 <ion-checkbox name="fraud" [(ngModel)]="fraud">
-                  {{ 'WC_LOANS.ACTIONS.MARK_AS_FRAUD' | translate }}
+                  {{ 'WC_LOANS.ACTIONS.MARK_AS_FRAUD' | appTranslate }}
                 </ion-checkbox>
               </ion-item>
             }
@@ -268,19 +270,21 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             @if (command === 'discount') {
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.DISCOUNT_AMOUNT' | translate
+                  'WC_LOANS.ACTIONS.DISCOUNT_AMOUNT' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.DISCOUNT_AMOUNT' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.DISCOUNT_AMOUNT' | appTranslate"
                   type="number"
                   name="discountAmount"
                   [(ngModel)]="discount.discountAmount"
                 ></ion-input>
               </ion-item>
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'WC_LOANS.ACTIONS.NOTE' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'WC_LOANS.ACTIONS.NOTE' | appTranslate
+                }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.NOTE' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.NOTE' | appTranslate"
                   name="discountNote"
                   [(ngModel)]="discount.note"
                 ></ion-textarea>
@@ -290,7 +294,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             @if (command === 'paymentrate') {
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.ACTIONS.EFFECTIVE_DATE' | translate
+                  'WC_LOANS.ACTIONS.EFFECTIVE_DATE' | appTranslate
                 }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button
@@ -312,19 +316,21 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               </ion-item>
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'WC_LOANS.PERIOD_PAYMENT_RATE' | translate
+                  'WC_LOANS.PERIOD_PAYMENT_RATE' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'WC_LOANS.PERIOD_PAYMENT_RATE' | translate"
+                  [attr.aria-label]="'WC_LOANS.PERIOD_PAYMENT_RATE' | appTranslate"
                   type="number"
                   name="periodPaymentRate"
                   [(ngModel)]="paymentRate.periodPaymentRate"
                 ></ion-input>
               </ion-item>
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'WC_LOANS.ACTIONS.NOTE' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'WC_LOANS.ACTIONS.NOTE' | appTranslate
+                }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.NOTE' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.NOTE' | appTranslate"
                   name="paymentRateNote"
                   [(ngModel)]="paymentRate.note"
                 ></ion-textarea>
@@ -338,9 +344,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               command !== 'paymentrate'
             ) {
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'WC_LOANS.ACTIONS.NOTE' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'WC_LOANS.ACTIONS.NOTE' | appTranslate
+                }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'WC_LOANS.ACTIONS.NOTE' | translate"
+                  [attr.aria-label]="'WC_LOANS.ACTIONS.NOTE' | appTranslate"
                   name="note"
                   [(ngModel)]="lifecycle.note"
                 ></ion-textarea>
@@ -349,7 +357,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -358,9 +366,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SUBMIT' | translate }}
+                  {{ 'COMMON.SUBMIT' | appTranslate }}
                 }
               </ion-button>
             </div>

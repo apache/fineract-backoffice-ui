@@ -19,7 +19,6 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import {
@@ -36,7 +35,7 @@ import {
 @Component({
   selector: 'app-on-hold-transactions-list',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective],
+  imports: [DataTableComponent, CellTemplateDirective],
   template: `
     <app-data-table
       title="ON_HOLD_TRANSACTIONS.TITLE"

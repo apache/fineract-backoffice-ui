@@ -23,8 +23,8 @@ import { FixedDepositTransactionsListComponent } from './fixed-deposit-transacti
 import { FixedDepositAccountTransactionsService } from '../../../api';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('FixedDepositTransactionsListComponent', () => {
   let component: FixedDepositTransactionsListComponent;
@@ -42,8 +42,9 @@ describe('FixedDepositTransactionsListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [FixedDepositTransactionsListComponent, TranslateModule.forRoot()],
+      imports: [FixedDepositTransactionsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: FixedDepositAccountTransactionsService, useValue: serviceSpy },
         {
           provide: ActivatedRoute,

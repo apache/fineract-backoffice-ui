@@ -37,6 +37,8 @@ import { AdvancedPaymentData } from '../model/advancedPaymentData';
 // @ts-ignore
 import { CampaignPreviewData } from '../model/campaignPreviewData';
 // @ts-ignore
+import { ClientAuditFieldsData } from '../model/clientAuditFieldsData';
+// @ts-ignore
 import { CommandProcessingResult } from '../model/commandProcessingResult';
 // @ts-ignore
 import { CommandWrapper } from '../model/commandWrapper';
@@ -1544,9 +1546,9 @@ export class DefaultService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getInternalClientClientIdAudit(clientId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getInternalClientClientIdAudit(clientId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getInternalClientClientIdAudit(clientId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getInternalClientClientIdAudit(clientId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ClientAuditFieldsData>;
+    public getInternalClientClientIdAudit(clientId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ClientAuditFieldsData>>;
+    public getInternalClientClientIdAudit(clientId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ClientAuditFieldsData>>;
     public getInternalClientClientIdAudit(clientId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (clientId === null || clientId === undefined) {
             throw new Error('Required parameter clientId was null or undefined when calling getInternalClientClientIdAudit.');
@@ -1585,7 +1587,7 @@ export class DefaultService extends BaseService {
 
         let localVarPath = `/v1/internal/client/${this.configuration.encodeParam({name: "clientId", value: clientId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/audit`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<ClientAuditFieldsData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

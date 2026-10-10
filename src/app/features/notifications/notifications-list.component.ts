@@ -20,7 +20,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../core/adapters';
 import { NotificationService, GetNotificationsResponse, GetNotification } from '../../api';
 import { NotificationService as ToastService } from '../../core/services/notification.service';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -42,7 +42,7 @@ import {
     FormsModule,
     DatePipe,
     CdkTableModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -55,13 +55,13 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'NOTIFICATIONS.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'NOTIFICATIONS.TITLE' | appTranslate }}</ion-card-title>
         <div class="header-actions">
           <ion-checkbox [(ngModel)]="showUnreadOnly" (ionChange)="onFilterChange()">
-            {{ 'NOTIFICATIONS.SHOW_UNREAD' | translate }}
+            {{ 'NOTIFICATIONS.SHOW_UNREAD' | appTranslate }}
           </ion-checkbox>
           <ion-button color="primary" (click)="markAllRead()">
-            {{ 'NOTIFICATIONS.MARK_ALL_READ' | translate }}
+            {{ 'NOTIFICATIONS.MARK_ALL_READ' | appTranslate }}
           </ion-button>
         </div>
       </ion-card-header>
@@ -76,23 +76,27 @@ import {
         @if (!isLoading()) {
           <table cdk-table [dataSource]="notifications()">
             <ng-container cdkColumnDef="content">
-              <th cdk-header-cell *cdkHeaderCellDef>{{ 'NOTIFICATIONS.MESSAGE' | translate }}</th>
+              <th cdk-header-cell *cdkHeaderCellDef>
+                {{ 'NOTIFICATIONS.MESSAGE' | appTranslate }}
+              </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.content }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="isRead">
-              <th cdk-header-cell *cdkHeaderCellDef>{{ 'NOTIFICATIONS.READ' | translate }}</th>
+              <th cdk-header-cell *cdkHeaderCellDef>{{ 'NOTIFICATIONS.READ' | appTranslate }}</th>
               <td cdk-cell *cdkCellDef="let row">
                 <div>
                   <ion-chip [color]="row.isRead ? 'primary' : 'danger'" highlighted>
-                    {{ (row.isRead ? 'NOTIFICATIONS.READ' : 'NOTIFICATIONS.UNREAD') | translate }}
+                    {{
+                      (row.isRead ? 'NOTIFICATIONS.READ' : 'NOTIFICATIONS.UNREAD') | appTranslate
+                    }}
                   </ion-chip>
                 </div>
               </td>
             </ng-container>
 
             <ng-container cdkColumnDef="createdAt">
-              <th cdk-header-cell *cdkHeaderCellDef>{{ 'NOTIFICATIONS.DATE' | translate }}</th>
+              <th cdk-header-cell *cdkHeaderCellDef>{{ 'NOTIFICATIONS.DATE' | appTranslate }}</th>
               <td cdk-cell *cdkCellDef="let row">{{ row.createdAt | date: 'medium' }}</td>
             </ng-container>
 
@@ -101,7 +105,7 @@ import {
 
             <tr class="no-data-row" *cdkNoDataRow>
               <td [attr.colspan]="displayedColumns.length">
-                {{ 'COMMON.NO_DATA' | translate }}
+                {{ 'COMMON.NO_DATA' | appTranslate }}
               </td>
             </tr>
           </table>
@@ -141,7 +145,7 @@ import {
 export class NotificationsListComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private toast = inject(ToastService);
-  private translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly notifications = signal<GetNotification[]>([]);
   showUnreadOnly = false;
@@ -176,7 +180,7 @@ export class NotificationsListComponent implements OnInit {
   markAllRead(): void {
     this.notificationService.putNotifications().subscribe({
       next: () => {
-        this.translate.get('NOTIFICATIONS.ALL_READ_SUCCESS').subscribe((msg: string) => {
+        this.i18n.translateAsync('NOTIFICATIONS.ALL_READ_SUCCESS').subscribe((msg: string) => {
           this.toast.success(msg);
         });
         this.loadNotifications();

@@ -31,18 +31,21 @@ export const CALENDARS_ROUTES: Routes = [
     path: ':entityType/:entityId',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_CALENDAR' },
+    title: 'CALENDARS.TITLE',
     loadComponent: () => import('./calendars-list.component').then((m) => m.CalendarsListComponent),
   },
   {
     path: ':entityType/:entityId/create',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'CREATE_CALENDAR' },
+    title: 'CALENDARS.CREATE',
     loadComponent: () => import('./calendar-form.component').then((m) => m.CalendarFormComponent),
   },
   {
     path: ':entityType/:entityId/edit/:id',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'UPDATE_CALENDAR' },
+    title: 'CALENDARS.EDIT',
     loadComponent: () => import('./calendar-form.component').then((m) => m.CalendarFormComponent),
   },
 ];

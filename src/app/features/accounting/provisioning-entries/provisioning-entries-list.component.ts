@@ -19,7 +19,6 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { ColumnDef } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ProvisioningEntriesService, ProvisioningEntryData } from '../../../api';
@@ -31,7 +30,7 @@ import { ProvisioningEntriesService, ProvisioningEntryData } from '../../../api'
 @Component({
   selector: 'app-provisioning-entries-list',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent],
+  imports: [DataTableComponent],
   template: `
     <app-data-table
       title="nav.provisioningEntries"

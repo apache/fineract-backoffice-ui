@@ -18,7 +18,6 @@
  */
 
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { GroupsLevelService, GroupLevelData } from '../../../api';
@@ -31,7 +30,7 @@ import { IconComponent } from '../../../ui/icon/icon.component';
 @Component({
   selector: 'app-group-levels-list',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective, IconComponent],
+  imports: [DataTableComponent, CellTemplateDirective, IconComponent],
   template: `
     <app-data-table
       title="nav.groupLevels"

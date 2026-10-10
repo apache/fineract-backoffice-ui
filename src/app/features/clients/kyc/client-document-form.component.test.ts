@@ -23,8 +23,8 @@ import { ClientDocumentFormComponent } from './client-document-form.component';
 import { DocumentsService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ClientDocumentFormComponent', () => {
   let component: ClientDocumentFormComponent;
@@ -41,8 +41,9 @@ describe('ClientDocumentFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [ClientDocumentFormComponent, TranslateModule.forRoot()],
+      imports: [ClientDocumentFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: DocumentsService, useValue: documentServiceSpy },
         { provide: Router, useValue: routerSpy },
         {

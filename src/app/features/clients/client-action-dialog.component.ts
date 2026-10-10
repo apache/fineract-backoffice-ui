@@ -19,7 +19,7 @@
 
 import { inject, input, Component, OnInit, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonButton,
   IonDatetime,
@@ -52,7 +52,7 @@ export interface ClientActionDialogData {
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonTextarea,
     IonItem,
@@ -64,11 +64,11 @@ export interface ClientActionDialogData {
     IonModal,
   ],
   template: `
-    <h2 class="dialog-title">{{ data().title | translate }}</h2>
+    <h2 class="dialog-title">{{ data().title | appTranslate }}</h2>
     <div class="dialog-content">
       <div class="dialog-form">
         <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">{{ dateLabel | translate }}</ion-label>
+          <ion-label position="stacked">{{ dateLabel | appTranslate }}</ion-label>
           <ion-datetime-button datetime="actionDate-picker"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
@@ -88,9 +88,9 @@ export interface ClientActionDialogData {
 
         @if (showReasonDropdown) {
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ reasonLabel | translate }}</ion-label>
+            <ion-label position="stacked">{{ reasonLabel | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="reasonLabel | translate"
+              [attr.aria-label]="reasonLabel | appTranslate"
               interface="popover"
               [(ngModel)]="reasonId"
               required
@@ -103,9 +103,9 @@ export interface ClientActionDialogData {
         }
 
         <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">{{ 'COMMON.NOTE' | translate }}</ion-label>
+          <ion-label position="stacked">{{ 'COMMON.NOTE' | appTranslate }}</ion-label>
           <ion-textarea
-            [attr.aria-label]="'COMMON.NOTE' | translate"
+            [attr.aria-label]="'COMMON.NOTE' | appTranslate"
             [(ngModel)]="note"
             rows="3"
           ></ion-textarea>
@@ -113,9 +113,11 @@ export interface ClientActionDialogData {
       </div>
     </div>
     <div class="dialog-actions">
-      <ion-button fill="clear" (click)="onCancel()">{{ 'COMMON.CANCEL' | translate }}</ion-button>
+      <ion-button fill="clear" (click)="onCancel()">{{
+        'COMMON.CANCEL' | appTranslate
+      }}</ion-button>
       <ion-button color="primary" (click)="onConfirm()" [disabled]="!isValid">
-        {{ 'COMMON.CONFIRM' | translate }}
+        {{ 'COMMON.CONFIRM' | appTranslate }}
       </ion-button>
     </div>
   `,

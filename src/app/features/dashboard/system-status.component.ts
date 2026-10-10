@@ -18,7 +18,7 @@
  */
 
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -53,7 +53,7 @@ import {
   selector: 'app-system-status',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -83,7 +83,7 @@ import {
               <ion-card-content>
                 <div class="widget-header">
                   <ion-icon name="people-outline"></ion-icon>
-                  <span class="widget-label">{{ 'DASHBOARD.TOTAL_CLIENTS' | translate }}</span>
+                  <span class="widget-label">{{ 'DASHBOARD.TOTAL_CLIENTS' | appTranslate }}</span>
                 </div>
                 @if (isLoading()) {
                   <div class="widget-loader">
@@ -91,7 +91,7 @@ import {
                   </div>
                 } @else {
                   <div class="widget-value">{{ clientCount() }}</div>
-                  <div class="widget-trend">{{ 'DASHBOARD.ACTIVE_MEMBERS' | translate }}</div>
+                  <div class="widget-trend">{{ 'DASHBOARD.ACTIVE_MEMBERS' | appTranslate }}</div>
                 }
               </ion-card-content>
             </ion-card>
@@ -106,7 +106,7 @@ import {
               <ion-card-content>
                 <div class="widget-header">
                   <ion-icon name="wallet-outline"></ion-icon>
-                  <span class="widget-label">{{ 'DASHBOARD.ACTIVE_LOANS' | translate }}</span>
+                  <span class="widget-label">{{ 'DASHBOARD.ACTIVE_LOANS' | appTranslate }}</span>
                 </div>
                 @if (isLoading()) {
                   <div class="widget-loader">
@@ -115,7 +115,7 @@ import {
                 } @else {
                   <div class="widget-value">{{ activeLoans() }}</div>
                   <div class="widget-trend" [class.highlight]="pendingLoans().length > 0">
-                    {{ pendingLoans().length }} {{ 'DASHBOARD.PENDING_APPROVALS' | translate }}
+                    {{ pendingLoans().length }} {{ 'DASHBOARD.PENDING_APPROVALS' | appTranslate }}
                   </div>
                 }
               </ion-card-content>
@@ -131,7 +131,9 @@ import {
               <ion-card-content>
                 <div class="widget-header">
                   <ion-icon name="card-outline"></ion-icon>
-                  <span class="widget-label">{{ 'DASHBOARD.SAVINGS_ACCOUNTS' | translate }}</span>
+                  <span class="widget-label">{{
+                    'DASHBOARD.SAVINGS_ACCOUNTS' | appTranslate
+                  }}</span>
                 </div>
                 @if (isLoading()) {
                   <div class="widget-loader">
@@ -140,7 +142,7 @@ import {
                 } @else {
                   <div class="widget-value">{{ savingsCount() }}</div>
                   <div class="widget-trend" [class.highlight]="pendingSavings().length > 0">
-                    {{ pendingSavings().length }} {{ 'DASHBOARD.PENDING_APPROVALS' | translate }}
+                    {{ pendingSavings().length }} {{ 'DASHBOARD.PENDING_APPROVALS' | appTranslate }}
                   </div>
                 }
               </ion-card-content>
@@ -156,9 +158,9 @@ import {
               <ion-card-content>
                 <div class="widget-header">
                   <ion-icon name="hardware-chip-outline"></ion-icon>
-                  <span class="widget-label">{{ 'DASHBOARD.SYSTEM_HEALTH' | translate }}</span>
+                  <span class="widget-label">{{ 'DASHBOARD.SYSTEM_HEALTH' | appTranslate }}</span>
                 </div>
-                <div class="widget-value healthy">{{ 'DASHBOARD.ONLINE' | translate }}</div>
+                <div class="widget-value healthy">{{ 'DASHBOARD.ONLINE' | appTranslate }}</div>
                 <div class="widget-trend">API: {{ currentTenant() }}</div>
               </ion-card-content>
             </ion-card>
@@ -176,7 +178,7 @@ import {
           <ion-card-header>
             <ion-card-title>
               <ion-icon name="time-outline"></ion-icon>
-              {{ 'DASHBOARD.PENDING_APPROVALS' | translate }}
+              {{ 'DASHBOARD.PENDING_APPROVALS' | appTranslate }}
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
@@ -187,7 +189,7 @@ import {
             } @else if (pendingLoans().length === 0 && pendingSavings().length === 0) {
               <div class="empty-approvals">
                 <ion-icon name="checkmark-circle-outline"></ion-icon>
-                <p>{{ 'DASHBOARD.NO_PENDING_APPROVALS' | translate }}</p>
+                <p>{{ 'DASHBOARD.NO_PENDING_APPROVALS' | appTranslate }}</p>
               </div>
             } @else {
               <div class="approval-list">
@@ -205,7 +207,7 @@ import {
                       id="dashboard-pending-loans-view-btn"
                       data-testid="dashboard-pending-loans-view-btn"
                     >
-                      {{ 'COMMON.VIEW' | translate }}
+                      {{ 'COMMON.VIEW' | appTranslate }}
                     </ion-button>
                   </div>
                 }
@@ -223,7 +225,7 @@ import {
                       id="dashboard-pending-savings-view-btn"
                       data-testid="dashboard-pending-savings-view-btn"
                     >
-                      {{ 'COMMON.VIEW' | translate }}
+                      {{ 'COMMON.VIEW' | appTranslate }}
                     </ion-button>
                   </div>
                 }
@@ -237,7 +239,7 @@ import {
             <ion-card-header>
               <ion-card-title>
                 <ion-icon name="pie-chart-outline"></ion-icon>
-                {{ 'DASHBOARD.LOAN_DISTRIBUTION' | translate }}
+                {{ 'DASHBOARD.LOAN_DISTRIBUTION' | appTranslate }}
               </ion-card-title>
             </ion-card-header>
             <ion-card-content>
@@ -252,7 +254,7 @@ import {
             <ion-card-header>
               <ion-card-title>
                 <ion-icon name="pie-chart-outline"></ion-icon>
-                {{ 'DASHBOARD.SAVINGS_DISTRIBUTION' | translate }}
+                {{ 'DASHBOARD.SAVINGS_DISTRIBUTION' | appTranslate }}
               </ion-card-title>
             </ion-card-header>
             <ion-card-content>
@@ -268,27 +270,27 @@ import {
           <ion-card-header>
             <ion-card-title>
               <ion-icon name="settings-outline"></ion-icon>
-              {{ 'DASHBOARD.SYSTEM_STATUS' | translate }}
+              {{ 'DASHBOARD.SYSTEM_STATUS' | appTranslate }}
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ul class="status-list">
               <li>
-                <span class="label">{{ 'DASHBOARD.RUNTIME_API' | translate }}:</span>
+                <span class="label">{{ 'DASHBOARD.RUNTIME_API' | appTranslate }}:</span>
                 <span class="value">{{ configService.apiUrl }}</span>
               </li>
               <li>
-                <span class="label">{{ 'DASHBOARD.FALLBACK_API' | translate }}:</span>
+                <span class="label">{{ 'DASHBOARD.FALLBACK_API' | appTranslate }}:</span>
                 <span class="value">{{ environmentUrl }}</span>
               </li>
               <li>
-                <span class="label">{{ 'DASHBOARD.ENVIRONMENT' | translate }}:</span>
+                <span class="label">{{ 'DASHBOARD.ENVIRONMENT' | appTranslate }}:</span>
                 <span class="value badge" [ngClass]="isProd ? 'prod' : 'dev'">
-                  {{ (isProd ? 'DASHBOARD.PRODUCTION' : 'DASHBOARD.DEVELOPMENT') | translate }}
+                  {{ (isProd ? 'DASHBOARD.PRODUCTION' : 'DASHBOARD.DEVELOPMENT') | appTranslate }}
                 </span>
               </li>
               <li>
-                <span class="label">{{ 'DASHBOARD.ACTIVE_TENANT' | translate }}:</span>
+                <span class="label">{{ 'DASHBOARD.ACTIVE_TENANT' | appTranslate }}:</span>
                 <span class="value">{{ currentTenant() }}</span>
               </li>
             </ul>

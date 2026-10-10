@@ -20,7 +20,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ProvisioningEntriesService, ProvisionEntryRequest } from '../../../api';
 import { formatDateToFineract } from '../../../core/utils/date-formatter';
 import {
@@ -48,7 +48,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -66,14 +66,14 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'PROVISIONING_ENTRIES.CREATE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'PROVISIONING_ENTRIES.CREATE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #entryForm="ngForm" (ngSubmit)="onSubmit()" class="provisioning-form">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'PROVISIONING_ENTRIES.DATE' | translate
+                'PROVISIONING_ENTRIES.DATE' | appTranslate
               }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="date-picker"></ion-datetime-button>
@@ -93,12 +93,12 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             </ion-item>
 
             <ion-checkbox name="createjournalentries" [(ngModel)]="createjournalentries">
-              {{ 'PROVISIONING_ENTRIES.CREATE_JOURNAL_ENTRIES' | translate }}
+              {{ 'PROVISIONING_ENTRIES.CREATE_JOURNAL_ENTRIES' | appTranslate }}
             </ion-checkbox>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -107,9 +107,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

@@ -19,7 +19,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { LoanCOBCatchUpService, OldestCOBProcessedLoanDTO } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -39,7 +39,7 @@ import {
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonItem,
@@ -52,17 +52,17 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'LOAN_COB_CATCHUP.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'LOAN_COB_CATCHUP.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="section">
           <ion-button color="primary" (click)="checkStatus()">
-            {{ 'LOAN_COB_CATCHUP.CHECK_STATUS' | translate }}
+            {{ 'LOAN_COB_CATCHUP.CHECK_STATUS' | appTranslate }}
           </ion-button>
 
           @if (statusChecked()) {
             <p>
-              {{ 'LOAN_COB_CATCHUP.IS_RUNNING' | translate }}:
+              {{ 'LOAN_COB_CATCHUP.IS_RUNNING' | appTranslate }}:
               <strong>{{ isRunning() }}</strong>
             </p>
           }
@@ -72,21 +72,23 @@ import {
 
         <div class="section">
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'LOAN_COB_CATCHUP.LOAN_ID' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'LOAN_COB_CATCHUP.LOAN_ID' | appTranslate
+            }}</ion-label>
             <ion-input
-              [attr.aria-label]="'LOAN_COB_CATCHUP.LOAN_ID' | translate"
+              [attr.aria-label]="'LOAN_COB_CATCHUP.LOAN_ID' | appTranslate"
               type="number"
               [(ngModel)]="loanId"
             ></ion-input>
           </ion-item>
 
           <ion-button color="primary" [disabled]="!loanId" (click)="getOldestCobDate()">
-            {{ 'LOAN_COB_CATCHUP.GET_OLDEST_DATE' | translate }}
+            {{ 'LOAN_COB_CATCHUP.GET_OLDEST_DATE' | appTranslate }}
           </ion-button>
 
           @if (oldestDate() !== null) {
             <div>
-              <h4>{{ 'LOAN_COB_CATCHUP.OLDEST_DATE' | translate }}</h4>
+              <h4>{{ 'LOAN_COB_CATCHUP.OLDEST_DATE' | appTranslate }}</h4>
               <pre>{{ oldestDate() | json }}</pre>
             </div>
           }
@@ -96,16 +98,18 @@ import {
 
         <div class="section">
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'LOAN_COB_CATCHUP.LOAN_ID' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'LOAN_COB_CATCHUP.LOAN_ID' | appTranslate
+            }}</ion-label>
             <ion-input
-              [attr.aria-label]="'LOAN_COB_CATCHUP.LOAN_ID' | translate"
+              [attr.aria-label]="'LOAN_COB_CATCHUP.LOAN_ID' | appTranslate"
               type="number"
               [(ngModel)]="catchupLoanId"
             ></ion-input>
           </ion-item>
 
           <ion-button color="secondary" [disabled]="!catchupLoanId" (click)="runCatchup()">
-            {{ 'LOAN_COB_CATCHUP.RUN_CATCHUP' | translate }}
+            {{ 'LOAN_COB_CATCHUP.RUN_CATCHUP' | appTranslate }}
           </ion-button>
         </div>
       </ion-card-content>
@@ -135,7 +139,7 @@ import {
 export class LoanCobCatchupComponent {
   private readonly loanCOBCatchUpService = inject(LoanCOBCatchUpService);
   private readonly notifications = inject(NotificationService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly isRunning = signal<boolean | null>(null);
   readonly oldestDate = signal<OldestCOBProcessedLoanDTO | null>(null);
@@ -169,7 +173,7 @@ export class LoanCobCatchupComponent {
   runCatchup(): void {
     this.loanCOBCatchUpService.postLoansCatchUp().subscribe({
       next: () => {
-        this.translate.get('LOAN_COB_CATCHUP.SUCCESS').subscribe((msg) => {
+        this.i18n.translateAsync('LOAN_COB_CATCHUP.SUCCESS').subscribe((msg) => {
           this.notifications.success(msg);
         });
       },

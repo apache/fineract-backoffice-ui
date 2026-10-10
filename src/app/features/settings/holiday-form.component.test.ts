@@ -20,18 +20,35 @@
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HolidayFormComponent } from './holiday-form.component';
-import { HolidaysService, OfficesService } from '../../api';
+import { HOLIDAY_API, OFFICE_API, RESCHEDULING_TYPE } from '../../core/adapters';
+import type { Holiday, Office } from '../../core/adapters';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of, Observable } from 'rxjs';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../core/services/notification.service';
 
+const HEAD_OFFICE: Office = {
+  id: 1,
+  name: 'Head Office',
+  nameDecorated: 'Head Office',
+  externalId: null,
+  hierarchy: '.',
+  parentId: null,
+  parentName: null,
+  openingDate: '2009-01-01',
+};
+
 describe('HolidayFormComponent', () => {
   let component: HolidayFormComponent;
   let fixture: ComponentFixture<HolidayFormComponent>;
-  let holidaysServiceSpy: SpyObj<HolidaysService>;
-  let officesServiceSpy: SpyObj<OfficesService>;
+  let holidayApiSpy: SpyObj<{
+    get: (id: number) => unknown;
+    reschedulingOptions: () => unknown;
+    create: (draft: unknown) => unknown;
+    update: (id: number, draft: unknown) => unknown;
+  }>;
+  let officeApiSpy: SpyObj<{ list: (all?: boolean) => unknown }>;
   let routerSpy: SpyObj<Router>;
   let notificationsSpy: SpyObj<NotificationService>;
   /** Mutated before `configure()` to put the component into edit mode. */
@@ -42,8 +59,8 @@ describe('HolidayFormComponent', () => {
       imports: [HolidayFormComponent],
       providers: [
         ...provideTranslateTesting(),
-        { provide: HolidaysService, useValue: holidaysServiceSpy },
-        { provide: OfficesService, useValue: officesServiceSpy },
+        { provide: HOLIDAY_API, useValue: holidayApiSpy },
+        { provide: OFFICE_API, useValue: officeApiSpy },
         { provide: Router, useValue: routerSpy },
         { provide: NotificationService, useValue: notificationsSpy },
         // The component reads the id synchronously off the snapshot, not the observable.
@@ -68,23 +85,20 @@ describe('HolidayFormComponent', () => {
 
   beforeEach(() => {
     routeParams = {};
-    holidaysServiceSpy = createSpyObj([
-      'getHolidaysTemplate',
-      'postHolidays',
-      'getHolidaysHolidayId',
-      'putHolidaysHolidayId',
-    ]);
-    officesServiceSpy = createSpyObj(['getOffices']);
+    holidayApiSpy = createSpyObj(['get', 'reschedulingOptions', 'create', 'update']);
+    holidayApiSpy.create.mockReturnValue(of(undefined));
+    holidayApiSpy.update.mockReturnValue(of(undefined));
+    officeApiSpy = createSpyObj(['list']);
     routerSpy = createSpyObj(['navigate']);
     notificationsSpy = createSpyObj<NotificationService>(['success', 'error', 'show']);
 
-    officesServiceSpy.getOffices.mockReturnValue(
-      of([{ id: 1, name: 'Head Office' }]) as unknown as Observable<never>,
-    );
-    holidaysServiceSpy.getHolidaysTemplate.mockReturnValue(
+    officeApiSpy.list.mockReturnValue(of([HEAD_OFFICE]) as unknown as Observable<never>);
+    // The adapter already owns parsing a string template and falling back when it cannot be
+    // read, so this spec just gets the options.
+    holidayApiSpy.reschedulingOptions.mockReturnValue(
       of([
-        { id: 1, value: 'Reschedule to next repayment date' },
-        { id: 2, value: 'Reschedule to specified date' },
+        { id: RESCHEDULING_TYPE.NextRepaymentDate, value: 'Reschedule to next repayment date' },
+        { id: RESCHEDULING_TYPE.SpecifiedDate, value: 'Reschedule to specified date' },
       ]) as unknown as Observable<never>,
     );
   });
@@ -94,15 +108,14 @@ describe('HolidayFormComponent', () => {
 
     expect(component).toBeTruthy();
     expect(component.isEditMode()).toBe(false);
-    expect(officesServiceSpy.getOffices).toHaveBeenCalledWith(true);
-    expect(holidaysServiceSpy.getHolidaysTemplate).toHaveBeenCalled();
-    expect(component.offices()).toEqual([{ id: 1, name: 'Head Office' }]);
+    expect(officeApiSpy.list).toHaveBeenCalledWith(true);
+    expect(holidayApiSpy.reschedulingOptions).toHaveBeenCalled();
+    expect(component.offices()).toEqual([HEAD_OFFICE]);
     expect(component.reschedulingTypeOptions()).toHaveLength(2);
   });
 
   it('should submit new holiday form successfully', async () => {
     await configure();
-    holidaysServiceSpy.postHolidays.mockReturnValue(of({}) as unknown as Observable<never>);
     component.holiday = {
       name: 'Christmas',
       description: 'Merry Christmas',
@@ -116,17 +129,23 @@ describe('HolidayFormComponent', () => {
     component.onSubmit();
 
     expect(component.isSaving()).toBe(true);
-    expect(holidaysServiceSpy.postHolidays).toHaveBeenCalledWith(
+    // ISO dates and office ids, with no dateFormat and no locale: converting the dates to
+    // Fineract's own format and pairing them with the format it parses against is the adapter's
+    // business now, and is tested in fineract-holiday.api.test.ts.
+    expect(holidayApiSpy.create).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Christmas',
         description: 'Merry Christmas',
-        fromDate: '25 December 2026',
-        toDate: '26 December 2026',
-        offices: [{ officeId: 1 }],
-        reschedulingType: 2,
-        repaymentsRescheduledTo: '28 December 2026',
+        fromDate: '2026-12-25',
+        toDate: '2026-12-26',
+        officeIds: [1],
+        reschedulingType: RESCHEDULING_TYPE.SpecifiedDate,
+        repaymentsRescheduledTo: '2026-12-28',
       }),
     );
+    const draft = holidayApiSpy.create.mock.lastCall![0] as Record<string, unknown>;
+    expect('dateFormat' in draft).toBe(false);
+    expect('locale' in draft).toBe(false);
     expect(notificationsSpy.success).toHaveBeenCalledWith('Holiday created successfully');
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/settings/holidays']);
   });
@@ -145,49 +164,55 @@ describe('HolidayFormComponent', () => {
   describe('edit mode', () => {
     beforeEach(() => {
       routeParams = { id: '7' };
-      holidaysServiceSpy.getHolidaysHolidayId.mockReturnValue(
+      // `Holiday` as the adapter maps it. The platform answers these dates as [y, m, d]
+      // arrays; converting them is the mapper's job and is tested there, so this fixture no
+      // longer has to carry arrays past a type that declares strings.
+      holidayApiSpy.get.mockReturnValue(
         of({
           id: 7,
           name: 'Boxing Day',
+          description: '',
           officeId: 3,
-          // The platform answers dates as [y, m, d] arrays, not strings.
-          fromDate: [2026, 12, 26],
-          toDate: [2026, 12, 26],
-          repaymentsRescheduledTo: [2026, 12, 28],
-        }) as unknown as Observable<never>,
+          fromDate: '2026-12-26',
+          toDate: '2026-12-26',
+          repaymentsRescheduledTo: '2026-12-28',
+          status: {
+            id: 100,
+            code: 'holidayStatusType.pending.for.activation',
+            value: 'Pending for activation',
+            isPending: true,
+          },
+          reschedulingType: RESCHEDULING_TYPE.SpecifiedDate,
+        } satisfies Holiday) as unknown as Observable<never>,
       );
     });
 
-    it('loads the holiday and fills the form from the date arrays', async () => {
+    it('loads the holiday and fills the form', async () => {
       await configure();
 
       expect(component.isEditMode()).toBe(true);
-      expect(holidaysServiceSpy.getHolidaysHolidayId).toHaveBeenCalledWith(7);
+      expect(holidayApiSpy.get).toHaveBeenCalledWith(7);
       expect(component.holiday.name).toBe('Boxing Day');
       expect(component.fromDate).toBe('2026-12-26');
       expect(component.repaymentsRescheduledTo).toBe('2026-12-28');
-      // A holiday naming a date to move repayments to was created with that rule.
-      expect(component.reschedulingType).toBe(2);
+      // Taken from the rule Fineract sends, rather than inferred from whether a reschedule date
+      // happens to be set — the generated type simply did not declare it.
+      expect(component.reschedulingType).toBe(RESCHEDULING_TYPE.SpecifiedDate);
       expect(component.selectedOfficeIds).toEqual([3]);
     });
 
     it('puts to the holiday id rather than posting a second holiday', async () => {
       await configure();
-      holidaysServiceSpy.putHolidaysHolidayId.mockReturnValue(
-        of({}) as unknown as Observable<never>,
-      );
 
       component.onSubmit();
 
-      expect(holidaysServiceSpy.postHolidays).not.toHaveBeenCalled();
-      expect(holidaysServiceSpy.putHolidaysHolidayId).toHaveBeenCalledWith(
+      expect(holidayApiSpy.create).not.toHaveBeenCalled();
+      expect(holidayApiSpy.update).toHaveBeenCalledWith(
         7,
         expect.objectContaining({
           name: 'Boxing Day',
-          fromDate: '26 December 2026',
-          repaymentsRescheduledTo: '28 December 2026',
-          dateFormat: 'dd MMMM yyyy',
-          locale: 'en',
+          fromDate: '2026-12-26',
+          repaymentsRescheduledTo: '2026-12-28',
         }),
       );
       expect(notificationsSpy.success).toHaveBeenCalledWith('Holiday updated successfully');

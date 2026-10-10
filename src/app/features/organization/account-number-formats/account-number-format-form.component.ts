@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -47,7 +47,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonItem,
@@ -66,8 +66,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('ACCOUNT_NUMBER_FORMATS.EDIT_TITLE' | translate)
-                : ('ACCOUNT_NUMBER_FORMATS.CREATE_TITLE' | translate)
+                ? ('ACCOUNT_NUMBER_FORMATS.EDIT_TITLE' | appTranslate)
+                : ('ACCOUNT_NUMBER_FORMATS.CREATE_TITLE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -77,10 +77,10 @@ import {
             <div class="form-grid">
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'ACCOUNT_NUMBER_FORMATS.ACCOUNT_TYPE' | translate
+                  'ACCOUNT_NUMBER_FORMATS.ACCOUNT_TYPE' | appTranslate
                 }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'ACCOUNT_NUMBER_FORMATS.ACCOUNT_TYPE' | translate"
+                  [attr.aria-label]="'ACCOUNT_NUMBER_FORMATS.ACCOUNT_TYPE' | appTranslate"
                   interface="popover"
                   name="accountType"
                   [(ngModel)]="format.accountType"
@@ -96,10 +96,10 @@ import {
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'ACCOUNT_NUMBER_FORMATS.PREFIX_TYPE' | translate
+                  'ACCOUNT_NUMBER_FORMATS.PREFIX_TYPE' | appTranslate
                 }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'ACCOUNT_NUMBER_FORMATS.PREFIX_TYPE' | translate"
+                  [attr.aria-label]="'ACCOUNT_NUMBER_FORMATS.PREFIX_TYPE' | appTranslate"
                   interface="popover"
                   name="prefixType"
                   [(ngModel)]="format.prefixType"
@@ -114,7 +114,7 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'ACCOUNT_NUMBER_FORMATS.CANCEL' | translate }}
+                {{ 'ACCOUNT_NUMBER_FORMATS.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -123,9 +123,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'ACCOUNT_NUMBER_FORMATS.SAVE' | translate }}
+                  {{ 'ACCOUNT_NUMBER_FORMATS.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

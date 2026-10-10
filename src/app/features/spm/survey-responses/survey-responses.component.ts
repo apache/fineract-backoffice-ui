@@ -18,7 +18,7 @@
  */
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { SurveyService, PostSurveySurveyNameApptableIdRequest } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -50,7 +50,7 @@ interface SurveyResponse {
   imports: [
     FormsModule,
     CdkTableModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -67,15 +67,15 @@ interface SurveyResponse {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'SURVEY_RESPONSES.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'SURVEY_RESPONSES.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <!-- Step 1: Select survey + client -->
         <div class="filter-row">
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'SURVEY_RESPONSES.SURVEY' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'SURVEY_RESPONSES.SURVEY' | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="'SURVEY_RESPONSES.SURVEY' | translate"
+              [attr.aria-label]="'SURVEY_RESPONSES.SURVEY' | appTranslate"
               interface="popover"
               [(ngModel)]="selectedSurveyName"
             >
@@ -86,16 +86,18 @@ interface SurveyResponse {
           </ion-item>
 
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'SURVEY_RESPONSES.CLIENT_ID' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'SURVEY_RESPONSES.CLIENT_ID' | appTranslate
+            }}</ion-label>
             <ion-input
-              [attr.aria-label]="'SURVEY_RESPONSES.CLIENT_ID' | translate"
+              [attr.aria-label]="'SURVEY_RESPONSES.CLIENT_ID' | appTranslate"
               type="number"
               [(ngModel)]="clientId"
             ></ion-input>
           </ion-item>
 
           <ion-button color="primary" (click)="loadResponses()" [disabled]="loading()">
-            {{ 'SURVEY_RESPONSES.LOAD' | translate }}
+            {{ 'SURVEY_RESPONSES.LOAD' | appTranslate }}
           </ion-button>
         </div>
 
@@ -105,7 +107,7 @@ interface SurveyResponse {
 
         <!-- Step 2: Responses table -->
         @if (responses().length > 0) {
-          <h3>{{ 'SURVEY_RESPONSES.RESPONSES' | translate }}</h3>
+          <h3>{{ 'SURVEY_RESPONSES.RESPONSES' | appTranslate }}</h3>
           <cdk-table [dataSource]="responses()" class="full-width">
             <ng-container cdkColumnDef="id">
               <cdk-header-cell *cdkHeaderCellDef>ID</cdk-header-cell>
@@ -129,7 +131,7 @@ interface SurveyResponse {
                   fill="clear"
                   color="danger"
                   (click)="deleteResponse(row.id ?? row.entryId)"
-                  [title]="'SURVEY_RESPONSES.DELETE' | translate"
+                  [title]="'SURVEY_RESPONSES.DELETE' | appTranslate"
                 >
                   &#x1F5D1;
                 </ion-button>
@@ -144,20 +146,20 @@ interface SurveyResponse {
         <hr class="divider" />
 
         <!-- Step 3: Submit new response -->
-        <h3>{{ 'SURVEY_RESPONSES.SUBMIT_RESPONSE' | translate }}</h3>
+        <h3>{{ 'SURVEY_RESPONSES.SUBMIT_RESPONSE' | appTranslate }}</h3>
         <ion-item fill="outline" class="full-width">
           <ion-label position="stacked">{{
-            'SURVEY_RESPONSES.RESPONSE_BODY' | translate
+            'SURVEY_RESPONSES.RESPONSE_BODY' | appTranslate
           }}</ion-label>
           <ion-textarea
-            [attr.aria-label]="'SURVEY_RESPONSES.RESPONSE_BODY' | translate"
+            [attr.aria-label]="'SURVEY_RESPONSES.RESPONSE_BODY' | appTranslate"
             rows="6"
             [ngModel]="responseBody()"
             (ngModelChange)="responseBody.set($event)"
           ></ion-textarea>
         </ion-item>
         <ion-button color="secondary" (click)="submitResponse()" [disabled]="submitting()">
-          {{ 'SURVEY_RESPONSES.SUBMIT' | translate }}
+          {{ 'SURVEY_RESPONSES.SUBMIT' | appTranslate }}
         </ion-button>
       </ion-card-content>
     </ion-card>

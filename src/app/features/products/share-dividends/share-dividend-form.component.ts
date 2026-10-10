@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { SelfDividendService } from '../../../api';
 import {
   IonButton,
@@ -54,7 +54,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -72,15 +72,17 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'SHARE_DIVIDENDS.CREATE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'SHARE_DIVIDENDS.CREATE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #dividendForm="ngForm" (ngSubmit)="onSubmit()" class="dividend-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SHARE_DIVIDENDS.AMOUNT' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'SHARE_DIVIDENDS.AMOUNT' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'SHARE_DIVIDENDS.AMOUNT' | translate"
+                [attr.aria-label]="'SHARE_DIVIDENDS.AMOUNT' | appTranslate"
                 type="number"
                 name="dividendAmount"
                 [(ngModel)]="dividendAmount"
@@ -90,7 +92,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'SHARE_DIVIDENDS.PERIOD_START_DATE' | translate
+                'SHARE_DIVIDENDS.PERIOD_START_DATE' | appTranslate
               }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button
@@ -113,7 +115,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'SHARE_DIVIDENDS.PERIOD_END_DATE' | translate
+                'SHARE_DIVIDENDS.PERIOD_END_DATE' | appTranslate
               }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="dividendPeriodEndDate-picker"></ion-datetime-button>
@@ -134,7 +136,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -143,9 +145,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

@@ -18,14 +18,14 @@
  */
 
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { STAFF_API, TranslatePipe } from '../../../core/adapters';
+import type { Staff } from '../../../core/adapters';
 import {
   DataTableComponent,
   ColumnDef,
   HasPermissionDirective,
   CellTemplateDirective,
 } from '../../../shared';
-import { StaffService, StaffData } from '../../../api';
 import { IconComponent } from '../../../ui/icon/icon.component';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
@@ -34,7 +34,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
   selector: 'app-staff-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     HasPermissionDirective,
     CellTemplateDirective,
@@ -58,7 +58,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
         [link]="['create']"
         *appHasPermission="'CREATE_STAFF'"
       >
-        {{ 'ORGANIZATION.CREATE_STAFF' | translate }}
+        {{ 'ORGANIZATION.CREATE_STAFF' | appTranslate }}
       </app-button>
 
       <ng-template appCellTemplate="isLoanOfficer" let-row>
@@ -84,8 +84,8 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
             icon="create-outline"
             [link]="['edit', row.id]"
             *appHasPermission="'UPDATE_STAFF'"
-            [label]="'COMMON.EDIT' | translate"
-            [appTooltip]="'COMMON.EDIT' | translate"
+            [label]="'COMMON.EDIT' | appTranslate"
+            [appTooltip]="'COMMON.EDIT' | appTranslate"
           />
         </div>
       </ng-template>
@@ -101,9 +101,9 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
   ],
 })
 export class StaffListComponent implements OnInit {
-  private readonly staffService = inject(StaffService);
+  private readonly staffApi = inject(STAFF_API);
 
-  readonly staff = signal<StaffData[]>([]);
+  readonly staff = signal<Staff[]>([]);
   readonly isLoading = signal<boolean>(false);
 
   columns: ColumnDef[] = [
@@ -135,7 +135,7 @@ export class StaffListComponent implements OnInit {
 
   loadStaff(): void {
     this.isLoading.set(true);
-    this.staffService.getStaff(undefined, undefined, undefined, 'all').subscribe({
+    this.staffApi.list({ status: 'all' }).subscribe({
       next: (data) => {
         this.staff.set(data);
         this.isLoading.set(false);

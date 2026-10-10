@@ -24,8 +24,8 @@ import { FixedDepositProductsListComponent } from './fixed-deposit-products-list
 import { FixedDepositProductService, GetFixedDepositProductsResponse } from '../../../api';
 import { of, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('FixedDepositProductsListComponent', () => {
   let component: FixedDepositProductsListComponent;
@@ -38,8 +38,9 @@ describe('FixedDepositProductsListComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [FixedDepositProductsListComponent, TranslateModule.forRoot()],
+      imports: [FixedDepositProductsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         { provide: FixedDepositProductService, useValue: productServiceSpy },
         { provide: Router, useValue: routerSpy },

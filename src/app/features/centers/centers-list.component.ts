@@ -19,7 +19,6 @@
 
 import { Component, inject, signal } from '@angular/core';
 
-import { TranslateModule } from '@ngx-translate/core';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, merge, of } from 'rxjs';
 import { catchError, map, startWith, switchMap, tap } from 'rxjs/operators';
@@ -39,7 +38,6 @@ import { ButtonComponent } from '../../ui/button/button.component';
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
     StatusBadgeComponent,
     DataTableComponent,
     CellTemplateDirective,

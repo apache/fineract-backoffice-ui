@@ -23,8 +23,8 @@ import { TaxComponentsListComponent } from './tax-components-list.component';
 import { TaxComponentsService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('TaxComponentsListComponent', () => {
   let component: TaxComponentsListComponent;
@@ -42,8 +42,9 @@ describe('TaxComponentsListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [TaxComponentsListComponent, TranslateModule.forRoot()],
+      imports: [TaxComponentsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: TaxComponentsService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         provideNoopAnimations(),

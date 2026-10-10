@@ -19,7 +19,6 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import {
@@ -61,7 +60,6 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
     TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
@@ -83,14 +81,14 @@ import {
     <div class="bulk-import-container">
       <ion-card class="import-config-card">
         <ion-card-header>
-          <ion-card-title>{{ 'SYSTEM.BULK_IMPORT' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'SYSTEM.BULK_IMPORT' | appTranslate }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <div class="config-row">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SYSTEM.ENTITY_TYPE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'SYSTEM.ENTITY_TYPE' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'SYSTEM.ENTITY_TYPE' | translate"
+                [attr.aria-label]="'SYSTEM.ENTITY_TYPE' | appTranslate"
                 interface="popover"
                 data-testid="bulk-import-entity-type"
                 [(ngModel)]="selectedEntity"
@@ -98,7 +96,7 @@ import {
               >
                 @for (entity of entityTypes; track entity.value) {
                   <ion-select-option [value]="entity.value">{{
-                    entity.label | translate
+                    entity.label | appTranslate
                   }}</ion-select-option>
                 }
               </ion-select>
@@ -132,7 +130,7 @@ import {
                 (click)="onDownloadTemplate()"
               >
                 <ion-icon name="download-outline"></ion-icon>
-                {{ 'SYSTEM.DOWNLOAD_TEMPLATE' | translate }}
+                {{ 'SYSTEM.DOWNLOAD_TEMPLATE' | appTranslate }}
               </ion-button>
 
               <ion-button
@@ -141,7 +139,7 @@ import {
                 (click)="fileInput.click()"
               >
                 <ion-icon name="cloud-upload-outline"></ion-icon>
-                {{ 'SYSTEM.UPLOAD_CSV' | translate }}
+                {{ 'SYSTEM.UPLOAD_CSV' | appTranslate }}
               </ion-button>
               <input
                 #fileInput
@@ -155,7 +153,7 @@ import {
       </ion-card>
 
       <app-data-table
-        [title]="'SYSTEM.IMPORT_HISTORY' | translate"
+        [title]="'SYSTEM.IMPORT_HISTORY' | appTranslate"
         [columns]="columns"
         [data]="importHistory()"
         [isLoading]="isLoading()"
@@ -170,8 +168,8 @@ import {
             fill="clear"
             color="primary"
             (click)="onDownloadResult(row['importDocumentId'])"
-            [attr.aria-label]="'SYSTEM.DOWNLOAD_RESULT' | translate"
-            [appTooltip]="'SYSTEM.DOWNLOAD_RESULT' | translate"
+            [attr.aria-label]="'SYSTEM.DOWNLOAD_RESULT' | appTranslate"
+            [appTooltip]="'SYSTEM.DOWNLOAD_RESULT' | appTranslate"
           >
             <ion-icon name="download-outline"></ion-icon>
           </ion-button>

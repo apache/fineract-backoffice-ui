@@ -19,7 +19,7 @@
 
 import { inject, input, signal, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { ENTITY_NOTES_API, TranslatePipe } from '../../../core/adapters';
 import { DatePipe } from '@angular/common';
 import {
   DataTableComponent,
@@ -27,7 +27,7 @@ import {
   HasPermissionDirective,
   CellTemplateDirective,
 } from '../../../shared';
-import { NotesService, NoteData } from '../../../api';
+import type { EntityNote } from '../../../core/adapters';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
@@ -36,7 +36,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     HasPermissionDirective,
     CellTemplateDirective,
@@ -52,7 +52,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
         [link]="['/clients', clientId(), 'notes', 'create']"
         icon="add-outline"
         *appHasPermission="'CREATE_CLIENTNOTE'"
-        >{{ 'CLIENTS.ADD_NOTE' | translate }}</app-button
+        >{{ 'CLIENTS.ADD_NOTE' | appTranslate }}</app-button
       >
     </div>
 
@@ -72,21 +72,21 @@ import { ButtonComponent } from '../../../ui/button/button.component';
             type="button"
             intent="primary"
             emphasis="quiet"
-            [label]="'COMMON.EDIT' | translate"
+            [label]="'COMMON.EDIT' | appTranslate"
             [link]="['/clients', clientId(), 'notes', 'edit', row.id]"
             icon="create-outline"
             *appHasPermission="'UPDATE_CLIENTNOTE'"
-            [appTooltip]="'COMMON.EDIT' | translate"
+            [appTooltip]="'COMMON.EDIT' | appTranslate"
           />
           <app-button
             type="button"
             intent="danger"
             emphasis="quiet"
-            [label]="'COMMON.DELETE' | translate"
+            [label]="'COMMON.DELETE' | appTranslate"
             icon="trash-outline"
             (click)="onDelete(row.id)"
             *appHasPermission="'DELETE_CLIENTNOTE'"
-            [appTooltip]="'COMMON.DELETE' | translate"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
           />
         </div>
       </ng-template>
@@ -109,9 +109,9 @@ import { ButtonComponent } from '../../../ui/button/button.component';
 export class ClientNotesListComponent implements OnInit {
   readonly clientId = input.required<number>();
 
-  private readonly noteService = inject(NotesService);
+  private readonly notesApi = inject(ENTITY_NOTES_API);
 
-  readonly notes = signal<NoteData[]>([]);
+  readonly notes = signal<EntityNote[]>([]);
   readonly isLoading = signal<boolean>(false);
 
   columns: ColumnDef[] = [
@@ -139,8 +139,8 @@ export class ClientNotesListComponent implements OnInit {
 
   loadNotes(): void {
     this.isLoading.set(true);
-    this.noteService.getResourceTypeResourceIdNotes('clients', this.clientId()).subscribe({
-      next: (data: NoteData[]) => {
+    this.notesApi.list('clients', this.clientId()).subscribe({
+      next: (data: EntityNote[]) => {
         this.notes.set(data);
         this.isLoading.set(false);
       },
@@ -153,12 +153,10 @@ export class ClientNotesListComponent implements OnInit {
 
   onDelete(id: number): void {
     if (confirm('Are you sure you want to delete this note?')) {
-      this.noteService
-        .deleteResourceTypeResourceIdNotesNoteId('clients', this.clientId(), id)
-        .subscribe({
-          next: () => this.loadNotes(),
-          error: (err) => console.error('Failed to delete note', err),
-        });
+      this.notesApi.remove('clients', this.clientId(), id).subscribe({
+        next: () => this.loadNotes(),
+        error: (err) => console.error('Failed to delete note', err),
+      });
     }
   }
 }

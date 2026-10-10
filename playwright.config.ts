@@ -68,11 +68,21 @@ const BACKEND_SPECS = [
   'bulk-import-entity-types.spec.ts',
   'delinquency-configuration.spec.ts',
   'interest-rate-charts.spec.ts',
+  'accounting-closure-backend.spec.ts',
+  'loan-repayment-gating.spec.ts',
+  'savings-transaction-gating.spec.ts',
+  'collection-sheet.spec.ts',
+  'loan-flows-non-admin-roles.spec.ts',
+  'savings-flows-non-admin-roles.spec.ts',
+  'rbac-dead-end-controls.spec.ts',
   'batch-api-operations.spec.ts',
   'center-servicing.spec.ts',
   'parity-screens.spec.ts',
   'rbac-backend-restricted-user.spec.ts',
+  'rbac-disabled-flag-backend.spec.ts',
   'rbac-multi-permission.spec.ts',
+  'rbac-office-scoped-user.spec.ts',
+  'rbac-permissionless-user.spec.ts',
   'client-transfer.spec.ts',
   'client-legal-form-search.spec.ts',
   'deposit-account-servicing.spec.ts',
@@ -122,20 +132,9 @@ export default defineConfig({
     baseURL: 'https://localhost:4200',
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
-    // Pinned to the e2e tenant's own timezone, which is what makes the suite deterministic
-    // rather than a function of the hour it runs at.
-    //
-    // Fineract stamps and validates dates in the *tenant's* zone -- `m_tenants.timezone_id`,
-    // which its seed data sets to Asia/Kolkata -- while the application fills date fields from
-    // the *browser's* clock. Between 18:30 and 24:00 UTC those disagree by a day, so a UTC
-    // runner would send 15 August for a record the platform had already stamped 16 August and
-    // be refused: "Submitted on date cannot be after the activation date". A suite whose result
-    // depends on what time of day it starts is not a signal.
-    //
-    // This makes the *harness* deterministic. It does not fix the underlying behaviour, which
-    // affects any deployment whose users are not in the tenant's timezone -- see #358. Remove
-    // this pin when that is fixed; the suite passing without it is the proof.
-    timezoneId: 'Asia/Kolkata',
+    // Prior to #358, the browser timezone was pinned to 'Asia/Kolkata' to prevent intermittent
+    // CI failures between 18:30 and 24:00 UTC where the browser's date differed from the tenant's.
+    // With platform date seeding in place, the harness runs in the runner's native timezone.
     // `DEMO_RECORD=1` records every spec, not just the ones that fail — the suites *are* the
     // flows, so recording them is what produces a demo of the application rather than a separate
     // script that could drift from what the app actually does. See DOCS/DEMO.md.

@@ -21,7 +21,6 @@ import { Component, OnInit, afterNextRender, computed, inject, signal } from '@a
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
 import { HelpIconComponent, StepperComponent } from '../../shared';
 import { TranslatePipe } from '../../core/adapters';
 import { CreateOfficeDialogComponent } from '../../shared/components/create-office-dialog/create-office-dialog.component';
@@ -65,7 +64,6 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
     TranslatePipe,
     HelpIconComponent,
     StepperComponent,
@@ -94,8 +92,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('CLIENTS.EDIT_CLIENT' | translate)
-                : ('CLIENTS.CREATE_CLIENT' | translate)
+                ? ('CLIENTS.EDIT_CLIENT' | appTranslate)
+                : ('CLIENTS.CREATE_CLIENT' | appTranslate)
             }}
             <app-help-icon helpTextKey="HELP.CLIENTS_CONTRACTS_DESC"></app-help-icon>
           </ion-card-title>
@@ -114,10 +112,10 @@ import {
               #step1Group="ngModelGroup"
             >
               <!-- Legal Form -->
-              <ion-item fill="outline" [appTooltip]="'HELP.LEGAL_FORM_DESC' | translate">
-                <ion-label position="stacked">{{ 'CLIENTS.LEGAL_FORM' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.LEGAL_FORM_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'CLIENTS.LEGAL_FORM' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'CLIENTS.LEGAL_FORM' | translate"
+                  [attr.aria-label]="'CLIENTS.LEGAL_FORM' | appTranslate"
                   interface="popover"
                   name="legalFormId"
                   [(ngModel)]="client().legalFormId"
@@ -125,21 +123,21 @@ import {
                   [disabled]="isEditMode()"
                 >
                   <ion-select-option [value]="1">{{
-                    'CLIENTS.PERSON' | translate
+                    'CLIENTS.PERSON' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="2">{{
-                    'CLIENTS.ENTITY' | translate
+                    'CLIENTS.ENTITY' | appTranslate
                   }}</ion-select-option>
                 </ion-select>
               </ion-item>
 
               <!-- Office -->
               <div class="office-field-container">
-                <ion-item fill="outline" [appTooltip]="'HELP.OFFICE_DESC' | translate">
-                  <ion-label position="stacked">{{ 'COMMON.OFFICE' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.OFFICE_DESC' | appTranslate">
+                  <ion-label position="stacked">{{ 'COMMON.OFFICE' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.OFFICE' | translate"
-                    [placeholder]="'CLIENTS.SELECT_OFFICE' | translate"
+                    [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
+                    [placeholder]="'CLIENTS.SELECT_OFFICE' | appTranslate"
                     interface="popover"
                     name="officeId"
                     [(ngModel)]="client().officeId"
@@ -156,8 +154,8 @@ import {
                     fill="clear"
                     type="button"
                     color="primary"
-                    [attr.aria-label]="'CLIENTS.ADD_NEW_OFFICE' | translate"
-                    [appTooltip]="'CLIENTS.ADD_NEW_OFFICE' | translate"
+                    [attr.aria-label]="'CLIENTS.ADD_NEW_OFFICE' | appTranslate"
+                    [appTooltip]="'CLIENTS.ADD_NEW_OFFICE' | appTranslate"
                     (click)="addOffice()"
                   >
                     <ion-icon name="add-circle-outline"></ion-icon>
@@ -168,10 +166,10 @@ import {
               <!-- Active -->
               <div class="checkbox-container">
                 <ion-checkbox name="active" [(ngModel)]="client().active" [disabled]="isEditMode()">
-                  {{ 'COMMON.ACTIVE' | translate }}
+                  {{ 'COMMON.ACTIVE' | appTranslate }}
                 </ion-checkbox>
                 <ion-icon
-                  [appTooltip]="'HELP.ACTIVE_DESC' | translate"
+                  [appTooltip]="'HELP.ACTIVE_DESC' | appTranslate"
                   class="help-icon"
                   name="help-circle-outline"
                 ></ion-icon>
@@ -185,8 +183,8 @@ import {
               #step2Group="ngModelGroup"
             >
               <!-- Submitted On Date -->
-              <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.SUBMITTED_ON' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'COMMON.SUBMITTED_ON' | appTranslate }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
                 }
@@ -207,8 +205,10 @@ import {
               </ion-item>
 
               <!-- Activation Date -->
-              <ion-item fill="outline" [appTooltip]="'HELP.ACTIVATION_DATE_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.ACTIVATION_DATE' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.ACTIVATION_DATE_DESC' | appTranslate">
+                <ion-label position="stacked">{{
+                  'COMMON.ACTIVATION_DATE' | appTranslate
+                }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="activationDate-picker"></ion-datetime-button>
                 }
@@ -232,12 +232,14 @@ import {
               @if (client().legalFormId === 2) {
                 <ion-item
                   fill="outline"
-                  [appTooltip]="'HELP.FULL_NAME_DESC' | translate"
+                  [appTooltip]="'HELP.FULL_NAME_DESC' | appTranslate"
                   class="full-width"
                 >
-                  <ion-label position="stacked">{{ 'CLIENTS.COMPANY_NAME' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'CLIENTS.COMPANY_NAME' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'CLIENTS.COMPANY_NAME' | translate"
+                    [attr.aria-label]="'CLIENTS.COMPANY_NAME' | appTranslate"
                     name="fullname"
                     [(ngModel)]="client().fullname"
                     required
@@ -247,38 +249,42 @@ import {
 
               <!-- Person fields -->
               @if (client().legalFormId === 1) {
-                <ion-item fill="outline" [appTooltip]="'HELP.FIRST_NAME_DESC' | translate">
-                  <ion-label position="stacked">{{ 'CLIENTS.FIRST_NAME' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.FIRST_NAME_DESC' | appTranslate">
+                  <ion-label position="stacked">{{
+                    'CLIENTS.FIRST_NAME' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'CLIENTS.FIRST_NAME' | translate"
+                    [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
                     name="firstname"
                     [(ngModel)]="client().firstname"
                     required
                   ></ion-input>
                 </ion-item>
 
-                <ion-item fill="outline" [appTooltip]="'HELP.MIDDLE_NAME_DESC' | translate">
-                  <ion-label position="stacked">{{ 'CLIENTS.MIDDLE_NAME' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.MIDDLE_NAME_DESC' | appTranslate">
+                  <ion-label position="stacked">{{
+                    'CLIENTS.MIDDLE_NAME' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'CLIENTS.MIDDLE_NAME' | translate"
+                    [attr.aria-label]="'CLIENTS.MIDDLE_NAME' | appTranslate"
                     name="middlename"
                     [(ngModel)]="client().middlename"
                   ></ion-input>
                 </ion-item>
 
-                <ion-item fill="outline" [appTooltip]="'HELP.LAST_NAME_DESC' | translate">
-                  <ion-label position="stacked">{{ 'CLIENTS.LAST_NAME' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.LAST_NAME_DESC' | appTranslate">
+                  <ion-label position="stacked">{{ 'CLIENTS.LAST_NAME' | appTranslate }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'CLIENTS.LAST_NAME' | translate"
+                    [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
                     name="lastname"
                     [(ngModel)]="client().lastname"
                     required
                   ></ion-input>
                 </ion-item>
 
-                <ion-item fill="outline" [appTooltip]="'HELP.DATE_OF_BIRTH_DESC' | translate">
+                <ion-item fill="outline" [appTooltip]="'HELP.DATE_OF_BIRTH_DESC' | appTranslate">
                   <ion-label position="stacked">{{
-                    'CLIENTS.DATE_OF_BIRTH' | translate
+                    'CLIENTS.DATE_OF_BIRTH' | appTranslate
                   }}</ion-label>
                   @if (pickersReady()) {
                     <ion-datetime-button datetime="dateOfBirth-picker"></ion-datetime-button>
@@ -305,28 +311,28 @@ import {
               ngModelGroup="step3"
             >
               <!-- Common fields -->
-              <ion-item fill="outline" [appTooltip]="'HELP.EXTERNAL_ID_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.EXTERNAL_ID' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.EXTERNAL_ID_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'COMMON.EXTERNAL_ID' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.EXTERNAL_ID' | translate"
+                  [attr.aria-label]="'COMMON.EXTERNAL_ID' | appTranslate"
                   name="externalId"
                   [(ngModel)]="client().externalId"
                 ></ion-input>
               </ion-item>
 
-              <ion-item fill="outline" [appTooltip]="'HELP.MOBILE_NO_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.MOBILE_NO' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.MOBILE_NO_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'COMMON.MOBILE_NO' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.MOBILE_NO' | translate"
+                  [attr.aria-label]="'COMMON.MOBILE_NO' | appTranslate"
                   name="mobileNo"
                   [(ngModel)]="client().mobileNo"
                 ></ion-input>
               </ion-item>
 
-              <ion-item fill="outline" [appTooltip]="'HELP.EMAIL_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.EMAIL' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.EMAIL_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'COMMON.EMAIL' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.EMAIL' | translate"
+                  [attr.aria-label]="'COMMON.EMAIL' | appTranslate"
                   name="emailAddress"
                   [(ngModel)]="client().emailAddress"
                 ></ion-input>
@@ -345,7 +351,7 @@ import {
                 </ion-button>
               }
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               @if (isEditMode() && !originalActive()) {
                 <ion-button
@@ -356,9 +362,9 @@ import {
                 >
                   @if (isSaving()) {
                     <ion-spinner name="crescent"></ion-spinner>
-                    {{ 'COMMON.SAVING' | translate }}
+                    {{ 'COMMON.SAVING' | appTranslate }}
                   } @else {
-                    {{ 'CLIENTS.ACTIVATE_CLIENT' | translate }}
+                    {{ 'CLIENTS.ACTIVATE_CLIENT' | appTranslate }}
                   }
                 </ion-button>
               }
@@ -379,9 +385,9 @@ import {
                 >
                   @if (isSaving()) {
                     <ion-spinner name="crescent"></ion-spinner>
-                    {{ 'COMMON.SAVING' | translate }}
+                    {{ 'COMMON.SAVING' | appTranslate }}
                   } @else {
-                    {{ 'COMMON.SAVE' | translate }}
+                    {{ 'COMMON.SAVE' | appTranslate }}
                   }
                 </ion-button>
               }

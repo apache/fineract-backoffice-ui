@@ -20,7 +20,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { CdkTableModule } from '@angular/cdk/table';
 import { formatDateToFineract, toIsoDate } from '../../../core/utils/date-formatter';
 import {
@@ -51,7 +51,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   imports: [
     FormsModule,
     DecimalPipe,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     IonButton,
     IonInput,
@@ -69,13 +69,15 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'LOANS_POINT_IN_TIME.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'LOANS_POINT_IN_TIME.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
         <div class="search-form">
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'LOANS_POINT_IN_TIME.DATE' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'LOANS_POINT_IN_TIME.DATE' | appTranslate
+            }}</ion-label>
             @if (pickersReady()) {
               <ion-datetime-button datetime="searchDate-picker"></ion-datetime-button>
             }
@@ -95,17 +97,17 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
           <ion-item fill="outline">
             <ion-label position="stacked">{{
-              'LOANS_POINT_IN_TIME.LOAN_IDS' | translate
+              'LOANS_POINT_IN_TIME.LOAN_IDS' | appTranslate
             }}</ion-label>
             <ion-input
-              [attr.aria-label]="'LOANS_POINT_IN_TIME.LOAN_IDS' | translate"
+              [attr.aria-label]="'LOANS_POINT_IN_TIME.LOAN_IDS' | appTranslate"
               [(ngModel)]="loanIdsInput"
               placeholder="1, 2, 3"
             ></ion-input>
           </ion-item>
 
           <ion-button color="primary" [disabled]="!searchDate || isLoading()" (click)="onSearch()">
-            {{ 'LOANS_POINT_IN_TIME.SEARCH' | translate }}
+            {{ 'LOANS_POINT_IN_TIME.SEARCH' | appTranslate }}
           </ion-button>
         </div>
 
@@ -116,18 +118,20 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
         }
 
         @if (!isLoading() && results().length === 0) {
-          <p class="no-results">{{ 'LOANS_POINT_IN_TIME.NO_RESULTS' | translate }}</p>
+          <p class="no-results">{{ 'LOANS_POINT_IN_TIME.NO_RESULTS' | appTranslate }}</p>
         }
 
         @if (!isLoading() && results().length > 0) {
           <table cdk-table [dataSource]="results()" class="results-table">
             <ng-container cdkColumnDef="id">
-              <th cdk-header-cell *cdkHeaderCellDef>Loan ID</th>
+              <th cdk-header-cell *cdkHeaderCellDef>
+                {{ 'LOANS_POINT_IN_TIME.LOAN_ID' | appTranslate }}
+              </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.id }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="accountNo">
-              <th cdk-header-cell *cdkHeaderCellDef>Account No</th>
+              <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACCOUNT_NO' | appTranslate }}</th>
               <td cdk-cell *cdkCellDef="let row">{{ row.accountNo }}</td>
             </ng-container>
 
@@ -137,21 +141,27 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             </ng-container>
 
             <ng-container cdkColumnDef="principalDisbursed">
-              <th cdk-header-cell *cdkHeaderCellDef>Principal Disbursed</th>
+              <th cdk-header-cell *cdkHeaderCellDef>
+                {{ 'LOANS_POINT_IN_TIME.PRINCIPAL_DISBURSED' | appTranslate }}
+              </th>
               <td cdk-cell *cdkCellDef="let row">
                 {{ row.principal?.principalDisbursed | number: '1.2-2' }}
               </td>
             </ng-container>
 
             <ng-container cdkColumnDef="principalOutstanding">
-              <th cdk-header-cell *cdkHeaderCellDef>Principal Outstanding</th>
+              <th cdk-header-cell *cdkHeaderCellDef>
+                {{ 'LOANS_POINT_IN_TIME.PRINCIPAL_OUTSTANDING' | appTranslate }}
+              </th>
               <td cdk-cell *cdkCellDef="let row">
                 {{ row.principal?.principalOutstanding | number: '1.2-2' }}
               </td>
             </ng-container>
 
             <ng-container cdkColumnDef="totalOutstanding">
-              <th cdk-header-cell *cdkHeaderCellDef>Total Outstanding</th>
+              <th cdk-header-cell *cdkHeaderCellDef>
+                {{ 'LOANS_POINT_IN_TIME.TOTAL_OUTSTANDING' | appTranslate }}
+              </th>
               <td cdk-cell *cdkCellDef="let row">
                 {{ row.total?.totalOutstanding | number: '1.2-2' }}
               </td>

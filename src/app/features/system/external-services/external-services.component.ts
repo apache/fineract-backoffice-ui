@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ExternalServicesService, PutExternalServiceRequest } from '../../../api';
 import {
   IonButton,
@@ -49,7 +49,7 @@ interface ServiceProperty {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -66,14 +66,16 @@ interface ServiceProperty {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'EXTERNAL_SERVICES.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'EXTERNAL_SERVICES.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'EXTERNAL_SERVICES.SERVICE' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'EXTERNAL_SERVICES.SERVICE' | appTranslate
+            }}</ion-label>
             <ion-select
-              [attr.aria-label]="'EXTERNAL_SERVICES.SERVICE' | translate"
+              [attr.aria-label]="'EXTERNAL_SERVICES.SERVICE' | appTranslate"
               interface="popover"
               [(ngModel)]="selectedService"
               (ionChange)="load()"
@@ -104,9 +106,9 @@ interface ServiceProperty {
             >
               @if (isSaving()) {
                 <ion-spinner name="crescent"></ion-spinner>
-                {{ 'COMMON.SAVING' | translate }}
+                {{ 'COMMON.SAVING' | appTranslate }}
               } @else {
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               }
             </ion-button>
           </div>

@@ -20,63 +20,59 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideFakeAdapters } from '../../../testing/adapters';
 import { provideTestConfig } from '../../../testing/config';
 import { RoleFormComponent } from './role-form.component';
-import { RolesService } from '../../../api';
+import { ROLE_API } from '../../../core/adapters';
+import type { RoleApi, RolePermission } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 
 /**
- * `permissionUsageData` as the roles endpoint reports it, reduced to two codes with a
- * navigation consequence — `READ_USER` opens `/security/users`, `READ_OFFICE` opens
+ * The permission rows as the contract reports them, reduced to codes with a navigation
+ * consequence — `READ_USER` opens `/security/users`, `READ_OFFICE` opens
  * `/organization/offices` — plus one that gates an action inside a screen rather than the
  * screen itself. That last one is what makes "no screen changed" a distinct outcome from
  * "nothing changed", which is the distinction the panel exists to draw.
+ *
+ * `READ_STANDINGINSTRUCTION ` is the fourth, and it is not decoration. Fineract really does
+ * publish five codes with a trailing space, and only in that form, so a fixture without one
+ * cannot show whether the screen sends the catalogue's spelling back. The old fixture had no
+ * such row, which is how the matrix shipped unable to save at all.
  */
-const PERMISSIONS = [
-  { code: 'READ_USER', grouping: 'authorisation', selected: true },
-  { code: 'READ_OFFICE', grouping: 'organisation', selected: false },
-  { code: 'APPROVE_LOAN', grouping: 'transaction_loan', selected: false },
+const PERMISSIONS: RolePermission[] = [
+  { code: 'READ_USER', label: 'READ_USER', grouping: 'authorisation', selected: true },
+  { code: 'READ_OFFICE', label: 'READ_OFFICE', grouping: 'organisation', selected: false },
+  { code: 'APPROVE_LOAN', label: 'APPROVE_LOAN', grouping: 'transaction_loan', selected: false },
+  {
+    code: 'READ_STANDINGINSTRUCTION ',
+    label: 'READ_STANDINGINSTRUCTION',
+    grouping: 'account_transfer',
+    selected: false,
+  },
 ];
 
 describe('RoleFormComponent', () => {
   let component: RoleFormComponent;
   let fixture: ComponentFixture<RoleFormComponent>;
-  let rolesService: SpyObj<RolesService>;
+  let roleApi: SpyObj<RoleApi>;
   let routerSpy: SpyObj<Router>;
   let dialogService: SpyObj<DialogService>;
 
   async function setUp(routeId: string | null = '7'): Promise<void> {
-    rolesService = createSpyObj([
-      'getRolesRoleId',
-      'getRolesRoleIdPermissions',
-      'postRoles',
-      'putRolesRoleId',
-      'putRolesRoleIdPermissions',
-    ]);
+    roleApi = createSpyObj(['list', 'get', 'permissions', 'create', 'update', 'setPermissions']);
     routerSpy = createSpyObj(['navigate']);
     dialogService = createSpyObj(['confirm']);
     dialogService.confirm.mockResolvedValue(true);
 
-    rolesService.getRolesRoleId.mockReturnValue(
-      of({ id: 7, name: 'Branch Officer', description: 'Front desk' }) as unknown as ReturnType<
-        RolesService['getRolesRoleId']
-      >,
-    );
-    rolesService.getRolesRoleIdPermissions.mockReturnValue(
-      of({ permissionUsageData: PERMISSIONS }) as unknown as ReturnType<
-        RolesService['getRolesRoleIdPermissions']
-      >,
-    );
-    rolesService.putRolesRoleId.mockReturnValue(
-      of({}) as unknown as ReturnType<RolesService['putRolesRoleId']>,
-    );
-    rolesService.putRolesRoleIdPermissions.mockReturnValue(
-      of({}) as unknown as ReturnType<RolesService['putRolesRoleIdPermissions']>,
-    );
+    // No casts. Every one of these used to need `as unknown as ReturnType<RolesService[...]>`,
+    // and a fixture shaped by a cast is a fixture nothing checks.
+    roleApi.get.mockReturnValue(of({ id: 7, name: 'Branch Officer', description: 'Front desk' }));
+    roleApi.permissions.mockReturnValue(of(PERMISSIONS));
+    roleApi.update.mockReturnValue(of(undefined));
+    roleApi.setPermissions.mockReturnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [RoleFormComponent],
@@ -84,7 +80,7 @@ describe('RoleFormComponent', () => {
         ...provideTranslateTesting(),
         ...provideFakeAdapters().providers,
         provideTestConfig({ rbacEnabled: true }),
-        { provide: RolesService, useValue: rolesService },
+        { provide: ROLE_API, useValue: roleApi },
         { provide: Router, useValue: routerSpy },
         { provide: DialogService, useValue: dialogService },
         {
@@ -153,14 +149,31 @@ describe('RoleFormComponent', () => {
       expect(component.groupedPermissions().map((group) => group.prefix)).toEqual([
         'LOAN',
         'OFFICE',
+        'STANDINGINSTRUCTION',
         'USER',
       ]);
+    });
+
+    it('groups a padded code under a heading with no trailing space', () => {
+      // The heading comes off the trimmed label. Grouping by the raw code would produce
+      // "STANDINGINSTRUCTION " and sort it apart from an unpadded twin of the same family.
+      const prefixes = component.groupedPermissions().map((group) => group.prefix);
+      expect(prefixes).toContain('STANDINGINSTRUCTION');
+      expect(prefixes.some((prefix) => prefix !== prefix.trim())).toBe(false);
     });
 
     it('narrows the matrix to codes matching the filter, case-insensitively', () => {
       component.filter.set('office');
       expect(component.visibleGroups()).toHaveLength(1);
-      expect(component.visibleGroups()[0].items.map((perm) => perm.code)).toEqual(['READ_OFFICE']);
+      expect(component.visibleGroups()[0].items.map((perm) => perm.label)).toEqual(['READ_OFFICE']);
+    });
+
+    it('finds a padded code by its trimmed label', () => {
+      // Filtering on the raw code would still match here, but only because the padding is
+      // trailing. A user typing the code they can see must find the row either way.
+      component.filter.set('READ_STANDINGINSTRUCTION');
+      expect(component.visibleGroups()).toHaveLength(1);
+      expect(component.visibleGroups()[0].items[0].code).toBe('READ_STANDINGINSTRUCTION ');
     });
 
     it('shows no groups when the filter matches nothing', () => {
@@ -179,13 +192,42 @@ describe('RoleFormComponent', () => {
       await component.onSubmit();
 
       expect(dialogService.confirm).toHaveBeenCalled();
-      expect(rolesService.putRolesRoleIdPermissions).toHaveBeenCalledWith(
+      expect(roleApi.setPermissions).toHaveBeenCalledWith(
         7,
-        expect.objectContaining({
-          permissions: expect.objectContaining({ READ_OFFICE: true }),
-        }),
+        expect.arrayContaining([{ code: 'READ_OFFICE', selected: true }]),
       );
       expect(routerSpy.navigate).toHaveBeenCalledWith(['/security/roles']);
+    });
+
+    it("sends a padded code in Fineract's own spelling, not the label the matrix showed", async () => {
+      // The regression test for the whole exercise. Sending 'READ_STANDINGINSTRUCTION' — the
+      // label — made `PUT /roles/{id}/permissions` answer 404 for every role and every
+      // administrator, because the payload is the entire map and that code exists only padded.
+      component.setPermission('READ_STANDINGINSTRUCTION ', true);
+      await component.onSubmit();
+
+      const selection = roleApi.setPermissions.mock.calls[0][1] as readonly {
+        code: string;
+        selected: boolean;
+      }[];
+      expect(selection).toEqual(
+        expect.arrayContaining([{ code: 'READ_STANDINGINSTRUCTION ', selected: true }]),
+      );
+      expect(selection.map((entry) => entry.code)).not.toContain('READ_STANDINGINSTRUCTION');
+    });
+
+    it('sends every row, so a deselection is applied as one', async () => {
+      // The endpoint applies the map as a delta, so omitting the untouched rows would turn a
+      // revocation into a no-op.
+      component.setPermission('READ_USER', false);
+      await component.onSubmit();
+
+      const selection = roleApi.setPermissions.mock.calls[0][1] as readonly {
+        code: string;
+        selected: boolean;
+      }[];
+      expect(selection).toHaveLength(PERMISSIONS.length);
+      expect(selection).toEqual(expect.arrayContaining([{ code: 'READ_USER', selected: false }]));
     });
 
     it('writes nothing when the confirmation is declined', async () => {
@@ -193,14 +235,14 @@ describe('RoleFormComponent', () => {
       component.setPermission('READ_OFFICE', true);
       await component.onSubmit();
 
-      expect(rolesService.putRolesRoleId).not.toHaveBeenCalled();
-      expect(rolesService.putRolesRoleIdPermissions).not.toHaveBeenCalled();
+      expect(roleApi.update).not.toHaveBeenCalled();
+      expect(roleApi.setPermissions).not.toHaveBeenCalled();
     });
 
     it('saves a description-only edit without asking', async () => {
       await component.onSubmit();
       expect(dialogService.confirm).not.toHaveBeenCalled();
-      expect(rolesService.putRolesRoleId).toHaveBeenCalled();
+      expect(roleApi.update).toHaveBeenCalled();
     });
 
     it('marks the confirmation destructive only when something is being revoked', async () => {
@@ -210,6 +252,17 @@ describe('RoleFormComponent', () => {
         expect.objectContaining({ destructive: true }),
       );
     });
+
+    it('leaves the form editable when the permission write fails', async () => {
+      roleApi.setPermissions.mockReturnValue(throwError(() => new Error('403')));
+      component.setPermission('READ_OFFICE', true);
+      await component.onSubmit();
+
+      // The failure this replaces a fallback for: a refused write used to leave the Save button
+      // spinning, so the only recovery was a reload.
+      expect(component.isSaving()).toBe(false);
+      expect(routerSpy.navigate).not.toHaveBeenCalled();
+    });
   });
 
   describe('create mode', () => {
@@ -217,27 +270,29 @@ describe('RoleFormComponent', () => {
 
     it('does not fetch permissions for a role that does not exist yet', () => {
       expect(component.isEditMode()).toBe(false);
-      expect(rolesService.getRolesRoleIdPermissions).not.toHaveBeenCalled();
+      expect(roleApi.permissions).not.toHaveBeenCalled();
     });
 
     it('opens the new role for editing so its permissions can be set', async () => {
-      rolesService.postRoles.mockReturnValue(
-        of({ resourceId: 42 }) as unknown as ReturnType<RolesService['postRoles']>,
-      );
+      roleApi.create.mockReturnValue(of(42));
       component.role.set({ name: 'Teller', description: 'Cash desk' });
 
       await component.onSubmit();
 
-      expect(rolesService.postRoles).toHaveBeenCalled();
+      expect(roleApi.create).toHaveBeenCalledWith({ name: 'Teller', description: 'Cash desk' });
       expect(routerSpy.navigate).toHaveBeenCalledWith(['/security/roles', 'edit', 42]);
     });
 
-    it('falls back to the list when the response carries no id', async () => {
-      rolesService.postRoles.mockReturnValue(
-        of({}) as unknown as ReturnType<RolesService['postRoles']>,
-      );
+    it('stays on the form when the role cannot be created', async () => {
+      // Replaces a test for a "navigate to the list when the response carries no id" fallback.
+      // The id is no longer optional: the contract requires it, because the next screen is the
+      // permission matrix for *that* role and the list is not a usable substitute. A response
+      // without one is now an error, and this is what the user sees when it happens.
+      roleApi.create.mockReturnValue(throwError(() => new Error('no resourceId')));
       await component.onSubmit();
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/security/roles']);
+
+      expect(component.isSaving()).toBe(false);
+      expect(routerSpy.navigate).not.toHaveBeenCalled();
     });
   });
 });

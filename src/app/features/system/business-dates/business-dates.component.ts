@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
   IonButton,
@@ -53,7 +53,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -68,7 +68,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   ],
   template: `
     <div class="page-header">
-      <h2>{{ 'BUSINESS_DATES.TITLE' | translate }}</h2>
+      <h2>{{ 'BUSINESS_DATES.TITLE' | appTranslate }}</h2>
     </div>
 
     @if (isLoading()) {
@@ -82,18 +82,22 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
         <!-- Business Date Card -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>{{ 'BUSINESS_DATES.BUSINESS_DATE_LABEL' | translate }}</ion-card-title>
+            <ion-card-title>{{
+              'BUSINESS_DATES.BUSINESS_DATE_LABEL' | appTranslate
+            }}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             @if (businessDateEntry()?.description; as description) {
               <p>{{ description }}</p>
             }
             <p>
-              <strong>{{ 'BUSINESS_DATES.CURRENT_DATE' | translate }}:</strong>
+              <strong>{{ 'BUSINESS_DATES.CURRENT_DATE' | appTranslate }}:</strong>
               {{ businessDateEntry()?.date }}
             </p>
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{ 'BUSINESS_DATES.NEW_DATE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'BUSINESS_DATES.NEW_DATE' | appTranslate
+              }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="businessDate-picker"></ion-datetime-button>
               }
@@ -117,7 +121,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               (click)="updateDate('BUSINESS_DATE')"
               [disabled]="!businessDate()"
             >
-              {{ 'BUSINESS_DATES.UPDATE' | translate }}
+              {{ 'BUSINESS_DATES.UPDATE' | appTranslate }}
             </ion-button>
           </div>
         </ion-card>
@@ -125,18 +129,20 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
         <!-- COB Date Card -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>{{ 'BUSINESS_DATES.COB_DATE_LABEL' | translate }}</ion-card-title>
+            <ion-card-title>{{ 'BUSINESS_DATES.COB_DATE_LABEL' | appTranslate }}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             @if (cobDateEntry()?.description; as description) {
               <p>{{ description }}</p>
             }
             <p>
-              <strong>{{ 'BUSINESS_DATES.CURRENT_DATE' | translate }}:</strong>
+              <strong>{{ 'BUSINESS_DATES.CURRENT_DATE' | appTranslate }}:</strong>
               {{ cobDateEntry()?.date }}
             </p>
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{ 'BUSINESS_DATES.NEW_DATE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'BUSINESS_DATES.NEW_DATE' | appTranslate
+              }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="cobDate-picker"></ion-datetime-button>
               }
@@ -156,7 +162,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
           </ion-card-content>
           <div class="card-actions">
             <ion-button color="primary" (click)="updateDate('COB_DATE')" [disabled]="!cobDate()">
-              {{ 'BUSINESS_DATES.UPDATE' | translate }}
+              {{ 'BUSINESS_DATES.UPDATE' | appTranslate }}
             </ion-button>
           </div>
         </ion-card>

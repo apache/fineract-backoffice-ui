@@ -35,11 +35,11 @@ import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '../../core/http/http-context';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
 import { provideIonicTesting } from '../../testing/ionic-testing';
 import { createSpyObj, SpyObj } from '../../testing/mocks';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
 
 describe('ClientViewComponent', () => {
   let component: ClientViewComponent;
@@ -82,8 +82,9 @@ describe('ClientViewComponent', () => {
     authServiceSpy.hasPermission.mockReturnValue(true);
 
     await TestBed.configureTestingModule({
-      imports: [ClientViewComponent, TranslateModule.forRoot()],
+      imports: [ClientViewComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideIonicTesting(),
         provideNoopAnimations(),
         { provide: ClientService, useValue: clientServiceSpy },
@@ -183,7 +184,7 @@ describe('ClientViewComponent', () => {
         '[data-testid="client-load-error"]',
       );
       expect(errorState).not.toBeNull();
-      // TranslateModule.forRoot() has no loader in this spec, so the key itself renders — this
+      // `provideTranslateTesting()` has no loader in this spec, so the key itself renders — this
       // confirms the not-found branch is wired to the right translation key.
       expect(errorState.textContent).toContain('CLIENTS.ERRORS.NOT_FOUND');
 
@@ -359,6 +360,25 @@ describe('ClientViewComponent', () => {
       component.onTabChange(CLIENT_TAB.shares);
 
       expect(shareAccountServiceSpy.getAccountsType).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('teardown', () => {
+    it('dismisses popovers when destroyed', () => {
+      const withPopovers = component as unknown as {
+        popovers: () => readonly { dismiss: () => Promise<boolean> }[];
+      };
+      const popovers = withPopovers.popovers();
+      expect(popovers.length).toBeGreaterThan(0);
+      const dismissSpies = popovers.map((popover) =>
+        vi.spyOn(popover, 'dismiss').mockResolvedValue(true),
+      );
+
+      fixture.destroy();
+
+      for (const spy of dismissSpies) {
+        expect(spy).toHaveBeenCalled();
+      }
     });
   });
 });

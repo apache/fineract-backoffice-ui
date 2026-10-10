@@ -19,7 +19,6 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import {
@@ -35,7 +34,7 @@ import {
 @Component({
   selector: 'app-fixed-deposit-transactions-list',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective],
+  imports: [DataTableComponent, CellTemplateDirective],
   template: `
     <app-data-table
       title="FIXED_DEPOSIT_TRANSACTIONS.TITLE"

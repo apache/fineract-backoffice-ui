@@ -22,7 +22,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { of, throwError } from 'rxjs';
 
-import { LoanTransactionsService } from '../../api';
+import { LOAN_TRANSACTION_API } from '../../core/adapters';
 import { LoanChargebackDialogComponent } from './loan-chargeback-dialog.component';
 import { LoanDisburseToSavingsDialogComponent } from './loan-disburse-to-savings-dialog.component';
 import { LoanUnassignOfficerDialogComponent } from './loan-unassign-officer-dialog.component';
@@ -145,9 +145,16 @@ describe('LoanChargebackDialogComponent', () => {
   let component: LoanChargebackDialogComponent;
   let overlay: FakeOverlayAdapter;
 
+  // `PaymentTypeOption` as the adapter maps it: `codeName` is `null` on the types Fineract
+  // does not define itself, which is how the real payload distinguishes them.
   const PAYMENT_TYPES = [
-    { id: 1, name: 'Money Transfer' },
-    { id: 2, name: 'Repayment Adjustment Chargeback', codeName: 'REPAYMENT_ADJUSTMENT_CHARGEBACK' },
+    { id: 1, name: 'Money Transfer', codeName: null, isSystemDefined: false },
+    {
+      id: 2,
+      name: 'Repayment Adjustment Chargeback',
+      codeName: 'REPAYMENT_ADJUSTMENT_CHARGEBACK',
+      isSystemDefined: true,
+    },
   ];
 
   const DEFAULT_TEMPLATE = { paymentTypeOptions: PAYMENT_TYPES };
@@ -156,7 +163,7 @@ describe('LoanChargebackDialogComponent', () => {
     const adapters = provideFakeAdapters();
     overlay = adapters.overlay;
     const transactions = {
-      getLoansLoanIdTransactionsTemplate: vi
+      template: vi
         .fn()
         .mockReturnValue(template instanceof Error ? throwError(() => template) : of(template)),
     };
@@ -166,7 +173,7 @@ describe('LoanChargebackDialogComponent', () => {
       providers: [
         provideNoopAnimations(),
         ...adapters.providers,
-        { provide: LoanTransactionsService, useValue: transactions },
+        { provide: LOAN_TRANSACTION_API, useValue: transactions },
       ],
     }).compileComponents();
 

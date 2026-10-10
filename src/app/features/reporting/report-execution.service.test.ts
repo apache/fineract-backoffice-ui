@@ -285,7 +285,7 @@ describe('ReportExecutionService', () => {
       (candidate) => candidate.url === '/api/v1/runreports/Client%20Listing',
     );
     expect(request.request.method).toBe('GET');
-    expect(request.request.params.keys().sort()).toEqual([
+    expect(request.request.params.keys().toSorted()).toEqual([
       'R_accountNo',
       'R_loanOfficerId',
       'R_officeId',

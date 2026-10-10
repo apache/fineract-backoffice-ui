@@ -23,6 +23,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { AccountingRulesService } from '../../api/api/accountingRules.service';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonButton,
   IonCheckbox,
@@ -42,6 +43,7 @@ import {
   imports: [
     RouterModule,
     ReactiveFormsModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonTextarea,
@@ -59,8 +61,12 @@ import {
 
       <form [formGroup]="ruleForm" (ngSubmit)="onSubmit()">
         <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">Rule Name</ion-label>
-          <ion-input aria-label="Rule Name" formControlName="name" required></ion-input>
+          <ion-label position="stacked">{{ 'ACCOUNTING_RULES.NAME' | appTranslate }}</ion-label>
+          <ion-input
+            [attr.aria-label]="'ACCOUNTING_RULES.NAME' | appTranslate"
+            formControlName="name"
+            required
+          ></ion-input>
         </ion-item>
 
         <ion-item fill="outline" class="full-width">
@@ -75,17 +81,21 @@ import {
         </ion-item>
 
         <div class="section">
-          <h3>Debit Details</h3>
+          <h3>{{ 'ACCOUNTING_RULES.DEBIT_DETAILS' | appTranslate }}</h3>
           <ion-radio-group formControlName="debitRuleType" class="radio-group">
-            <ion-radio value="fixedAccount">Fixed Account</ion-radio>
-            <ion-radio value="tags">Account Tags</ion-radio>
+            <ion-radio value="fixedAccount">{{
+              'ACCOUNTING_RULES.FIXED_ACCOUNT' | appTranslate
+            }}</ion-radio>
+            <ion-radio value="tags">{{ 'ACCOUNTING_RULES.ACCOUNT_TAGS' | appTranslate }}</ion-radio>
           </ion-radio-group>
 
           @if (ruleForm.get('debitRuleType')?.value === 'fixedAccount') {
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">Account to Debit</ion-label>
+              <ion-label position="stacked">{{
+                'ACCOUNTING_RULES.ACCOUNT_TO_DEBIT' | appTranslate
+              }}</ion-label>
               <ion-select
-                aria-label="Account to Debit"
+                [attr.aria-label]="'ACCOUNTING_RULES.ACCOUNT_TO_DEBIT' | appTranslate"
                 interface="popover"
                 formControlName="accountToDebit"
               >
@@ -100,9 +110,11 @@ import {
 
           @if (ruleForm.get('debitRuleType')?.value === 'tags') {
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">Debit Tags</ion-label>
+              <ion-label position="stacked">{{
+                'ACCOUNTING_RULES.DEBIT_TAGS' | appTranslate
+              }}</ion-label>
               <ion-select
-                aria-label="Debit Tags"
+                [attr.aria-label]="'ACCOUNTING_RULES.DEBIT_TAGS' | appTranslate"
                 interface="popover"
                 formControlName="debitTags"
                 multiple
@@ -117,22 +129,26 @@ import {
           }
 
           <ion-checkbox formControlName="allowMultipleDebitEntries">
-            Allow Multiple Debit Entries
+            {{ 'ACCOUNTING_RULES.ALLOW_MULTIPLE_DEBIT_ENTRIES' | appTranslate }}
           </ion-checkbox>
         </div>
 
         <div class="section">
-          <h3>Credit Details</h3>
+          <h3>{{ 'ACCOUNTING_RULES.CREDIT_DETAILS' | appTranslate }}</h3>
           <ion-radio-group formControlName="creditRuleType" class="radio-group">
-            <ion-radio value="fixedAccount">Fixed Account</ion-radio>
-            <ion-radio value="tags">Account Tags</ion-radio>
+            <ion-radio value="fixedAccount">{{
+              'ACCOUNTING_RULES.FIXED_ACCOUNT' | appTranslate
+            }}</ion-radio>
+            <ion-radio value="tags">{{ 'ACCOUNTING_RULES.ACCOUNT_TAGS' | appTranslate }}</ion-radio>
           </ion-radio-group>
 
           @if (ruleForm.get('creditRuleType')?.value === 'fixedAccount') {
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">Account to Credit</ion-label>
+              <ion-label position="stacked">{{
+                'ACCOUNTING_RULES.ACCOUNT_TO_CREDIT' | appTranslate
+              }}</ion-label>
               <ion-select
-                aria-label="Account to Credit"
+                [attr.aria-label]="'ACCOUNTING_RULES.ACCOUNT_TO_CREDIT' | appTranslate"
                 interface="popover"
                 formControlName="accountToCredit"
               >
@@ -147,9 +163,11 @@ import {
 
           @if (ruleForm.get('creditRuleType')?.value === 'tags') {
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">Credit Tags</ion-label>
+              <ion-label position="stacked">{{
+                'ACCOUNTING_RULES.CREDIT_TAGS' | appTranslate
+              }}</ion-label>
               <ion-select
-                aria-label="Credit Tags"
+                [attr.aria-label]="'ACCOUNTING_RULES.CREDIT_TAGS' | appTranslate"
                 interface="popover"
                 formControlName="creditTags"
                 multiple
@@ -164,7 +182,7 @@ import {
           }
 
           <ion-checkbox formControlName="allowMultipleCreditEntries">
-            Allow Multiple Credit Entries
+            {{ 'ACCOUNTING_RULES.ALLOW_MULTIPLE_CREDIT_ENTRIES' | appTranslate }}
           </ion-checkbox>
         </div>
 

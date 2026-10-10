@@ -19,7 +19,15 @@
 
 import { CdkTableModule } from '@angular/cdk/table';
 import { DecimalPipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  computed,
+  inject,
+  signal,
+  viewChildren,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonButton,
@@ -379,7 +387,8 @@ interface PurchasedShare {
     `,
   ],
 })
-export class ShareAccountViewComponent implements OnInit {
+export class ShareAccountViewComponent implements OnInit, OnDestroy {
+  private readonly popovers = viewChildren(IonPopover);
   private readonly shareService = inject(ShareAccountService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -401,6 +410,12 @@ export class ShareAccountViewComponent implements OnInit {
   ngOnInit(): void {
     this.accountId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadAccount();
+  }
+
+  ngOnDestroy(): void {
+    for (const popover of this.popovers()) {
+      void popover.dismiss().catch(() => false);
+    }
   }
 
   loadAccount(): void {

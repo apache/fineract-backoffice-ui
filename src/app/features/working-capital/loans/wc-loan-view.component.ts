@@ -17,9 +17,17 @@
  * under the License.
  */
 
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  signal,
+  computed,
+  viewChildren,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { DecimalPipe } from '@angular/common';
 import {
   IonButton,
@@ -97,7 +105,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
   selector: 'app-wc-loan-view',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     FormsModule,
     CdkTableModule,
     DecimalPipe,
@@ -126,7 +134,9 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
             <div class="title-details">
               <h2>#{{ loan()?.accountNo || loanId }}</h2>
               <div class="subtitle-row">
-                <span>{{ 'WC_LOANS.CLIENT' | translate }}: {{ loan()?.client?.displayName }}</span>
+                <span
+                  >{{ 'WC_LOANS.CLIENT' | appTranslate }}: {{ loan()?.client?.displayName }}</span
+                >
                 <span class="divider">|</span>
                 <span>{{ loan()?.status?.value }}</span>
               </div>
@@ -135,17 +145,17 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
           <div class="actions-area">
             <ion-button fill="clear" (click)="onBack()">
               <ion-icon name="arrow-back-outline"></ion-icon>
-              {{ 'COMMON.BACK' | translate }}
+              {{ 'COMMON.BACK' | appTranslate }}
             </ion-button>
 
             @if (isLoanActive) {
               <ion-button
                 color="primary"
                 (click)="onRepayment()"
-                [appTooltip]="'WC_LOANS.REPAYMENT' | translate"
+                [appTooltip]="'WC_LOANS.REPAYMENT' | appTranslate"
               >
                 <ion-icon name="cash-outline"></ion-icon>
-                {{ 'WC_LOANS.REPAYMENT' | translate }}
+                {{ 'WC_LOANS.REPAYMENT' | appTranslate }}
               </ion-button>
             }
 
@@ -153,10 +163,10 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               <ion-button
                 color="secondary"
                 (click)="onAction('approve')"
-                [appTooltip]="'WC_LOANS.APPROVE' | translate"
+                [appTooltip]="'WC_LOANS.APPROVE' | appTranslate"
               >
                 <ion-icon name="checkmark-circle-outline"></ion-icon>
-                {{ 'WC_LOANS.APPROVE' | translate }}
+                {{ 'WC_LOANS.APPROVE' | appTranslate }}
               </ion-button>
             }
 
@@ -164,16 +174,16 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               <ion-button
                 color="secondary"
                 (click)="onAction('disburse')"
-                [appTooltip]="'WC_LOANS.DISBURSE' | translate"
+                [appTooltip]="'WC_LOANS.DISBURSE' | appTranslate"
               >
                 <ion-icon name="open-outline"></ion-icon>
-                {{ 'WC_LOANS.DISBURSE' | translate }}
+                {{ 'WC_LOANS.DISBURSE' | appTranslate }}
               </ion-button>
             }
 
             <ion-button id="loanMenu-trigger">
               <ion-icon name="caret-down-outline"></ion-icon>
-              {{ 'COMMON.ACTIONS' | translate }}
+              {{ 'COMMON.ACTIONS' | appTranslate }}
             </ion-button>
             <ion-popover trigger="loanMenu-trigger" [dismissOnSelect]="true">
               <ng-template>
@@ -181,42 +191,42 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
                   @if (isLoanPendingApproval) {
                     <ion-item button (click)="onEdit()">
                       <ion-icon slot="start" name="create-outline"></ion-icon>
-                      <ion-label>{{ 'WC_LOANS.ACTIONS.MODIFY' | translate }}</ion-label>
+                      <ion-label>{{ 'WC_LOANS.ACTIONS.MODIFY' | appTranslate }}</ion-label>
                     </ion-item>
                     <ion-item button (click)="onAction('reject')">
                       <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-                      <ion-label>{{ 'WC_LOANS.ACTIONS.REJECT' | translate }}</ion-label>
+                      <ion-label>{{ 'WC_LOANS.ACTIONS.REJECT' | appTranslate }}</ion-label>
                     </ion-item>
                   }
                   @if (isLoanApproved) {
                     <ion-item button (click)="onAction('undoapproval')">
                       <ion-icon slot="start" name="arrow-undo-outline"></ion-icon>
-                      <ion-label>{{ 'WC_LOANS.ACTIONS.UNDO_APPROVAL' | translate }}</ion-label>
+                      <ion-label>{{ 'WC_LOANS.ACTIONS.UNDO_APPROVAL' | appTranslate }}</ion-label>
                     </ion-item>
                   }
                   @if (isLoanActive) {
                     <ion-item button (click)="onAction('undodisbursal')">
                       <ion-icon slot="start" name="arrow-undo-outline"></ion-icon>
-                      <ion-label>{{ 'WC_LOANS.ACTIONS.UNDO_DISBURSAL' | translate }}</ion-label>
+                      <ion-label>{{ 'WC_LOANS.ACTIONS.UNDO_DISBURSAL' | appTranslate }}</ion-label>
                     </ion-item>
                     <ion-item button (click)="onAction('markasfraud')">
                       <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
-                      <ion-label>{{ 'WC_LOANS.ACTIONS.MARK_AS_FRAUD' | translate }}</ion-label>
+                      <ion-label>{{ 'WC_LOANS.ACTIONS.MARK_AS_FRAUD' | appTranslate }}</ion-label>
                     </ion-item>
                     <ion-item button (click)="onAction('discount')">
                       <ion-icon slot="start" name="pricetag-outline"></ion-icon>
-                      <ion-label>{{ 'WC_LOANS.ACTIONS.APPLY_DISCOUNT' | translate }}</ion-label>
+                      <ion-label>{{ 'WC_LOANS.ACTIONS.APPLY_DISCOUNT' | appTranslate }}</ion-label>
                     </ion-item>
                     <ion-item button (click)="onAction('paymentrate')">
                       <ion-icon slot="start" name="trending-up-outline"></ion-icon>
                       <ion-label>{{
-                        'WC_LOANS.ACTIONS.CHANGE_PAYMENT_RATE' | translate
+                        'WC_LOANS.ACTIONS.CHANGE_PAYMENT_RATE' | appTranslate
                       }}</ion-label>
                     </ion-item>
                   }
                   <ion-item button (click)="onDelete()">
                     <ion-icon slot="start" name="trash-outline"></ion-icon>
-                    <ion-label>{{ 'WC_LOANS.ACTIONS.DELETE' | translate }}</ion-label>
+                    <ion-label>{{ 'WC_LOANS.ACTIONS.DELETE' | appTranslate }}</ion-label>
                   </ion-item>
                 </ion-list>
               </ng-template>
@@ -227,40 +237,40 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
 
       <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
         <ion-segment-button [value]="TAB.details">
-          <ion-label>{{ 'WC_LOANS.TABS.DETAILS' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.DETAILS' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.charges">
-          <ion-label>{{ 'WC_LOANS.TABS.CHARGES' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.CHARGES' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.transactions">
-          <ion-label>{{ 'WC_LOANS.TABS.TRANSACTIONS' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.TRANSACTIONS' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.delinquencyActions">
-          <ion-label>{{ 'WC_LOANS.TABS.DELINQUENCY_ACTIONS' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.DELINQUENCY_ACTIONS' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.delinquencyRangeSchedule">
-          <ion-label>{{ 'WC_LOANS.TABS.DELINQUENCY_RANGE_SCHEDULE' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.DELINQUENCY_RANGE_SCHEDULE' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.breachSchedule">
-          <ion-label>{{ 'WC_LOANS.TABS.BREACH_SCHEDULE' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.BREACH_SCHEDULE' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.breachActions">
-          <ion-label>{{ 'WC_LOANS.TABS.BREACH_ACTIONS' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.BREACH_ACTIONS' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.nearBreachActions">
-          <ion-label>{{ 'WC_LOANS.TABS.NEAR_BREACH_ACTIONS' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.NEAR_BREACH_ACTIONS' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.originators">
-          <ion-label>{{ 'WC_LOANS.TABS.ORIGINATORS' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.ORIGINATORS' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.rateChanges">
-          <ion-label>{{ 'WC_LOANS.TABS.RATE_CHANGES' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.RATE_CHANGES' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.amortizationSchedule">
-          <ion-label>{{ 'WC_LOANS.TABS.AMORTIZATION_SCHEDULE' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.AMORTIZATION_SCHEDULE' | appTranslate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="TAB.delinquencyRangeTags">
-          <ion-label>{{ 'WC_LOANS.TABS.DELINQUENCY_RANGE_TAGS' | translate }}</ion-label>
+          <ion-label>{{ 'WC_LOANS.TABS.DELINQUENCY_RANGE_TAGS' | appTranslate }}</ion-label>
         </ion-segment-button>
       </ion-segment>
 
@@ -269,37 +279,37 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
           <ion-card class="info-card">
             <ion-card-content class="details-list">
               <div class="detail-item">
-                <span class="label">{{ 'WC_LOANS.ACCOUNT_NO' | translate }}</span>
+                <span class="label">{{ 'WC_LOANS.ACCOUNT_NO' | appTranslate }}</span>
                 <span class="value">{{ loan()?.accountNo || '-' }}</span>
               </div>
               <div class="detail-item">
-                <span class="label">{{ 'WC_LOANS.CLIENT' | translate }}</span>
+                <span class="label">{{ 'WC_LOANS.CLIENT' | appTranslate }}</span>
                 <span class="value">{{ loan()?.client?.displayName || '-' }}</span>
               </div>
               <div class="detail-item">
-                <span class="label">{{ 'WC_LOANS.PRODUCT' | translate }}</span>
+                <span class="label">{{ 'WC_LOANS.PRODUCT' | appTranslate }}</span>
                 <span class="value">{{ loan()?.product?.name || '-' }}</span>
               </div>
               <div class="detail-item">
-                <span class="label">{{ 'WC_LOANS.PRINCIPAL' | translate }}</span>
+                <span class="label">{{ 'WC_LOANS.PRINCIPAL' | appTranslate }}</span>
                 <span class="value">
                   {{ loan()?.currency?.displaySymbol }}
                   {{ loan()?.proposedPrincipal ?? loan()?.approvedPrincipal | number: '1.2-2' }}
                 </span>
               </div>
               <div class="detail-item">
-                <span class="label">{{ 'WC_LOANS.STATUS' | translate }}</span>
+                <span class="label">{{ 'WC_LOANS.STATUS' | appTranslate }}</span>
                 <span class="value">{{ loan()?.status?.value || '-' }}</span>
               </div>
               <div class="detail-item">
-                <span class="label">{{ 'WC_LOANS.REPAYMENT_EVERY' | translate }}</span>
+                <span class="label">{{ 'WC_LOANS.REPAYMENT_EVERY' | appTranslate }}</span>
                 <span class="value">
                   {{ loan()?.repaymentEvery || '-' }}
                   {{ loan()?.repaymentFrequencyType?.value }}
                 </span>
               </div>
               <div class="detail-item">
-                <span class="label">{{ 'WC_LOANS.BREACH' | translate }}</span>
+                <span class="label">{{ 'WC_LOANS.BREACH' | appTranslate }}</span>
                 <span class="value">{{ loan()?.breach?.name || '-' }}</span>
               </div>
             </ion-card-content>
@@ -311,7 +321,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
           <div class="tab-toolbar">
             <ion-button color="primary" (click)="onAddCharge()" [disabled]="!loan()">
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'WC_LOANS.CHARGE.ADD' | translate }}
+              {{ 'WC_LOANS.CHARGE.ADD' | appTranslate }}
             </ion-button>
           </div>
           <ion-card class="table-card">
@@ -319,37 +329,37 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               @if (charges().length > 0) {
                 <table cdk-table [dataSource]="charges()" class="full-width-table">
                   <ng-container cdkColumnDef="name">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.NAME' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.NAME' | appTranslate }}</th>
                     <td cdk-cell *cdkCellDef="let c">{{ c.name }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="amount">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.AMOUNT' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.AMOUNT' | appTranslate }}</th>
                     <td cdk-cell *cdkCellDef="let c">{{ c.amount | number: '1.2-2' }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="paid">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.PAID' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.PAID' | appTranslate }}</th>
                     <td cdk-cell *cdkCellDef="let c">{{ c.amountPaid | number: '1.2-2' }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="outstanding">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.OUTSTANDING' | translate }}
+                      {{ 'WC_LOANS.OUTSTANDING' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let c">
                       {{ c.amountOutstanding | number: '1.2-2' }}
                     </td>
                   </ng-container>
                   <ng-container cdkColumnDef="actions">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACTIONS' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACTIONS' | appTranslate }}</th>
                     <td cdk-cell *cdkCellDef="let c">
                       @if (!c.paid) {
                         <ion-button
                           fill="clear"
                           color="danger"
-                          [attr.aria-label]="'WC_LOANS.CHARGE.WAIVE' | translate"
-                          [appTooltip]="'WC_LOANS.CHARGE.WAIVE' | translate"
+                          [attr.aria-label]="'WC_LOANS.CHARGE.WAIVE' | appTranslate"
+                          [appTooltip]="'WC_LOANS.CHARGE.WAIVE' | appTranslate"
                           (click)="onWaiveCharge(c)"
                         >
-                          {{ 'WC_LOANS.CHARGE.WAIVE' | translate }}
+                          {{ 'WC_LOANS.CHARGE.WAIVE' | appTranslate }}
                         </ion-button>
                       }
                     </td>
@@ -360,7 +370,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="cash-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -374,19 +384,19 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               @if (transactions().length > 0) {
                 <table cdk-table [dataSource]="transactions()" class="full-width-table">
                   <ng-container cdkColumnDef="id">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ID' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ID' | appTranslate }}</th>
                     <td cdk-cell *cdkCellDef="let tx">{{ tx.id }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="date">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.DATE' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.DATE' | appTranslate }}</th>
                     <td cdk-cell *cdkCellDef="let tx">{{ tx.transactionDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="type">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.TYPE' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.TYPE' | appTranslate }}</th>
                     <td cdk-cell *cdkCellDef="let tx">{{ tx.type?.value }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="amount">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.AMOUNT' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.AMOUNT' | appTranslate }}</th>
                     <td cdk-cell *cdkCellDef="let tx">
                       {{ tx.transactionAmount | number: '1.2-2' }}
                     </td>
@@ -397,7 +407,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="receipt-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -409,7 +419,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
           <div class="tab-toolbar">
             <ion-button color="primary" (click)="onNewDelinquencyAction()" [disabled]="!loan()">
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'WC_LOANS.DELINQUENCY_ACTION.NEW' | translate }}
+              {{ 'WC_LOANS.DELINQUENCY_ACTION.NEW' | appTranslate }}
             </ion-button>
           </div>
           <ion-card class="table-card">
@@ -417,24 +427,26 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               @if (delinquencyActions().length > 0) {
                 <table cdk-table [dataSource]="delinquencyActions()" class="full-width-table">
                   <ng-container cdkColumnDef="action">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.ACTION' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>
+                      {{ 'WC_LOANS.ACTION' | appTranslate }}
+                    </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.action }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="startDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.START_DATE' | translate }}
+                      {{ 'WC_LOANS.START_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.startDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="endDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.END_DATE' | translate }}
+                      {{ 'WC_LOANS.END_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.endDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="frequency">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.DELINQUENCY_ACTION.FREQUENCY' | translate }}
+                      {{ 'WC_LOANS.DELINQUENCY_ACTION.FREQUENCY' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let a">
                       {{ a.frequency ? a.frequency + ' ' + a.frequencyType : '-' }}
@@ -446,7 +458,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="hammer-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -460,24 +472,26 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               @if (delinquencyRangeSchedule().length > 0) {
                 <table cdk-table [dataSource]="delinquencyRangeSchedule()" class="full-width-table">
                   <ng-container cdkColumnDef="periodNumber">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.PERIOD' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>
+                      {{ 'WC_LOANS.PERIOD' | appTranslate }}
+                    </th>
                     <td cdk-cell *cdkCellDef="let r">{{ r.periodNumber }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="fromDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.FROM_DATE' | translate }}
+                      {{ 'WC_LOANS.FROM_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let r">{{ r.fromDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="toDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.TO_DATE' | translate }}
+                      {{ 'WC_LOANS.TO_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let r">{{ r.toDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="outstanding">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.OUTSTANDING' | translate }}
+                      {{ 'WC_LOANS.OUTSTANDING' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let r">
                       {{ r.outstandingAmount | number: '1.2-2' }}
@@ -489,7 +503,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="time-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -503,25 +517,29 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               @if (breachSchedule().length > 0) {
                 <table cdk-table [dataSource]="breachSchedule()" class="full-width-table">
                   <ng-container cdkColumnDef="periodNumber">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.PERIOD' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>
+                      {{ 'WC_LOANS.PERIOD' | appTranslate }}
+                    </th>
                     <td cdk-cell *cdkCellDef="let b">{{ b.periodNumber }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="fromDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.FROM_DATE' | translate }}
+                      {{ 'WC_LOANS.FROM_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let b">{{ b.fromDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="toDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.TO_DATE' | translate }}
+                      {{ 'WC_LOANS.TO_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let b">{{ b.toDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="breach">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.BREACH' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>
+                      {{ 'WC_LOANS.BREACH' | appTranslate }}
+                    </th>
                     <td cdk-cell *cdkCellDef="let b">
-                      {{ (b.breach ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+                      {{ (b.breach ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
                     </td>
                   </ng-container>
                   <tr cdk-header-row *cdkHeaderRowDef="breachScheduleColumns"></tr>
@@ -530,7 +548,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="warning-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -542,7 +560,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
           <div class="tab-toolbar">
             <ion-button color="primary" (click)="onNewBreachAction()" [disabled]="!loan()">
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'WC_LOANS.BREACH_ACTION.NEW' | translate }}
+              {{ 'WC_LOANS.BREACH_ACTION.NEW' | appTranslate }}
             </ion-button>
           </div>
           <ion-card class="table-card">
@@ -550,22 +568,26 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               @if (breachActions().length > 0) {
                 <table cdk-table [dataSource]="breachActions()" class="full-width-table">
                   <ng-container cdkColumnDef="action">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.ACTION' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>
+                      {{ 'WC_LOANS.ACTION' | appTranslate }}
+                    </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.action }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="startDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.START_DATE' | translate }}
+                      {{ 'WC_LOANS.START_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.startDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="endDate">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.END_DATE' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>
+                      {{ 'WC_LOANS.END_DATE' | appTranslate }}
+                    </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.endDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="frequency">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.BREACH_ACTION.FREQUENCY' | translate }}
+                      {{ 'WC_LOANS.BREACH_ACTION.FREQUENCY' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let a">
                       {{ a.frequency ? a.frequency + ' ' + a.frequencyType : '-' }}
@@ -577,7 +599,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="hammer-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -589,7 +611,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
           <div class="tab-toolbar">
             <ion-button color="primary" (click)="onNewNearBreachAction()" [disabled]="!loan()">
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'WC_LOANS.NEAR_BREACH_ACTION.NEW' | translate }}
+              {{ 'WC_LOANS.NEAR_BREACH_ACTION.NEW' | appTranslate }}
             </ion-button>
           </div>
           <ion-card class="table-card">
@@ -597,24 +619,26 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               @if (nearBreachActions().length > 0) {
                 <table cdk-table [dataSource]="nearBreachActions()" class="full-width-table">
                   <ng-container cdkColumnDef="action">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.ACTION' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>
+                      {{ 'WC_LOANS.ACTION' | appTranslate }}
+                    </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.action }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="frequency">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.NEAR_BREACH_ACTION.FREQUENCY' | translate }}
+                      {{ 'WC_LOANS.NEAR_BREACH_ACTION.FREQUENCY' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.frequency }} {{ a.frequencyType }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="threshold">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.NEAR_BREACH_ACTION.THRESHOLD' | translate }}
+                      {{ 'WC_LOANS.NEAR_BREACH_ACTION.THRESHOLD' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.threshold }}%</td>
                   </ng-container>
                   <ng-container cdkColumnDef="createdDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.NEAR_BREACH_ACTION.CREATED_DATE' | translate }}
+                      {{ 'WC_LOANS.NEAR_BREACH_ACTION.CREATED_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let a">{{ a.createdDate }}</td>
                   </ng-container>
@@ -624,7 +648,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="warning-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -636,10 +660,10 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
           <div class="tab-toolbar">
             <ion-item fill="outline" class="attach-select">
               <ion-label position="stacked">{{
-                'WC_LOANS.ORIGINATORS.SELECT_ORIGINATOR' | translate
+                'WC_LOANS.ORIGINATORS.SELECT_ORIGINATOR' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'WC_LOANS.ORIGINATORS.SELECT_ORIGINATOR' | translate"
+                [attr.aria-label]="'WC_LOANS.ORIGINATORS.SELECT_ORIGINATOR' | appTranslate"
                 interface="popover"
                 [ngModel]="originatorToAttach()"
                 (ngModelChange)="originatorToAttach.set($event)"
@@ -655,7 +679,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               [disabled]="!originatorToAttach()"
             >
               <ion-icon name="link-outline"></ion-icon>
-              {{ 'WC_LOANS.ORIGINATORS.ATTACH' | translate }}
+              {{ 'WC_LOANS.ORIGINATORS.ATTACH' | appTranslate }}
             </ion-button>
           </div>
           <ion-card class="table-card">
@@ -664,38 +688,38 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
                 <table cdk-table [dataSource]="originators()" class="full-width-table">
                   <ng-container cdkColumnDef="name">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.ORIGINATORS.NAME' | translate }}
+                      {{ 'WC_LOANS.ORIGINATORS.NAME' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let o">{{ o.name }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="type">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.ORIGINATORS.TYPE' | translate }}
+                      {{ 'WC_LOANS.ORIGINATORS.TYPE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let o">{{ o.originatorType?.name }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="channel">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.ORIGINATORS.CHANNEL' | translate }}
+                      {{ 'WC_LOANS.ORIGINATORS.CHANNEL' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let o">{{ o.channelType?.name }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="status">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.ORIGINATORS.STATUS' | translate }}
+                      {{ 'WC_LOANS.ORIGINATORS.STATUS' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let o">{{ o.status }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="actions">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'COMMON.ACTIONS' | translate }}
+                      {{ 'COMMON.ACTIONS' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let o">
                       <ion-button
                         fill="clear"
                         color="danger"
-                        [attr.aria-label]="'WC_LOANS.ORIGINATORS.DETACH' | translate"
-                        [appTooltip]="'WC_LOANS.ORIGINATORS.DETACH' | translate"
+                        [attr.aria-label]="'WC_LOANS.ORIGINATORS.DETACH' | appTranslate"
+                        [appTooltip]="'WC_LOANS.ORIGINATORS.DETACH' | appTranslate"
                         (click)="onDetachOriginator(o)"
                       >
                         <ion-icon name="unlink-outline"></ion-icon>
@@ -708,7 +732,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="people-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -723,28 +747,28 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
                 <table cdk-table [dataSource]="rateChanges()" class="full-width-table">
                   <ng-container cdkColumnDef="effectiveDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.RATE_CHANGE.EFFECTIVE_DATE' | translate }}
+                      {{ 'WC_LOANS.RATE_CHANGE.EFFECTIVE_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let r">{{ r.effectiveDate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="previousRate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.RATE_CHANGE.PREVIOUS_RATE' | translate }}
+                      {{ 'WC_LOANS.RATE_CHANGE.PREVIOUS_RATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let r">{{ r.previousRate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="newRate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.RATE_CHANGE.NEW_RATE' | translate }}
+                      {{ 'WC_LOANS.RATE_CHANGE.NEW_RATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let r">{{ r.newRate }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="reversed">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.RATE_CHANGE.REVERSED' | translate }}
+                      {{ 'WC_LOANS.RATE_CHANGE.REVERSED' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let r">
-                      {{ (r.reversed ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+                      {{ (r.reversed ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
                     </td>
                   </ng-container>
                   <tr cdk-header-row *cdkHeaderRowDef="rateChangeColumns"></tr>
@@ -753,7 +777,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="trending-up-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -766,17 +790,17 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
             <ion-card class="info-card">
               <ion-card-content class="details-list">
                 <div class="detail-item">
-                  <span class="label">{{ 'WC_LOANS.PERIOD_PAYMENT_RATE' | translate }}</span>
+                  <span class="label">{{ 'WC_LOANS.PERIOD_PAYMENT_RATE' | appTranslate }}</span>
                   <span class="value">{{ schedule.periodPaymentRate ?? '-' }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="label">
-                    {{ 'WC_LOANS.AMORTIZATION.NET_DISBURSEMENT_AMOUNT' | translate }}
+                    {{ 'WC_LOANS.AMORTIZATION.NET_DISBURSEMENT_AMOUNT' | appTranslate }}
                   </span>
                   <span class="value">{{ schedule.netDisbursementAmount | number: '1.2-2' }}</span>
                 </div>
                 <div class="detail-item">
-                  <span class="label">{{ 'WC_LOANS.TOTAL_PAYMENT_VOLUME' | translate }}</span>
+                  <span class="label">{{ 'WC_LOANS.TOTAL_PAYMENT_VOLUME' | appTranslate }}</span>
                   <span class="value">{{ schedule.totalPaymentVolume | number: '1.2-2' }}</span>
                 </div>
               </ion-card-content>
@@ -787,19 +811,19 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
                   <table cdk-table [dataSource]="schedule.payments ?? []" class="full-width-table">
                     <ng-container cdkColumnDef="paymentNo">
                       <th cdk-header-cell *cdkHeaderCellDef>
-                        {{ 'WC_LOANS.AMORTIZATION.PAYMENT_NO' | translate }}
+                        {{ 'WC_LOANS.AMORTIZATION.PAYMENT_NO' | appTranslate }}
                       </th>
                       <td cdk-cell *cdkCellDef="let p">{{ p.paymentNo }}</td>
                     </ng-container>
                     <ng-container cdkColumnDef="paymentDate">
                       <th cdk-header-cell *cdkHeaderCellDef>
-                        {{ 'WC_LOANS.AMORTIZATION.PAYMENT_DATE' | translate }}
+                        {{ 'WC_LOANS.AMORTIZATION.PAYMENT_DATE' | appTranslate }}
                       </th>
                       <td cdk-cell *cdkCellDef="let p">{{ p.paymentDate }}</td>
                     </ng-container>
                     <ng-container cdkColumnDef="expectedPaymentAmount">
                       <th cdk-header-cell *cdkHeaderCellDef>
-                        {{ 'WC_LOANS.AMORTIZATION.EXPECTED_PAYMENT_AMOUNT' | translate }}
+                        {{ 'WC_LOANS.AMORTIZATION.EXPECTED_PAYMENT_AMOUNT' | appTranslate }}
                       </th>
                       <td cdk-cell *cdkCellDef="let p">
                         {{ p.expectedPaymentAmount | number: '1.2-2' }}
@@ -811,7 +835,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
                 } @else {
                   <div class="empty-state">
                     <ion-icon name="calendar-outline"></ion-icon>
-                    <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                    <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                   </div>
                 }
               </ion-card-content>
@@ -819,7 +843,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
           } @else {
             <div class="empty-state">
               <ion-icon name="calendar-outline"></ion-icon>
-              <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+              <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
             </div>
           }
         </div>
@@ -831,30 +855,32 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               @if (delinquencyRangeTags().length > 0) {
                 <table cdk-table [dataSource]="delinquencyRangeTags()" class="full-width-table">
                   <ng-container cdkColumnDef="periodNumber">
-                    <th cdk-header-cell *cdkHeaderCellDef>{{ 'WC_LOANS.PERIOD' | translate }}</th>
+                    <th cdk-header-cell *cdkHeaderCellDef>
+                      {{ 'WC_LOANS.PERIOD' | appTranslate }}
+                    </th>
                     <td cdk-cell *cdkCellDef="let t">{{ t.periodNumber }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="delinquencyRange">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.RANGE_TAG.DELINQUENCY_RANGE' | translate }}
+                      {{ 'WC_LOANS.RANGE_TAG.DELINQUENCY_RANGE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let t">{{ t.delinquencyRange?.classification }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="delinquentDays">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.RANGE_TAG.DELINQUENT_DAYS' | translate }}
+                      {{ 'WC_LOANS.RANGE_TAG.DELINQUENT_DAYS' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let t">{{ t.delinquentDays }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="delinquentAmount">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.RANGE_TAG.DELINQUENT_AMOUNT' | translate }}
+                      {{ 'WC_LOANS.RANGE_TAG.DELINQUENT_AMOUNT' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let t">{{ t.delinquentAmount | number: '1.2-2' }}</td>
                   </ng-container>
                   <ng-container cdkColumnDef="addedOnDate">
                     <th cdk-header-cell *cdkHeaderCellDef>
-                      {{ 'WC_LOANS.RANGE_TAG.ADDED_ON_DATE' | translate }}
+                      {{ 'WC_LOANS.RANGE_TAG.ADDED_ON_DATE' | appTranslate }}
                     </th>
                     <td cdk-cell *cdkCellDef="let t">{{ t.addedOnDate }}</td>
                   </ng-container>
@@ -864,7 +890,7 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
               } @else {
                 <div class="empty-state">
                   <ion-icon name="flag-outline"></ion-icon>
-                  <p>{{ 'WC_LOANS.NO_DATA' | translate }}</p>
+                  <p>{{ 'WC_LOANS.NO_DATA' | appTranslate }}</p>
                 </div>
               }
             </ion-card-content>
@@ -1000,10 +1026,12 @@ export type WcLoanTab = (typeof WC_LOAN_TAB)[keyof typeof WC_LOAN_TAB];
     `,
   ],
 })
-export class WcLoanViewComponent implements OnInit {
+export class WcLoanViewComponent implements OnInit, OnDestroy {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
   /** Exposed so the template names its tabs instead of numbering them. */
   protected readonly TAB = WC_LOAN_TAB;
+
+  private readonly popovers = viewChildren(IonPopover);
 
   readonly activeTab = signal<WcLoanTab>(WC_LOAN_TAB.details);
   private readonly loansService = inject(WorkingCapitalLoansService);
@@ -1072,6 +1100,12 @@ export class WcLoanViewComponent implements OnInit {
     const tab = this.route.snapshot.queryParamMap.get('tab');
     if (tab && Object.values(WC_LOAN_TAB).includes(tab as WcLoanTab)) {
       this.activeTab.set(tab as WcLoanTab);
+    }
+  }
+
+  ngOnDestroy(): void {
+    for (const popover of this.popovers()) {
+      void popover.dismiss().catch(() => false);
     }
   }
 

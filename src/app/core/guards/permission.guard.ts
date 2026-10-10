@@ -47,6 +47,34 @@ export const FORBIDDEN_ROUTE = '/forbidden';
 export const REQUIRED_PERMISSIONS_PARAM = 'required';
 
 /**
+ * What a route may declare in `data.permissions`.
+ *
+ * The function form exists for **dispatch routes** — one path serving many commands, where no
+ * single code can be right. `/loans/:loanId/transactions/:type` declared `UPDATE_LOAN` for all
+ * 29 of its commands and was wrong for every one of them (issue #691); see
+ * `command-permissions.ts` for the codes and how they were established.
+ *
+ * It takes the route's `paramMap` rather than the snapshot, so a declaration cannot reach for
+ * anything else about the navigation and stays a pure function of the path.
+ */
+export type PermissionRequirement =
+  | string
+  | string[]
+  | ((params: { get(name: string): string | null }) => string | string[] | undefined);
+
+/**
+ * Reads the requirement a route declares, resolving the function form against its params.
+ *
+ * An unmapped command answers `undefined`, which admits. That is the considered position rather
+ * than an oversight: a guessed code refuses a user the platform would have allowed, which is
+ * the more damaging half of #691 and the harder half to notice. Fineract remains the boundary.
+ */
+function resolveRequirement(route: ActivatedRouteSnapshot): string | string[] | undefined {
+  const declared = route.data['permissions'] as PermissionRequirement | undefined;
+  return typeof declared === 'function' ? declared(route.paramMap) : declared;
+}
+
+/**
  * Refuses a route to a user who lacks the permission it declares.
  *
  * **This guard is defence-in-depth and does not replace server-side authorization. Fineract Core
@@ -102,7 +130,7 @@ export const permissionGuard: CanActivateFn = (
     return true;
   }
 
-  const required = route.data['permissions'] as string | string[] | undefined;
+  const required = resolveRequirement(route);
   if (!required || required.length === 0) {
     return true;
   }

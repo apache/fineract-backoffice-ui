@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
@@ -31,7 +31,7 @@ import { TaxGroupService, GetTaxesGroupResponse } from '../../../api';
 @Component({
   selector: 'app-tax-groups-list',
   standalone: true,
-  imports: [TranslateModule, IonButton, IonIcon, DataTableComponent, CellTemplateDirective],
+  imports: [TranslatePipe, IonButton, IonIcon, DataTableComponent, CellTemplateDirective],
   template: `
     <app-data-table
       title="nav.taxGroups"
@@ -51,7 +51,7 @@ import { TaxGroupService, GetTaxesGroupResponse } from '../../../api';
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
+          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         >
           <ion-icon name="create-outline" slot="icon-only"></ion-icon>

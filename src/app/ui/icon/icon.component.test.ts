@@ -65,4 +65,9 @@ describe('IconComponent public contract', () => {
     expect(icon().getAttribute('aria-label')).toBe('Verified');
     expect(icon().hasAttribute('aria-hidden')).toBe(false);
   });
+
+  it('renders decorative icon with inherited font-size and color by default', () => {
+    expect(icon().tagName.toLowerCase()).toBe('ion-icon');
+    expect(vendor().color).toBeUndefined();
+  });
 });

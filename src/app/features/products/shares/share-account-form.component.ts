@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -64,7 +64,7 @@ interface ShareAccountTemplateResponse {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -91,8 +91,8 @@ interface ShareAccountTemplateResponse {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('SHARE_ACCOUNTS.EDIT' | translate)
-                : ('SHARE_ACCOUNTS.CREATE' | translate)
+                ? ('SHARE_ACCOUNTS.EDIT' | appTranslate)
+                : ('SHARE_ACCOUNTS.CREATE' | appTranslate)
             }}
             <app-help-icon [helpTextKey]="'HELP.SHARE_ACCOUNTS_DESC'"></app-help-icon>
           </ion-card-title>
@@ -103,11 +103,11 @@ interface ShareAccountTemplateResponse {
             <div class="info-banner">
               <ion-icon name="information-circle-outline" class="info-banner-icon"></ion-icon>
               <div class="info-banner-content">
-                <strong>{{ 'SHARE_ACCOUNTS.PREREQUISITES_TITLE' | translate }}</strong>
+                <strong>{{ 'SHARE_ACCOUNTS.PREREQUISITES_TITLE' | appTranslate }}</strong>
                 <ol class="prereq-list">
-                  <li>{{ 'SHARE_ACCOUNTS.PREREQ_CLIENT' | translate }}</li>
-                  <li>{{ 'SHARE_ACCOUNTS.PREREQ_SAVINGS' | translate }}</li>
-                  <li>{{ 'SHARE_ACCOUNTS.PREREQ_PRODUCT' | translate }}</li>
+                  <li>{{ 'SHARE_ACCOUNTS.PREREQ_CLIENT' | appTranslate }}</li>
+                  <li>{{ 'SHARE_ACCOUNTS.PREREQ_SAVINGS' | appTranslate }}</li>
+                  <li>{{ 'SHARE_ACCOUNTS.PREREQ_PRODUCT' | appTranslate }}</li>
                 </ol>
               </div>
             </div>
@@ -120,7 +120,7 @@ interface ShareAccountTemplateResponse {
                 <ion-col size="12" size-md="6">
                   <div class="field-container-row">
                     <app-client-search
-                      [label]="'COMMON.CLIENT' | translate"
+                      [label]="'COMMON.CLIENT' | appTranslate"
                       [required]="true"
                       [initialClientId]="account().clientId || null"
                       (clientSelected)="onClientSelected($event)"
@@ -134,7 +134,7 @@ interface ShareAccountTemplateResponse {
                       color="primary"
                       type="button"
                       (click)="onCreateClient()"
-                      [attr.aria-label]="'SHARE_ACCOUNTS.CREATE_CLIENT' | translate"
+                      [attr.aria-label]="'SHARE_ACCOUNTS.CREATE_CLIENT' | appTranslate"
                     >
                       <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
                     </ion-button>
@@ -145,9 +145,11 @@ interface ShareAccountTemplateResponse {
                 <ion-col size="12" size-md="6">
                   <div class="field-container-row">
                     <ion-item fill="outline" class="form-item flex-grow">
-                      <ion-label position="stacked">{{ 'COMMON.PRODUCT' | translate }}</ion-label>
+                      <ion-label position="stacked">{{
+                        'COMMON.PRODUCT' | appTranslate
+                      }}</ion-label>
                       <ion-select
-                        [attr.aria-label]="'COMMON.PRODUCT' | translate"
+                        [attr.aria-label]="'COMMON.PRODUCT' | appTranslate"
                         interface="popover"
                         id="share-account-product-select"
                         data-testid="share-account-product-select"
@@ -172,7 +174,7 @@ interface ShareAccountTemplateResponse {
                       type="button"
                       (click)="onCreateProduct()"
                       [disabled]="isEditMode()"
-                      [attr.aria-label]="'SHARE_ACCOUNTS.CREATE_PRODUCT' | translate"
+                      [attr.aria-label]="'SHARE_ACCOUNTS.CREATE_PRODUCT' | appTranslate"
                     >
                       <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
                     </ion-button>
@@ -183,10 +185,10 @@ interface ShareAccountTemplateResponse {
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'SHARE_ACCOUNTS.REQUESTED_SHARES' | translate
+                      'SHARE_ACCOUNTS.REQUESTED_SHARES' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'SHARE_ACCOUNTS.REQUESTED_SHARES' | translate"
+                      [attr.aria-label]="'SHARE_ACCOUNTS.REQUESTED_SHARES' | appTranslate"
                       id="share-account-requested-shares"
                       data-testid="share-account-requested-shares"
                       type="number"
@@ -201,10 +203,10 @@ interface ShareAccountTemplateResponse {
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'SHARE_ACCOUNTS.APPLICATION_DATE' | translate
+                      'SHARE_ACCOUNTS.APPLICATION_DATE' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'SHARE_ACCOUNTS.APPLICATION_DATE' | translate"
+                      [attr.aria-label]="'SHARE_ACCOUNTS.APPLICATION_DATE' | appTranslate"
                       id="share-account-application-date"
                       data-testid="share-account-application-date"
                       type="date"
@@ -220,10 +222,10 @@ interface ShareAccountTemplateResponse {
                 <ion-col size="12">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'SHARE_ACCOUNTS.SAVINGS_ACCOUNT_ID' | translate
+                      'SHARE_ACCOUNTS.SAVINGS_ACCOUNT_ID' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'SHARE_ACCOUNTS.SAVINGS_ACCOUNT_ID' | translate"
+                      [attr.aria-label]="'SHARE_ACCOUNTS.SAVINGS_ACCOUNT_ID' | appTranslate"
                       interface="popover"
                       id="share-account-savings-select"
                       data-testid="share-account-savings-select"
@@ -253,7 +255,7 @@ interface ShareAccountTemplateResponse {
                 (click)="onCancel()"
                 [disabled]="isSaving()"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 id="share-account-submit-btn"
@@ -264,9 +266,9 @@ interface ShareAccountTemplateResponse {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

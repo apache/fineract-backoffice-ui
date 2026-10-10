@@ -22,7 +22,8 @@ import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import type { Observable } from 'rxjs';
-import { StaffService, StaffData } from '../../../api';
+import { STAFF_API } from '../../../core/adapters';
+import type { Staff } from '../../../core/adapters';
 import { AuthService } from '../../../core/services/auth.service';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { provideTestConfig } from '../../../testing/config';
@@ -34,24 +35,37 @@ import { StaffListComponent } from './staff-list.component';
 describe('StaffListComponent', () => {
   let component: StaffListComponent;
   let fixture: ComponentFixture<StaffListComponent>;
-  let staffServiceSpy: SpyObj<StaffService>;
+  let staffApiSpy: SpyObj<{ list: (query?: unknown) => unknown }>;
   let authServiceSpy: SpyObj<AuthService>;
 
-  const staff = [
-    {
+  /** `Staff` as the adapter maps it: every field present, absence as `null`. */
+  function staffMember(overrides: Partial<Staff>): Staff {
+    return {
       id: 1,
+      firstname: 'Given',
+      lastname: 'Family',
       displayName: 'Staff 1',
+      officeId: 1,
       officeName: 'Head Office',
+      externalId: null,
+      mobileNo: null,
+      emailAddress: null,
       isLoanOfficer: true,
       isActive: true,
-    },
-    {
+      joiningDate: '2020-01-01',
+      ...overrides,
+    };
+  }
+
+  const staff: Staff[] = [
+    staffMember({}),
+    staffMember({
       id: 2,
       displayName: 'Staff 2',
       officeName: 'Branch 1',
       isLoanOfficer: false,
       isActive: false,
-    },
+    }),
   ];
 
   const renderedButtons = (): ButtonComponent[] =>
@@ -60,8 +74,8 @@ describe('StaffListComponent', () => {
       .map((element) => element.componentInstance as ButtonComponent);
 
   beforeEach(async () => {
-    staffServiceSpy = createSpyObj(['getStaff']);
-    staffServiceSpy.getStaff.mockReturnValue(of(staff) as unknown as Observable<never>);
+    staffApiSpy = createSpyObj(['list']);
+    staffApiSpy.list.mockReturnValue(of(staff) as unknown as Observable<never>);
     authServiceSpy = Object.assign(createSpyObj<AuthService>(['hasPermission']), {
       currentUser: () => ({ permissions: [] }),
     });
@@ -70,7 +84,7 @@ describe('StaffListComponent', () => {
     await TestBed.configureTestingModule({
       imports: [StaffListComponent],
       providers: [
-        { provide: StaffService, useValue: staffServiceSpy },
+        { provide: STAFF_API, useValue: staffApiSpy },
         { provide: AuthService, useValue: authServiceSpy },
         provideTestConfig({ rbacEnabled: true }),
         provideIonicTesting(),
@@ -87,8 +101,10 @@ describe('StaffListComponent', () => {
     fixture.detectChanges();
 
     expect(component).toBeTruthy();
-    expect(staffServiceSpy.getStaff).toHaveBeenCalledWith(undefined, undefined, undefined, 'all');
-    expect(component.staff()).toEqual(staff as unknown as StaffData[]);
+    // `status: 'all'` explicitly: omitting it is not "any status" — Fineract's default hides
+    // inactive staff, and this list shows them with an Inactive badge.
+    expect(staffApiSpy.list).toHaveBeenCalledWith({ status: 'all' });
+    expect(component.staff()).toEqual(staff);
     expect(component.isLoading()).toBe(false);
   });
 
@@ -122,7 +138,7 @@ describe('StaffListComponent', () => {
   });
 
   it('should handle error when loading staff', () => {
-    staffServiceSpy.getStaff.mockReturnValue(
+    staffApiSpy.list.mockReturnValue(
       throwError(() => new Error('Error loading staff')) as unknown as Observable<never>,
     );
     vi.spyOn(console, 'error');

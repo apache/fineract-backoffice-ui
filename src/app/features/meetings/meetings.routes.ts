@@ -31,18 +31,21 @@ export const MEETINGS_ROUTES: Routes = [
     path: ':entityType/:entityId',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_MEETING' },
+    title: 'MEETINGS.TITLE',
     loadComponent: () => import('./meetings-list.component').then((m) => m.MeetingsListComponent),
   },
   {
     path: ':entityType/:entityId/create',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'CREATE_MEETING' },
+    title: 'MEETINGS.CREATE',
     loadComponent: () => import('./meeting-form.component').then((m) => m.MeetingFormComponent),
   },
   {
     path: ':entityType/:entityId/edit/:id',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'UPDATE_MEETING' },
+    title: 'MEETINGS.EDIT',
     loadComponent: () => import('./meeting-form.component').then((m) => m.MeetingFormComponent),
   },
 ];

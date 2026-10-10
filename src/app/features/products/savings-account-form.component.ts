@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { ClientSearchComponent } from '../../shared/components/client-search/client-search.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
@@ -63,7 +63,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     ClientSearchComponent,
     IonIcon,
     IonButton,
@@ -89,8 +89,8 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
           <ion-card-title>
             {{
               isEditMode()
-                ? ('SAVINGS.EDIT_ACCOUNT' | translate)
-                : ('SAVINGS.CREATE_ACCOUNT' | translate)
+                ? ('SAVINGS.EDIT_ACCOUNT' | appTranslate)
+                : ('SAVINGS.CREATE_ACCOUNT' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -101,7 +101,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               <!-- Client Search with Create Option -->
               <div class="field-container-row">
                 <app-client-search
-                  [label]="'COMMON.CLIENT_ID' | translate"
+                  [label]="'COMMON.CLIENT_ID' | appTranslate"
                   [required]="true"
                   [initialClientId]="account().clientId || null"
                   (clientSelected)="account().clientId = $event"
@@ -111,8 +111,8 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                 <ion-button
                   fill="clear"
                   type="button"
-                  [attr.aria-label]="'CLIENTS.CREATE_CLIENT' | translate"
-                  [appTooltip]="'CLIENTS.CREATE_CLIENT' | translate"
+                  [attr.aria-label]="'CLIENTS.CREATE_CLIENT' | appTranslate"
+                  [appTooltip]="'CLIENTS.CREATE_CLIENT' | appTranslate"
                   (click)="onCreateClient()"
                   style="margin-top: 4px;"
                 >
@@ -124,12 +124,12 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               <div class="field-container-row">
                 <ion-item
                   fill="outline"
-                  [appTooltip]="'HELP.SAVINGS_PRODUCT_DESC' | translate"
+                  [appTooltip]="'HELP.SAVINGS_PRODUCT_DESC' | appTranslate"
                   class="flex-grow"
                 >
-                  <ion-label position="stacked">{{ 'COMMON.PRODUCT' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'COMMON.PRODUCT' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.PRODUCT' | translate"
+                    [attr.aria-label]="'COMMON.PRODUCT' | appTranslate"
                     interface="popover"
                     name="productId"
                     [(ngModel)]="account().productId"
@@ -144,8 +144,8 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                 <ion-button
                   fill="clear"
                   type="button"
-                  [attr.aria-label]="'PRODUCTS.CREATE_SAVINGS_PRODUCT' | translate"
-                  [appTooltip]="'PRODUCTS.CREATE_SAVINGS_PRODUCT' | translate"
+                  [attr.aria-label]="'PRODUCTS.CREATE_SAVINGS_PRODUCT' | appTranslate"
+                  [appTooltip]="'PRODUCTS.CREATE_SAVINGS_PRODUCT' | appTranslate"
                   (click)="onCreateProduct()"
                   style="margin-top: 4px;"
                   [disabled]="isEditMode()"
@@ -155,8 +155,8 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               </div>
 
               <!-- Submitted On -->
-              <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.SUBMITTED_ON' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'COMMON.SUBMITTED_ON' | appTranslate }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
                 }
@@ -176,10 +176,12 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               </ion-item>
 
               <!-- Nominal Annual Interest Rate -->
-              <ion-item fill="outline" [appTooltip]="'HELP.INTEREST_RATE_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.INTEREST_RATE' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.INTEREST_RATE_DESC' | appTranslate">
+                <ion-label position="stacked">{{
+                  'COMMON.INTEREST_RATE' | appTranslate
+                }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.INTEREST_RATE' | translate"
+                  [attr.aria-label]="'COMMON.INTEREST_RATE' | appTranslate"
                   type="number"
                   name="nominalAnnualInterestRate"
                   [ngModel]="interestRate()"
@@ -190,7 +192,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -199,9 +201,9 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

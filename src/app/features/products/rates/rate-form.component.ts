@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { RateService, RateRequest } from '../../../api';
 import {
   IonButton,
@@ -45,7 +45,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -64,16 +64,16 @@ import {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode() ? ('RATES.EDIT' | translate) : ('RATES.CREATE' | translate) }}
+            {{ isEditMode() ? ('RATES.EDIT' | appTranslate) : ('RATES.CREATE' | appTranslate) }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #rateForm="ngForm" (ngSubmit)="onSubmit()" class="rate-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'RATES.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'RATES.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'RATES.NAME' | translate"
+                [attr.aria-label]="'RATES.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="rate().name"
                 required
@@ -81,9 +81,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'RATES.PERCENTAGE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'RATES.PERCENTAGE' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'RATES.PERCENTAGE' | translate"
+                [attr.aria-label]="'RATES.PERCENTAGE' | appTranslate"
                 type="number"
                 name="percentage"
                 [(ngModel)]="rate().percentage"
@@ -92,36 +92,36 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'RATES.PRODUCT_APPLY' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'RATES.PRODUCT_APPLY' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'RATES.PRODUCT_APPLY' | translate"
+                [attr.aria-label]="'RATES.PRODUCT_APPLY' | appTranslate"
                 interface="popover"
                 name="productApply"
                 [(ngModel)]="rate().productApply"
               >
                 <ion-select-option [value]="1">{{
-                  'RATES.PRODUCT_APPLY_LOAN' | translate
+                  'RATES.PRODUCT_APPLY_LOAN' | appTranslate
                 }}</ion-select-option>
                 <ion-select-option [value]="2">{{
-                  'RATES.PRODUCT_APPLY_SAVINGS' | translate
+                  'RATES.PRODUCT_APPLY_SAVINGS' | appTranslate
                 }}</ion-select-option>
               </ion-select>
             </ion-item>
 
             <ion-checkbox name="active" [(ngModel)]="rate().active">
-              {{ 'COMMON.ACTIVE' | translate }}
+              {{ 'COMMON.ACTIVE' | appTranslate }}
             </ion-checkbox>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="rateForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

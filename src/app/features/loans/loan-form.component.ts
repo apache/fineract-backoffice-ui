@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { ClientSearchComponent } from '../../shared/components/client-search/client-search.component';
 import {
   LoansService,
@@ -77,7 +77,7 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     ClientSearchComponent,
     IonIcon,
     IonButton,
@@ -103,7 +103,11 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode() ? ('LOANS.EDIT_LOAN' | translate) : ('LOANS.CREATE_LOAN' | translate) }}
+            {{
+              isEditMode()
+                ? ('LOANS.EDIT_LOAN' | appTranslate)
+                : ('LOANS.CREATE_LOAN' | appTranslate)
+            }}
           </ion-card-title>
         </ion-card-header>
 
@@ -116,7 +120,7 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Client Search with Create Option -->
                 <div class="field-container-row">
                   <app-client-search
-                    [label]="'COMMON.CLIENT_ID' | translate"
+                    [label]="'COMMON.CLIENT_ID' | appTranslate"
                     [required]="true"
                     [initialClientId]="loan().clientId || null"
                     (clientSelected)="loan().clientId = $event"
@@ -126,8 +130,8 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                   <ion-button
                     fill="clear"
                     type="button"
-                    [attr.aria-label]="'CLIENTS.CREATE_CLIENT' | translate"
-                    [appTooltip]="'CLIENTS.CREATE_CLIENT' | translate"
+                    [attr.aria-label]="'CLIENTS.CREATE_CLIENT' | appTranslate"
+                    [appTooltip]="'CLIENTS.CREATE_CLIENT' | appTranslate"
                     (click)="onCreateClient()"
                     style="margin-top: 4px;"
                   >
@@ -139,12 +143,12 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <div class="field-container-row">
                   <ion-item
                     fill="outline"
-                    [appTooltip]="'HELP.LOAN_PRODUCT_DESC' | translate"
+                    [appTooltip]="'HELP.LOAN_PRODUCT_DESC' | appTranslate"
                     class="flex-grow"
                   >
-                    <ion-label position="stacked">{{ 'LOANS.PRODUCT' | translate }}</ion-label>
+                    <ion-label position="stacked">{{ 'LOANS.PRODUCT' | appTranslate }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'LOANS.PRODUCT' | translate"
+                      [attr.aria-label]="'LOANS.PRODUCT' | appTranslate"
                       interface="popover"
                       name="productId"
                       [(ngModel)]="loan().productId"
@@ -162,8 +166,8 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                   <ion-button
                     fill="clear"
                     type="button"
-                    [attr.aria-label]="'PRODUCTS.CREATE_LOAN_PRODUCT' | translate"
-                    [appTooltip]="'PRODUCTS.CREATE_LOAN_PRODUCT' | translate"
+                    [attr.aria-label]="'PRODUCTS.CREATE_LOAN_PRODUCT' | appTranslate"
+                    [appTooltip]="'PRODUCTS.CREATE_LOAN_PRODUCT' | appTranslate"
                     (click)="onCreateProduct()"
                     style="margin-top: 4px;"
                     [disabled]="isEditMode()"
@@ -175,18 +179,18 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 @if (selectedProductDetails()?.loanScheduleType?.value; as scheduleType) {
                   <div class="field-container-row full-width">
                     <div>
-                      <ion-chip [appTooltip]="'HELP.LOAN_SCHEDULE_TYPE_DESC' | translate">
-                        {{ 'PRODUCTS.LOAN_SCHEDULE_TYPE' | translate }}: {{ scheduleType }}
+                      <ion-chip [appTooltip]="'HELP.LOAN_SCHEDULE_TYPE_DESC' | appTranslate">
+                        {{ 'PRODUCTS.LOAN_SCHEDULE_TYPE' | appTranslate }}: {{ scheduleType }}
                       </ion-chip>
                     </div>
                   </div>
                 }
 
                 <!-- Principal -->
-                <ion-item fill="outline" [appTooltip]="'HELP.PRINCIPAL_DESC' | translate">
-                  <ion-label position="stacked">{{ 'LOANS.PRINCIPAL' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.PRINCIPAL_DESC' | appTranslate">
+                  <ion-label position="stacked">{{ 'LOANS.PRINCIPAL' | appTranslate }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.PRINCIPAL' | translate"
+                    [attr.aria-label]="'LOANS.PRINCIPAL' | appTranslate"
                     type="number"
                     name="principal"
                     [(ngModel)]="loan().principal"
@@ -195,18 +199,22 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 </ion-item>
 
                 <!-- External ID -->
-                <ion-item fill="outline" [appTooltip]="'HELP.EXTERNAL_ID_DESC' | translate">
-                  <ion-label position="stacked">{{ 'COMMON.EXTERNAL_ID' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.EXTERNAL_ID_DESC' | appTranslate">
+                  <ion-label position="stacked">{{
+                    'COMMON.EXTERNAL_ID' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'COMMON.EXTERNAL_ID' | translate"
+                    [attr.aria-label]="'COMMON.EXTERNAL_ID' | appTranslate"
                     name="externalId"
                     [(ngModel)]="loan().externalId"
                   ></ion-input>
                 </ion-item>
 
                 <!-- Submitted On -->
-                <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | translate">
-                  <ion-label position="stacked">{{ 'COMMON.SUBMITTED_ON' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | appTranslate">
+                  <ion-label position="stacked">{{
+                    'COMMON.SUBMITTED_ON' | appTranslate
+                  }}</ion-label>
                   @if (pickersReady()) {
                     <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
                   }
@@ -228,10 +236,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Expected Disbursement -->
                 <ion-item
                   fill="outline"
-                  [appTooltip]="'HELP.EXPECTED_DISBURSEMENT_DESC' | translate"
+                  [appTooltip]="'HELP.EXPECTED_DISBURSEMENT_DESC' | appTranslate"
                 >
                   <ion-label position="stacked">{{
-                    'LOANS.EXPECTED_DISBURSEMENT' | translate
+                    'LOANS.EXPECTED_DISBURSEMENT' | appTranslate
                   }}</ion-label>
                   @if (pickersReady()) {
                     <ion-datetime-button
@@ -254,10 +262,12 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 </ion-item>
 
                 <!-- Term Frequency -->
-                <ion-item fill="outline" [appTooltip]="'HELP.TERM_FREQUENCY_DESC' | translate">
-                  <ion-label position="stacked">{{ 'LOANS.TERM_FREQUENCY' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.TERM_FREQUENCY_DESC' | appTranslate">
+                  <ion-label position="stacked">{{
+                    'LOANS.TERM_FREQUENCY' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.TERM_FREQUENCY' | translate"
+                    [attr.aria-label]="'LOANS.TERM_FREQUENCY' | appTranslate"
                     type="number"
                     name="loanTermFrequency"
                     [(ngModel)]="loan().loanTermFrequency"
@@ -266,37 +276,37 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 </ion-item>
 
                 <!-- Term Type -->
-                <ion-item fill="outline" [appTooltip]="'HELP.TERM_TYPE_DESC' | translate">
-                  <ion-label position="stacked">{{ 'LOANS.TERM_TYPE' | translate }}</ion-label>
+                <ion-item fill="outline" [appTooltip]="'HELP.TERM_TYPE_DESC' | appTranslate">
+                  <ion-label position="stacked">{{ 'LOANS.TERM_TYPE' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'LOANS.TERM_TYPE' | translate"
+                    [attr.aria-label]="'LOANS.TERM_TYPE' | appTranslate"
                     interface="popover"
                     name="loanTermFrequencyType"
                     [(ngModel)]="loan().loanTermFrequencyType"
                     required
                   >
                     <ion-select-option [value]="0">{{
-                      'COMMON.DAYS' | translate
+                      'COMMON.DAYS' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="1">{{
-                      'COMMON.WEEKS' | translate
+                      'COMMON.WEEKS' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="2">{{
-                      'COMMON.MONTHS' | translate
+                      'COMMON.MONTHS' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="3">{{
-                      'COMMON.YEARS' | translate
+                      'COMMON.YEARS' | appTranslate
                     }}</ion-select-option>
                   </ion-select>
                 </ion-item>
 
                 <!-- Number of Repayments -->
-                <ion-item fill="outline" [appTooltip]="'HELP.REPAYMENTS_COUNT_DESC' | translate">
+                <ion-item fill="outline" [appTooltip]="'HELP.REPAYMENTS_COUNT_DESC' | appTranslate">
                   <ion-label position="stacked">{{
-                    'LOANS.REPAYMENTS_COUNT' | translate
+                    'LOANS.REPAYMENTS_COUNT' | appTranslate
                   }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.REPAYMENTS_COUNT' | translate"
+                    [attr.aria-label]="'LOANS.REPAYMENTS_COUNT' | appTranslate"
                     type="number"
                     name="numberOfRepayments"
                     [(ngModel)]="loan().numberOfRepayments"
@@ -305,12 +315,12 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 </ion-item>
 
                 <!-- Repayment Every -->
-                <ion-item fill="outline" [appTooltip]="'HELP.REPAYMENT_EVERY_DESC' | translate">
+                <ion-item fill="outline" [appTooltip]="'HELP.REPAYMENT_EVERY_DESC' | appTranslate">
                   <ion-label position="stacked">{{
-                    'LOANS.REPAYMENT_EVERY' | translate
+                    'LOANS.REPAYMENT_EVERY' | appTranslate
                   }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.REPAYMENT_EVERY' | translate"
+                    [attr.aria-label]="'LOANS.REPAYMENT_EVERY' | appTranslate"
                     type="number"
                     name="repaymentEvery"
                     [(ngModel)]="loan().repaymentEvery"
@@ -320,31 +330,33 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Repayment Frequency Type -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.FREQUENCY' | translate }}</ion-label>
+                  <ion-label position="stacked">{{ 'COMMON.FREQUENCY' | appTranslate }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'COMMON.FREQUENCY' | translate"
+                    [attr.aria-label]="'COMMON.FREQUENCY' | appTranslate"
                     interface="popover"
                     name="repaymentFrequencyType"
                     [(ngModel)]="loan().repaymentFrequencyType"
                     required
                   >
                     <ion-select-option [value]="0">{{
-                      'COMMON.DAYS' | translate
+                      'COMMON.DAYS' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="1">{{
-                      'COMMON.WEEKS' | translate
+                      'COMMON.WEEKS' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="2">{{
-                      'COMMON.MONTHS' | translate
+                      'COMMON.MONTHS' | appTranslate
                     }}</ion-select-option>
                   </ion-select>
                 </ion-item>
 
                 <!-- Interest Rate Per Period -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.INTEREST_RATE' | translate }}</ion-label>
+                  <ion-label position="stacked">{{
+                    'COMMON.INTEREST_RATE' | appTranslate
+                  }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'COMMON.INTEREST_RATE' | translate"
+                    [attr.aria-label]="'COMMON.INTEREST_RATE' | appTranslate"
                     type="number"
                     name="interestRatePerPeriod"
                     [(ngModel)]="loan().interestRatePerPeriod"
@@ -355,20 +367,20 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Interest Type -->
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'PRODUCTS.INTEREST_TYPE' | translate
+                    'PRODUCTS.INTEREST_TYPE' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'PRODUCTS.INTEREST_TYPE' | translate"
+                    [attr.aria-label]="'PRODUCTS.INTEREST_TYPE' | appTranslate"
                     interface="popover"
                     name="interestType"
                     [(ngModel)]="loan().interestType"
                     required
                   >
                     <ion-select-option [value]="0">{{
-                      'LOANS.DECLINING_BALANCE' | translate
+                      'LOANS.DECLINING_BALANCE' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="1">{{
-                      'LOANS.FLAT' | translate
+                      'LOANS.FLAT' | appTranslate
                     }}</ion-select-option>
                   </ion-select>
                 </ion-item>
@@ -376,20 +388,20 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Amortization Type -->
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'PRODUCTS.AMORTIZATION_TYPE' | translate
+                    'PRODUCTS.AMORTIZATION_TYPE' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'PRODUCTS.AMORTIZATION_TYPE' | translate"
+                    [attr.aria-label]="'PRODUCTS.AMORTIZATION_TYPE' | appTranslate"
                     interface="popover"
                     name="amortizationType"
                     [(ngModel)]="loan().amortizationType"
                     required
                   >
                     <ion-select-option [value]="1">{{
-                      'LOANS.EQUAL_INSTALLMENTS' | translate
+                      'LOANS.EQUAL_INSTALLMENTS' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="0">{{
-                      'LOANS.EQUAL_PRINCIPAL' | translate
+                      'LOANS.EQUAL_PRINCIPAL' | appTranslate
                     }}</ion-select-option>
                   </ion-select>
                 </ion-item>
@@ -397,20 +409,20 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Interest Calculation Period Type -->
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | translate
+                    'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | appTranslate
                   }}</ion-label>
                   <ion-select
-                    [attr.aria-label]="'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | translate"
+                    [attr.aria-label]="'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | appTranslate"
                     interface="popover"
                     name="interestCalculationPeriodType"
                     [(ngModel)]="loan().interestCalculationPeriodType"
                     required
                   >
                     <ion-select-option [value]="0">{{
-                      'LOANS.DAILY' | translate
+                      'LOANS.DAILY' | appTranslate
                     }}</ion-select-option>
                     <ion-select-option [value]="1">{{
-                      'LOANS.SAME_AS_REPAYMENT' | translate
+                      'LOANS.SAME_AS_REPAYMENT' | appTranslate
                     }}</ion-select-option>
                   </ion-select>
                 </ion-item>
@@ -418,10 +430,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Grace on Principal Payment -->
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'LOANS.GRACE_ON_PRINCIPAL_PAYMENT' | translate
+                    'LOANS.GRACE_ON_PRINCIPAL_PAYMENT' | appTranslate
                   }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.GRACE_ON_PRINCIPAL_PAYMENT' | translate"
+                    [attr.aria-label]="'LOANS.GRACE_ON_PRINCIPAL_PAYMENT' | appTranslate"
                     type="number"
                     name="graceOnPrincipalPayment"
                     [(ngModel)]="loan().graceOnPrincipalPayment"
@@ -431,10 +443,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Grace on Interest Payment -->
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'LOANS.GRACE_ON_INTEREST_PAYMENT' | translate
+                    'LOANS.GRACE_ON_INTEREST_PAYMENT' | appTranslate
                   }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.GRACE_ON_INTEREST_PAYMENT' | translate"
+                    [attr.aria-label]="'LOANS.GRACE_ON_INTEREST_PAYMENT' | appTranslate"
                     type="number"
                     name="graceOnInterestPayment"
                     [(ngModel)]="loan().graceOnInterestPayment"
@@ -444,10 +456,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Grace on Interest Charged -->
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'LOANS.GRACE_ON_INTEREST_CHARGED' | translate
+                    'LOANS.GRACE_ON_INTEREST_CHARGED' | appTranslate
                   }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.GRACE_ON_INTEREST_CHARGED' | translate"
+                    [attr.aria-label]="'LOANS.GRACE_ON_INTEREST_CHARGED' | appTranslate"
                     type="number"
                     name="graceOnInterestCharged"
                     [(ngModel)]="loan().graceOnInterestCharged"
@@ -457,10 +469,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- In Arrears Tolerance -->
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'LOANS.IN_ARREARS_TOLERANCE' | translate
+                    'LOANS.IN_ARREARS_TOLERANCE' | appTranslate
                   }}</ion-label>
                   <ion-input
-                    [attr.aria-label]="'LOANS.IN_ARREARS_TOLERANCE' | translate"
+                    [attr.aria-label]="'LOANS.IN_ARREARS_TOLERANCE' | appTranslate"
                     type="number"
                     name="inArrearsTolerance"
                     [(ngModel)]="loan().inArrearsTolerance"
@@ -470,7 +482,7 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <!-- Repayments Starting From Date -->
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'LOANS.REPAYMENTS_STARTING_FROM_DATE' | translate
+                    'LOANS.REPAYMENTS_STARTING_FROM_DATE' | appTranslate
                   }}</ion-label>
                   @if (pickersReady()) {
                     <ion-datetime-button
@@ -495,7 +507,7 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                     name="interestRecognitionOnDisbursementDate"
                     [(ngModel)]="loan().interestRecognitionOnDisbursementDate"
                   >
-                    {{ 'LOANS.INTEREST_RECOGNITION_ON_DISBURSEMENT_DATE' | translate }}
+                    {{ 'LOANS.INTEREST_RECOGNITION_ON_DISBURSEMENT_DATE' | appTranslate }}
                   </ion-checkbox>
                 }
 
@@ -504,14 +516,14 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                     name="allowFullTermForTranche"
                     [(ngModel)]="loan().allowFullTermForTranche"
                   >
-                    {{ 'LOANS.ALLOW_FULL_TERM_FOR_TRANCHE' | translate }}
+                    {{ 'LOANS.ALLOW_FULL_TERM_FOR_TRANCHE' | appTranslate }}
                   </ion-checkbox>
                 }
               </div>
 
               <div class="form-actions">
                 <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                  {{ 'COMMON.CANCEL' | translate }}
+                  {{ 'COMMON.CANCEL' | appTranslate }}
                 </ion-button>
                 <ion-button
                   color="primary"
@@ -520,9 +532,9 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 >
                   @if (isSaving()) {
                     <ion-spinner name="crescent"></ion-spinner>
-                    {{ 'COMMON.SAVING' | translate }}
+                    {{ 'COMMON.SAVING' | appTranslate }}
                   } @else {
-                    {{ 'COMMON.SAVE' | translate }}
+                    {{ 'COMMON.SAVE' | appTranslate }}
                   }
                 </ion-button>
               </div>

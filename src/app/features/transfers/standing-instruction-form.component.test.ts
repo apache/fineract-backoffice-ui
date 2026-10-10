@@ -25,6 +25,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of, Observable } from 'rxjs';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { expectLookedUp } from '../../testing/translated-text';
 
 describe('StandingInstructionFormComponent', () => {
   let component: StandingInstructionFormComponent;
@@ -93,6 +94,13 @@ describe('StandingInstructionFormComponent', () => {
       expect(officesServiceSpy.getOffices).toHaveBeenCalled();
       expect(clientServiceSpy.getClients).toHaveBeenCalled();
       expect(component.isEditMode).toBe(false);
+    });
+
+    it('renders the transfer type options through the translation adapter', () => {
+      expectLookedUp(fixture.nativeElement, [
+        'CLIENTS.TRANSFER_TYPE_ACCOUNT_TRANSFER',
+        'CLIENTS.TRANSFER_TYPE_LOAN_REPAYMENT',
+      ]);
     });
 
     it('should load loan accounts when account type changes to loan', () => {

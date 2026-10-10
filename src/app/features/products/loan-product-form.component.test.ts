@@ -24,7 +24,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { LoanProductFormComponent } from './loan-product-form.component';
@@ -40,6 +39,7 @@ import {
   LOAN_SCHEDULE_TYPE,
 } from './loan-schedule-type';
 import { ACCOUNTING_RULE, LOAN_ACCOUNTING_FIELDS } from './accounting/product-accounting.model';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
 
 const EQUAL_AMORTIZATION_LABEL = 'Equal amortization';
 
@@ -143,8 +143,9 @@ describe('LoanProductFormComponent', () => {
     delinquencySpy.getDelinquencyBuckets.mockReturnValue(of([]) as any);
 
     await TestBed.configureTestingModule({
-      imports: [LoanProductFormComponent, TranslateModule.forRoot()],
+      imports: [LoanProductFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         provideIonicTesting(),
         { provide: LoanProductsService, useValue: productServiceSpy },

@@ -31,6 +31,7 @@ import { signal } from '@angular/core';
 import { provideIonicTesting } from '../../testing/ionic-testing';
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { provideFakeAdapters } from '../../testing/adapters';
+import { expectLookedUp } from '../../testing/translated-text';
 
 describe('SavingsAccountViewComponent', () => {
   let component: SavingsAccountViewComponent;
@@ -114,6 +115,21 @@ describe('SavingsAccountViewComponent', () => {
       'all',
     );
     expect(component.account()?.savingsProductName).toBe('Regular Savings');
+  });
+
+  it('renders the overview labels through the translation adapter', () => {
+    expectLookedUp(fixture.nativeElement, [
+      'SAVINGS.INTEREST_SETTINGS',
+      'SAVINGS.NOMINAL_ANNUAL_INTEREST_RATE',
+      'SAVINGS.COMPOUNDING_PERIOD',
+      'SAVINGS.POSTING_PERIOD',
+      'SAVINGS.INTEREST_CALC_DAYS_IN_YEAR',
+      'SAVINGS.TIMELINE_AND_BALANCE',
+      'COMMON.SUBMITTED_ON_DATE',
+      'SAVINGS.ACTIVATED_ON_DATE',
+      'SAVINGS.FIELD_OFFICER',
+      'SAVINGS.BALANCE',
+    ]);
   });
 
   /**
@@ -267,6 +283,70 @@ describe('SavingsAccountViewComponent', () => {
       await Promise.resolve();
 
       expect(savingsServiceSpy.postSavingsaccountsAccountId).not.toHaveBeenCalled();
+    });
+  });
+  /**
+   * The platform refuses a deposit or a withdrawal unless the account is active —
+   * `error.msg.savingsaccount.transaction.account.is.not.active`. Offering the buttons on an
+   * account that is still awaiting approval led to a filled-in transaction form and a rejection
+   * on submit, so they are withheld in exactly the states the platform rejects.
+   */
+  describe('transaction buttons', () => {
+    function withStatus(status: Record<string, unknown>): void {
+      component.account.set({ ...component.account(), status } as never);
+      fixture.detectChanges();
+    }
+
+    const TEST_ID = {
+      deposit: '[data-testid="savings-deposit-action"]',
+      withdraw: '[data-testid="savings-withdraw-action"]',
+    } as const;
+
+    function buttonFor(action: keyof typeof TEST_ID): Element | null {
+      return fixture.nativeElement.querySelector(TEST_ID[action]);
+    }
+
+    it('offers deposit and withdrawal on an active account', () => {
+      withStatus({ value: 'Active', active: true });
+
+      expect(buttonFor('deposit')).not.toBeNull();
+      expect(buttonFor('withdraw')).not.toBeNull();
+    });
+
+    it('withholds both from an account awaiting approval', () => {
+      withStatus({ value: 'Submitted and pending approval', submittedAndPendingApproval: true });
+
+      expect(buttonFor('deposit')).toBeNull();
+      expect(buttonFor('withdraw')).toBeNull();
+    });
+
+    it('withholds both from a closed account', () => {
+      withStatus({ value: 'Closed', closed: true });
+
+      expect(buttonFor('deposit')).toBeNull();
+      expect(buttonFor('withdraw')).toBeNull();
+    });
+  });
+
+  describe('teardown', () => {
+    it('dismisses popovers when destroyed', () => {
+      component.account.set({ id: 789, status: { active: true } } as never);
+      fixture.detectChanges();
+
+      const withPopovers = component as unknown as {
+        popovers: () => readonly { dismiss: () => Promise<boolean> }[];
+      };
+      const popovers = withPopovers.popovers();
+      expect(popovers.length).toBeGreaterThan(0);
+      const dismissSpies = popovers.map((popover) =>
+        vi.spyOn(popover, 'dismiss').mockResolvedValue(true),
+      );
+
+      fixture.destroy();
+
+      for (const spy of dismissSpies) {
+        expect(spy).toHaveBeenCalled();
+      }
     });
   });
 });

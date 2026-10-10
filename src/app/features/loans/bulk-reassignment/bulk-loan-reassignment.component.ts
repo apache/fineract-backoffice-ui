@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { forkJoin } from 'rxjs';
 
 import { BulkLoansService, OfficesService, StaffService } from '../../../api';
@@ -53,7 +53,7 @@ interface StaffMember {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonItem,
@@ -68,14 +68,14 @@ interface StaffMember {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'BULK_LOANS.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'BULK_LOANS.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="form-container">
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'BULK_LOANS.OFFICE' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'BULK_LOANS.OFFICE' | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="'BULK_LOANS.OFFICE' | translate"
+              [attr.aria-label]="'BULK_LOANS.OFFICE' | appTranslate"
               interface="popover"
               [ngModel]="selectedOfficeId()"
               (ngModelChange)="selectedOfficeId.set($event); onOfficeChange()"
@@ -87,9 +87,9 @@ interface StaffMember {
           </ion-item>
 
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'BULK_LOANS.FROM_OFFICER' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'BULK_LOANS.FROM_OFFICER' | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="'BULK_LOANS.FROM_OFFICER' | translate"
+              [attr.aria-label]="'BULK_LOANS.FROM_OFFICER' | appTranslate"
               interface="popover"
               [ngModel]="selectedFromOfficerId()"
               (ngModelChange)="selectedFromOfficerId.set($event)"
@@ -104,9 +104,9 @@ interface StaffMember {
           </ion-item>
 
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'BULK_LOANS.TO_OFFICER' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'BULK_LOANS.TO_OFFICER' | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="'BULK_LOANS.TO_OFFICER' | translate"
+              [attr.aria-label]="'BULK_LOANS.TO_OFFICER' | appTranslate"
               interface="popover"
               [ngModel]="selectedToOfficerId()"
               (ngModelChange)="selectedToOfficerId.set($event)"
@@ -132,7 +132,7 @@ interface StaffMember {
           "
           (click)="onReassign()"
         >
-          {{ 'BULK_LOANS.REASSIGN' | translate }}
+          {{ 'BULK_LOANS.REASSIGN' | appTranslate }}
         </ion-button>
       </div>
     </ion-card>

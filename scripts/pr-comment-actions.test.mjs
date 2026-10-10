@@ -18,23 +18,31 @@
  */
 
 /**
- * The two `pull_request_target` comment actions.
+ * The three comment actions that react to a fork's pull request holding a writable token.
  *
  *   node --test "scripts/*.test.mjs"
  *
- * Both hold a token that can write to this repository while reacting to a fork's pull
- * request, so the properties worth pinning are the ones that keep that safe and quiet:
- * exactly one comment per pull request however many times it is pushed, the comment removed
- * again once the problem is fixed, and no attacker-controlled text turned into a live
- * `@mention`. Neither can be exercised on the pull request that introduces it — a
- * `pull_request_target` workflow only runs from the base branch — so these tests are the
- * only pre-merge check that the logic is right.
+ * Two are `pull_request_target` (signatures, welcome) and one is `workflow_run` (the E2E
+ * summaries and the change diagram). The properties worth pinning are the ones that keep
+ * them safe and quiet: exactly one comment per pull request however many times it is pushed,
+ * the comment removed again once the problem is fixed, and no attacker-controlled text turned
+ * into a live `@mention`.
+ *
+ * None of them can be exercised on the pull request that changes it — both trigger types run
+ * the copy of the workflow on the base branch — so these tests are the only pre-merge check
+ * that the logic is right. The publisher's tests go further and pin its *agreement with the
+ * workflow files*, because getting that wrong is what silently dropped the change-diagram
+ * comment from every pull request for six weeks.
  */
 
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import checkSignatures from '../.github/scripts/check-commit-signatures.js';
+import publishSummaries from '../.github/scripts/post-e2e-comments.js';
 import welcome from '../.github/scripts/welcome-contributor.js';
 
 const { buildBody, groupByReason, defuseReferences, MARKER } = checkSignatures;
@@ -309,4 +317,217 @@ test('reopening a pull request does not stack up greetings', async () => {
   });
 
   assert.equal(calls.created.length, 0);
+});
+
+/* ------------------------------------------------- the summary/diagram publisher */
+
+const { KNOWN_SUMMARIES, SUMMARIES_DIR } = publishSummaries;
+
+const DIAGRAM_MARKER = KNOWN_SUMMARIES['pr-comment-diagram'].marker;
+
+/** A diagram body as `scripts/pr-sequence-diagram.mjs` renders it: marker, heading, fence. */
+const DIAGRAM = [
+  DIAGRAM_MARKER,
+  '### 🔄 What this change talks to',
+  '',
+  '```mermaid',
+  'sequenceDiagram',
+  '  autonumber',
+  '  participant LoanViewComponent as LoanViewComponent (Component)',
+  '  LoanViewComponent->>LoanService: getLoansLoanId()',
+  '```',
+  '',
+].join('\n');
+
+const THIS_REPO = `${context.repo.owner}/${context.repo.repo}`;
+const HEAD_SHA = 'c0ffee1c0ffee1c0ffee1c0ffee1c0ffee1c0ffe';
+
+/**
+ * A `workflow_run` completion for an open pull request in this repository.
+ *
+ * `head_repository` matching the base repository is the non-fork case; `resolvePullRequest`
+ * cross-checks it against the pull request it found, so it has to be consistent.
+ */
+const runEvent = () => ({
+  ...context,
+  payload: {
+    workflow_run: {
+      id: 4242,
+      head_sha: HEAD_SHA,
+      head_branch: 'topic',
+      head_repository: { full_name: THIS_REPO },
+    },
+  },
+});
+
+function fakeRunGithub({ comments = [] } = {}) {
+  const calls = { created: [], updated: [] };
+  const pulls = [{ number: 695, head: { sha: HEAD_SHA, repo: { full_name: THIS_REPO } } }];
+  const github = {
+    paginate: async (fn) => fn(),
+    rest: {
+      repos: { listPullRequestsAssociatedWithCommit: async () => ({ data: pulls }) },
+      pulls: { list: async () => ({ data: pulls }) },
+      issues: {
+        listComments: async () => comments,
+        createComment: async (args) => calls.created.push(args),
+        updateComment: async (args) => calls.updated.push(args),
+      },
+    },
+  };
+  return { github, calls };
+}
+
+function fakeLog() {
+  const lines = [];
+  return { lines, core: { info: (message) => lines.push(message) } };
+}
+
+/**
+ * Runs the publisher against a throwaway workspace laid out exactly as the download step
+ * left it, because the paths it reads are relative to the working directory.
+ */
+async function publishWith(layout, { comments = [] } = {}) {
+  const workspace = mkdtempSync(path.join(tmpdir(), 'pr-comment-'));
+  for (const [file, contents] of Object.entries(layout)) {
+    const target = path.join(workspace, file);
+    mkdirSync(path.dirname(target), { recursive: true });
+    writeFileSync(target, contents);
+  }
+
+  const { github, calls } = fakeRunGithub({ comments });
+  const { lines, core } = fakeLog();
+  const cwd = process.cwd();
+  try {
+    process.chdir(workspace);
+    await publishSummaries({ github, context: runEvent(), core });
+  } finally {
+    process.chdir(cwd);
+    rmSync(workspace, { recursive: true, force: true });
+  }
+  return { calls, lines };
+}
+
+test('a diagram in its own artifact directory is posted under the allow-listed marker', async () => {
+  const { calls } = await publishWith({
+    [`${SUMMARIES_DIR}/pr-comment-diagram/pr-diagram.md`]: DIAGRAM,
+  });
+
+  assert.equal(calls.created.length, 1);
+  const body = calls.created[0].body;
+  assert.equal(calls.created[0].issue_number, 695);
+  assert.ok(
+    body.startsWith(DIAGRAM_MARKER),
+    'the marker has to lead, or the upsert cannot find it',
+  );
+  assert.ok(body.includes('```mermaid'), 'the fence is the whole point of the comment');
+  assert.ok(body.includes('sequenceDiagram'));
+  // The body carries its own heading, so the publisher must not add a second one.
+  assert.equal(body.match(/What this change talks to/g).length, 1);
+});
+
+test('the fence survives the publisher untouched, so GitHub can render it', async () => {
+  const { calls } = await publishWith({
+    [`${SUMMARIES_DIR}/pr-comment-diagram/pr-diagram.md`]: DIAGRAM,
+  });
+
+  const fence = /```mermaid\n([\s\S]*?)\n```/.exec(calls.created[0].body);
+  assert.ok(fence, 'a mangled fence renders as a code block rather than a chart');
+  assert.equal(fence[1].split('\n')[0], 'sequenceDiagram');
+  assert.ok(
+    !/[​]/.test(fence[1]),
+    'defuseReferences must not inject a zero-width space into Mermaid source',
+  );
+});
+
+test('a single-match download that collapsed the layout is reported, not shrugged off', async () => {
+  // What download-artifact actually produces for a run with one `pr-comment-*` artifact:
+  // `artifacts.length === 1` extracts straight into `path`, with no directory for the
+  // artifact. The directory is how a body is bound to its marker, so the comment cannot be
+  // posted -- but the log has to say why, because nothing else will.
+  const { calls, lines } = await publishWith({
+    [`${SUMMARIES_DIR}/pr-diagram.md`]: DIAGRAM,
+  });
+
+  assert.equal(calls.created.length, 0);
+  const complaint = lines.find((line) => line.includes('No recognised summary artifacts'));
+  assert.ok(complaint, 'the publisher went quiet about posting nothing');
+  assert.ok(complaint.includes('pr-diagram.md'), 'the log should name the file it found');
+  assert.ok(complaint.includes('exactly one match'), 'the log should name the cause');
+});
+
+test('an artifact name outside the allow-list is ignored', async () => {
+  const { calls } = await publishWith({
+    [`${SUMMARIES_DIR}/pr-comment-impostor/pr-diagram.md`]: DIAGRAM,
+  });
+
+  assert.equal(calls.created.length, 0);
+});
+
+test('a re-run updates the diagram comment instead of stacking another', async () => {
+  const existing = { id: 77, user: { type: 'Bot' }, body: `${DIAGRAM_MARKER}\nan older diagram` };
+  const { calls } = await publishWith(
+    { [`${SUMMARIES_DIR}/pr-comment-diagram/pr-diagram.md`]: DIAGRAM },
+    { comments: [existing] },
+  );
+
+  assert.equal(calls.created.length, 0);
+  assert.equal(calls.updated.length, 1);
+  assert.equal(calls.updated[0].comment_id, 77);
+});
+
+test('a mention inside a summary is defused before it is published', async () => {
+  const { calls } = await publishWith({
+    [`${SUMMARIES_DIR}/pr-comment-e2e-mocked/e2e-summary.md`]: 'Ping @maintainer about #1234.',
+  });
+
+  assert.equal(calls.created.length, 1);
+  assert.ok(!calls.created[0].body.includes('@maintainer'));
+  assert.ok(calls.created[0].body.includes('@​maintainer'));
+  assert.ok(calls.created[0].body.includes('#​1234'));
+});
+
+/**
+ * The allow-list, the uploads and the downloads have to name the same artifacts.
+ *
+ * This is the check that would have caught the dropped diagram comment. A `workflow_run`
+ * workflow runs the copy on the default branch, so pr-comments.yml is never exercised by the
+ * pull request that edits it, and a disagreement between these three lists shows up only as a
+ * comment that never appears -- on a green pull request.
+ */
+test('every uploaded comment artifact is downloaded into its own allow-listed directory', () => {
+  const read = (file) =>
+    readFileSync(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
+
+  const uploaded = new Set();
+  for (const file of ['ci.yml', 'e2e.yml']) {
+    for (const match of read(file).matchAll(/^\s*name:\s*(pr-comment-[\w-]+)\s*$/gm)) {
+      uploaded.add(match[1]);
+    }
+  }
+
+  const downloaded = new Map();
+  for (const match of read('pr-comments.yml').matchAll(
+    /^\s*name:\s*(pr-comment-[\w-]+)\s*\n\s*path:\s*(\S+)\s*$/gm,
+  )) {
+    downloaded.set(match[1], match[2]);
+  }
+
+  const allowed = Object.keys(KNOWN_SUMMARIES).sort();
+  assert.deepEqual([...uploaded].sort(), allowed, 'an upload has no entry in the allow-list');
+  assert.deepEqual(
+    [...downloaded.keys()].sort(),
+    allowed,
+    'an allow-listed artifact is not downloaded',
+  );
+
+  for (const [name, into] of downloaded) {
+    // Not `summaries` and not a pattern download: the directory per artifact is what binds a
+    // body to the marker it may post under.
+    assert.equal(
+      into,
+      `${SUMMARIES_DIR}/${name}`,
+      `${name} is downloaded into the wrong directory`,
+    );
+  }
 });

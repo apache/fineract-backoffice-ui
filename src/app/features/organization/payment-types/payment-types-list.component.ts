@@ -19,12 +19,12 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { PaymentTypeService, PaymentTypeData } from '../../../api';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../../ui/button/button.component';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 
 /**
  * Lists payment types (a master-data resource) with create / edit / delete.
@@ -34,7 +34,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-payment-types-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -53,7 +53,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
       (create)="onCreate()"
     >
       <ng-template appCellTemplate="isCashPayment" let-row>
-        {{ (row.isCashPayment ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+        {{ (row.isCashPayment ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-row>
@@ -61,9 +61,9 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         />
         @if (!row.isSystemDefined) {
@@ -71,9 +71,9 @@ import { ButtonComponent } from '../../../ui/button/button.component';
             type="button"
             intent="danger"
             emphasis="quiet"
-            [label]="'COMMON.DELETE' | translate"
+            [label]="'COMMON.DELETE' | appTranslate"
             icon="trash-outline"
-            [appTooltip]="'COMMON.DELETE' | translate"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
             (click)="onDelete(row)"
           />
         }
@@ -84,7 +84,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
 export class PaymentTypesListComponent implements OnInit {
   private readonly paymentTypeService = inject(PaymentTypeService);
   private readonly router = inject(Router);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly columns: ColumnDef[] = [
     { key: 'name', label: 'PAYMENT_TYPES.NAME', sortable: true },
@@ -120,7 +120,7 @@ export class PaymentTypesListComponent implements OnInit {
   }
 
   onDelete(row: PaymentTypeData): void {
-    if (!row.id || !confirm(this.translate.instant('PAYMENT_TYPES.CONFIRM_DELETE'))) {
+    if (!row.id || !confirm(this.i18n.translate('PAYMENT_TYPES.CONFIRM_DELETE'))) {
       return;
     }
     this.paymentTypeService.deletePaymenttypesPaymentTypeId(row.id).subscribe({

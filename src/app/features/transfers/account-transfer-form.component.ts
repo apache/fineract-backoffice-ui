@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -67,7 +67,7 @@ export interface MiniAccount {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -91,7 +91,7 @@ export interface MiniAccount {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'ACTIONS.ACCOUNT_TRANSFER' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'ACTIONS.ACCOUNT_TRANSFER' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -101,14 +101,14 @@ export interface MiniAccount {
                 <!-- From Account Section -->
                 <ion-col size="12" size-md="6">
                   <div class="section">
-                    <h3>{{ 'CLIENTS.TRANSFER_FROM' | translate }}</h3>
+                    <h3>{{ 'CLIENTS.TRANSFER_FROM' | appTranslate }}</h3>
                     <ion-item fill="outline">
                       <ion-label position="stacked"
-                        >{{ 'COMMON.OFFICE' | translate
+                        >{{ 'COMMON.OFFICE' | appTranslate
                         }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                       >
                       <ion-select
-                        [attr.aria-label]="'COMMON.OFFICE' | translate"
+                        [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
                         interface="popover"
                         name="fromOfficeId"
                         #fromOfficeIdModel="ngModel"
@@ -139,17 +139,17 @@ export interface MiniAccount {
                         id="transfer-from-office-error"
                         role="alert"
                         data-testid="transfer-from-office-error"
-                        >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                        >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                       >
                     }
 
                     <ion-item fill="outline">
                       <ion-label position="stacked"
-                        >{{ 'COMMON.CLIENT' | translate
+                        >{{ 'COMMON.CLIENT' | appTranslate
                         }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                       >
                       <ion-select
-                        [attr.aria-label]="'COMMON.CLIENT' | translate"
+                        [attr.aria-label]="'COMMON.CLIENT' | appTranslate"
                         interface="popover"
                         name="fromClientId"
                         #fromClientIdModel="ngModel"
@@ -180,17 +180,17 @@ export interface MiniAccount {
                         id="transfer-from-client-error"
                         role="alert"
                         data-testid="transfer-from-client-error"
-                        >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                        >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                       >
                     }
 
                     <ion-item fill="outline">
                       <ion-label position="stacked"
-                        >{{ 'CLIENTS.ACCOUNT_TYPE' | translate
+                        >{{ 'CLIENTS.ACCOUNT_TYPE' | appTranslate
                         }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                       >
                       <ion-select
-                        [attr.aria-label]="'CLIENTS.ACCOUNT_TYPE' | translate"
+                        [attr.aria-label]="'CLIENTS.ACCOUNT_TYPE' | appTranslate"
                         interface="popover"
                         name="fromAccountType"
                         #fromAccountTypeModel="ngModel"
@@ -210,10 +210,10 @@ export interface MiniAccount {
                         "
                       >
                         <ion-select-option [value]="'2'">{{
-                          'nav.savingsAccounts' | translate
+                          'nav.savingsAccounts' | appTranslate
                         }}</ion-select-option>
                         <ion-select-option [value]="'1'">{{
-                          'nav.loanAccounts' | translate
+                          'nav.loanAccounts' | appTranslate
                         }}</ion-select-option>
                       </ion-select>
                     </ion-item>
@@ -224,17 +224,17 @@ export interface MiniAccount {
                         id="transfer-from-account-type-error"
                         role="alert"
                         data-testid="transfer-from-account-type-error"
-                        >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                        >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                       >
                     }
 
                     <ion-item fill="outline">
                       <ion-label position="stacked"
-                        >{{ 'CLIENTS.ACCOUNT_NO' | translate
+                        >{{ 'CLIENTS.ACCOUNT_NO' | appTranslate
                         }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                       >
                       <ion-select
-                        [attr.aria-label]="'CLIENTS.ACCOUNT_NO' | translate"
+                        [attr.aria-label]="'CLIENTS.ACCOUNT_NO' | appTranslate"
                         interface="popover"
                         name="fromAccountId"
                         #fromAccountIdModel="ngModel"
@@ -266,7 +266,7 @@ export interface MiniAccount {
                         id="transfer-from-account-error"
                         role="alert"
                         data-testid="transfer-from-account-error"
-                        >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                        >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                       >
                     }
                   </div>
@@ -275,14 +275,14 @@ export interface MiniAccount {
                 <!-- To Account Section -->
                 <ion-col size="12" size-md="6">
                   <div class="section">
-                    <h3>{{ 'CLIENTS.TRANSFER_TO' | translate }}</h3>
+                    <h3>{{ 'CLIENTS.TRANSFER_TO' | appTranslate }}</h3>
                     <ion-item fill="outline">
                       <ion-label position="stacked"
-                        >{{ 'COMMON.OFFICE' | translate
+                        >{{ 'COMMON.OFFICE' | appTranslate
                         }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                       >
                       <ion-select
-                        [attr.aria-label]="'COMMON.OFFICE' | translate"
+                        [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
                         interface="popover"
                         name="toOfficeId"
                         #toOfficeIdModel="ngModel"
@@ -313,17 +313,17 @@ export interface MiniAccount {
                         id="transfer-to-office-error"
                         role="alert"
                         data-testid="transfer-to-office-error"
-                        >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                        >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                       >
                     }
 
                     <ion-item fill="outline">
                       <ion-label position="stacked"
-                        >{{ 'COMMON.CLIENT' | translate
+                        >{{ 'COMMON.CLIENT' | appTranslate
                         }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                       >
                       <ion-select
-                        [attr.aria-label]="'COMMON.CLIENT' | translate"
+                        [attr.aria-label]="'COMMON.CLIENT' | appTranslate"
                         interface="popover"
                         name="toClientId"
                         #toClientIdModel="ngModel"
@@ -354,17 +354,17 @@ export interface MiniAccount {
                         id="transfer-to-client-error"
                         role="alert"
                         data-testid="transfer-to-client-error"
-                        >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                        >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                       >
                     }
 
                     <ion-item fill="outline">
                       <ion-label position="stacked"
-                        >{{ 'CLIENTS.ACCOUNT_TYPE' | translate
+                        >{{ 'CLIENTS.ACCOUNT_TYPE' | appTranslate
                         }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                       >
                       <ion-select
-                        [attr.aria-label]="'CLIENTS.ACCOUNT_TYPE' | translate"
+                        [attr.aria-label]="'CLIENTS.ACCOUNT_TYPE' | appTranslate"
                         interface="popover"
                         name="toAccountType"
                         #toAccountTypeModel="ngModel"
@@ -384,10 +384,10 @@ export interface MiniAccount {
                         "
                       >
                         <ion-select-option [value]="'2'">{{
-                          'nav.savingsAccounts' | translate
+                          'nav.savingsAccounts' | appTranslate
                         }}</ion-select-option>
                         <ion-select-option [value]="'1'">{{
-                          'nav.loanAccounts' | translate
+                          'nav.loanAccounts' | appTranslate
                         }}</ion-select-option>
                       </ion-select>
                     </ion-item>
@@ -398,17 +398,17 @@ export interface MiniAccount {
                         id="transfer-to-account-type-error"
                         role="alert"
                         data-testid="transfer-to-account-type-error"
-                        >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                        >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                       >
                     }
 
                     <ion-item fill="outline">
                       <ion-label position="stacked"
-                        >{{ 'CLIENTS.ACCOUNT_NO' | translate
+                        >{{ 'CLIENTS.ACCOUNT_NO' | appTranslate
                         }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                       >
                       <ion-select
-                        [attr.aria-label]="'CLIENTS.ACCOUNT_NO' | translate"
+                        [attr.aria-label]="'CLIENTS.ACCOUNT_NO' | appTranslate"
                         interface="popover"
                         name="toAccountId"
                         #toAccountIdModel="ngModel"
@@ -438,7 +438,7 @@ export interface MiniAccount {
                         id="transfer-to-account-error"
                         role="alert"
                         data-testid="transfer-to-account-error"
-                        >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                        >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                       >
                     }
                   </div>
@@ -450,11 +450,11 @@ export interface MiniAccount {
               <div class="field">
                 <ion-item fill="outline">
                   <ion-label position="stacked"
-                    >{{ 'CLIENTS.TRANSFER_AMOUNT' | translate
+                    >{{ 'CLIENTS.TRANSFER_AMOUNT' | appTranslate
                     }}<span class="required-marker" aria-hidden="true">*</span></ion-label
                   >
                   <ion-input
-                    [attr.aria-label]="'CLIENTS.TRANSFER_AMOUNT' | translate"
+                    [attr.aria-label]="'CLIENTS.TRANSFER_AMOUNT' | appTranslate"
                     type="number"
                     name="transferAmount"
                     #transferAmountModel="ngModel"
@@ -478,7 +478,7 @@ export interface MiniAccount {
                     id="transfer-amount-error"
                     role="alert"
                     data-testid="transfer-amount-error"
-                    >{{ 'COMMON.REQUIRED' | translate }}</ion-note
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                   >
                 }
               </div>
@@ -486,7 +486,7 @@ export interface MiniAccount {
               <div class="field">
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
-                    'CLIENTS.TRANSFER_DATE' | translate
+                    'CLIENTS.TRANSFER_DATE' | appTranslate
                   }}</ion-label>
                   @if (pickersReady()) {
                     <ion-datetime-button datetime="transfer-date-picker"></ion-datetime-button>
@@ -505,9 +505,9 @@ export interface MiniAccount {
               </div>
 
               <ion-item fill="outline" class="full-width">
-                <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | appTranslate }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'COMMON.DESCRIPTION' | translate"
+                  [attr.aria-label]="'COMMON.DESCRIPTION' | appTranslate"
                   name="transferDescription"
                   [(ngModel)]="request.transferDescription"
                   rows="2"
@@ -526,7 +526,7 @@ export interface MiniAccount {
                 id="transfer-cancel-btn"
                 data-testid="transfer-cancel-btn"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -535,7 +535,7 @@ export interface MiniAccount {
                 id="transfer-submit-btn"
                 data-testid="transfer-submit-btn"
               >
-                {{ 'COMMON.CONFIRM' | translate }}
+                {{ 'COMMON.CONFIRM' | appTranslate }}
               </ion-button>
             </div>
             @if (!transferForm.form.valid) {
@@ -544,7 +544,7 @@ export interface MiniAccount {
                 class="submit-hint"
                 data-testid="transfer-submit-hint"
                 aria-live="polite"
-                >{{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | translate }}</ion-note
+                >{{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}</ion-note
               >
             }
           </form>

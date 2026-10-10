@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -68,7 +68,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     ProductAccountingSectionComponent,
     AdvancedAccountingMappingsComponent,
     IonCard,
@@ -94,8 +94,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('PRODUCTS.EDIT_SAVINGS_PRODUCT' | translate)
-                : ('PRODUCTS.CREATE_SAVINGS_PRODUCT' | translate)
+                ? ('PRODUCTS.EDIT_SAVINGS_PRODUCT' | appTranslate)
+                : ('PRODUCTS.CREATE_SAVINGS_PRODUCT' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -106,9 +106,9 @@ import {
               <ion-row>
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+                    <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'COMMON.NAME' | translate"
+                      [attr.aria-label]="'COMMON.NAME' | appTranslate"
                       id="savings-product-name"
                       data-testid="savings-product-name"
                       name="name"
@@ -121,10 +121,10 @@ import {
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.SHORT_NAME' | translate
+                      'PRODUCTS.SHORT_NAME' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PRODUCTS.SHORT_NAME' | translate"
+                      [attr.aria-label]="'PRODUCTS.SHORT_NAME' | appTranslate"
                       id="savings-product-short-name"
                       data-testid="savings-product-short-name"
                       name="shortName"
@@ -138,10 +138,10 @@ import {
                 <ion-col size="12">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.DESCRIPTION' | translate
+                      'PRODUCTS.DESCRIPTION' | appTranslate
                     }}</ion-label>
                     <ion-textarea
-                      [attr.aria-label]="'PRODUCTS.DESCRIPTION' | translate"
+                      [attr.aria-label]="'PRODUCTS.DESCRIPTION' | appTranslate"
                       id="savings-product-description"
                       data-testid="savings-product-description"
                       name="description"
@@ -153,9 +153,11 @@ import {
 
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{ 'PRODUCTS.CURRENCY' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'PRODUCTS.CURRENCY' | appTranslate
+                    }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.CURRENCY' | translate"
+                      [attr.aria-label]="'PRODUCTS.CURRENCY' | appTranslate"
                       interface="popover"
                       id="savings-product-currency-code"
                       data-testid="savings-product-currency-code"
@@ -173,10 +175,10 @@ import {
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.DECIMAL_PLACES' | translate
+                      'PRODUCTS.DECIMAL_PLACES' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PRODUCTS.DECIMAL_PLACES' | translate"
+                      [attr.aria-label]="'PRODUCTS.DECIMAL_PLACES' | appTranslate"
                       id="savings-product-decimal-places"
                       data-testid="savings-product-decimal-places"
                       type="number"
@@ -190,10 +192,10 @@ import {
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.NOMINAL_ANNUAL_INTEREST_RATE' | translate
+                      'PRODUCTS.NOMINAL_ANNUAL_INTEREST_RATE' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PRODUCTS.NOMINAL_ANNUAL_INTEREST_RATE' | translate"
+                      [attr.aria-label]="'PRODUCTS.NOMINAL_ANNUAL_INTEREST_RATE' | appTranslate"
                       id="savings-product-interest-rate"
                       data-testid="savings-product-interest-rate"
                       type="number"
@@ -235,7 +237,7 @@ import {
                 (click)="onCancel()"
                 [disabled]="isSaving()"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 id="savings-product-submit-btn"
@@ -246,9 +248,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

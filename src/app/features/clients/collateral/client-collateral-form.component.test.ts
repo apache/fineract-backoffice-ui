@@ -23,8 +23,8 @@ import { ClientCollateralFormComponent } from './client-collateral-form.componen
 import { ClientCollateralManagementService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ClientCollateralFormComponent', () => {
   let component: ClientCollateralFormComponent;
@@ -47,8 +47,9 @@ describe('ClientCollateralFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [ClientCollateralFormComponent, TranslateModule.forRoot()],
+      imports: [ClientCollateralFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: ClientCollateralManagementService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         {

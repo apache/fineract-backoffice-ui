@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -41,7 +41,7 @@ import { ClientIdentifierService, ClientIdentifierRequest, CodeValueData } from 
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -61,8 +61,8 @@ import { ClientIdentifierService, ClientIdentifierRequest, CodeValueData } from 
           <ion-card-title>
             {{
               isEditMode
-                ? ('CLIENTS.EDIT_IDENTIFIER' | translate)
-                : ('CLIENTS.ADD_IDENTIFIER' | translate)
+                ? ('CLIENTS.EDIT_IDENTIFIER' | appTranslate)
+                : ('CLIENTS.ADD_IDENTIFIER' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -70,9 +70,9 @@ import { ClientIdentifierService, ClientIdentifierRequest, CodeValueData } from 
         <ion-card-content>
           <form #identifierForm="ngForm" (ngSubmit)="onSubmit()" class="identifier-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CLIENTS.DOCUMENT_TYPE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'CLIENTS.DOCUMENT_TYPE' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'CLIENTS.DOCUMENT_TYPE' | translate"
+                [attr.aria-label]="'CLIENTS.DOCUMENT_TYPE' | appTranslate"
                 interface="popover"
                 name="documentTypeId"
                 [(ngModel)]="identifier().documentTypeId"
@@ -87,9 +87,9 @@ import { ClientIdentifierService, ClientIdentifierRequest, CodeValueData } from 
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CLIENTS.DOCUMENT_KEY' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'CLIENTS.DOCUMENT_KEY' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'CLIENTS.DOCUMENT_KEY' | translate"
+                [attr.aria-label]="'CLIENTS.DOCUMENT_KEY' | appTranslate"
                 type="text"
                 name="documentKey"
                 [(ngModel)]="identifier().documentKey"
@@ -100,9 +100,9 @@ import { ClientIdentifierService, ClientIdentifierRequest, CodeValueData } from 
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'COMMON.STATUS' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'COMMON.STATUS' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'COMMON.STATUS' | translate"
+                [attr.aria-label]="'COMMON.STATUS' | appTranslate"
                 interface="popover"
                 name="status"
                 [(ngModel)]="identifier().status"
@@ -115,9 +115,9 @@ import { ClientIdentifierService, ClientIdentifierRequest, CodeValueData } from 
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | appTranslate }}</ion-label>
               <ion-textarea
-                [attr.aria-label]="'COMMON.DESCRIPTION' | translate"
+                [attr.aria-label]="'COMMON.DESCRIPTION' | appTranslate"
                 name="description"
                 [(ngModel)]="identifier().description"
                 rows="3"
@@ -135,7 +135,7 @@ import { ClientIdentifierService, ClientIdentifierRequest, CodeValueData } from 
                 id="identifier-cancel-btn"
                 data-testid="identifier-cancel-btn"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -144,7 +144,7 @@ import { ClientIdentifierService, ClientIdentifierRequest, CodeValueData } from 
                 id="identifier-submit-btn"
                 data-testid="identifier-submit-btn"
               >
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               </ion-button>
             </div>
           </form>

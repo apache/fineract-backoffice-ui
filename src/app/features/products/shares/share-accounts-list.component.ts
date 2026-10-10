@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import {
   DataTableComponent,
@@ -40,7 +40,7 @@ import { PageEvent } from '../../../shared/models/table.model';
   selector: 'app-share-accounts-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonIcon,
     DataTableComponent,
@@ -49,7 +49,7 @@ import { PageEvent } from '../../../shared/models/table.model';
   ],
   template: `
     <app-data-table
-      title="Share Accounts"
+      title="nav.shares"
       helpTextKey="HELP.SHARE_ACCOUNTS_DESC"
       createButtonLabel="SHARE_ACCOUNTS.CREATE"
       createPermission="CREATE_SHAREACCOUNT"
@@ -68,7 +68,7 @@ import { PageEvent } from '../../../shared/models/table.model';
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'COMMON.VIEW' | translate"
+          [attr.aria-label]="'COMMON.VIEW' | appTranslate"
           [attr.data-testid]="'share-account-view-' + account.id"
           (click)="onViewAccount(account)"
         >
@@ -77,7 +77,7 @@ import { PageEvent } from '../../../shared/models/table.model';
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
+          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
           (click)="onEditAccount(account)"
         >
           <ion-icon name="create-outline" slot="icon-only"></ion-icon>

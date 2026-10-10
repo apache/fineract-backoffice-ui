@@ -17,11 +17,10 @@
  * under the License.
  */
 
-import { Component, computed, inject, input, output, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { TranslateService } from '@ngx-translate/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { IonButton, IonIcon, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
 import { PageEvent } from '../../models/table.model';
+import { I18N } from '../../../core/adapters';
 
 /**
  * Paginator for {@link DataTableComponent} and any other paged list.
@@ -144,7 +143,7 @@ import { PageEvent } from '../../models/table.model';
   ],
 })
 export class PaginatorComponent {
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   /** Total number of records. For server-side paging this comes from the API response. */
   readonly length = input(0);
@@ -165,15 +164,9 @@ export class PaginatorComponent {
 
   readonly page = output<PageEvent>();
 
-  /** Bumped on language change so the label computeds re-evaluate. */
-  private readonly lang = signal(this.translate.currentLang);
-
-  private readonly langChange = toSignal(this.translate.onLangChange);
-
   protected readonly labels = computed(() => {
-    // Touch both language sources so the labels re-translate when either moves.
-    this.lang();
-    this.langChange();
+    // Touch the adapter's language signal so the labels re-translate when it changes.
+    this.i18n.currentLang();
 
     return {
       itemsPerPage: this.instant('COMMON.ITEMS_PER_PAGE', 'Items per page:'),
@@ -245,7 +238,7 @@ export class PaginatorComponent {
   }
 
   private instant(key: string, fallback: string): string {
-    const translated = this.translate.instant(key);
+    const translated = this.i18n.translate(key);
     return !translated || translated === key ? fallback : translated;
   }
 }

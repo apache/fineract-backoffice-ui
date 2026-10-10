@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { DefaultService, CommandWrapper, SmsCampaignData } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -43,7 +43,7 @@ import {
   imports: [
     FormsModule,
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonTextarea,
@@ -60,16 +60,16 @@ import {
     <ion-card>
       <ion-card-header>
         <ion-card-title>
-          {{ (isEditMode ? 'SMS_CAMPAIGNS.EDIT' : 'SMS_CAMPAIGNS.CREATE') | translate }}
+          {{ (isEditMode ? 'SMS_CAMPAIGNS.EDIT' : 'SMS_CAMPAIGNS.CREATE') | appTranslate }}
         </ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
         <form #campaignForm="ngForm" (ngSubmit)="onSubmit(campaignForm)">
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'SMS_CAMPAIGNS.NAME' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'SMS_CAMPAIGNS.NAME' | appTranslate }}</ion-label>
             <ion-input
-              [attr.aria-label]="'SMS_CAMPAIGNS.NAME' | translate"
+              [attr.aria-label]="'SMS_CAMPAIGNS.NAME' | appTranslate"
               name="campaignName"
               [(ngModel)]="model.campaignName"
               required
@@ -78,10 +78,10 @@ import {
 
           <ion-item fill="outline" class="full-width">
             <ion-label position="stacked">{{
-              'SMS_CAMPAIGNS.CAMPAIGN_TYPE' | translate
+              'SMS_CAMPAIGNS.CAMPAIGN_TYPE' | appTranslate
             }}</ion-label>
             <ion-select
-              [attr.aria-label]="'SMS_CAMPAIGNS.CAMPAIGN_TYPE' | translate"
+              [attr.aria-label]="'SMS_CAMPAIGNS.CAMPAIGN_TYPE' | appTranslate"
               interface="popover"
               name="campaignType"
               [(ngModel)]="model.campaignType"
@@ -93,9 +93,11 @@ import {
           </ion-item>
 
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'SMS_CAMPAIGNS.TRIGGER_TYPE' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'SMS_CAMPAIGNS.TRIGGER_TYPE' | appTranslate
+            }}</ion-label>
             <ion-select
-              [attr.aria-label]="'SMS_CAMPAIGNS.TRIGGER_TYPE' | translate"
+              [attr.aria-label]="'SMS_CAMPAIGNS.TRIGGER_TYPE' | appTranslate"
               interface="popover"
               name="triggerType"
               [(ngModel)]="model.triggerType"
@@ -107,9 +109,9 @@ import {
           </ion-item>
 
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'SMS_CAMPAIGNS.RUN_DAY' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'SMS_CAMPAIGNS.RUN_DAY' | appTranslate }}</ion-label>
             <ion-input
-              [attr.aria-label]="'SMS_CAMPAIGNS.RUN_DAY' | translate"
+              [attr.aria-label]="'SMS_CAMPAIGNS.RUN_DAY' | appTranslate"
               type="number"
               name="runOnDayOfMonth"
               [(ngModel)]="model.runOnDayOfMonth"
@@ -119,9 +121,9 @@ import {
           </ion-item>
 
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">{{ 'SMS_CAMPAIGNS.MESSAGE' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'SMS_CAMPAIGNS.MESSAGE' | appTranslate }}</ion-label>
             <ion-textarea
-              [attr.aria-label]="'SMS_CAMPAIGNS.MESSAGE' | translate"
+              [attr.aria-label]="'SMS_CAMPAIGNS.MESSAGE' | appTranslate"
               name="message"
               [(ngModel)]="model.message"
               required
@@ -130,9 +132,11 @@ import {
           </ion-item>
 
           <ion-item fill="outline" class="full-width">
-            <ion-label position="stacked">Parameterized Message</ion-label>
+            <ion-label position="stacked">{{
+              'SMS_CAMPAIGNS.PARAMETERIZED_MESSAGE' | appTranslate
+            }}</ion-label>
             <ion-input
-              aria-label="Parameterized Message"
+              [attr.aria-label]="'SMS_CAMPAIGNS.PARAMETERIZED_MESSAGE' | appTranslate"
               name="parameterizedMessage"
               [(ngModel)]="model.parameterizedMessage"
             ></ion-input>
@@ -140,7 +144,7 @@ import {
 
           <div class="form-actions">
             <ion-button color="primary" type="submit" [disabled]="campaignForm.invalid">
-              {{ 'SMS_CAMPAIGNS.SAVE' | translate }}
+              {{ 'SMS_CAMPAIGNS.SAVE' | appTranslate }}
             </ion-button>
             <ion-button fill="clear" type="button" (click)="cancel()">Cancel</ion-button>
           </div>
@@ -170,7 +174,7 @@ export class SmsCampaignFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly api = inject(DefaultService);
   private readonly notifications = inject(NotificationService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   isEditMode = false;
   campaignId: number | null = null;
@@ -274,7 +278,7 @@ export class SmsCampaignFormComponent implements OnInit {
 
   private onSuccess(): void {
     const key = this.isEditMode ? 'SMS_CAMPAIGNS.EDIT' : 'SMS_CAMPAIGNS.CREATE';
-    this.translate.get(key).subscribe((msg: string) => {
+    this.i18n.translateAsync(key).subscribe((msg: string) => {
       this.notifications.success(msg);
     });
     this.router.navigate(['/campaigns/sms']);

@@ -74,6 +74,40 @@ export async function login(page: Page): Promise<void> {
   });
 }
 
+/**
+ * Signs in as a seeded user rather than as the suite's superuser.
+ *
+ * `login()` above reads its credentials from the environment, which is the whole point for the
+ * specs that just need *a* session. An RBAC spec needs a *particular* one — the account it
+ * seeded a moment ago — so the credentials have to be an argument. Everything else about the
+ * form is identical, and three specs had grown their own copy of it.
+ *
+ * No `assertLocalBackend()` here: the caller seeded this user through `seed-api.ts`, which has
+ * already made that check against the same derived API base.
+ */
+export async function loginAsSeededUser(
+  page: Page,
+  user: { username: string; password: string },
+): Promise<void> {
+  await page.goto('/login');
+  const serverSelect = page.locator('#serverUrl');
+  await serverSelect.waitFor({ state: 'visible' });
+  const presetCount = await serverSelect.locator(`option[value="${SERVER_URL}"]`).count();
+  if (presetCount > 0) {
+    await serverSelect.selectOption(SERVER_URL);
+  } else {
+    await serverSelect.selectOption('custom');
+    await page.locator('#customUrl').fill(SERVER_URL);
+  }
+  await page.locator('#tenantId').fill(TENANT_ID);
+  await page.locator('#username').fill(user.username);
+  await page.locator('#password').fill(user.password);
+  await page.getByRole('button', { name: 'Sign In' }).click();
+  // Checked by id for the same reason as `login()`: the sidebar's role is `navigation` on a wide
+  // viewport and `dialog` on a narrow one.
+  await expect(page.locator('#app-navigation')).toBeVisible({ timeout: 30000 });
+}
+
 export function uniqueSuffix(): string {
   return Date.now().toString(36).slice(-6);
 }

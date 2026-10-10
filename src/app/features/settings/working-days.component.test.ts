@@ -29,6 +29,7 @@ import {
 } from '../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { NotificationService } from '../../core/services/notification.service';
+import { expectLookedUp } from '../../testing/translated-text';
 
 describe('WorkingDaysComponent', () => {
   let component: WorkingDaysComponent;
@@ -94,6 +95,15 @@ describe('WorkingDaysComponent', () => {
     expect(text).toContain('Mon-test');
     expect(text).toContain('Sun-test');
     expect(text).not.toContain('COMMON.MONDAY');
+  });
+
+  it('renders its headings and rules through the translation adapter', () => {
+    expectLookedUp(fixture.nativeElement, [
+      'WORKING_DAYS.TITLE',
+      'WORKING_DAYS.REPAYMENTS_RESCHEDULING_RULE',
+      'WORKING_DAYS.EXTEND_TERM_DAILY_REPAYMENTS',
+      'WORKING_DAYS.EXTEND_TERM_HOLIDAY_REPAYMENTS',
+    ]);
   });
 
   it('should submit a WorkingDaysUpdateRequest on save', () => {

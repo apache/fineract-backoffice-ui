@@ -30,8 +30,8 @@ import {
 } from '../../../api';
 import { Observable, of, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 const SUBMITTED_ON = '2026-06-11';
 
@@ -62,8 +62,9 @@ describe('FixedDepositAccountFormComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [FixedDepositAccountFormComponent, TranslateModule.forRoot()],
+      imports: [FixedDepositAccountFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         { provide: FixedDepositAccountService, useValue: fixedDepositServiceSpy },
         { provide: Router, useValue: routerSpy },

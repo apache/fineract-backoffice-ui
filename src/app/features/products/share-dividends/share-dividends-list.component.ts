@@ -19,12 +19,11 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { formatArrayDate } from '../../../core/utils/date-formatter';
 import { SelfDividendService } from '../../../api';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../../ui/button/button.component';
@@ -50,7 +49,7 @@ interface ShareDividendRow {
   selector: 'app-share-dividends-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -79,9 +78,9 @@ interface ShareDividendRow {
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'COMMON.DELETE' | translate"
+          [label]="'COMMON.DELETE' | appTranslate"
           icon="trash-outline"
-          [appTooltip]="'COMMON.DELETE' | translate"
+          [appTooltip]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(row)"
         />
       </ng-template>

@@ -43,17 +43,13 @@ import {
   IonSpinner,
   IonTextarea,
 } from '@ionic/angular/standalone';
-import { TranslatePipe } from '../../../core/adapters';
 import {
-  CurrencyData,
-  PostTellersTellerIdCashiersCashierIdAllocateRequest,
-  TellerCashManagementService,
-} from '../../../api';
-import {
-  FINERACT_DATE_FORMAT,
-  FINERACT_LOCALE,
-  formatDateToFineract,
-} from '../../../core/utils/date-formatter';
+  CashierCurrency,
+  CashTransactionDraft,
+  TELLER_API,
+  TranslatePipe,
+} from '../../../core/adapters';
+import { toIsoDate } from '../../../core/utils/date-formatter';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
 /**
@@ -124,7 +120,7 @@ export type CashierTransactionCommand = 'allocate' | 'settle';
                     >
                       @for (currency of currencies(); track currency.code) {
                         <ion-select-option [value]="currency.code">
-                          {{ currency.displayLabel || currency.name }}
+                          {{ currency.label }}
                         </ion-select-option>
                       }
                     </ion-select>
@@ -219,7 +215,7 @@ export class CashierTransactionFormComponent {
   /** See `createPickersReady` — the date buttons must not outrun their pickers. */
   readonly pickersReady = createPickersReady();
 
-  private readonly tellerService = inject(TellerCashManagementService);
+  private readonly tellerApi = inject(TELLER_API);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -228,7 +224,7 @@ export class CashierTransactionFormComponent {
   private readonly command = signal<CashierTransactionCommand>('allocate');
 
   readonly isSaving = signal(false);
-  readonly currencies = signal<CurrencyData[]>([]);
+  readonly currencies = signal<CashierCurrency[]>([]);
   readonly cashierName = signal('');
   readonly tellerName = signal('');
 
@@ -261,20 +257,18 @@ export class CashierTransactionFormComponent {
    * keeps the dropdown from offering a choice the submit would refuse.
    */
   private loadTemplate(): void {
-    this.tellerService
-      .getTellersTellerIdCashiersCashierIdTransactionsTemplate(this.tellerId(), this.cashierId())
-      .subscribe({
-        next: (template) => {
-          const options = template.currencyOptions ?? [];
-          this.currencies.set(options);
-          this.cashierName.set(template.cashierName ?? '');
-          this.tellerName.set(template.tellerName ?? '');
-          // Preselect when there is no decision to make. Leaving a single-option dropdown empty
-          // makes the form invalid for a field the user cannot meaningfully change.
-          if (options.length === 1) this.currencyCode = options[0].code ?? '';
-        },
-        error: () => this.currencies.set([]),
-      });
+    this.tellerApi.cashierTransactionTemplate(this.tellerId(), this.cashierId()).subscribe({
+      next: (template) => {
+        const options = template.currencies;
+        this.currencies.set(options);
+        this.cashierName.set(template.cashierName);
+        this.tellerName.set(template.tellerName);
+        // Preselect when there is no decision to make. Leaving a single-option dropdown empty
+        // makes the form invalid for a field the user cannot meaningfully change.
+        if (options.length === 1) this.currencyCode = options[0].code;
+      },
+      error: () => this.currencies.set([]),
+    });
   }
 
   onDateChange(event: CustomEvent): void {
@@ -285,30 +279,19 @@ export class CashierTransactionFormComponent {
   onSubmit(): void {
     this.isSaving.set(true);
 
-    // `formatDateToFineract` zero-pads the day to match FINERACT_DATE_FORMAT's `dd`. Fineract
-    // parses strictly against the declared format, so an unpadded day fails to parse and the
-    // request comes back 500 rather than as a validation message.
-    const payload: PostTellersTellerIdCashiersCashierIdAllocateRequest = {
+    // The contract owns the wire format: Fineract parses `txnDate` strictly against the padded
+    // `dd` in its own format, so the date is only ever sent as the adapter writes it.
+    const draft: CashTransactionDraft = {
       currencyCode: this.currencyCode,
-      txnAmount: Number(this.txnAmount),
-      txnDate: formatDateToFineract(this.txnDate),
-      txnNote: this.txnNote,
-      dateFormat: FINERACT_DATE_FORMAT,
-      locale: FINERACT_LOCALE,
+      amount: Number(this.txnAmount),
+      date: toIsoDate(this.txnDate),
+      note: this.txnNote,
     };
 
     const request =
       this.command() === 'settle'
-        ? this.tellerService.postTellersTellerIdCashiersCashierIdSettle(
-            this.tellerId(),
-            this.cashierId(),
-            payload,
-          )
-        : this.tellerService.postTellersTellerIdCashiersCashierIdAllocate(
-            this.tellerId(),
-            this.cashierId(),
-            payload,
-          );
+        ? this.tellerApi.settleCash(this.tellerId(), this.cashierId(), draft)
+        : this.tellerApi.allocateCash(this.tellerId(), this.cashierId(), draft);
 
     request.subscribe({
       next: () => this.navigateToTransactions(),

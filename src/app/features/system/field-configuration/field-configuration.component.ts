@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ColumnDef } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { EntityFieldConfigurationService, FieldConfigurationData } from '../../../api';
@@ -41,7 +41,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     IonItem,
     IonLabel,
@@ -55,9 +55,9 @@ import {
       <ion-card>
         <ion-card-content>
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'FIELD_CONFIG.ENTITY' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'FIELD_CONFIG.ENTITY' | appTranslate }}</ion-label>
             <ion-select
-              [attr.aria-label]="'FIELD_CONFIG.ENTITY' | translate"
+              [attr.aria-label]="'FIELD_CONFIG.ENTITY' | appTranslate"
               interface="popover"
               [(ngModel)]="entity"
               (ngModelChange)="load()"

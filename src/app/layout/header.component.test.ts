@@ -37,6 +37,7 @@ describe('HeaderComponent', () => {
   let navigationConfigSpy: SpyObj<NavigationConfigService>;
   let routerSpy: SpyObj<Router>;
   let isMobile: WritableSignal<boolean>;
+  let businessDates: { type: string; date: number[] }[];
 
   beforeEach(async () => {
     authServiceSpy = Object.assign(createSpyObj<AuthService>(['logout']), {
@@ -57,6 +58,7 @@ describe('HeaderComponent', () => {
     // either side of the breakpoint. Pinning the value keeps these assertions independent of
     // the test environment's viewport.
     isMobile = signal(false);
+    businessDates = [];
 
     await TestBed.configureTestingModule({
       imports: [HeaderComponent],
@@ -64,7 +66,10 @@ describe('HeaderComponent', () => {
         ...provideTranslateTesting(),
         { provide: AuthService, useValue: authServiceSpy },
         { provide: NavigationConfigService, useValue: navigationConfigSpy },
-        { provide: BusinessDateManagementService, useValue: { getBusinessdate: () => of([]) } },
+        {
+          provide: BusinessDateManagementService,
+          useValue: { getBusinessdate: () => of(businessDates) },
+        },
         { provide: Router, useValue: routerSpy },
         { provide: ViewportService, useValue: { isMobile } },
       ],
@@ -77,6 +82,23 @@ describe('HeaderComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('leaves out the business date chip when the instance has no business date', () => {
+    // GET /businessdate answers [] when the feature is not configured.
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).not.toContain('COMMON.BUSINESS_DATE');
+    expect(compiled.textContent).toContain('COMMON.RENDER_TIME');
+  });
+
+  it('shows the business date when the instance has one', () => {
+    businessDates = [{ type: 'BUSINESS_DATE', date: [2026, 10, 2] }];
+    fixture = TestBed.createComponent(HeaderComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('COMMON.BUSINESS_DATE');
+    expect(compiled.textContent).toContain(new Date(2026, 9, 2).toLocaleDateString());
   });
 
   it('should display username and office', () => {
@@ -104,9 +126,8 @@ describe('HeaderComponent', () => {
   });
 
   it('should switch language', () => {
-    const translate = (component as unknown as { translate: { use(language: string): unknown } })
-      .translate;
-    const useSpy = vi.spyOn(translate, 'use');
+    const i18n = (component as unknown as { i18n: { use(language: string): unknown } }).i18n;
+    const useSpy = vi.spyOn(i18n, 'use');
     component.switchLanguage('hi');
     expect(useSpy).toHaveBeenCalledWith('hi');
   });

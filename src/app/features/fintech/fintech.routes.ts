@@ -22,11 +22,13 @@ import { Routes } from '@angular/router';
 export const FINTECH_ROUTES: Routes = [
   {
     path: 'asset-owners',
+    title: 'nav.assetOwners',
     loadComponent: () =>
       import('./asset-owners-list.component').then((m) => m.ExternalAssetOwnersListComponent),
   },
   {
     path: 'asset-owners/view/:id',
+    title: 'ASSET_OWNERS.DETAILS',
     loadComponent: () =>
       import('./asset-owner-view/asset-owner-view.component').then(
         (m) => m.AssetOwnerViewComponent,

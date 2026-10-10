@@ -19,11 +19,10 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClientCollateralManagementService, ClientCollateralManagementData } from '../../../api';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../../ui/button/button.component';
@@ -36,7 +35,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-client-collateral-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -51,26 +50,28 @@ import { ButtonComponent } from '../../../ui/button/button.component';
       [columns]="columns"
       [data]="collaterals()"
       [totalRecords]="collaterals().length"
+      [hasError]="hasError()"
       [localLogic]="true"
       (create)="onCreate()"
+      (retry)="onRetry()"
     >
       <ng-template appCellTemplate="actions" let-row>
         <app-button
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         />
         <app-button
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'COMMON.DELETE' | translate"
+          [label]="'COMMON.DELETE' | appTranslate"
           icon="trash-outline"
-          [appTooltip]="'COMMON.DELETE' | translate"
+          [appTooltip]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(row)"
         />
       </ng-template>
@@ -94,6 +95,7 @@ export class ClientCollateralListComponent implements OnInit {
 
   clientId!: number;
   readonly collaterals = signal<ClientCollateralManagementData[]>([]);
+  readonly hasError = signal(false);
 
   ngOnInit(): void {
     this.clientId = Number(this.route.snapshot.paramMap.get('clientId'));
@@ -104,11 +106,17 @@ export class ClientCollateralListComponent implements OnInit {
     this.collateralService.getClientsClientIdCollaterals(this.clientId).subscribe({
       next: (data: ClientCollateralManagementData[]) => {
         this.collaterals.set(data || []);
+        this.hasError.set(false);
       },
       error: (err: unknown) => {
         console.error('Failed to load client collaterals', err);
+        this.hasError.set(true);
       },
     });
+  }
+
+  onRetry(): void {
+    this.load();
   }
 
   onCreate(): void {

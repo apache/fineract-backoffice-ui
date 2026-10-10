@@ -23,6 +23,7 @@ import { AuditLogsListComponent } from './audit-logs-list.component';
 import { AuditsService } from '../../../api';
 import { of, Observable } from 'rxjs';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
+import { expectLookedUp } from '../../../testing/translated-text';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { PageEvent, SortEvent } from '../../../shared/models/table.model';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
@@ -92,6 +93,19 @@ describe('AuditLogsListComponent', () => {
     expect(auditsServiceSpy.getAudits).toHaveBeenCalled();
     expect(component.auditLogs()).toHaveLength(1);
     expect(component.auditLogs()[0]['entityName']).toBe('Client');
+  });
+
+  it('renders the filter labels through the translation adapter', () => {
+    fixture.detectChanges();
+    expectLookedUp(fixture.nativeElement, [
+      'SECURITY.ACTION_NAME',
+      'SECURITY.ENTITY_NAME',
+      'SECURITY.RESOURCE_ID',
+      'SECURITY.MAKER_ID',
+      'SECURITY.MAKER_DATE_FROM',
+      'SECURITY.MAKER_DATE_TO',
+      'SECURITY.PROCESSING_RESULT',
+    ]);
   });
 
   it('should handle apply and reset filters', () => {

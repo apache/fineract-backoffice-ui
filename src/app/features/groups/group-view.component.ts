@@ -17,7 +17,17 @@
  * under the License.
  */
 
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  computed,
+  inject,
+  signal,
+  viewChildren,
+} from '@angular/core';
+
+import { createPermissionCheck } from '../../shared/utils/permission-check';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -352,7 +362,11 @@ export type GroupTab = (typeof GROUP_TAB)[keyof typeof GROUP_TAB];
                 [localLogic]="true"
               >
                 <ng-template appCellTemplate="displayName" let-row>
-                  <a [routerLink]="['/clients/view', row.id]">{{ row.displayName }}</a>
+                  @if (canViewClient()) {
+                    <a [routerLink]="['/clients/view', row.id]">{{ row.displayName }}</a>
+                  } @else {
+                    {{ row.displayName }}
+                  }
                 </ng-template>
                 <ng-template appCellTemplate="status" let-row>
                   <app-status-badge [status]="row.status"></app-status-badge>
@@ -506,7 +520,8 @@ export type GroupTab = (typeof GROUP_TAB)[keyof typeof GROUP_TAB];
     `,
   ],
 })
-export class GroupViewComponent implements OnInit {
+export class GroupViewComponent implements OnInit, OnDestroy {
+  private readonly popovers = viewChildren(IonPopover);
   private readonly groupsService = inject(GroupsService);
   private readonly httpClient = inject(HttpClient);
   private readonly basePath = inject(BASE_PATH);
@@ -533,6 +548,13 @@ export class GroupViewComponent implements OnInit {
    * officer would use to chase them, and makes the member count disagree with what the platform
    * will let you disassociate.
    */
+  /**
+   * A group's members come back with READ_GROUP alone, but the client screen is gated on
+   * READ_CLIENT, so a reader without it was offered a name whose only destination was
+   * `/forbidden`. The member is still named — the membership is what this tab is for.
+   */
+  protected readonly canViewClient = createPermissionCheck('READ_CLIENT');
+
   readonly members = computed<GroupClientMember[]>(() => this.group()?.clientMembers ?? []);
   readonly roles = computed<GroupRoleAssignment[]>(() => this.group()?.groupRoles ?? []);
 
@@ -556,6 +578,12 @@ export class GroupViewComponent implements OnInit {
   ngOnInit(): void {
     this.groupId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadGroup();
+  }
+
+  ngOnDestroy(): void {
+    for (const popover of this.popovers()) {
+      void popover.dismiss().catch(() => false);
+    }
   }
 
   /**

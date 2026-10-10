@@ -207,4 +207,25 @@ describe('GroupViewComponent', () => {
     expect(component.isActive()).toBe(false);
     expect(component.isClosed()).toBe(false);
   });
+
+  describe('teardown', () => {
+    it('dismisses popovers when destroyed', () => {
+      flushGroup();
+
+      const withPopovers = component as unknown as {
+        popovers: () => readonly { dismiss: () => Promise<boolean> }[];
+      };
+      const popovers = withPopovers.popovers();
+      expect(popovers.length).toBeGreaterThan(0);
+      const dismissSpies = popovers.map((popover) =>
+        vi.spyOn(popover, 'dismiss').mockResolvedValue(true),
+      );
+
+      fixture.destroy();
+
+      for (const spy of dismissSpies) {
+        expect(spy).toHaveBeenCalled();
+      }
+    });
+  });
 });

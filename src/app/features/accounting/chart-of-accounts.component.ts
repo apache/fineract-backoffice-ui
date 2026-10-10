@@ -17,8 +17,8 @@
  * under the License.
  */
 
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { of } from 'rxjs';
@@ -31,17 +31,11 @@ import { ButtonComponent } from '../../ui/button/button.component';
 @Component({
   selector: 'app-chart-of-accounts',
   standalone: true,
-  imports: [
-    TranslateModule,
-    DataTableComponent,
-    CellTemplateDirective,
-    TranslatePipe,
-    NgClass,
-    ButtonComponent,
-  ],
+  imports: [DataTableComponent, CellTemplateDirective, TranslatePipe, NgClass, ButtonComponent],
   template: `
     <app-data-table
       [hasError]="hasError()"
+      [errorStatus]="errorStatus()"
       (retry)="onRetry()"
       title="nav.chartOfAccounts"
       helpTextKey="HELP.CHART_OF_ACCOUNTS_DESC"
@@ -104,6 +98,12 @@ import { ButtonComponent } from '../../ui/button/button.component';
 export class ChartOfAccountsComponent {
   /** True when the last load failed, so the table offers a retry instead of an empty list. */
   readonly hasError = signal(false);
+  /**
+   * The status that failure came back with, so the table can tell a refused read from a broken
+   * one. READ_GLACCOUNT is a permission a role may simply not hold, and "try again" is the wrong
+   * thing to offer someone whose next attempt will be refused in exactly the same way.
+   */
+  readonly errorStatus = signal<number | null>(null);
 
   private readonly glAccountService = inject(GeneralLedgerAccountService);
   private readonly router = inject(Router);
@@ -131,9 +131,13 @@ export class ChartOfAccountsComponent {
       .getGlaccounts()
       .pipe(
         startWith([]),
-        tap(() => this.hasError.set(false)),
-        catchError(() => {
+        tap(() => {
+          this.hasError.set(false);
+          this.errorStatus.set(null);
+        }),
+        catchError((error: HttpErrorResponse) => {
           this.hasError.set(true);
+          this.errorStatus.set(error.status);
           return of([]);
         }),
       )

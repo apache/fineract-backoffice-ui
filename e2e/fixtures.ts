@@ -31,15 +31,43 @@
  * Asserting on rendered output cannot catch it in general — an empty table and a broken
  * table look identical — so the console is the signal.
  *
- * Reports by default; fails only under ENFORCE_CD_ERRORS=1. The interval check samples at
- * arbitrary moments, so it also catches states that are briefly inconsistent and then settle —
- * reactive form validity is the one still outstanding, where `[attr.aria-invalid]` reads a
- * control whose status changed without a change-detection pass. Those surface on the sign-in
- * every test performs in beforeEach and land on whichever test happened to be running, so
- * enforcing today costs between zero and seventeen unrelated failures depending on timing.
+ * Reports by default; fails only under ENFORCE_CD_ERRORS=1.
+ *
+ * ## The control-status shape (resolved — see issue #572)
+ *
+ * One recurring NG0100 shape names `ng-untouched`/`ng-touched`/`ng-pristine`/`ng-dirty`/
+ * `ng-valid`/`ng-invalid`/`ng-pending` at `NgControlStatus_HostBindings` or
+ * `NgControlStatusGroup_HostBindings`. It is **not** specific to reactive forms as previously
+ * guessed here — `NgControlStatus`'s selector (`[formControlName],[ngModel],[formControl]`)
+ * attaches to template-driven controls too, which is why `gl-account-form` (`[(ngModel)]`,
+ * `FormsModule` only) reports it.
+ *
+ * It is a sampling artifact of `interval`, not a component defect. `exhaustiveCheckNoChanges-
+ * Interval` (`@angular/core`) schedules its sweep with `ngZone.runOutsideAngular(() =>
+ * setTimeout(...))`, entirely decoupled from the zone-driven render scheduler apart from a
+ * best-effort `scheduler.pendingRenderTaskId || scheduler.runningTick` guard. A control's
+ * touched/dirty flag can flip synchronously inside an event handler slightly before the
+ * scheduler has registered the pending render task that will reconcile it, and if the interval's
+ * timer lands in that window it diffs a live getter against a stale render. The *ordinary*
+ * checkNoChanges pass that Angular always pairs with `detectChanges()` inside one tick
+ * (`ApplicationRef.tickImpl`, unconditional in dev mode, no `interval` involved) cannot observe
+ * this: there is no time gap within a single tick for the value to drift. Only this separate,
+ * zone-decoupled sweep can — confirmed by reading both call sites in
+ * `node_modules/@angular/core/fesm2022/core.mjs` and `_debug_node-chunk.mjs`, and by failing to
+ * reproduce it deterministically even under 40 rapid fill/select cycles against `gl-account-form`
+ * (`e2e/_repro-572.spec.ts`, not committed). The original report's bad URL attribution (the
+ * fixture printed the test's *final* `page.url()`, not the URL active when each error fired)
+ * reinforces this: `_GLAccountFormComponent` and `_FinancialActivityMappingFormComponent` were
+ * reported under a `/tellers/…` URL because `teller-cash-management.spec.ts` visits both forms
+ * earlier in one long journey and only lands on that URL at the point the fixture flushed.
+ *
+ * Excluded from `ENFORCE_CD_ERRORS` below accordingly (`CONTROL_STATUS_ARTIFACT`), but still
+ * reported — narrowing what counts as a failure, not what gets printed, is what makes enforcing
+ * the other shape viable.
  *
  * The value is in the reporting: this is what identified the six empty-dropdown components,
- * all now fixed. Flip the default once the remaining sources are gone.
+ * all now fixed. Flipping the default also needs the two-way-binding shape from the companion
+ * issue fixed (out of scope here); this file only removes the control-status shape as a blocker.
  */
 
 import { test as base, expect } from '@playwright/test';
@@ -53,6 +81,26 @@ import { test as base, expect } from '@playwright/test';
  * excluded on purpose: this app has no SSR.
  */
 const CHANGE_DETECTION_ERROR_CODES = ['NG0100'];
+
+/**
+ * `NgControlStatus`/`NgControlStatusGroup`'s host-binding class names (`@angular/forms`,
+ * `forms.mjs`). An NG0100 naming one of these is the interval-sampling artifact described in
+ * the comment block above, not an application defect — see there for how that was established.
+ * Reserved Angular-forms names, so matching on the exact propName cannot collide with an
+ * application template binding.
+ */
+const CONTROL_STATUS_PROPS = [
+  'ng-untouched',
+  'ng-touched',
+  'ng-pristine',
+  'ng-dirty',
+  'ng-valid',
+  'ng-invalid',
+  'ng-pending',
+];
+const CONTROL_STATUS_ARTIFACT = new RegExp(
+  `Previous value for '(${CONTROL_STATUS_PROPS.join('|')})'`,
+);
 
 const ENFORCE = process.env.ENFORCE_CD_ERRORS === '1';
 
@@ -85,9 +133,12 @@ function componentOf(message: string): string {
   return /Expression location: (\w+) component/.exec(message)?.[1] ?? '<unattributed>';
 }
 
+/** An NG0100 as observed, tagged with the URL active at the moment it fired. */
+type ChangeDetectionError = { text: string; url: string };
+
 type ChangeDetectionFixtures = {
   /** Change-detection errors seen on the page during this test. */
-  changeDetectionErrors: string[];
+  changeDetectionErrors: ChangeDetectionError[];
   /** Auto-fixture: records the errors above, then asserts none were seen. */
   failOnChangeDetectionErrors: void;
   /** Translation keys that resolved to nothing while this test ran. */
@@ -105,7 +156,10 @@ export const test = base.extend<ChangeDetectionFixtures>({
     async ({ page, changeDetectionErrors }, use) => {
       const record = (text: string) => {
         if (CHANGE_DETECTION_ERROR_CODES.some((code) => text.includes(code))) {
-          changeDetectionErrors.push(text);
+          // Tagged with page.url() as it fires, not read once when the fixture flushes below —
+          // a multi-page journey test would otherwise blame every error on wherever it ended up.
+          // See the comment block at the top of this file; this is the issue #572 fix.
+          changeDetectionErrors.push({ text, url: page.url() });
         }
       };
 
@@ -126,15 +180,39 @@ export const test = base.extend<ChangeDetectionFixtures>({
         return;
       }
 
-      // Repeats of one broken binding are the norm once the interval check is running,
-      // so work from distinct messages rather than several hundred copies.
-      const distinct = [...new Set(changeDetectionErrors)];
-      const components = [...new Set(distinct.map(componentOf))];
-      const summary = distinct.map((message) => `  - ${message}`).join('\n');
+      // Repeats of one broken binding are the norm once the interval check is running, so work
+      // from distinct (url, text) pairs rather than several hundred copies.
+      const seen = new Set<string>();
+      const distinct = changeDetectionErrors.filter((error) => {
+        const key = `${error.url}\n${error.text}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      const describe = (errors: ChangeDetectionError[]) =>
+        errors.map((error) => `  - [${error.url}] ${error.text}`).join('\n');
+
+      // The control-status shape is a verified sampling artifact (see top-of-file comment), not
+      // a defect — reported for visibility but never part of what ENFORCE_CD_ERRORS checks.
+      const artifacts = distinct.filter((error) => CONTROL_STATUS_ARTIFACT.test(error.text));
+      const enforceable = distinct.filter((error) => !CONTROL_STATUS_ARTIFACT.test(error.text));
+
+      if (artifacts.length > 0) {
+        console.warn(
+          `[change-detection] known interval-sampling artifact (issue #572), not enforced:\n` +
+            describe(artifacts),
+        );
+      }
+
+      if (enforceable.length === 0) {
+        return;
+      }
+
+      const components = [...new Set(enforceable.map((error) => componentOf(error.text)))];
 
       if (!ENFORCE) {
         console.warn(
-          `[change-detection] ${components.join(', ')} on ${page.url()}\n${summary}\n` +
+          `[change-detection] ${components.join(', ')}\n${describe(enforceable)}\n` +
             'A field assigned from a subscribe callback is the usual cause; ' +
             'scripts/audit-async-state.mjs lists them, scripts/codemod-signals.mjs converts them.',
         );
@@ -143,8 +221,7 @@ export const test = base.extend<ChangeDetectionFixtures>({
 
       expect(
         components,
-        `${components.join(', ')} changed state without notifying Angular (${page.url()}).\n` +
-          summary,
+        `${components.join(', ')} changed state without notifying Angular.\n${describe(enforceable)}`,
       ).toEqual([]);
     },
     { auto: true },

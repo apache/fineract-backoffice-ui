@@ -19,7 +19,7 @@
 import { Component, OnInit, computed, signal, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../core/adapters';
 import {
   GetPasswordPreferencesTemplateResponse,
   GetUsersUserIdResponse,
@@ -27,7 +27,6 @@ import {
   RoleData,
   UsersService,
 } from '../../api';
-import { I18N } from '../../core/adapters';
 import { skipErrorToast } from '../../core/http/http-context';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -50,7 +49,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonSpinner,
     IonIcon,
     IonButton,
@@ -67,7 +66,7 @@ import {
     <div class="profile-container">
       <ion-card class="profile-card">
         <ion-card-header>
-          <ion-card-title>{{ 'PROFILE.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'PROFILE.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -78,22 +77,22 @@ import {
           } @else if (loadError()) {
             <div class="load-error" role="alert" data-testid="profile-load-error">
               <ion-icon name="alert-circle-outline"></ion-icon>
-              <span>{{ 'PROFILE.LOAD_ERROR' | translate }}</span>
+              <span>{{ 'PROFILE.LOAD_ERROR' | appTranslate }}</span>
             </div>
           }
 
           @if (!isLoading() && userDetails()) {
             <div>
               <div class="detail-row">
-                <span class="label">{{ 'PROFILE.USERNAME' | translate }}</span>
+                <span class="label">{{ 'PROFILE.USERNAME' | appTranslate }}</span>
                 <span class="value">{{ username }}</span>
               </div>
               <div class="detail-row">
-                <span class="label">{{ 'PROFILE.DISPLAY_NAME' | translate }}</span>
+                <span class="label">{{ 'PROFILE.DISPLAY_NAME' | appTranslate }}</span>
                 <span class="value">{{ displayName }}</span>
               </div>
               <div class="detail-row">
-                <span class="label">{{ 'PROFILE.OFFICE' | translate }}</span>
+                <span class="label">{{ 'PROFILE.OFFICE' | appTranslate }}</span>
                 <span class="value">
                   {{ officeName }}
                   @if (officeId) {
@@ -102,11 +101,11 @@ import {
                 </span>
               </div>
               <div class="detail-row">
-                <span class="label">{{ 'PROFILE.EMAIL' | translate }}</span>
+                <span class="label">{{ 'PROFILE.EMAIL' | appTranslate }}</span>
                 <span class="value">{{ email }}</span>
               </div>
               <div class="detail-row roles-row">
-                <span class="label">{{ 'PROFILE.ROLES' | translate }}</span>
+                <span class="label">{{ 'PROFILE.ROLES' | appTranslate }}</span>
                 <div class="roles-chips">
                   @for (role of roles; track role) {
                     <ion-chip>
@@ -126,7 +125,7 @@ import {
                   (click)="toggleChangePassword()"
                 >
                   <ion-icon name="key-outline" slot="start"></ion-icon>
-                  {{ 'PROFILE.CHANGE_PASSWORD' | translate }}
+                  {{ 'PROFILE.CHANGE_PASSWORD' | appTranslate }}
                 </ion-button>
               </div>
 
@@ -134,10 +133,10 @@ import {
                 <form class="password-form" (ngSubmit)="onChangePassword()" novalidate>
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'PROFILE.NEW_PASSWORD' | translate
+                      'PROFILE.NEW_PASSWORD' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PROFILE.NEW_PASSWORD' | translate"
+                      [attr.aria-label]="'PROFILE.NEW_PASSWORD' | appTranslate"
                       type="password"
                       name="newPassword"
                       autocomplete="new-password"
@@ -150,10 +149,10 @@ import {
 
                   <ion-item fill="outline">
                     <ion-label position="stacked">{{
-                      'PROFILE.REPEAT_NEW_PASSWORD' | translate
+                      'PROFILE.REPEAT_NEW_PASSWORD' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PROFILE.REPEAT_NEW_PASSWORD' | translate"
+                      [attr.aria-label]="'PROFILE.REPEAT_NEW_PASSWORD' | appTranslate"
                       type="password"
                       name="repeatPassword"
                       autocomplete="new-password"
@@ -166,13 +165,13 @@ import {
 
                   @if (passwordsMismatch()) {
                     <p class="password-error" role="alert" data-testid="profile-password-mismatch">
-                      {{ 'PROFILE.PASSWORDS_DO_NOT_MATCH' | translate }}
+                      {{ 'PROFILE.PASSWORDS_DO_NOT_MATCH' | appTranslate }}
                     </p>
                   }
 
                   @if (passwordPolicyDescription(); as description) {
                     <p class="password-policy" data-testid="profile-password-policy">
-                      {{ 'PROFILE.PASSWORD_POLICY' | translate }}: {{ description }}
+                      {{ 'PROFILE.PASSWORD_POLICY' | appTranslate }}: {{ description }}
                     </p>
                   }
 
@@ -183,7 +182,7 @@ import {
                       type="button"
                       (click)="cancelChangePassword()"
                     >
-                      {{ 'COMMON.CANCEL' | translate }}
+                      {{ 'COMMON.CANCEL' | appTranslate }}
                     </ion-button>
                     <ion-button
                       color="primary"
@@ -193,9 +192,9 @@ import {
                     >
                       @if (isChangingPassword()) {
                         <ion-spinner name="crescent" slot="start"></ion-spinner>
-                        {{ 'COMMON.SAVING' | translate }}
+                        {{ 'COMMON.SAVING' | appTranslate }}
                       } @else {
-                        {{ 'COMMON.SAVE' | translate }}
+                        {{ 'COMMON.SAVE' | appTranslate }}
                       }
                     </ion-button>
                   </div>

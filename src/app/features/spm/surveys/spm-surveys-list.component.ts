@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { SpmSurveysService, SurveyData } from '../../../api';
@@ -35,7 +35,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-spm-surveys-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -58,18 +58,18 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'SCORECARDS.VIEW' | translate"
+          [label]="'SCORECARDS.VIEW' | appTranslate"
           icon="bar-chart-outline"
-          [appTooltip]="'SCORECARDS.VIEW' | translate"
+          [appTooltip]="'SCORECARDS.VIEW' | appTranslate"
           (click)="onScorecards(row)"
         />
         <app-button
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         />
       </ng-template>

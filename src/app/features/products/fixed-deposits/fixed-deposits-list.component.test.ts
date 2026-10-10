@@ -24,8 +24,8 @@ import { FixedDepositAccountsListComponent } from './fixed-deposits-list.compone
 import { FixedDepositAccountService, GetFixedDepositAccountsResponse } from '../../../api';
 import { of, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('FixedDepositAccountsListComponent', () => {
   let component: FixedDepositAccountsListComponent;
@@ -38,8 +38,9 @@ describe('FixedDepositAccountsListComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [FixedDepositAccountsListComponent, TranslateModule.forRoot()],
+      imports: [FixedDepositAccountsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         { provide: FixedDepositAccountService, useValue: fixedDepositServiceSpy },
         { provide: Router, useValue: routerSpy },

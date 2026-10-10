@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { FINERACT_LOCALE } from '../../../core/utils/date-formatter';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import {
@@ -58,7 +58,7 @@ import { LoanSummary } from '../loan-summary.model';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -81,15 +81,15 @@ import { LoanSummary } from '../loan-summary.model';
           <ion-card-title>
             {{
               isEditMode()
-                ? ('LOANS.EDIT_COLLATERAL' | translate)
-                : ('LOANS.ADD_COLLATERAL' | translate)
+                ? ('LOANS.EDIT_COLLATERAL' | appTranslate)
+                : ('LOANS.ADD_COLLATERAL' | appTranslate)
             }}
           </ion-card-title>
           @if (loanSummary(); as summary) {
             <ion-card-subtitle>
-              {{ 'LOANS.ACCOUNT_NO' | translate }}: {{ summary.accountNo }} &middot;
-              {{ 'COMMON.CLIENT' | translate }}: {{ summary.clientName }} &middot;
-              {{ 'LOANS.PRODUCT_NAME' | translate }}: {{ summary.loanProductName }}
+              {{ 'LOANS.ACCOUNT_NO' | appTranslate }}: {{ summary.accountNo }} &middot;
+              {{ 'COMMON.CLIENT' | appTranslate }}: {{ summary.clientName }} &middot;
+              {{ 'LOANS.PRODUCT_NAME' | appTranslate }}: {{ summary.loanProductName }}
             </ion-card-subtitle>
           }
         </ion-card-header>
@@ -98,10 +98,10 @@ import { LoanSummary } from '../loan-summary.model';
           <form #collateralForm="ngForm" (ngSubmit)="onSubmit()" class="collateral-form">
             <div class="form-grid">
               <!-- Collateral Type -->
-              <ion-item fill="outline" [appTooltip]="'HELP.COLLATERAL_TYPE_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.TYPE' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.COLLATERAL_TYPE_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'COMMON.TYPE' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'COMMON.TYPE' | translate"
+                  [attr.aria-label]="'COMMON.TYPE' | appTranslate"
                   interface="popover"
                   name="collateralTypeId"
                   [ngModel]="selectedCollateralTypeId()"
@@ -116,10 +116,10 @@ import { LoanSummary } from '../loan-summary.model';
               </ion-item>
 
               <!-- Value -->
-              <ion-item fill="outline" [appTooltip]="'HELP.COLLATERAL_VALUE_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.VALUE' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.COLLATERAL_VALUE_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'COMMON.VALUE' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.VALUE' | translate"
+                  [attr.aria-label]="'COMMON.VALUE' | appTranslate"
                   type="number"
                   name="value"
                   [ngModel]="collateralValue()"
@@ -132,11 +132,11 @@ import { LoanSummary } from '../loan-summary.model';
               <ion-item
                 fill="outline"
                 class="full-width"
-                [appTooltip]="'HELP.COLLATERAL_DESC' | translate"
+                [appTooltip]="'HELP.COLLATERAL_DESC' | appTranslate"
               >
-                <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | appTranslate }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'COMMON.DESCRIPTION' | translate"
+                  [attr.aria-label]="'COMMON.DESCRIPTION' | appTranslate"
                   name="description"
                   [ngModel]="collateralDescription()"
                   (ngModelChange)="collateralDescription.set($event)"
@@ -147,7 +147,7 @@ import { LoanSummary } from '../loan-summary.model';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -156,9 +156,9 @@ import { LoanSummary } from '../loan-summary.model';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

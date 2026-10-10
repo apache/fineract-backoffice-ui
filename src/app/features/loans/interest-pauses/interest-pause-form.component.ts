@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   LoanInterestPauseService,
   InterestPauseRequestDto,
@@ -70,7 +70,7 @@ function toRouteId(value: string | null): number | null {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -88,72 +88,85 @@ function toRouteId(value: string | null): number | null {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ (isEditMode() ? 'INTEREST_PAUSES.EDIT' : 'INTEREST_PAUSES.CREATE') | translate }}
+            {{ (isEditMode() ? 'INTEREST_PAUSES.EDIT' : 'INTEREST_PAUSES.CREATE') | appTranslate }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
-          <form #pauseForm="ngForm" (ngSubmit)="onSubmit()" class="pause-form">
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{
-                'INTEREST_PAUSES.START_DATE' | translate
-              }}</ion-label>
-              @if (pickersReady()) {
-                <ion-datetime-button datetime="startDate-picker"></ion-datetime-button>
-              }
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime
-                    id="startDate-picker"
-                    data-testid="startDate-picker"
-                    presentation="date"
-                    name="startDate"
-                    [ngModel]="startDate()"
-                    (ngModelChange)="startDate.set($event)"
-                    required
-                  ></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </ion-item>
-
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'INTEREST_PAUSES.END_DATE' | translate }}</ion-label>
-              @if (pickersReady()) {
-                <ion-datetime-button datetime="endDate-picker"></ion-datetime-button>
-              }
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime
-                    id="endDate-picker"
-                    data-testid="endDate-picker"
-                    presentation="date"
-                    name="endDate"
-                    [ngModel]="endDate()"
-                    (ngModelChange)="endDate.set($event)"
-                    required
-                  ></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </ion-item>
-
-            <div class="form-actions">
-              <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
-              </ion-button>
-              <ion-button
-                color="primary"
-                type="submit"
-                [disabled]="pauseForm.invalid || isSaving()"
-              >
-                @if (isSaving()) {
-                  <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
-                } @else {
-                  {{ 'COMMON.SAVE' | translate }}
-                }
-              </ion-button>
+          @if (isLoading()) {
+            <div class="loading-container">
+              <ion-spinner name="crescent"></ion-spinner>
             </div>
-          </form>
+          } @else {
+            <form #pauseForm="ngForm" (ngSubmit)="onSubmit()" class="pause-form">
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'INTEREST_PAUSES.START_DATE' | appTranslate
+                }}</ion-label>
+                @if (pickersReady()) {
+                  <ion-datetime-button datetime="startDate-picker"></ion-datetime-button>
+                }
+                <ion-modal [keepContentsMounted]="true">
+                  <ng-template>
+                    <ion-datetime
+                      id="startDate-picker"
+                      data-testid="startDate-picker"
+                      presentation="date"
+                      name="startDate"
+                      [ngModel]="startDate()"
+                      (ngModelChange)="startDate.set($event)"
+                      required
+                    ></ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'INTEREST_PAUSES.END_DATE' | appTranslate
+                }}</ion-label>
+                @if (pickersReady()) {
+                  <ion-datetime-button datetime="endDate-picker"></ion-datetime-button>
+                }
+                <ion-modal [keepContentsMounted]="true">
+                  <ng-template>
+                    <ion-datetime
+                      id="endDate-picker"
+                      data-testid="endDate-picker"
+                      presentation="date"
+                      name="endDate"
+                      [ngModel]="endDate()"
+                      (ngModelChange)="endDate.set($event)"
+                      required
+                    ></ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+
+              <div class="form-actions">
+                <ion-button
+                  fill="clear"
+                  type="button"
+                  (click)="onCancel()"
+                  [disabled]="isSaving() || isLoading()"
+                >
+                  {{ 'COMMON.CANCEL' | appTranslate }}
+                </ion-button>
+                <ion-button
+                  color="primary"
+                  type="submit"
+                  [disabled]="pauseForm.invalid || isSaving() || isLoading()"
+                >
+                  @if (isSaving()) {
+                    <ion-spinner name="crescent"></ion-spinner>
+                    {{ 'COMMON.SAVING' | appTranslate }}
+                  } @else {
+                    {{ 'COMMON.SAVE' | appTranslate }}
+                  }
+                </ion-button>
+              </div>
+            </form>
+          }
         </ion-card-content>
       </ion-card>
     </div>
@@ -164,6 +177,12 @@ function toRouteId(value: string | null): number | null {
         padding: 24px;
         max-width: 600px;
         margin: 0 auto;
+      }
+      .loading-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 48px;
       }
       .pause-form {
         display: flex;
@@ -185,6 +204,7 @@ export class InterestPauseFormComponent implements OnInit {
   variationId: number | null = null;
   readonly isEditMode = signal(false);
   readonly isSaving = signal(false);
+  readonly isLoading = signal(false);
 
   readonly startDate = signal<string | null>(null);
   readonly endDate = signal<string | null>(null);
@@ -215,6 +235,7 @@ export class InterestPauseFormComponent implements OnInit {
   private loadPause(): void {
     if (!this.loanId || !this.variationId) return;
 
+    this.isLoading.set(true);
     this.pauseService.getLoansLoanIdInterestPauses(this.loanId).subscribe({
       next: (pauses: InterestPauseResponseDto[]) => {
         const pause = pauses.find(({ id }) => id === this.variationId);
@@ -222,9 +243,12 @@ export class InterestPauseFormComponent implements OnInit {
           this.startDate.set(this.toFormDate(pause.startDate));
           this.endDate.set(this.toFormDate(pause.endDate));
         }
+        this.isLoading.set(false);
       },
       // The global error interceptor displays Fineract's response to the user.
-      error: () => undefined,
+      error: () => {
+        this.isLoading.set(false);
+      },
     });
   }
 

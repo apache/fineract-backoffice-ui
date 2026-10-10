@@ -19,7 +19,7 @@
 
 import { inject, input, signal, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { DOWNLOAD, TranslatePipe } from '../../../core/adapters';
 import {
   DataTableComponent,
   ColumnDef,
@@ -28,7 +28,6 @@ import {
 } from '../../../shared';
 import { DocumentsService, DocumentData } from '../../../api';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { DOWNLOAD } from '../../../core/adapters';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
 @Component({
@@ -36,7 +35,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     HasPermissionDirective,
     CellTemplateDirective,
@@ -51,7 +50,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
         [link]="['/clients', clientId(), 'documents', 'create']"
         icon="cloud-upload-outline"
         *appHasPermission="'CREATE_DOCUMENT'"
-        >{{ 'CLIENTS.ADD_DOCUMENT' | translate }}</app-button
+        >{{ 'CLIENTS.ADD_DOCUMENT' | appTranslate }}</app-button
       >
     </div>
 
@@ -67,21 +66,21 @@ import { ButtonComponent } from '../../../ui/button/button.component';
             type="button"
             intent="primary"
             emphasis="quiet"
-            [label]="'COMMON.DOWNLOAD' | translate"
+            [label]="'COMMON.DOWNLOAD' | appTranslate"
             icon="download-outline"
             (click)="onDownload(row.id)"
             *appHasPermission="'READ_DOCUMENT'"
-            [appTooltip]="'COMMON.DOWNLOAD' | translate"
+            [appTooltip]="'COMMON.DOWNLOAD' | appTranslate"
           />
           <app-button
             type="button"
             intent="danger"
             emphasis="quiet"
-            [label]="'COMMON.DELETE' | translate"
+            [label]="'COMMON.DELETE' | appTranslate"
             icon="trash-outline"
             (click)="onDelete(row.id)"
             *appHasPermission="'DELETE_DOCUMENT'"
-            [appTooltip]="'COMMON.DELETE' | translate"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
           />
         </div>
       </ng-template>

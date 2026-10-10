@@ -19,7 +19,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   IonButton,
@@ -57,7 +57,7 @@ const ERROR_OCCURRED = 'Error occurred';
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -71,31 +71,31 @@ const ERROR_OCCURRED = 'Error occurred';
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'INTEROP.PARTY_TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'INTEROP.PARTY_TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="form-row">
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'INTEROP.ID_TYPE' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'INTEROP.ID_TYPE' | appTranslate }}</ion-label>
             <ion-input
-              [attr.aria-label]="'INTEROP.ID_TYPE' | translate"
+              [attr.aria-label]="'INTEROP.ID_TYPE' | appTranslate"
               [(ngModel)]="idType"
               placeholder="e.g. MSISDN"
             ></ion-input>
           </ion-item>
 
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'INTEROP.ID_VALUE' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'INTEROP.ID_VALUE' | appTranslate }}</ion-label>
             <ion-input
-              [attr.aria-label]="'INTEROP.ID_VALUE' | translate"
+              [attr.aria-label]="'INTEROP.ID_VALUE' | appTranslate"
               [(ngModel)]="idValue"
             ></ion-input>
           </ion-item>
 
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'INTEROP.SUB_ID' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'INTEROP.SUB_ID' | appTranslate }}</ion-label>
             <ion-input
-              [attr.aria-label]="'INTEROP.SUB_ID' | translate"
+              [attr.aria-label]="'INTEROP.SUB_ID' | appTranslate"
               [(ngModel)]="subIdOrType"
             ></ion-input>
           </ion-item>
@@ -103,13 +103,13 @@ const ERROR_OCCURRED = 'Error occurred';
 
         <div class="button-row">
           <ion-button color="primary" (click)="lookup()" [disabled]="isLoading()">
-            {{ 'INTEROP.LOOKUP' | translate }}
+            {{ 'INTEROP.LOOKUP' | appTranslate }}
           </ion-button>
           <ion-button color="secondary" (click)="register()" [disabled]="isLoading()">
-            {{ 'INTEROP.REGISTER' | translate }}
+            {{ 'INTEROP.REGISTER' | appTranslate }}
           </ion-button>
           <ion-button color="danger" (click)="deregister()" [disabled]="isLoading()">
-            {{ 'INTEROP.DEREGISTER' | translate }}
+            {{ 'INTEROP.DEREGISTER' | appTranslate }}
           </ion-button>
         </div>
 
@@ -118,7 +118,7 @@ const ERROR_OCCURRED = 'Error occurred';
         }
 
         @if (result()) {
-          <h3>{{ 'INTEROP.RESULT' | translate }}</h3>
+          <h3>{{ 'INTEROP.RESULT' | appTranslate }}</h3>
           <pre>{{ result() | json }}</pre>
         }
       </ion-card-content>

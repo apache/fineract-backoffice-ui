@@ -22,11 +22,11 @@ import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DialogService } from '../../../core/services/dialog.service';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
-import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError, Observable, Subject } from 'rxjs';
 import { EntityDatatablesComponent } from './entity-datatables.component';
 import { DatatableEntryDialogComponent } from '../datatable-entry-dialog/datatable-entry-dialog.component';
 import { DataTablesService, GetDataTablesResponse } from '../../../api';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('EntityDatatablesComponent', () => {
   let component: EntityDatatablesComponent;
@@ -70,8 +70,9 @@ describe('EntityDatatablesComponent', () => {
     dialogServiceSpy.open.mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot(), EntityDatatablesComponent],
+      imports: [EntityDatatablesComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideIonicTesting(),
         { provide: DataTablesService, useValue: datatablesServiceSpy },
         { provide: DialogService, useValue: dialogServiceSpy },

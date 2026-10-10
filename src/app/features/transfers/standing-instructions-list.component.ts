@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../shared';
@@ -30,7 +30,7 @@ import { StandingInstructionsService, GetPageItemsStandingInstructionSwagger } f
   standalone: true,
   imports: [
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonIcon,
     DataTableComponent,
@@ -54,7 +54,7 @@ import { StandingInstructionsService, GetPageItemsStandingInstructionSwagger } f
         data-testid="create-standing-instruction-btn"
       >
         <ion-icon name="add-outline" slot="start"></ion-icon>
-        {{ 'CLIENTS.CREATE_STANDING_INSTRUCTION' | translate }}
+        {{ 'CLIENTS.CREATE_STANDING_INSTRUCTION' | appTranslate }}
       </ion-button>
 
       <ng-template appCellTemplate="amount" let-row>
@@ -75,7 +75,7 @@ import { StandingInstructionsService, GetPageItemsStandingInstructionSwagger } f
             fill="clear"
             color="primary"
             [routerLink]="['edit', row.id]"
-            [attr.aria-label]="'COMMON.EDIT' | translate"
+            [attr.aria-label]="'COMMON.EDIT' | appTranslate"
             [id]="'edit-standing-instruction-btn-' + row.id"
             [attr.data-testid]="'edit-standing-instruction-btn-' + row.id"
           >

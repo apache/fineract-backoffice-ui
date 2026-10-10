@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ExternalEventConfigurationService } from '../../../api';
 import {
   IonButton,
@@ -45,7 +45,7 @@ interface EventToggle {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -58,7 +58,7 @@ interface EventToggle {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'nav.externalEvents' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'nav.externalEvents' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -77,9 +77,9 @@ interface EventToggle {
             >
               @if (isSaving()) {
                 <ion-spinner name="crescent"></ion-spinner>
-                {{ 'COMMON.SAVING' | translate }}
+                {{ 'COMMON.SAVING' | appTranslate }}
               } @else {
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               }
             </ion-button>
           </div>

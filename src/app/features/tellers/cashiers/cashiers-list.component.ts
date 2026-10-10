@@ -20,18 +20,17 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { Cashier, TELLER_API, TranslatePipe } from '../../../core/adapters';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { CashierData, TellerCashManagementService } from '../../../api';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 
 @Component({
   selector: 'app-cashiers-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonIcon,
     DataTableComponent,
@@ -51,22 +50,22 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
       (create)="onAllocateCashier()"
     >
       <ng-template appCellTemplate="startDate" let-cashier>
-        {{ formatArrayDate(cashier.startDate) }}
+        {{ cashier.startDate ?? '-' }}
       </ng-template>
 
       <ng-template appCellTemplate="endDate" let-cashier>
-        {{ formatArrayDate(cashier.endDate) }}
+        {{ cashier.endDate ?? '-' }}
       </ng-template>
 
       <ng-template appCellTemplate="fullDay" let-cashier>
-        {{ (cashier.isFullDay ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+        {{ (cashier.isFullDay ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-cashier>
         <ion-button
           fill="clear"
-          [attr.aria-label]="'TELLERS.CASHIER_TRANSACTIONS' | translate"
-          [appTooltip]="'TELLERS.CASHIER_TRANSACTIONS' | translate"
+          [attr.aria-label]="'TELLERS.CASHIER_TRANSACTIONS' | appTranslate"
+          [appTooltip]="'TELLERS.CASHIER_TRANSACTIONS' | appTranslate"
           (click)="onViewTransactions(cashier)"
           [id]="'cashier-transactions-btn-' + cashier.id"
           [attr.data-testid]="'cashier-transactions-btn-' + cashier.id"
@@ -76,7 +75,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
         <ion-button
           fill="clear"
           color="danger"
-          [attr.aria-label]="'COMMON.DELETE' | translate"
+          [attr.aria-label]="'COMMON.DELETE' | appTranslate"
           [appTooltip]="'Remove Cashier Allocation'"
           (click)="onRemoveCashier(cashier)"
           [id]="'delete-cashier-btn-' + cashier.id"
@@ -89,7 +88,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
   `,
 })
 export class CashiersListComponent implements OnInit {
-  private readonly tellerService = inject(TellerCashManagementService);
+  private readonly tellerApi = inject(TELLER_API);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -103,7 +102,7 @@ export class CashiersListComponent implements OnInit {
     { key: 'actions', label: 'COMMON.ACTIONS', sortable: false },
   ];
 
-  readonly cashiers = signal<CashierData[]>([]);
+  readonly cashiers = signal<Cashier[]>([]);
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -115,18 +114,13 @@ export class CashiersListComponent implements OnInit {
   /**
    * Loads the cashiers allocated to this teller.
    *
-   * Read from `/tellers/{tellerId}/cashiers`, not the top-level `/cashiers` collection. The
-   * latter answers `204 No Content` for every combination of `officeId` and `tellerId`, so the
-   * list rendered empty however many cashiers had been allocated — and an empty list is
-   * indistinguishable from a teller that genuinely has none, which is why it went unnoticed.
-   *
-   * The response is an object describing the teller with a `cashiers` array inside it, rather
-   * than a bare array.
+   * The contract reads `/tellers/{tellerId}/cashiers`, not the top-level `/cashiers` collection,
+   * which answers `204 No Content` for every combination of filters and rendered this list empty.
    */
   private loadCashiers(): void {
-    this.tellerService.getTellersTellerIdCashiers(this.tellerId).subscribe({
+    this.tellerApi.listCashiers(this.tellerId).subscribe({
       next: (data) => {
-        this.cashiers.set(data.cashiers ?? []);
+        this.cashiers.set(data);
       },
       error: (err: unknown) => {
         console.error('Failed to load cashiers', err);
@@ -138,35 +132,20 @@ export class CashiersListComponent implements OnInit {
     this.router.navigate(['/tellers', this.tellerId, 'cashiers', 'create']);
   }
 
-  onViewTransactions(cashier: CashierData): void {
+  onViewTransactions(cashier: Cashier): void {
     this.router.navigate(['/tellers', this.tellerId, 'cashiers', cashier.id, 'transactions']);
   }
 
-  onRemoveCashier(cashier: CashierData): void {
+  onRemoveCashier(cashier: Cashier): void {
     if (confirm('Are you sure you want to remove this cashier allocation?')) {
-      this.tellerService
-        .deleteTellersTellerIdCashiersCashierId(this.tellerId, cashier.id!)
-        .subscribe({
-          next: () => {
-            this.loadCashiers();
-          },
-          error: (err: unknown) => {
-            console.error('Failed to remove cashier allocation', err);
-          },
-        });
+      this.tellerApi.removeCashier(this.tellerId, cashier.id).subscribe({
+        next: () => {
+          this.loadCashiers();
+        },
+        error: (err: unknown) => {
+          console.error('Failed to remove cashier allocation', err);
+        },
+      });
     }
-  }
-
-  /**
-   * Formats a Fineract array date [YYYY, MM, DD] into a readable string.
-   *
-   * @param dateArray - Raw date from API.
-   * @returns Formatted date string.
-   */
-  formatArrayDate(dateArray: unknown): string {
-    if (!dateArray || !Array.isArray(dateArray) || dateArray.length < 3) {
-      return '-';
-    }
-    return `${dateArray[0]}-${String(dateArray[1]).padStart(2, '0')}-${String(dateArray[2]).padStart(2, '0')}`;
   }
 }

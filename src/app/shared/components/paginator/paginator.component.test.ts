@@ -18,10 +18,10 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
 import { PageEvent } from '../../models/table.model';
 import { PaginatorComponent } from './paginator.component';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('PaginatorComponent', () => {
   let fixture: ComponentFixture<PaginatorComponent>;
@@ -39,8 +39,8 @@ describe('PaginatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PaginatorComponent, TranslateModule.forRoot()],
-      providers: [provideIonicTesting()],
+      imports: [PaginatorComponent],
+      providers: [...provideTranslateTesting(), provideIonicTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PaginatorComponent);

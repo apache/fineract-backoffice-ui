@@ -35,8 +35,6 @@ import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 // @ts-ignore
 import { DeleteClientsClientIdResponse } from '../model/deleteClientsClientIdResponse';
 // @ts-ignore
-import { GetClientObligeeDetailsResponse } from '../model/getClientObligeeDetailsResponse';
-// @ts-ignore
 import { GetClientTransferProposalDateResponse } from '../model/getClientTransferProposalDateResponse';
 // @ts-ignore
 import { GetClientsClientIdAccountsResponse } from '../model/getClientsClientIdAccountsResponse';
@@ -46,6 +44,8 @@ import { GetClientsClientIdResponse } from '../model/getClientsClientIdResponse'
 import { GetClientsResponse } from '../model/getClientsResponse';
 // @ts-ignore
 import { GetClientsTemplateResponse } from '../model/getClientsTemplateResponse';
+// @ts-ignore
+import { GetObligeeData } from '../model/getObligeeData';
 // @ts-ignore
 import { PostClientsClientIdRequest } from '../model/postClientsClientIdRequest';
 // @ts-ignore
@@ -551,9 +551,9 @@ export class ClientService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getClientsClientIdObligeedetails(clientId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GetClientObligeeDetailsResponse>;
-    public getClientsClientIdObligeedetails(clientId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GetClientObligeeDetailsResponse>>;
-    public getClientsClientIdObligeedetails(clientId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GetClientObligeeDetailsResponse>>;
+    public getClientsClientIdObligeedetails(clientId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<GetObligeeData>>;
+    public getClientsClientIdObligeedetails(clientId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<GetObligeeData>>>;
+    public getClientsClientIdObligeedetails(clientId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<GetObligeeData>>>;
     public getClientsClientIdObligeedetails(clientId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (clientId === null || clientId === undefined) {
             throw new Error('Required parameter clientId was null or undefined when calling getClientsClientIdObligeedetails.');
@@ -592,7 +592,7 @@ export class ClientService extends BaseService {
 
         let localVarPath = `/v1/clients/${this.configuration.encodeParam({name: "clientId", value: clientId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/obligeedetails`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<GetClientObligeeDetailsResponse>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<GetObligeeData>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -917,9 +917,9 @@ export class ClientService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getClientsExternalIdExternalIdObligeedetails(externalId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GetClientObligeeDetailsResponse>;
-    public getClientsExternalIdExternalIdObligeedetails(externalId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GetClientObligeeDetailsResponse>>;
-    public getClientsExternalIdExternalIdObligeedetails(externalId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GetClientObligeeDetailsResponse>>;
+    public getClientsExternalIdExternalIdObligeedetails(externalId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<GetObligeeData>>;
+    public getClientsExternalIdExternalIdObligeedetails(externalId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<GetObligeeData>>>;
+    public getClientsExternalIdExternalIdObligeedetails(externalId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<GetObligeeData>>>;
     public getClientsExternalIdExternalIdObligeedetails(externalId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (externalId === null || externalId === undefined) {
             throw new Error('Required parameter externalId was null or undefined when calling getClientsExternalIdExternalIdObligeedetails.');
@@ -958,7 +958,7 @@ export class ClientService extends BaseService {
 
         let localVarPath = `/v1/clients/external-id/${this.configuration.encodeParam({name: "externalId", value: externalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/obligeedetails`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<GetClientObligeeDetailsResponse>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<GetObligeeData>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

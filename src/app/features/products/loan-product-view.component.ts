@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -36,7 +36,7 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
   selector: 'app-loan-product-view',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -57,11 +57,11 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
             <div class="actions-area">
               <ion-button color="primary" (click)="onEdit()">
                 <ion-icon name="create-outline" slot="start"></ion-icon>
-                {{ 'COMMON.EDIT' | translate }}
+                {{ 'COMMON.EDIT' | appTranslate }}
               </ion-button>
               <ion-button fill="clear" color="medium" (click)="onBack()">
                 <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
-                {{ 'COMMON.BACK' | translate }}
+                {{ 'COMMON.BACK' | appTranslate }}
               </ion-button>
             </div>
           </ion-card-content>
@@ -69,30 +69,30 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
 
         <ion-card>
           <ion-card-header>
-            <ion-card-title>{{ 'COMMON.DETAILS' | translate }}</ion-card-title>
+            <ion-card-title>{{ 'COMMON.DETAILS' | appTranslate }}</ion-card-title>
           </ion-card-header>
           <ion-card-content class="details-list">
             <div class="detail-item">
-              <span class="label">{{ 'PRODUCTS.CURRENCY' | translate }}</span>
+              <span class="label">{{ 'PRODUCTS.CURRENCY' | appTranslate }}</span>
               <span class="value">{{ product()!.currency?.code }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">{{ 'PRODUCTS.PRINCIPAL' | translate }}</span>
+              <span class="label">{{ 'PRODUCTS.PRINCIPAL' | appTranslate }}</span>
               <span class="value">{{ product()!.principal }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">{{ 'PRODUCTS.INTEREST_RATE' | translate }}</span>
+              <span class="label">{{ 'PRODUCTS.INTEREST_RATE' | appTranslate }}</span>
               <span class="value"
                 >{{ product()!.interestRatePerPeriod }}
                 {{ product()!.interestRateFrequencyType?.description }}</span
               >
             </div>
             <div class="detail-item">
-              <span class="label">{{ 'LOANS.REPAYMENTS_COUNT' | translate }}</span>
+              <span class="label">{{ 'LOANS.REPAYMENTS_COUNT' | appTranslate }}</span>
               <span class="value">{{ product()!.numberOfRepayments }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">{{ 'LOANS.REPAYMENT_EVERY' | translate }}</span>
+              <span class="label">{{ 'LOANS.REPAYMENT_EVERY' | appTranslate }}</span>
               <span class="value"
                 >{{ product()!.repaymentEvery }}
                 {{ product()!.repaymentFrequencyType?.description }}</span
@@ -103,11 +103,11 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
 
         <ion-card>
           <ion-card-header>
-            <ion-card-title>{{ 'PRODUCTS.LOAN_SCHEDULE_TYPE' | translate }}</ion-card-title>
+            <ion-card-title>{{ 'PRODUCTS.LOAN_SCHEDULE_TYPE' | appTranslate }}</ion-card-title>
           </ion-card-header>
           <ion-card-content class="details-list">
             <div class="detail-item">
-              <span class="label">{{ 'PRODUCTS.LOAN_SCHEDULE_TYPE' | translate }}</span>
+              <span class="label">{{ 'PRODUCTS.LOAN_SCHEDULE_TYPE' | appTranslate }}</span>
               <span class="value">
                 <ion-badge [color]="isProgressive() ? 'tertiary' : 'primary'">
                   {{ product()!.loanScheduleType?.value }}
@@ -116,14 +116,14 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
             </div>
             <div class="detail-item">
               <span class="label">{{
-                'PRODUCTS.TRANSACTION_PROCESSING_STRATEGY' | translate
+                'PRODUCTS.TRANSACTION_PROCESSING_STRATEGY' | appTranslate
               }}</span>
               <span class="value">{{ product()!.transactionProcessingStrategyName }}</span>
             </div>
             @if (isProgressive()) {
               <div class="detail-item">
                 <span class="label">{{
-                  'PRODUCTS.LOAN_SCHEDULE_PROCESSING_TYPE' | translate
+                  'PRODUCTS.LOAN_SCHEDULE_PROCESSING_TYPE' | appTranslate
                 }}</span>
                 <span class="value">{{ product()!.loanScheduleProcessingType?.value }}</span>
               </div>
@@ -134,14 +134,14 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
         @if (isProgressive() && product()!.paymentAllocation?.length) {
           <ion-card>
             <ion-card-header>
-              <ion-card-title>{{ 'PRODUCTS.PAYMENT_ALLOCATION' | translate }}</ion-card-title>
+              <ion-card-title>{{ 'PRODUCTS.PAYMENT_ALLOCATION' | appTranslate }}</ion-card-title>
             </ion-card-header>
             <ion-card-content>
               @for (rule of product()!.paymentAllocation; track rule.transactionType) {
                 <div class="allocation-rule">
                   <strong>{{ rule.transactionType }}</strong>
                   <span class="future-rule"
-                    >({{ 'PRODUCTS.FUTURE_INSTALLMENT_ALLOCATION_RULE' | translate }}:
+                    >({{ 'PRODUCTS.FUTURE_INSTALLMENT_ALLOCATION_RULE' | appTranslate }}:
                     {{ rule.futureInstallmentAllocationRule }})</span
                   >
                   <ol class="order-list">
@@ -158,7 +158,7 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
         @if (isProgressive() && product()!.creditAllocation?.length) {
           <ion-card>
             <ion-card-header>
-              <ion-card-title>{{ 'PRODUCTS.CREDIT_ALLOCATION' | translate }}</ion-card-title>
+              <ion-card-title>{{ 'PRODUCTS.CREDIT_ALLOCATION' | appTranslate }}</ion-card-title>
             </ion-card-header>
             <ion-card-content>
               @for (rule of product()!.creditAllocation; track rule.transactionType) {

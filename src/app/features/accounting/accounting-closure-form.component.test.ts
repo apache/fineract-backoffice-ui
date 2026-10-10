@@ -20,43 +20,37 @@
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountingClosureFormComponent } from './accounting-closure-form.component';
-import {
-  AccountingClosureService,
-  OfficesService,
-  GetOfficesResponse,
-  PostGlClosuresResponse,
-} from '../../api';
+import { ACCOUNTING_CLOSURE_API, OFFICE_API } from '../../core/adapters';
+import type { AccountingClosureApi, OfficeApi } from '../../core/adapters';
 import { Router } from '@angular/router';
-import { of, Observable } from 'rxjs';
-import { HttpEvent } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { expectLookedUp } from '../../testing/translated-text';
 
 describe('AccountingClosureFormComponent', () => {
   let component: AccountingClosureFormComponent;
   let fixture: ComponentFixture<AccountingClosureFormComponent>;
-  let closureServiceSpy: SpyObj<AccountingClosureService>;
-  let officeServiceSpy: SpyObj<OfficesService>;
+  let closureApiSpy: SpyObj<AccountingClosureApi>;
+  let officeApiSpy: SpyObj<OfficeApi>;
   let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    closureServiceSpy = createSpyObj(['postGlclosures']);
-    officeServiceSpy = createSpyObj(['getOffices']);
+    closureApiSpy = createSpyObj(['list', 'create', 'remove']);
+    officeApiSpy = createSpyObj(['list']);
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [AccountingClosureFormComponent],
       providers: [
         ...provideTranslateTesting(),
-        { provide: AccountingClosureService, useValue: closureServiceSpy },
-        { provide: OfficesService, useValue: officeServiceSpy },
+        { provide: ACCOUNTING_CLOSURE_API, useValue: closureApiSpy },
+        { provide: OFFICE_API, useValue: officeApiSpy },
         { provide: Router, useValue: routerSpy },
         provideNoopAnimations(),
       ],
     }).compileComponents();
-    officeServiceSpy.getOffices.mockReturnValue(
-      of([]) as unknown as Observable<HttpEvent<GetOfficesResponse[]>>,
-    );
+    officeApiSpy.list.mockReturnValue(of([]));
     fixture = TestBed.createComponent(AccountingClosureFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -66,25 +60,56 @@ describe('AccountingClosureFormComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should format payload correctly on submission', () => {
+  it('asks the API to close the period the form describes', () => {
     component.request.officeId = 1;
     component.closingDate = '2026-05-31';
     component.request.comments = 'Monthly closure';
 
-    closureServiceSpy.postGlclosures.mockReturnValue(
-      of({}) as unknown as Observable<HttpEvent<PostGlClosuresResponse>>,
-    );
+    closureApiSpy.create.mockReturnValue(of(undefined));
 
     component.onSubmit();
 
-    expect(closureServiceSpy.postGlclosures).toHaveBeenCalledWith(
-      expect.objectContaining({
-        officeId: 1,
-        closingDate: '2026-05-31',
-        comments: 'Monthly closure',
-        dateFormat: 'yyyy-MM-dd',
-        locale: 'en',
-      }),
-    );
+    // `dateFormat` and `locale` are deliberately absent. They are how Fineract parses a date,
+    // which moved into the adapter with ADR 0006; the adapter's own spec pins them. This screen
+    // is specified to send an ISO date and nothing about transport.
+    expect(closureApiSpy.create).toHaveBeenCalledWith({
+      officeId: 1,
+      closingDate: '2026-05-31',
+      comments: 'Monthly closure',
+    });
+  });
+
+  it('navigates back to the list once the period is closed', () => {
+    component.request.officeId = 1;
+    closureApiSpy.create.mockReturnValue(of(undefined));
+
+    component.onSubmit();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/accounting/closures']);
+  });
+
+  it('stops saving when closing the period fails', () => {
+    component.request.officeId = 1;
+    closureApiSpy.create.mockReturnValue(throwError(() => new Error('rejected')));
+
+    component.onSubmit();
+
+    expect(component.isSaving()).toBe(false);
+  });
+
+  it('does not submit without an office, which the API requires', () => {
+    component.request.officeId = undefined;
+
+    component.onSubmit();
+
+    expect(closureApiSpy.create).not.toHaveBeenCalled();
+    expect(component.isSaving()).toBe(false);
+  });
+
+  it('renders its heading and date label through the translation adapter', () => {
+    expectLookedUp(fixture.nativeElement, [
+      'ACCOUNTING_CLOSURES.CLOSE_ACCOUNTING_PERIOD',
+      'ACCOUNTING_CLOSURES.CLOSING_DATE',
+    ]);
   });
 });

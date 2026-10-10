@@ -18,7 +18,17 @@
  */
 
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  computed,
+  inject,
+  signal,
+  viewChildren,
+} from '@angular/core';
+
+import { createPermissionCheck } from '../../shared/utils/permission-check';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
@@ -86,6 +96,7 @@ import {
   CenterDetail,
   CenterGroupMember,
   CenterMeeting,
+  FineractDate,
   isCenterActive,
   isCenterClosed,
   isCenterPending,
@@ -320,9 +331,13 @@ export type CenterTab = (typeof CENTER_TAB)[keyof typeof CENTER_TAB];
                   [localLogic]="true"
                 >
                   <ng-template appCellTemplate="name" let-row>
-                    <a [routerLink]="['/groups/view', row.id]" data-testid="center-group-link">
+                    @if (canViewGroup()) {
+                      <a [routerLink]="['/groups/view', row.id]" data-testid="center-group-link">
+                        {{ row.name }}
+                      </a>
+                    } @else {
                       {{ row.name }}
-                    </a>
+                    }
                   </ng-template>
                   <ng-template appCellTemplate="status" let-row>
                     <app-status-badge [status]="row.status?.value ?? ''"></app-status-badge>
@@ -417,7 +432,8 @@ export type CenterTab = (typeof CENTER_TAB)[keyof typeof CENTER_TAB];
     `,
   ],
 })
-export class CenterViewComponent implements OnInit {
+export class CenterViewComponent implements OnInit, OnDestroy {
+  private readonly popovers = viewChildren(IonPopover);
   private readonly centersService = inject(CentersService);
   private readonly groupsService = inject(GroupsService);
   private readonly httpClient = inject(HttpClient);
@@ -442,6 +458,12 @@ export class CenterViewComponent implements OnInit {
     { key: 'accountNo', label: 'COMMON.ACCOUNT_NO', sortable: true },
     { key: 'status', label: 'COMMON.STATUS', sortable: false },
   ];
+
+  /**
+   * A center's groups come back with READ_CENTER alone, but the group screen is gated on
+   * READ_GROUP. Same shape as the client link on the group screen.
+   */
+  protected readonly canViewGroup = createPermissionCheck('READ_GROUP');
 
   readonly groupMembers = computed<CenterGroupMember[]>(() => this.center()?.groupMembers ?? []);
   readonly activationDate = computed(() =>
@@ -468,6 +490,12 @@ export class CenterViewComponent implements OnInit {
   ngOnInit(): void {
     this.centerId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadCenter();
+  }
+
+  ngOnDestroy(): void {
+    for (const popover of this.popovers()) {
+      void popover.dismiss().catch(() => false);
+    }
   }
 
   /**
@@ -548,8 +576,12 @@ export class CenterViewComponent implements OnInit {
   }
 
   async onAction(command: 'activate' | 'close'): Promise<void> {
+    const minDate =
+      command === 'activate'
+        ? this.isoDate(this.center()?.timeline?.submittedOnDate)
+        : this.isoDate(this.center()?.timeline?.activatedOnDate);
     const result = await this.dialogService.open<CenterActionResult>(CenterActionDialogComponent, {
-      data: { command } satisfies CenterActionDialogData,
+      data: { command, minDate } satisfies CenterActionDialogData,
     });
     if (!result) return;
 
@@ -647,13 +679,32 @@ export class CenterViewComponent implements OnInit {
     void this.router.navigate(['/centers']);
   }
 
+  /**
+   * A date the platform has stamped, as the ISO `YYYY-MM-DD` the action dialog floors on.
+   *
+   * Stamped in the tenant's timezone, which makes it usable as a floor for a picker that
+   * would otherwise only know what day it is in the browser's.
+   */
+  private isoDate(value: FineractDate | undefined): string | undefined {
+    const iso = formatArrayDate(value);
+    return iso === '-' ? undefined : iso;
+  }
+
+  /**
+   * Posts a center command and reloads.
+   *
+   * No error toast here. `errorInterceptor` already raises one carrying the platform's own
+   * message, and that message is the useful one: an activation refused for a submittedOnDate
+   * answers the platform's constraint with parameter details, which a generic `COMMON.ERROR`
+   * toast would mask.
+   */
   private run(request: Observable<unknown>): void {
     request.subscribe({
       next: () => {
         this.notifications.success(this.i18n.translate('COMMON.SUCCESS'));
         this.loadCenter();
       },
-      error: () => this.notifications.error(this.i18n.translate('COMMON.ERROR')),
+      error: () => undefined,
     });
   }
 }

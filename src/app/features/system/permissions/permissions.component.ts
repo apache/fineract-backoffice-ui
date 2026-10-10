@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { PermissionsService, GetPermissionsResponse, PutPermissionsRequest } from '../../../api';
 import { CdkTableModule } from '@angular/cdk/table';
 import {
@@ -41,7 +41,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     IonButton,
     IonCardContent,
@@ -54,27 +54,27 @@ import {
     <div class="permissions-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'PERMISSIONS.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'PERMISSIONS.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
           @for (group of groupNames(); track group) {
             <h3 class="group-heading">{{ group }}</h3>
             <table cdk-table [dataSource]="grouped()[group]" class="permissions-table">
               <ng-container cdkColumnDef="code">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'PERMISSIONS.CODE' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'PERMISSIONS.CODE' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.code }}</td>
               </ng-container>
               <ng-container cdkColumnDef="entityName">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'PERMISSIONS.ENTITY' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'PERMISSIONS.ENTITY' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.entityName }}</td>
               </ng-container>
               <ng-container cdkColumnDef="actionName">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'PERMISSIONS.ACTION' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'PERMISSIONS.ACTION' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.actionName }}</td>
               </ng-container>
               <ng-container cdkColumnDef="selected">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'PERMISSIONS.MAKER_CHECKER' | translate }}
+                  {{ 'PERMISSIONS.MAKER_CHECKER' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">
                   <ion-checkbox
@@ -89,7 +89,7 @@ import {
           }
           <div class="actions">
             <ion-button color="primary" [disabled]="isSaving()" (click)="onSave()">
-              {{ 'COMMON.SAVE' | translate }}
+              {{ 'COMMON.SAVE' | appTranslate }}
             </ion-button>
           </div>
         </ion-card-content>

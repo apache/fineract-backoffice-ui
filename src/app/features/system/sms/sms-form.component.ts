@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { SMSService, SmsCreationRequest, SmsUpdateRequest } from '../../../api';
 import {
   IonButton,
@@ -44,7 +44,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -61,16 +61,16 @@ import {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode() ? ('SMS.EDIT' | translate) : ('SMS.CREATE' | translate) }}
+            {{ isEditMode() ? ('SMS.EDIT' | appTranslate) : ('SMS.CREATE' | appTranslate) }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #smsForm="ngForm" (ngSubmit)="onSubmit()" class="entity-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SMS.MESSAGE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'SMS.MESSAGE' | appTranslate }}</ion-label>
               <ion-textarea
-                [attr.aria-label]="'SMS.MESSAGE' | translate"
+                [attr.aria-label]="'SMS.MESSAGE' | appTranslate"
                 name="message"
                 [ngModel]="message()"
                 (ngModelChange)="message.set($event)"
@@ -79,9 +79,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SMS.MOBILE_NO' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'SMS.MOBILE_NO' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'SMS.MOBILE_NO' | translate"
+                [attr.aria-label]="'SMS.MOBILE_NO' | appTranslate"
                 name="mobileNo"
                 [ngModel]="mobileNo()"
                 (ngModelChange)="mobileNo.set($event)"
@@ -90,9 +90,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'SMS.CLIENT_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'SMS.CLIENT_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'SMS.CLIENT_ID' | translate"
+                [attr.aria-label]="'SMS.CLIENT_ID' | appTranslate"
                 type="number"
                 name="clientId"
                 [ngModel]="clientId()"
@@ -103,14 +103,14 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="smsForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

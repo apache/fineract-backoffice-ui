@@ -58,6 +58,7 @@ const TONE_COLOR: Record<UiIconTone, string> = {
       }
       ion-icon {
         font-size: inherit;
+        color: inherit;
       }
     `,
   ],

@@ -21,8 +21,8 @@ import { DecimalPipe } from '@angular/common';
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { GetPaymentTypeOptions, LoanTransactionsService } from '../../api';
-import { OVERLAY, TranslatePipe } from '../../core/adapters';
+import { LOAN_TRANSACTION_API, OVERLAY, TranslatePipe } from '../../core/adapters';
+import type { PaymentTypeOption } from '../../core/adapters';
 import { ButtonComponent } from '../../ui/button/button.component';
 
 export interface LoanChargebackData {
@@ -194,13 +194,13 @@ const CHARGEBACK_PAYMENT_TYPE_CODE = 'REPAYMENT_ADJUSTMENT_CHARGEBACK';
 })
 export class LoanChargebackDialogComponent implements OnInit {
   private readonly overlay = inject(OVERLAY);
-  private readonly transactionsService = inject(LoanTransactionsService);
+  private readonly transactionApi = inject(LOAN_TRANSACTION_API);
 
   readonly data = input.required<LoanChargebackData>();
 
   readonly amount = signal<number | null>(null);
   readonly paymentTypeId = signal<number | undefined>(undefined);
-  readonly paymentTypes = signal<GetPaymentTypeOptions[]>([]);
+  readonly paymentTypes = signal<readonly PaymentTypeOption[]>([]);
 
   /** More than the repayment is never accepted, so say so instead of waiting for the platform. */
   readonly exceedsRepayment = computed(() => {
@@ -213,20 +213,16 @@ export class LoanChargebackDialogComponent implements OnInit {
 
     // The transaction template is where the platform lists the enabled payment types; there is
     // no chargeback template to ask (it answers "unsupported value"), so the repayment one serves.
-    this.transactionsService
-      .getLoansLoanIdTransactionsTemplate(this.data().loanId, 'repayment')
-      .subscribe({
-        next: (template) => {
-          const options = template.paymentTypeOptions ?? [];
-          this.paymentTypes.set(options);
-          const shipped = options.find(
-            (o) => (o as { codeName?: string }).codeName === CHARGEBACK_PAYMENT_TYPE_CODE,
-          );
-          this.paymentTypeId.set(shipped?.id);
-        },
-        // Payment type is optional to the command; the dialog still works without the list.
-        error: () => undefined,
-      });
+    this.transactionApi.template(this.data().loanId, 'repayment').subscribe({
+      next: (template) => {
+        const options = template.paymentTypeOptions;
+        this.paymentTypes.set(options);
+        const shipped = options.find((o) => o.codeName === CHARGEBACK_PAYMENT_TYPE_CODE);
+        this.paymentTypeId.set(shipped?.id);
+      },
+      // Payment type is optional to the command; the dialog still works without the list.
+      error: () => undefined,
+    });
   }
 
   isValid(): boolean {

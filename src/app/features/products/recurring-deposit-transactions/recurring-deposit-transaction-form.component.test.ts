@@ -23,8 +23,8 @@ import { RecurringDepositTransactionFormComponent } from './recurring-deposit-tr
 import { RecurringDepositAccountTransactionsService } from '../../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('RecurringDepositTransactionFormComponent', () => {
   let component: RecurringDepositTransactionFormComponent;
@@ -47,8 +47,9 @@ describe('RecurringDepositTransactionFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [RecurringDepositTransactionFormComponent, TranslateModule.forRoot()],
+      imports: [RecurringDepositTransactionFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: RecurringDepositAccountTransactionsService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         {

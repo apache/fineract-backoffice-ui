@@ -23,7 +23,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../core/adapters';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfigService } from '../../core/services/config.service';
 import { BrandingService } from '../../core/services/branding.service';
@@ -42,7 +42,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule, HelpIconComponent, TwoFactorStepComponent],
+  imports: [ReactiveFormsModule, TranslatePipe, HelpIconComponent, TwoFactorStepComponent],
   template: `
     <div class="login-page">
       <div class="login-card" role="main">
@@ -50,32 +50,32 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
           <select
             #langSelect
             (change)="switchLanguage(langSelect.value)"
-            [attr.aria-label]="'app.language.select' | translate"
+            [attr.aria-label]="'app.language.select' | appTranslate"
           >
-            <option value="en" [selected]="translate.getCurrentLang() === 'en'">
-              {{ 'app.language.en' | translate }}
+            <option value="en" [selected]="i18n.currentLang() === 'en'">
+              {{ 'app.language.en' | appTranslate }}
             </option>
-            <option value="hi" [selected]="translate.getCurrentLang() === 'hi'">
-              {{ 'app.language.hi' | translate }}
+            <option value="hi" [selected]="i18n.currentLang() === 'hi'">
+              {{ 'app.language.hi' | appTranslate }}
             </option>
-            <option value="ko" [selected]="translate.getCurrentLang() === 'ko'">
-              {{ 'app.language.ko' | translate }}
+            <option value="ko" [selected]="i18n.currentLang() === 'ko'">
+              {{ 'app.language.ko' | appTranslate }}
             </option>
           </select>
         </div>
         <div class="login-header">
           <img
             [src]="logoSrc()"
-            [alt]="(brandName() || ('app.title' | translate)) + ' logo'"
+            [alt]="(brandName() || ('app.title' | appTranslate)) + ' logo'"
             class="login-logo"
           />
-          <h1>{{ brandName() || ('app.title' | translate) }}</h1>
-          <p class="subtitle">{{ 'login.welcome' | translate }}</p>
+          <h1>{{ brandName() || ('app.title' | appTranslate) }}</h1>
+          <p class="subtitle">{{ 'login.welcome' | appTranslate }}</p>
         </div>
 
         @if (logoutNotice(); as noticeKey) {
           <div class="notice" role="status" data-testid="login-logout-notice">
-            {{ noticeKey | translate }}
+            {{ noticeKey | appTranslate }}
           </div>
         }
 
@@ -95,39 +95,39 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
               data-testid="login-sso-button"
               (click)="onOidcLogin()"
             >
-              {{ 'login.sso.button' | translate }}
+              {{ 'login.sso.button' | appTranslate }}
             </button>
             <div class="sso-divider" role="separator">
-              <span>{{ 'login.sso.divider' | translate }}</span>
+              <span>{{ 'login.sso.divider' | appTranslate }}</span>
             </div>
           }
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
             <div class="form-field">
               <label for="serverUrl">
-                {{ 'login.serverUrl' | translate }}
+                {{ 'login.serverUrl' | appTranslate }}
                 <app-help-icon helpTextKey="login.tooltips.serverUrl"></app-help-icon>
               </label>
               <select id="serverUrl" formControlName="serverUrl">
                 <option [value]="configService.apiUrl">
-                  {{ 'login.defaultOption' | translate }} ({{ configService.apiUrl }})
+                  {{ 'login.defaultOption' | appTranslate }} ({{ configService.apiUrl }})
                 </option>
                 <!-- Endpoints this deployment permits, from config.json. Third-party hosts used
                    to be hard-coded here, which offered a teller a one-click path to type real
                    credentials into someone else's server. What is offered is now the operator's
                    decision, and anything typed is checked against the same allow-list. -->
                 <option value="/fineract-provider/api/v1">
-                  {{ 'login.proxyOption' | translate }}
+                  {{ 'login.proxyOption' | appTranslate }}
                 </option>
                 @for (origin of allowedOrigins(); track origin) {
                   <option [value]="origin">{{ origin }}</option>
                 }
-                <option value="custom">{{ 'login.customOption' | translate }}</option>
+                <option value="custom">{{ 'login.customOption' | appTranslate }}</option>
               </select>
             </div>
 
             @if (loginForm.get('serverUrl')?.value === 'custom') {
               <div class="form-field">
-                <label for="customUrl">{{ 'login.customUrl' | translate }}</label>
+                <label for="customUrl">{{ 'login.customUrl' | appTranslate }}</label>
                 <input
                   id="customUrl"
                   type="text"
@@ -139,7 +139,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
 
             <div class="form-field">
               <label for="tenantId">
-                {{ 'login.tenantId' | translate }}
+                {{ 'login.tenantId' | appTranslate }}
                 <app-help-icon helpTextKey="login.tooltips.tenantId"></app-help-icon>
               </label>
               <input
@@ -151,7 +151,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
             </div>
 
             <div class="form-field">
-              <label for="username">{{ 'login.username' | translate }}</label>
+              <label for="username">{{ 'login.username' | appTranslate }}</label>
               <input
                 id="username"
                 type="text"
@@ -162,7 +162,7 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
             </div>
 
             <div class="form-field">
-              <label for="password">{{ 'login.password' | translate }}</label>
+              <label for="password">{{ 'login.password' | appTranslate }}</label>
               <input
                 id="password"
                 type="password"
@@ -181,9 +181,9 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
             <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading()">
               @if (isLoading()) {
                 <span class="spinner"></span>
-                {{ 'login.loggingIn' | translate }}
+                {{ 'login.loggingIn' | appTranslate }}
               } @else {
-                {{ 'login.submit' | translate }}
+                {{ 'login.submit' | appTranslate }}
               }
             </button>
           </form>
@@ -409,7 +409,7 @@ export class LoginComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  protected readonly translate = inject(TranslateService);
+  protected readonly i18n = inject(I18N);
 
   /** Signal indicating if a login request is in progress */
   protected readonly isLoading = signal(false);
@@ -456,7 +456,7 @@ export class LoginComponent {
    * @param lang - The target language code (e.g., 'en', 'hi', 'ko')
    */
   switchLanguage(lang: string) {
-    this.translate.use(lang);
+    this.i18n.use(lang);
   }
 
   /**
@@ -468,7 +468,7 @@ export class LoginComponent {
    * on is real, and so is what happens when it is pressed.
    */
   protected onOidcLogin(): void {
-    void this.notification.show(this.translate.instant('login.sso.notImplemented'));
+    void this.notification.show(this.i18n.translate('login.sso.notImplemented'));
   }
 
   /**
@@ -489,7 +489,7 @@ export class LoginComponent {
       // Refuse before authenticating, not after: the point of the allow-list is that the
       // password below never reaches a host the deployment did not sanction.
       if (finalUrl && !this.configService.setApiUrl(finalUrl)) {
-        this.error.set(this.translate.instant('login.errors.endpointNotAllowed'));
+        this.error.set(this.i18n.translate('login.errors.endpointNotAllowed'));
         this.isLoading.set(false);
         return;
       }
@@ -514,12 +514,36 @@ export class LoginComponent {
           },
           error: (err) => {
             this.isLoading.set(false);
-            this.error.set(
-              err.error?.defaultUserMessage || 'Login failed. Check credentials/server.',
-            );
+            this.error.set(this.loginErrorMessage(err));
           },
         });
     }
+  }
+
+  /**
+   * A refused password, a server without the sign-in endpoint and a server that cannot be
+   * reached need different fixes, so they get different messages. The platform answers a wrong
+   * username or password with a 401 whose own text is "Unauthenticated. Please login.", which
+   * says nothing useful on the login page; other platform messages, such as the one for an
+   * unknown tenant, are specific and are shown as they are.
+   */
+  private loginErrorMessage(err: {
+    status?: number;
+    error?: { defaultUserMessage?: string; userMessageGlobalisationCode?: string } | null;
+  }): string {
+    if (
+      err.status === 401 &&
+      err.error?.userMessageGlobalisationCode === 'error.msg.not.authenticated'
+    ) {
+      return this.i18n.translate('login.errors.invalidCredentials');
+    }
+    if (err.status === 404) {
+      return this.i18n.translate('login.errors.endpointNotFound');
+    }
+    if (err.status === 0) {
+      return this.i18n.translate('login.errors.serverUnreachable');
+    }
+    return err.error?.defaultUserMessage || this.i18n.translate('login.errors.failed');
   }
 
   /** The second factor succeeded; the session is complete and the user can be let in. */

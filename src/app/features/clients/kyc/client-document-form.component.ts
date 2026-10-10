@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { DocumentsService } from '../../../api';
 import {
   IonButton,
@@ -40,7 +40,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonIcon,
     IonButton,
     IonInput,
@@ -59,8 +59,8 @@ import {
           <ion-card-title>
             {{
               isEditMode
-                ? ('CLIENTS.EDIT_DOCUMENT' | translate)
-                : ('CLIENTS.ADD_DOCUMENT' | translate)
+                ? ('CLIENTS.EDIT_DOCUMENT' | appTranslate)
+                : ('CLIENTS.ADD_DOCUMENT' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -68,9 +68,9 @@ import {
         <ion-card-content>
           <form #docForm="ngForm" (ngSubmit)="onSubmit()" class="doc-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'COMMON.NAME' | translate"
+                [attr.aria-label]="'COMMON.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="document().name"
                 required
@@ -78,9 +78,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'COMMON.DESCRIPTION' | appTranslate }}</ion-label>
               <ion-textarea
-                [attr.aria-label]="'COMMON.DESCRIPTION' | translate"
+                [attr.aria-label]="'COMMON.DESCRIPTION' | appTranslate"
                 name="description"
                 [(ngModel)]="document().description"
                 rows="3"
@@ -91,7 +91,7 @@ import {
               <div class="file-input-container">
                 <ion-button fill="outline" type="button" (click)="fileInput.click()">
                   <ion-icon name="attach-outline"></ion-icon>
-                  {{ 'CLIENTS.SELECT_FILE' | translate }}
+                  {{ 'CLIENTS.SELECT_FILE' | appTranslate }}
                 </ion-button>
                 <input
                   #fileInput
@@ -101,21 +101,21 @@ import {
                   required
                 />
                 <span class="file-name">{{
-                  selectedFile?.name || ('CLIENTS.NO_FILE_SELECTED' | translate)
+                  selectedFile?.name || ('CLIENTS.NO_FILE_SELECTED' | appTranslate)
                 }}</span>
               </div>
             }
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
                 type="submit"
                 [disabled]="!docForm.form.valid || (!isEditMode && !selectedFile)"
               >
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               </ion-button>
             </div>
           </form>

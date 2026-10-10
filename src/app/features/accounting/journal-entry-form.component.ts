@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   JournalEntriesService,
   JournalEntryCommand,
@@ -66,7 +66,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     HelpIconComponent,
     IonIcon,
     IonButton,
@@ -90,7 +90,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            Add Journal Entry
+            {{ 'JOURNAL_ENTRIES.CREATE' | appTranslate }}
             <app-help-icon [helpTextKey]="'HELP.JOURNAL_ENTRIES_DESC'"></app-help-icon>
           </ion-card-title>
         </ion-card-header>
@@ -134,7 +134,9 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
 
               <!-- Transaction Date -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Transaction Date</ion-label>
+                <ion-label position="stacked">{{
+                  'JOURNAL_ENTRIES.TRANSACTION_DATE' | appTranslate
+                }}</ion-label>
                 @if (pickersReady()) {
                   <ion-datetime-button datetime="transactionDate-picker"></ion-datetime-button>
                 }
@@ -154,9 +156,11 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
 
               <!-- Reference Number -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Reference Number</ion-label>
+                <ion-label position="stacked">{{
+                  'JOURNAL_ENTRIES.REFERENCE_NUMBER' | appTranslate
+                }}</ion-label>
                 <ion-input
-                  aria-label="Reference Number"
+                  [attr.aria-label]="'JOURNAL_ENTRIES.REFERENCE_NUMBER' | appTranslate"
                   name="referenceNumber"
                   [(ngModel)]="command.referenceNumber"
                 ></ion-input>
@@ -199,14 +203,15 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                     type="button"
                     (click)="removeDebit($index)"
                     [disabled]="debits.length === 1"
-                    [attr.aria-label]="'JOURNAL_ENTRIES.REMOVE_DEBIT' | translate"
+                    [attr.aria-label]="'JOURNAL_ENTRIES.REMOVE_DEBIT' | appTranslate"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>
                 </div>
               }
               <ion-button fill="clear" color="primary" type="button" (click)="addDebit()">
-                <ion-icon name="add-outline"></ion-icon> Add Debit
+                <ion-icon name="add-outline"></ion-icon>
+                {{ 'JOURNAL_ENTRIES.ADD_DEBIT' | appTranslate }}
               </ion-button>
             </div>
 
@@ -246,14 +251,15 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                     type="button"
                     (click)="removeCredit($index)"
                     [disabled]="credits.length === 1"
-                    [attr.aria-label]="'JOURNAL_ENTRIES.REMOVE_CREDIT' | translate"
+                    [attr.aria-label]="'JOURNAL_ENTRIES.REMOVE_CREDIT' | appTranslate"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>
                 </div>
               }
               <ion-button fill="clear" color="primary" type="button" (click)="addCredit()">
-                <ion-icon name="add-outline"></ion-icon> Add Credit
+                <ion-icon name="add-outline"></ion-icon>
+                {{ 'JOURNAL_ENTRIES.ADD_CREDIT' | appTranslate }}
               </ion-button>
             </div>
 

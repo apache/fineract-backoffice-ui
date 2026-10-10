@@ -19,8 +19,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DefaultService } from '../../api';
+import { I18N, TranslatePipe } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   IonButton,
@@ -39,7 +39,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonTextarea,
@@ -54,7 +54,7 @@ import {
     <div class="two-factor-container">
       <ion-card class="two-factor-card">
         <ion-card-header>
-          <ion-card-title>{{ 'TWO_FACTOR_CONFIG.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'TWO_FACTOR_CONFIG.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -68,10 +68,10 @@ import {
             <form (ngSubmit)="onSave()">
               <ion-item fill="outline" class="full-width">
                 <ion-label position="stacked">{{
-                  'TWO_FACTOR_CONFIG.CONFIG_JSON' | translate
+                  'TWO_FACTOR_CONFIG.CONFIG_JSON' | appTranslate
                 }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'TWO_FACTOR_CONFIG.CONFIG_JSON' | translate"
+                  [attr.aria-label]="'TWO_FACTOR_CONFIG.CONFIG_JSON' | appTranslate"
                   name="configJson"
                   [ngModel]="configJson()"
                   (ngModelChange)="configJson.set($event)"
@@ -84,7 +84,7 @@ import {
                   @if (isSaving()) {
                     <ion-spinner name="crescent"></ion-spinner>
                   }
-                  {{ 'TWO_FACTOR_CONFIG.SAVE' | translate }}
+                  {{ 'TWO_FACTOR_CONFIG.SAVE' | appTranslate }}
                 </ion-button>
               </div>
             </form>
@@ -127,7 +127,7 @@ import {
 export class TwoFactorConfigComponent implements OnInit {
   private defaultService = inject(DefaultService);
   private notifications = inject(NotificationService);
-  private translate = inject(TranslateService);
+  private i18n = inject(I18N);
 
   readonly configJson = signal('');
   readonly isLoading = signal(false);
@@ -156,7 +156,7 @@ export class TwoFactorConfigComponent implements OnInit {
     try {
       parsed = JSON.parse(this.configJson());
     } catch {
-      this.translate.get('TWO_FACTOR_CONFIG.PARSE_ERROR').subscribe((msg: string) => {
+      this.i18n.translateAsync('TWO_FACTOR_CONFIG.PARSE_ERROR').subscribe((msg: string) => {
         this.notifications.success(msg);
       });
       return;
@@ -166,7 +166,7 @@ export class TwoFactorConfigComponent implements OnInit {
     this.defaultService.putTwofactorConfigure(JSON.stringify(parsed)).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.translate.get('TWO_FACTOR_CONFIG.SUCCESS').subscribe((msg: string) => {
+        this.i18n.translateAsync('TWO_FACTOR_CONFIG.SUCCESS').subscribe((msg: string) => {
           this.notifications.success(msg);
         });
       },

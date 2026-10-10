@@ -19,11 +19,10 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClientChargesService, GetClientsChargesPageItems } from '../../../api';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { formatArrayDate } from '../../../core/utils/date-formatter';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
@@ -37,7 +36,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-client-charges-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -52,8 +51,10 @@ import { ButtonComponent } from '../../../ui/button/button.component';
       [columns]="columns"
       [data]="charges()"
       [totalRecords]="charges().length"
+      [hasError]="hasError()"
       [localLogic]="true"
       (create)="onCreate()"
+      (retry)="onRetry()"
     >
       <ng-template appCellTemplate="dueDate" let-row>
         {{ formatDate(row.dueDate) }}
@@ -69,9 +70,9 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'COMMON.DELETE' | translate"
+          [label]="'COMMON.DELETE' | appTranslate"
           icon="trash-outline"
-          [appTooltip]="'COMMON.DELETE' | translate"
+          [appTooltip]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(row)"
         />
       </ng-template>
@@ -96,6 +97,7 @@ export class ClientChargesListComponent implements OnInit {
 
   clientId!: number;
   readonly charges = signal<GetClientsChargesPageItems[]>([]);
+  readonly hasError = signal(false);
 
   ngOnInit(): void {
     this.clientId = Number(this.route.snapshot.paramMap.get('clientId'));
@@ -106,11 +108,17 @@ export class ClientChargesListComponent implements OnInit {
     this.clientChargesService.getClientsClientIdCharges(this.clientId).subscribe({
       next: (data) => {
         this.charges.set(data?.pageItems ? Array.from(data.pageItems) : []);
+        this.hasError.set(false);
       },
       error: (err: unknown) => {
         console.error('Failed to load client charges', err);
+        this.hasError.set(true);
       },
     });
+  }
+
+  onRetry(): void {
+    this.load();
   }
 
   formatDate(value: unknown): string {

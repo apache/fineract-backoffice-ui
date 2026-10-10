@@ -19,7 +19,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { DefaultService, ExternalEventResponse } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -43,7 +43,7 @@ import {
     FormsModule,
     DatePipe,
     CdkTableModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -57,42 +57,44 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'EXTERNAL_EVENTS.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'EXTERNAL_EVENTS.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="filter-row">
           <ion-item fill="outline">
             <ion-label position="stacked">{{
-              'EXTERNAL_EVENTS.IDEMPOTENCY_KEY' | translate
+              'EXTERNAL_EVENTS.IDEMPOTENCY_KEY' | appTranslate
             }}</ion-label>
             <ion-input
-              [attr.aria-label]="'EXTERNAL_EVENTS.IDEMPOTENCY_KEY' | translate"
+              [attr.aria-label]="'EXTERNAL_EVENTS.IDEMPOTENCY_KEY' | appTranslate"
               [(ngModel)]="filters.idempotencyKey"
             ></ion-input>
           </ion-item>
 
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'EXTERNAL_EVENTS.TYPE' | translate }}</ion-label>
+            <ion-label position="stacked">{{ 'EXTERNAL_EVENTS.TYPE' | appTranslate }}</ion-label>
             <ion-input
-              [attr.aria-label]="'EXTERNAL_EVENTS.TYPE' | translate"
+              [attr.aria-label]="'EXTERNAL_EVENTS.TYPE' | appTranslate"
               [(ngModel)]="filters.type"
             ></ion-input>
           </ion-item>
 
           <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'EXTERNAL_EVENTS.CATEGORY' | translate }}</ion-label>
+            <ion-label position="stacked">{{
+              'EXTERNAL_EVENTS.CATEGORY' | appTranslate
+            }}</ion-label>
             <ion-input
-              [attr.aria-label]="'EXTERNAL_EVENTS.CATEGORY' | translate"
+              [attr.aria-label]="'EXTERNAL_EVENTS.CATEGORY' | appTranslate"
               [(ngModel)]="filters.category"
             ></ion-input>
           </ion-item>
 
           <ion-item fill="outline">
             <ion-label position="stacked">{{
-              'EXTERNAL_EVENTS.AGGREGATE_ROOT_ID' | translate
+              'EXTERNAL_EVENTS.AGGREGATE_ROOT_ID' | appTranslate
             }}</ion-label>
             <ion-input
-              [attr.aria-label]="'EXTERNAL_EVENTS.AGGREGATE_ROOT_ID' | translate"
+              [attr.aria-label]="'EXTERNAL_EVENTS.AGGREGATE_ROOT_ID' | appTranslate"
               [(ngModel)]="filters.aggregateRootId"
             ></ion-input>
           </ion-item>
@@ -103,11 +105,11 @@ import {
             @if (isLoading()) {
               <ion-spinner name="crescent"></ion-spinner>
             } @else {
-              {{ 'EXTERNAL_EVENTS.LOAD' | translate }}
+              {{ 'EXTERNAL_EVENTS.LOAD' | appTranslate }}
             }
           </ion-button>
           <ion-button color="danger" (click)="clearAll()" [disabled]="isLoading()">
-            {{ 'EXTERNAL_EVENTS.CLEAR_ALL' | translate }}
+            {{ 'EXTERNAL_EVENTS.CLEAR_ALL' | appTranslate }}
           </ion-button>
         </div>
       </ion-card-content>
@@ -119,33 +121,33 @@ import {
           <table cdk-table [dataSource]="events()" class="full-width">
             <ng-container cdkColumnDef="idempotencyKey">
               <th cdk-header-cell *cdkHeaderCellDef>
-                {{ 'EXTERNAL_EVENTS.IDEMPOTENCY_KEY' | translate }}
+                {{ 'EXTERNAL_EVENTS.IDEMPOTENCY_KEY' | appTranslate }}
               </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.idempotencyKey }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="type">
-              <th cdk-header-cell *cdkHeaderCellDef>{{ 'EXTERNAL_EVENTS.TYPE' | translate }}</th>
+              <th cdk-header-cell *cdkHeaderCellDef>{{ 'EXTERNAL_EVENTS.TYPE' | appTranslate }}</th>
               <td cdk-cell *cdkCellDef="let row">{{ row.type }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="category">
               <th cdk-header-cell *cdkHeaderCellDef>
-                {{ 'EXTERNAL_EVENTS.CATEGORY' | translate }}
+                {{ 'EXTERNAL_EVENTS.CATEGORY' | appTranslate }}
               </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.category }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="aggregateRootId">
               <th cdk-header-cell *cdkHeaderCellDef>
-                {{ 'EXTERNAL_EVENTS.AGGREGATE_ROOT_ID' | translate }}
+                {{ 'EXTERNAL_EVENTS.AGGREGATE_ROOT_ID' | appTranslate }}
               </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.aggregateRootId }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="createdAt">
               <th cdk-header-cell *cdkHeaderCellDef>
-                {{ 'EXTERNAL_EVENTS.CREATED_AT' | translate }}
+                {{ 'EXTERNAL_EVENTS.CREATED_AT' | appTranslate }}
               </th>
               <td cdk-cell *cdkCellDef="let row">{{ row.createdAt | date: 'medium' }}</td>
             </ng-container>
@@ -188,7 +190,7 @@ export class ExternalEventsComponent {
   private defaultService = inject(DefaultService);
   private notifications = inject(NotificationService);
   private readonly dialogService = inject(DialogService);
-  private translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   filters = {
     idempotencyKey: '',
@@ -226,10 +228,10 @@ export class ExternalEventsComponent {
   clearAll(): void {
     // This was a snackbar with an action button, i.e. a confirmation prompt rather than a
     // notification. A dialog is the honest representation of that.
-    this.translate.get('EXTERNAL_EVENTS.CONFIRM_CLEAR').subscribe((msg: string) => {
+    this.i18n.translateAsync('EXTERNAL_EVENTS.CONFIRM_CLEAR').subscribe((msg: string) => {
       this.dialogService
         .confirm({
-          title: this.translate.instant('COMMON.CONFIRM'),
+          title: this.i18n.translate('COMMON.CONFIRM'),
           message: msg,
           destructive: true,
         })

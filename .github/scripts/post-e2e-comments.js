@@ -65,8 +65,14 @@ const path = require('node:path');
  *
  * An allow-list rather than a pattern: artifact *names* are chosen by the untrusted run, so
  * an unrecognised one is ignored rather than posted. Keys must match the `name:` given to
- * `upload-artifact` in e2e.yml.
+ * `upload-artifact` in e2e.yml and ci.yml, *and* the directory each one is downloaded into by
+ * pr-comments.yml — a body is bound to the marker it may post under by the directory it came
+ * from, so those three lists agreeing is what makes a comment appear at all.
+ * `scripts/pr-comment-actions.test.mjs` asserts the agreement, because pr-comments.yml cannot
+ * be exercised on the pull request that changes it.
  */
+const SUMMARIES_DIR = 'summaries';
+
 const KNOWN_SUMMARIES = {
   'pr-comment-e2e-mocked': {
     marker: '<!-- e2e-report-mocked -->',
@@ -99,6 +105,36 @@ const MAX_SUMMARY_CHARS = 60000;
  */
 function defuseReferences(text) {
   return text.replace(/@(?=[A-Za-z0-9])/g, '@​').replace(/#(?=\d)/g, '#​');
+}
+
+/**
+ * Describes what is actually under `summaries/`, for the log line when nothing was posted.
+ *
+ * The one-directory-per-artifact layout is an agreement with pr-comments.yml that no pull
+ * request can test, because a `workflow_run` workflow only ever runs the copy on the default
+ * branch. When it breaks, three "skipping" lines and a green check are the only trace — which
+ * is how a dropped diagram comment went unnoticed for six weeks. A `.md` sitting at the root
+ * instead of inside an artifact directory is that break, and is named here explicitly.
+ */
+function describeSummariesDir() {
+  let entries;
+  try {
+    entries = fs.readdirSync(SUMMARIES_DIR, { withFileTypes: true });
+  } catch {
+    return `${SUMMARIES_DIR}/ does not exist: no artifact was downloaded.`;
+  }
+  if (!entries.length) return `${SUMMARIES_DIR}/ is empty.`;
+
+  const strays = entries.filter((entry) => entry.isFile() && entry.name.endsWith('.md'));
+  const found = entries.map((entry) => (entry.isDirectory() ? `${entry.name}/` : entry.name));
+  const description = `${SUMMARIES_DIR}/ contains: ${found.join(', ')}.`;
+  if (!strays.length) return description;
+
+  return (
+    `${description} A .md at the root rather than inside an artifact directory means ` +
+    'download-artifact extracted without one — it does that whenever a run produced exactly ' +
+    'one match. Give each artifact its own named download step in pr-comments.yml.'
+  );
 }
 
 /** Reads whichever `.md` file the artifact contained, or null when there is none. */
@@ -172,7 +208,7 @@ async function upsert({ github, context, issueNumber, marker, body }) {
   return 'created';
 }
 
-module.exports = async ({ github, context, core }) => {
+const publish = async ({ github, context, core }) => {
   const run = context.payload.workflow_run;
   const log = core?.info ?? console.log;
 
@@ -188,7 +224,7 @@ module.exports = async ({ github, context, core }) => {
 
   let posted = 0;
   for (const [name, config] of Object.entries(KNOWN_SUMMARIES)) {
-    const raw = readSummary(path.join('summaries', name));
+    const raw = readSummary(path.join(SUMMARIES_DIR, name));
     if (raw === null) {
       log(`No summary in ${name}; skipping.`);
       continue;
@@ -231,5 +267,16 @@ module.exports = async ({ github, context, core }) => {
     posted += 1;
   }
 
-  if (!posted) log('No recognised summary artifacts were present.');
+  if (!posted) {
+    log(`No recognised summary artifacts were present. ${describeSummariesDir()}`);
+  }
 };
+
+module.exports = publish;
+
+// Exported for the unit tests; not used by the workflow.
+module.exports.KNOWN_SUMMARIES = KNOWN_SUMMARIES;
+module.exports.SUMMARIES_DIR = SUMMARIES_DIR;
+module.exports.defuseReferences = defuseReferences;
+module.exports.describeSummariesDir = describeSummariesDir;
+module.exports.readSummary = readSummary;

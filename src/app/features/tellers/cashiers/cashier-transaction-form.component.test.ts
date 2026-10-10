@@ -22,13 +22,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { CashierTransactionFormComponent } from './cashier-transaction-form.component';
-import { TellerCashManagementService } from '../../../api';
+import { TELLER_API, type TellerApi } from '../../../core/adapters';
 import { asyncOf, renderComponent } from '../../../testing/render';
 import { provideFakeAdapters } from '../../../testing/adapters';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
 
 describe('CashierTransactionFormComponent', () => {
-  let tellerServiceSpy: SpyObj<TellerCashManagementService>;
+  let tellerApiSpy: SpyObj<TellerApi>;
   let routerSpy: SpyObj<Router>;
 
   const TELLER_ID = 7;
@@ -41,7 +41,7 @@ describe('CashierTransactionFormComponent', () => {
         ...provideFakeAdapters().providers,
         provideNoopAnimations(),
         provideIonicTesting(),
-        { provide: TellerCashManagementService, useValue: tellerServiceSpy },
+        { provide: TELLER_API, useValue: tellerApiSpy },
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
@@ -54,26 +54,22 @@ describe('CashierTransactionFormComponent', () => {
   }
 
   beforeEach(() => {
-    tellerServiceSpy = createSpyObj([
-      'getTellersTellerIdCashiersCashierIdTransactionsTemplate',
-      'postTellersTellerIdCashiersCashierIdAllocate',
-      'postTellersTellerIdCashiersCashierIdSettle',
+    tellerApiSpy = createSpyObj<TellerApi>([
+      'cashierTransactionTemplate',
+      'allocateCash',
+      'settleCash',
     ]);
     routerSpy = createSpyObj(['navigate']);
 
-    tellerServiceSpy.getTellersTellerIdCashiersCashierIdTransactionsTemplate.mockReturnValue(
+    tellerApiSpy.cashierTransactionTemplate.mockReturnValue(
       asyncOf({
         cashierName: 'Officer, Probe',
         tellerName: 'Main Teller',
-        currencyOptions: [{ code: 'USD', name: 'US Dollar', displayLabel: 'US Dollar ($)' }],
+        currencies: [{ code: 'USD', label: 'US Dollar ($)' }],
       }) as unknown as Observable<never>,
     );
-    tellerServiceSpy.postTellersTellerIdCashiersCashierIdAllocate.mockReturnValue(
-      of({ resourceId: 1 }) as unknown as Observable<never>,
-    );
-    tellerServiceSpy.postTellersTellerIdCashiersCashierIdSettle.mockReturnValue(
-      of({ resourceId: 1 }) as unknown as Observable<never>,
-    );
+    tellerApiSpy.allocateCash.mockReturnValue(of(undefined) as unknown as Observable<never>);
+    tellerApiSpy.settleCash.mockReturnValue(of(undefined) as unknown as Observable<never>);
   });
 
   it('preselects the only currency the cashier may transact in', async () => {
@@ -84,7 +80,7 @@ describe('CashierTransactionFormComponent', () => {
     expect(fixture.componentInstance.currencyCode).toBe('USD');
   });
 
-  it('posts to the allocate command and zero-pads a single-digit day', async () => {
+  it('allocates the amount, note and day the form holds', async () => {
     const fixture = await render('allocate');
     const component = fixture.componentInstance;
 
@@ -93,28 +89,25 @@ describe('CashierTransactionFormComponent', () => {
     component.txnDate = new Date(2026, 7, 5);
     component.onSubmit();
 
-    expect(tellerServiceSpy.postTellersTellerIdCashiersCashierIdSettle).not.toHaveBeenCalled();
-    const [tellerId, cashierId, payload] =
-      tellerServiceSpy.postTellersTellerIdCashiersCashierIdAllocate.mock.lastCall!;
-
-    expect(tellerId).toBe(TELLER_ID);
-    expect(cashierId).toBe(CASHIER_ID);
-    // The padding is the point: Fineract parses strictly against the `dd` in dateFormat, so an
-    // unpadded '5 August 2026' fails to parse and comes back 500 rather than as a validation error.
-    expect(payload.txnDate).toBe('05 August 2026');
-    expect(payload.dateFormat).toBe('dd MMMM yyyy');
-    expect(payload.currencyCode).toBe('USD');
-    expect(payload.txnAmount).toBe(5000);
+    expect(tellerApiSpy.settleCash).not.toHaveBeenCalled();
+    // The day is sent as an ISO date. The adapter writes it in Fineract's padded format; that
+    // is asserted where it is written, in the adapter's spec.
+    expect(tellerApiSpy.allocateCash).toHaveBeenCalledWith(TELLER_ID, CASHIER_ID, {
+      currencyCode: 'USD',
+      amount: 5000,
+      date: '2026-08-05',
+      note: 'vault float',
+    });
   });
 
-  it('posts to the settle command when the route says so', async () => {
+  it('settles when the route says so', async () => {
     const fixture = await render('settle');
 
     fixture.componentInstance.txnAmount = 1200;
     fixture.componentInstance.onSubmit();
 
-    expect(tellerServiceSpy.postTellersTellerIdCashiersCashierIdAllocate).not.toHaveBeenCalled();
-    expect(tellerServiceSpy.postTellersTellerIdCashiersCashierIdSettle).toHaveBeenCalled();
+    expect(tellerApiSpy.allocateCash).not.toHaveBeenCalled();
+    expect(tellerApiSpy.settleCash).toHaveBeenCalled();
   });
 
   // One render per spec: TestBed cannot be reconfigured once a fixture has been created, so the
@@ -146,7 +139,7 @@ describe('CashierTransactionFormComponent', () => {
   });
 
   it('re-enables the submit button when the post fails', async () => {
-    tellerServiceSpy.postTellersTellerIdCashiersCashierIdAllocate.mockReturnValue(
+    tellerApiSpy.allocateCash.mockReturnValue(
       new Observable((subscriber) => subscriber.error(new Error('rejected'))) as Observable<never>,
     );
     const fixture = await render('allocate');

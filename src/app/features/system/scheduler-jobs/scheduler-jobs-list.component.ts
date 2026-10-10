@@ -19,7 +19,6 @@
 
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { DateTimePipe } from '../../../shared/pipes/date-time.pipe';
 import { forkJoin } from 'rxjs';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
@@ -46,7 +45,6 @@ import {
   selector: 'app-scheduler-jobs-list',
   standalone: true,
   imports: [
-    TranslateModule,
     TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
@@ -61,15 +59,15 @@ import {
   template: `
     <ion-card class="scheduler-status">
       <div class="status-row">
-        <span class="status-label">{{ 'SCHEDULER_JOBS.GLOBAL_STATUS' | translate }}:</span>
+        <span class="status-label">{{ 'SCHEDULER_JOBS.GLOBAL_STATUS' | appTranslate }}:</span>
         <span>{{
-          (schedulerActive() ? 'SCHEDULER_JOBS.RUNNING' : 'SCHEDULER_JOBS.STOPPED') | translate
+          (schedulerActive() ? 'SCHEDULER_JOBS.RUNNING' : 'SCHEDULER_JOBS.STOPPED') | appTranslate
         }}</span>
         <ion-toggle
           [checked]="schedulerActive()"
           (ionChange)="onToggleScheduler($event.detail.checked)"
         >
-          {{ 'SCHEDULER_JOBS.TOGGLE_SCHEDULER' | translate }}
+          {{ 'SCHEDULER_JOBS.TOGGLE_SCHEDULER' | appTranslate }}
         </ion-toggle>
       </div>
     </ion-card>
@@ -108,7 +106,7 @@ import {
         ></ion-checkbox>
       </ng-template>
       <ng-template appCellTemplate="active" let-row>
-        {{ (row.active ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+        {{ (row.active ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
       </ng-template>
       <ng-template appCellTemplate="nextRunTime" let-row>
         {{ row.nextRunTime | dateTime }}
@@ -117,8 +115,8 @@ import {
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'SCHEDULER_JOBS.RUN_NOW' | translate"
-          [appTooltip]="'SCHEDULER_JOBS.RUN_NOW' | translate"
+          [attr.aria-label]="'SCHEDULER_JOBS.RUN_NOW' | appTranslate"
+          [appTooltip]="'SCHEDULER_JOBS.RUN_NOW' | appTranslate"
           (click)="onRunNow(row)"
         >
           <ion-icon name="play-outline"></ion-icon>
@@ -126,8 +124,8 @@ import {
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'SCHEDULER_JOBS.HISTORY' | translate"
-          [appTooltip]="'SCHEDULER_JOBS.HISTORY' | translate"
+          [attr.aria-label]="'SCHEDULER_JOBS.HISTORY' | appTranslate"
+          [appTooltip]="'SCHEDULER_JOBS.HISTORY' | appTranslate"
           (click)="onHistory(row)"
         >
           <ion-icon name="time-outline"></ion-icon>

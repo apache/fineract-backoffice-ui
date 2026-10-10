@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -49,7 +49,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -67,16 +67,18 @@ import {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode() ? ('WC_BREACH.EDIT' | translate) : ('WC_BREACH.CREATE' | translate) }}
+            {{
+              isEditMode() ? ('WC_BREACH.EDIT' | appTranslate) : ('WC_BREACH.CREATE' | appTranslate)
+            }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #breachForm="ngForm" (ngSubmit)="onSubmit()" class="wc-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'WC_BREACH.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'WC_BREACH.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'WC_BREACH.NAME' | translate"
+                [attr.aria-label]="'WC_BREACH.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="breach().name"
                 required
@@ -84,9 +86,11 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'WC_BREACH.BREACH_AMOUNT' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'WC_BREACH.BREACH_AMOUNT' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'WC_BREACH.BREACH_AMOUNT' | translate"
+                [attr.aria-label]="'WC_BREACH.BREACH_AMOUNT' | appTranslate"
                 type="number"
                 name="breachAmount"
                 [(ngModel)]="breach().breachAmount"
@@ -95,10 +99,10 @@ import {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'WC_BREACH.CALCULATION_TYPE' | translate
+                'WC_BREACH.CALCULATION_TYPE' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'WC_BREACH.CALCULATION_TYPE' | translate"
+                [attr.aria-label]="'WC_BREACH.CALCULATION_TYPE' | appTranslate"
                 interface="popover"
                 name="calcType"
                 [(ngModel)]="breach().breachAmountCalculationType"
@@ -110,9 +114,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'WC_BREACH.FREQUENCY' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'WC_BREACH.FREQUENCY' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'WC_BREACH.FREQUENCY' | translate"
+                [attr.aria-label]="'WC_BREACH.FREQUENCY' | appTranslate"
                 type="number"
                 name="breachFrequency"
                 [(ngModel)]="breach().breachFrequency"
@@ -120,9 +124,11 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'WC_BREACH.FREQUENCY_TYPE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'WC_BREACH.FREQUENCY_TYPE' | appTranslate
+              }}</ion-label>
               <ion-select
-                [attr.aria-label]="'WC_BREACH.FREQUENCY_TYPE' | translate"
+                [attr.aria-label]="'WC_BREACH.FREQUENCY_TYPE' | appTranslate"
                 interface="popover"
                 name="freqType"
                 [(ngModel)]="breach().breachFrequencyType"
@@ -135,7 +141,7 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -144,9 +150,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

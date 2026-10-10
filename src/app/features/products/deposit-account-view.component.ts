@@ -17,11 +17,18 @@
  * under the License.
  */
 
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  computed,
+  inject,
+  signal,
+  viewChildren,
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, from, map } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { DecimalPipe, NgClass } from '@angular/common';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { EntityDatatablesComponent } from '../../shared/components/entity-datatables/entity-datatables.component';
@@ -118,7 +125,6 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
   selector: 'app-deposit-account-view',
   standalone: true,
   imports: [
-    TranslateModule,
     TranslatePipe,
     CdkTableModule,
     StatusBadgeComponent,
@@ -164,7 +170,7 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
             <div class="actions-area">
               <ion-button color="primary" id="actionsMenu-trigger" data-testid="deposit-actions">
                 <ion-icon name="settings-outline"></ion-icon>
-                {{ 'COMMON.ACTIONS' | translate }}
+                {{ 'COMMON.ACTIONS' | appTranslate }}
               </ion-button>
               <ion-popover trigger="actionsMenu-trigger" [dismissOnSelect]="true">
                 <ng-template>
@@ -172,11 +178,11 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                     @if (isPending()) {
                       <ion-item button data-testid="deposit-action-approve" (click)="onApprove()">
                         <ion-icon slot="start" name="checkmark-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.APPROVE' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.APPROVE' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item button data-testid="deposit-action-reject" (click)="onReject()">
                         <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.REJECT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.REJECT' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -184,13 +190,13 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                         (click)="onWithdrawnByApplicant()"
                       >
                         <ion-icon slot="start" name="person-remove-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.WITHDRAWN_BY_CLIENT' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.WITHDRAWN_BY_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                     }
                     @if (isApproved()) {
                       <ion-item button data-testid="deposit-action-activate" (click)="onActivate()">
                         <ion-icon slot="start" name="play-circle-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.ACTIVATE' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.ACTIVATE' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -198,13 +204,13 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                         (click)="onUndoApproval()"
                       >
                         <ion-icon slot="start" name="arrow-undo-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.UNDO_APPROVAL' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.UNDO_APPROVAL' | appTranslate }}</ion-label>
                       </ion-item>
                     }
                     @if (isActive()) {
                       <ion-item button data-testid="deposit-action-deposit" (click)="onDeposit()">
                         <ion-icon slot="start" name="add-outline"></ion-icon>
-                        <ion-label>{{ 'SAVINGS.DEPOSIT' | translate }}</ion-label>
+                        <ion-label>{{ 'SAVINGS.DEPOSIT' | appTranslate }}</ion-label>
                       </ion-item>
                       <!-- Withdrawal is a recurring-deposit capability only. A fixed deposit
                            refuses it outright — see onWithdraw. -->
@@ -215,7 +221,7 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                           (click)="onWithdraw()"
                         >
                           <ion-icon slot="start" name="remove-outline"></ion-icon>
-                          <ion-label>{{ 'SAVINGS.WITHDRAW' | translate }}</ion-label>
+                          <ion-label>{{ 'SAVINGS.WITHDRAW' | appTranslate }}</ion-label>
                         </ion-item>
                       }
                       <ion-item
@@ -224,7 +230,7 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                         (click)="onPostInterest()"
                       >
                         <ion-icon slot="start" name="cash-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.POST_INTEREST' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.POST_INTEREST' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item
                         button
@@ -232,16 +238,16 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                         (click)="onPrematureClose()"
                       >
                         <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.PREMATURE_CLOSE' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.PREMATURE_CLOSE' | appTranslate }}</ion-label>
                       </ion-item>
                       <ion-item button data-testid="deposit-action-close" (click)="onClose()">
                         <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
-                        <ion-label>{{ 'ACTIONS.CLOSE' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.CLOSE' | appTranslate }}</ion-label>
                       </ion-item>
                     }
                     @if (!isPending() && !isApproved() && !isActive()) {
                       <ion-item data-testid="deposit-no-actions">
-                        <ion-label>{{ 'ACTIONS.NONE_AVAILABLE' | translate }}</ion-label>
+                        <ion-label>{{ 'ACTIONS.NONE_AVAILABLE' | appTranslate }}</ion-label>
                       </ion-item>
                     }
                   </ion-list>
@@ -250,7 +256,7 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
 
               <ion-button fill="clear" (click)="onBack()">
                 <ion-icon name="arrow-back-outline"></ion-icon>
-                {{ 'COMMON.BACK' | translate }}
+                {{ 'COMMON.BACK' | appTranslate }}
               </ion-button>
             </div>
           </ion-card-content>
@@ -258,10 +264,10 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
 
         <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
           <ion-segment-button [value]="TAB.overview">
-            <ion-label>{{ 'COMMON.OVERVIEW' | translate }}</ion-label>
+            <ion-label>{{ 'COMMON.OVERVIEW' | appTranslate }}</ion-label>
           </ion-segment-button>
           <ion-segment-button [value]="TAB.transactions" data-testid="deposit-tab-transactions">
-            <ion-label>{{ 'COMMON.TRANSACTIONS' | translate }}</ion-label>
+            <ion-label>{{ 'COMMON.TRANSACTIONS' | appTranslate }}</ion-label>
           </ion-segment-button>
           <ion-segment-button [value]="TAB.charges" data-testid="deposit-tab-charges">
             <ion-label>{{ 'LOANS.CHARGES' | appTranslate }}</ion-label>
@@ -279,7 +285,7 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
             <ion-label>{{ 'SAVINGS.STANDING_INSTRUCTIONS' | appTranslate }}</ion-label>
           </ion-segment-button>
           <ion-segment-button [value]="TAB.customFields">
-            <ion-label>{{ 'SYSTEM.CUSTOM_FIELDS' | translate }}</ion-label>
+            <ion-label>{{ 'SYSTEM.CUSTOM_FIELDS' | appTranslate }}</ion-label>
           </ion-segment-button>
         </ion-segment>
 
@@ -288,21 +294,21 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
             <div class="info-grid">
               <ion-card class="info-card">
                 <ion-card-header>
-                  <ion-card-title>{{ 'COMMON.DETAILS' | translate }}</ion-card-title>
+                  <ion-card-title>{{ 'COMMON.DETAILS' | appTranslate }}</ion-card-title>
                 </ion-card-header>
                 <ion-card-content class="details-list">
                   <div class="detail-item">
-                    <span class="label">{{ 'COMMON.BALANCE' | translate }}</span>
+                    <span class="label">{{ 'COMMON.BALANCE' | appTranslate }}</span>
                     <span class="value"
                       >{{ getCurrencySymbol() }} {{ getAccountBalance() | number: '1.2-2' }}</span
                     >
                   </div>
                   <div class="detail-item">
-                    <span class="label">{{ 'COMMON.INTEREST_RATE' | translate }}</span>
+                    <span class="label">{{ 'COMMON.INTEREST_RATE' | appTranslate }}</span>
                     <span class="value">{{ account()?.['nominalAnnualInterestRate'] }}%</span>
                   </div>
                   <div class="detail-item">
-                    <span class="label">{{ 'SAVINGS.MIN_BALANCE_REQUIRED' | translate }}</span>
+                    <span class="label">{{ 'SAVINGS.MIN_BALANCE_REQUIRED' | appTranslate }}</span>
                     <span class="value">{{ account()?.['minRequiredOpeningBalance'] }}</span>
                   </div>
                 </ion-card-content>
@@ -310,11 +316,11 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
 
               <ion-card class="info-card">
                 <ion-card-header>
-                  <ion-card-title>{{ 'LOANS.TIMELINE_STATUS' | translate }}</ion-card-title>
+                  <ion-card-title>{{ 'LOANS.TIMELINE_STATUS' | appTranslate }}</ion-card-title>
                 </ion-card-header>
                 <ion-card-content class="details-list">
                   <div class="detail-item">
-                    <span class="label">{{ 'COMMON.ACTIVATION_DATE' | translate }}</span>
+                    <span class="label">{{ 'COMMON.ACTIVATION_DATE' | appTranslate }}</span>
                     <span class="value">{{ getActivationDate() }}</span>
                   </div>
                 </ion-card-content>
@@ -331,15 +337,15 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                   <td cdk-cell *cdkCellDef="let tx">{{ tx.id }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="date">
-                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.DATE' | translate }}</th>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.DATE' | appTranslate }}</th>
                   <td cdk-cell *cdkCellDef="let tx">{{ formatDate(tx.date) }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="type">
-                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.TYPE' | translate }}</th>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.TYPE' | appTranslate }}</th>
                   <td cdk-cell *cdkCellDef="let tx">{{ tx.transactionType?.value }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="amount">
-                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.AMOUNT' | translate }}</th>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.AMOUNT' | appTranslate }}</th>
                   <td cdk-cell *cdkCellDef="let tx">
                     <span
                       [ngClass]="{
@@ -354,14 +360,14 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                 </ng-container>
                 <ng-container cdkColumnDef="runningBalance">
                   <th cdk-header-cell *cdkHeaderCellDef>
-                    {{ 'COMMON.RUNNING_BALANCE' | translate }}
+                    {{ 'COMMON.RUNNING_BALANCE' | appTranslate }}
                   </th>
                   <td cdk-cell *cdkCellDef="let tx">
                     {{ tx.currency?.displaySymbol }} {{ tx.runningBalance || 0 | number: '1.2-2' }}
                   </td>
                 </ng-container>
                 <ng-container cdkColumnDef="actions">
-                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACTIONS' | translate }}</th>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACTIONS' | appTranslate }}</th>
                   <td cdk-cell *cdkCellDef="let tx">
                     @if (canUndo(tx)) {
                       <ion-button
@@ -369,14 +375,14 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                         color="danger"
                         size="small"
                         [attr.data-testid]="'deposit-tx-undo-' + tx.id"
-                        [attr.aria-label]="'ACTIONS.UNDO_TRANSACTION' | translate"
+                        [attr.aria-label]="'ACTIONS.UNDO_TRANSACTION' | appTranslate"
                         (click)="onUndoTransaction(tx)"
                       >
                         <ion-icon name="arrow-undo-outline"></ion-icon>
                       </ion-button>
                     } @else if (tx.reversed) {
                       <span class="reversed-marker" data-testid="deposit-tx-reversed">
-                        {{ 'COMMON.REVERSED' | translate }}
+                        {{ 'COMMON.REVERSED' | appTranslate }}
                       </span>
                     }
                   </td>
@@ -387,7 +393,7 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
             } @else {
               <div class="empty-state" data-testid="deposit-no-transactions">
                 <ion-icon name="receipt-outline"></ion-icon>
-                <p>{{ 'LOANS.NO_TRANSACTIONS' | translate }}</p>
+                <p>{{ 'LOANS.NO_TRANSACTIONS' | appTranslate }}</p>
               </div>
             }
           </div>
@@ -671,10 +677,12 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
     `,
   ],
 })
-export class DepositAccountViewComponent implements OnInit {
+export class DepositAccountViewComponent implements OnInit, OnDestroy {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
   /** Exposed so the template names its tabs instead of numbering them. */
   protected readonly TAB = DEPOSIT_TAB;
+
+  private readonly popovers = viewChildren(IonPopover);
 
   readonly activeTab = signal<DepositTab>(DEPOSIT_TAB.overview);
   private readonly fdService = inject(FixedDepositAccountService);
@@ -706,6 +714,12 @@ export class DepositAccountViewComponent implements OnInit {
     this.accountId = Number(this.route.snapshot.paramMap.get('id'));
     this.isRD = this.router.url.includes('recurring');
     this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    for (const popover of this.popovers()) {
+      void popover.dismiss().catch(() => false);
+    }
   }
 
   /**

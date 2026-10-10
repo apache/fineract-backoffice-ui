@@ -145,6 +145,11 @@ jobs:
       # ReportingMissingTranslationHandler and the failOnMissingTranslations fixture.
       - name: Verify translations
         run: npm run i18n:check
+      # The one shape i18n:check cannot see: English written straight into a template, with no
+      # key and no pipe. Nothing is looked up, so nothing misses and no raw key ever appears —
+      # the text simply stays English in every language. Per-file baseline, shrinking only.
+      - name: Verify no new untranslated template text
+        run: npm run check:template-text
       - name: Verify every icon name is registered
         run: npm run check:icons
       - name: Verify every icon-only button has an accessible name
@@ -164,6 +169,12 @@ jobs:
       # missing from the menu that the URL still opens. This compares them.
       - name: Verify route permissions agree with navigation
         run: npm run check:route-permissions
+      # A gate on a permission code Fineract does not define can never be satisfied by any
+      # role, so the control it protects is disabled forever and looks exactly like one the
+      # viewer is not entitled to. Two had shipped that way. Checked against a committed
+      # snapshot, so this needs no Fineract running.
+      - name: Verify every permission code exists in Fineract's catalogue
+        run: npm run check:permission-codes
       # Navigation ids are the handle a deployment's config names, in a file this repository
       # never sees. A renamed or removed id silently stops matching there, so the menu a
       # deployment meant to change comes back on upgrade with no error anywhere. The same check

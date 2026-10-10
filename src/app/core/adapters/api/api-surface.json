@@ -440,6 +440,7 @@
     "getLoansRepaymentsDownloadtemplate",
     "postLoans",
     "postLoansLoanId",
+    "postLoansLoanIdDelinquencyActions",
     "postLoansRepaymentsUploadtemplate",
     "postLoansUploadtemplate",
     "putLoansLoanId",

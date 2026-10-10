@@ -22,6 +22,18 @@ body:
   - type: markdown
     attributes:
       value: |
+        **Worth raising on the developer mailing list too.** That is where the Fineract
+        project decides what it builds, so a feature discussed there arrives with context
+        and often a reviewer, while one that only exists in a GitHub issue starts cold.
+        Subscribe with a blank email to <dev-subscribe@fineract.apache.org>, then post to
+        <dev@fineract.apache.org> — the
+        [archive](https://lists.apache.org/list.html?dev@fineract.apache.org) is worth a
+        search first.
+
+        For a quicker "is anyone already doing this?", the project chats on Matrix:
+        [the Fineract space](https://matrix.to/#/%23apache-fineract-home:matrix.org) and
+        [the developer room](https://matrix.to/#/%23apache-fineract-dev:matrix.org).
+
         If the capability does not exist in the Fineract API yet, it needs to land there
         first — raise that in the
         [ASF Jira project](https://issues.apache.org/jira/projects/FINERACT).

@@ -17,13 +17,15 @@
  * under the License.
  */
 
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   CollectionSheetService,
   OfficesService,
+  StaffService,
+  StaffData,
   CollectionSheetRequest,
   PostCollectionSheetResponse,
 } from '../../api';
@@ -41,7 +43,6 @@ import {
   IonCardTitle,
   IonDatetime,
   IonDatetimeButton,
-  IonInput,
   IonItem,
   IonLabel,
   IonModal,
@@ -57,10 +58,9 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
-    IonInput,
     IonItem,
     IonLabel,
     IonCardContent,
@@ -76,7 +76,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'COLLECTION_SHEET.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'COLLECTION_SHEET.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         @if (isLoading()) {
@@ -88,12 +88,15 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
         @if (!generated() && !isLoading()) {
           <form #filterForm="ngForm" (ngSubmit)="generate()">
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{ 'COLLECTION_SHEET.OFFICE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'COLLECTION_SHEET.OFFICE' | appTranslate
+              }}</ion-label>
               <ion-select
-                [attr.aria-label]="'COLLECTION_SHEET.OFFICE' | translate"
+                [attr.aria-label]="'COLLECTION_SHEET.OFFICE' | appTranslate"
                 interface="popover"
                 name="officeId"
                 [(ngModel)]="request.officeId"
+                (ngModelChange)="onOfficeChange($event)"
                 required
               >
                 @for (office of offices(); track office.id) {
@@ -103,7 +106,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
             </ion-item>
 
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{ 'COLLECTION_SHEET.DATE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'COLLECTION_SHEET.DATE' | appTranslate }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="transactionDate-picker"></ion-datetime-button>
               }
@@ -121,34 +124,64 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               </ion-modal>
             </ion-item>
 
+            <!--
+              A select, not the number box this was: it asked for a staff member's database id,
+              which nobody operating a branch knows. The options come from the office, the way
+              Fineract scopes staff.
+            -->
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{ 'COLLECTION_SHEET.STAFF' | translate }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'COLLECTION_SHEET.STAFF' | translate"
-                type="number"
+              <ion-label position="stacked">{{
+                'COLLECTION_SHEET.STAFF' | appTranslate
+              }}</ion-label>
+              <ion-select
+                [attr.aria-label]="'COLLECTION_SHEET.STAFF' | appTranslate"
+                interface="popover"
                 name="staffId"
+                data-testid="collection-sheet-staff"
+                [disabled]="request.officeId === undefined"
                 [(ngModel)]="staffId"
-              ></ion-input>
+              >
+                @for (member of staff(); track member.id) {
+                  <ion-select-option [value]="member.id">{{
+                    member.displayName
+                  }}</ion-select-option>
+                }
+              </ion-select>
             </ion-item>
 
             <div class="actions">
               <ion-button color="primary" type="submit" [disabled]="filterForm.invalid">
-                {{ 'COLLECTION_SHEET.GENERATE' | translate }}
+                {{ 'COLLECTION_SHEET.GENERATE' | appTranslate }}
               </ion-button>
             </div>
           </form>
         }
 
         @if (generated() && !isLoading()) {
-          <h3>{{ 'COLLECTION_SHEET.RESULTS' | translate }}</h3>
-          <pre class="json-output">{{ collectionData() | json }}</pre>
+          <h3>{{ 'COLLECTION_SHEET.RESULTS' | appTranslate }}</h3>
+          <!--
+            Fineract answers command=generate with 200 and an empty body when nothing is due,
+            which arrives as null. This used to print the word "null" under the heading and still
+            offer Save, so the operator was invited to save nothing.
+          -->
+          @if (hasSheet()) {
+            <pre class="json-output" data-testid="collection-sheet-results">{{
+              collectionData() | json
+            }}</pre>
+          } @else {
+            <p class="empty-state" role="status" data-testid="collection-sheet-empty">
+              {{ 'COLLECTION_SHEET.NOTHING_DUE' | appTranslate }}
+            </p>
+          }
           <div class="actions">
             <ion-button fill="clear" (click)="back()">
-              {{ 'COLLECTION_SHEET.BACK' | translate }}
+              {{ 'COLLECTION_SHEET.BACK' | appTranslate }}
             </ion-button>
-            <ion-button color="primary" (click)="save()">
-              {{ 'COLLECTION_SHEET.SAVE' | translate }}
-            </ion-button>
+            @if (hasSheet()) {
+              <ion-button color="primary" (click)="save()">
+                {{ 'COLLECTION_SHEET.SAVE' | appTranslate }}
+              </ion-button>
+            }
           </div>
         }
       </ion-card-content>
@@ -193,6 +226,7 @@ export class CollectionSheetComponent implements OnInit {
 
   private collectionSheetService = inject(CollectionSheetService);
   private officesService = inject(OfficesService);
+  private staffService = inject(StaffService);
   private notifications = inject(NotificationService);
 
   readonly generated = signal(false);
@@ -203,6 +237,19 @@ export class CollectionSheetComponent implements OnInit {
   request: CollectionSheetRequest = { locale: 'en' };
 
   readonly offices = signal<{ id?: number; name?: string }[]>([]);
+  readonly staff = signal<StaffData[]>([]);
+
+  /**
+   * Whether the generated sheet holds anything.
+   *
+   * `command=generate` answers 200 with an empty body when nothing is due in the period, which
+   * `HttpClient` delivers as `null`.
+   */
+  readonly hasSheet = computed(() => {
+    const data = this.collectionData();
+    return data !== null && data !== undefined && Object.keys(data).length > 0;
+  });
+
   ngOnInit(): void {
     this.officesService.getOffices().subscribe({
       next: (res: unknown) => {
@@ -214,9 +261,27 @@ export class CollectionSheetComponent implements OnInit {
     });
   }
 
+  /**
+   * Reloads the staff list for the chosen office, and drops a selection the new office has no
+   * staff member for — Fineract refuses a staffId from another office.
+   */
+  onOfficeChange(officeId: number | undefined): void {
+    this.staffId = null;
+    this.staff.set([]);
+    if (officeId === undefined || officeId === null) return;
+
+    this.staffService.getStaff(officeId).subscribe({
+      next: (members: StaffData[]) => this.staff.set(members ?? []),
+      error: () => this.notifications.error('Failed to load staff'),
+    });
+  }
+
   private buildBody(): CollectionSheetRequest {
     return {
       ...this.request,
+      // Was collected by the form and then dropped on the floor: `staffId` is a field of its own
+      // rather than part of `request`, and this method spread `request` alone.
+      ...(this.staffId === null ? {} : { staffId: this.staffId }),
       transactionDate: formatDateToFineract(this.transactionDate),
       dateFormat: FINERACT_DATE_FORMAT,
     };

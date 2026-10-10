@@ -33,8 +33,8 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 
-import { GetOfficesResponse, OfficesService, StaffService } from '../../../api';
-import { TranslatePipe } from '../../../core/adapters';
+import { OFFICE_API, STAFF_API, TranslatePipe } from '../../../core/adapters';
+import type { Office, Staff } from '../../../core/adapters';
 import { EntityDatatablesComponent } from '../../../shared/components/entity-datatables/entity-datatables.component';
 import { RequiresPermissionDirective } from '../../../shared';
 
@@ -115,6 +115,12 @@ export type OfficeTab = (typeof OFFICE_TAB)[keyof typeof OFFICE_TAB];
                 <dd>{{ branch.hierarchy }}</dd>
 
                 <dt>{{ 'OFFICES.OPENING_DATE' | appTranslate }}</dt>
+                <!--
+                  An ISO 'YYYY-MM-DD' string from the adapter. It used to be the raw
+                  [year, month, day] array, which the date pipe rendered correctly only
+                  because V8 parses the array's string form leniently - behaviour ECMA-262
+                  leaves implementation-defined, so it was never guaranteed off Chromium.
+                -->
                 <dd>{{ branch.openingDate | date: 'mediumDate' }}</dd>
 
                 @if (branch.externalId) {
@@ -192,13 +198,13 @@ export type OfficeTab = (typeof OFFICE_TAB)[keyof typeof OFFICE_TAB];
   ],
 })
 export class OfficeViewComponent implements OnInit {
-  private readonly officesService = inject(OfficesService);
-  private readonly staffService = inject(StaffService);
+  private readonly officeApi = inject(OFFICE_API);
+  private readonly staffApi = inject(STAFF_API);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  readonly office = signal<GetOfficesResponse | null>(null);
-  readonly staff = signal<{ id?: number; displayName?: string }[]>([]);
+  readonly office = signal<Office | null>(null);
+  readonly staff = signal<readonly Staff[]>([]);
   readonly isLoading = signal(true);
   /** Exposed so the template names its tabs instead of numbering them. */
   protected readonly TAB = OFFICE_TAB;
@@ -212,7 +218,7 @@ export class OfficeViewComponent implements OnInit {
       return;
     }
 
-    this.officesService.getOfficesOfficeId(id).subscribe({
+    this.officeApi.get(id).subscribe({
       next: (office) => {
         this.office.set(office);
         this.isLoading.set(false);
@@ -223,8 +229,9 @@ export class OfficeViewComponent implements OnInit {
       },
     });
 
-    this.staffService.getStaff(id).subscribe({
-      next: (members) => this.staff.set(members ?? []),
+    // Staff are scoped by office, which is the whole point of passing the id.
+    this.staffApi.list({ officeId: id }).subscribe({
+      next: (members) => this.staff.set(members),
       error: () => this.staff.set([]),
     });
   }

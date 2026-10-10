@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { DefaultService } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -49,7 +49,7 @@ interface SmsCampaign {
     CommonModule,
     CdkTableModule,
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     IonIcon,
     IonButton,
     IonSpinner,
@@ -62,11 +62,11 @@ interface SmsCampaign {
     <div class="container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'SMS_CAMPAIGNS.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'SMS_CAMPAIGNS.TITLE' | appTranslate }}</ion-card-title>
           <div class="header-actions">
             <ion-button color="primary" [routerLink]="['/campaigns/sms/create']">
               <ion-icon name="add-outline"></ion-icon>
-              {{ 'SMS_CAMPAIGNS.CREATE' | translate }}
+              {{ 'SMS_CAMPAIGNS.CREATE' | appTranslate }}
             </ion-button>
           </div>
         </ion-card-header>
@@ -84,30 +84,34 @@ interface SmsCampaign {
               </ng-container>
 
               <ng-container cdkColumnDef="campaignName">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'SMS_CAMPAIGNS.NAME' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'SMS_CAMPAIGNS.NAME' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.campaignName }}</td>
               </ng-container>
 
               <ng-container cdkColumnDef="campaignType">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'SMS_CAMPAIGNS.TYPE' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>{{ 'SMS_CAMPAIGNS.TYPE' | appTranslate }}</th>
                 <td cdk-cell *cdkCellDef="let row">
                   {{ row.campaignType?.value ?? row.campaignType }}
                 </td>
               </ng-container>
 
               <ng-container cdkColumnDef="status">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'SMS_CAMPAIGNS.STATUS' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>
+                  {{ 'SMS_CAMPAIGNS.STATUS' | appTranslate }}
+                </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.status?.value ?? row.status }}</td>
               </ng-container>
 
               <ng-container cdkColumnDef="actions">
-                <th cdk-header-cell *cdkHeaderCellDef>{{ 'SMS_CAMPAIGNS.ACTIONS' | translate }}</th>
+                <th cdk-header-cell *cdkHeaderCellDef>
+                  {{ 'SMS_CAMPAIGNS.ACTIONS' | appTranslate }}
+                </th>
                 <td cdk-cell *cdkCellDef="let row">
                   <ion-button
                     fill="clear"
                     color="primary"
                     (click)="edit(row.id)"
-                    [attr.aria-label]="'SMS_CAMPAIGNS.EDIT' | translate"
+                    [attr.aria-label]="'SMS_CAMPAIGNS.EDIT' | appTranslate"
                   >
                     <ion-icon name="create-outline"></ion-icon>
                   </ion-button>
@@ -115,7 +119,7 @@ interface SmsCampaign {
                     fill="clear"
                     color="secondary"
                     (click)="activate(row.id)"
-                    [attr.aria-label]="'SMS_CAMPAIGNS.ACTIVATE' | translate"
+                    [attr.aria-label]="'SMS_CAMPAIGNS.ACTIVATE' | appTranslate"
                   >
                     <ion-icon name="play-outline"></ion-icon>
                   </ion-button>
@@ -123,7 +127,7 @@ interface SmsCampaign {
                     fill="clear"
                     color="danger"
                     (click)="deactivate(row.id)"
-                    [attr.aria-label]="'SMS_CAMPAIGNS.DEACTIVATE' | translate"
+                    [attr.aria-label]="'SMS_CAMPAIGNS.DEACTIVATE' | appTranslate"
                   >
                     <ion-icon name="pause-outline"></ion-icon>
                   </ion-button>
@@ -131,7 +135,7 @@ interface SmsCampaign {
                     fill="clear"
                     color="danger"
                     (click)="delete(row.id)"
-                    [attr.aria-label]="'SMS_CAMPAIGNS.DELETE' | translate"
+                    [attr.aria-label]="'SMS_CAMPAIGNS.DELETE' | appTranslate"
                   >
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>
@@ -144,7 +148,7 @@ interface SmsCampaign {
               @if (campaigns().length === 0) {
                 <tr class="cdk-row">
                   <td class="cdk-cell no-data-cell" [attr.colspan]="displayedColumns.length">
-                    {{ 'SMS_CAMPAIGNS.NO_DATA' | translate }}
+                    {{ 'SMS_CAMPAIGNS.NO_DATA' | appTranslate }}
                   </td>
                 </tr>
               }
@@ -187,7 +191,7 @@ export class SmsCampaignsListComponent implements OnInit {
   private readonly api = inject(DefaultService);
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly campaigns = signal<SmsCampaign[]>([]);
   readonly loading = signal(false);
@@ -250,10 +254,10 @@ export class SmsCampaignsListComponent implements OnInit {
   }
 
   private showSuccess(): void {
-    this.notifications.success(this.translate.instant('SMS_CAMPAIGNS.SUCCESS'));
+    this.notifications.success(this.i18n.translate('SMS_CAMPAIGNS.SUCCESS'));
   }
 
   private showError(): void {
-    this.notifications.error(this.translate.instant('COMMON.ERROR'));
+    this.notifications.error(this.i18n.translate('COMMON.ERROR'));
   }
 }

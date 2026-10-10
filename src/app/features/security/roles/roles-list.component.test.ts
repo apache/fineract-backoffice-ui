@@ -20,29 +20,32 @@
 import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RolesListComponent } from './roles-list.component';
-import { RolesService, GetRolesResponse } from '../../../api';
+import { ROLE_API } from '../../../core/adapters';
+import type { Role, RoleApi } from '../../../core/adapters';
 import { Router } from '@angular/router';
-import { of, throwError, Observable } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('RolesListComponent', () => {
   let component: RolesListComponent;
   let fixture: ComponentFixture<RolesListComponent>;
-  let rolesServiceSpy: SpyObj<RolesService>;
+  let roleApiSpy: SpyObj<RoleApi>;
   let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    rolesServiceSpy = createSpyObj(['getRoles']);
+    roleApiSpy = createSpyObj(['list', 'get', 'permissions', 'create', 'update', 'setPermissions']);
     routerSpy = createSpyObj(['navigate']);
 
-    rolesServiceSpy.getRoles.mockReturnValue(of([]) as unknown as Observable<never>);
+    // Typed by the contract, so no cast: that the fixtures below need no
+    // `as unknown as Observable<never>` is the point of migrating the spec with the component.
+    roleApiSpy.list.mockReturnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [RolesListComponent],
       providers: [
         ...provideTranslateTesting(),
-        { provide: RolesService, useValue: rolesServiceSpy },
+        { provide: ROLE_API, useValue: roleApiSpy },
         { provide: Router, useValue: routerSpy },
         provideNoopAnimations(),
       ],
@@ -53,23 +56,21 @@ describe('RolesListComponent', () => {
   });
 
   it('should create and load roles on init', () => {
-    const mockRoles = [
+    const mockRoles: Role[] = [
       { id: 1, name: 'Admin', description: 'Administrator' },
       { id: 2, name: 'User', description: 'Regular User' },
     ];
-    rolesServiceSpy.getRoles.mockReturnValue(of(mockRoles) as unknown as Observable<never>);
+    roleApiSpy.list.mockReturnValue(of(mockRoles));
 
     fixture.detectChanges();
 
     expect(component).toBeTruthy();
-    expect(rolesServiceSpy.getRoles).toHaveBeenCalled();
-    expect(component.roles()).toEqual(mockRoles as unknown as GetRolesResponse[]);
+    expect(roleApiSpy.list).toHaveBeenCalled();
+    expect(component.roles()).toEqual(mockRoles);
   });
 
   it('should handle error when loading roles', () => {
-    rolesServiceSpy.getRoles.mockReturnValue(
-      throwError(() => new Error('Error')) as unknown as Observable<never>,
-    );
+    roleApiSpy.list.mockReturnValue(throwError(() => new Error('Error')));
     vi.spyOn(console, 'error');
 
     fixture.detectChanges();
@@ -84,8 +85,8 @@ describe('RolesListComponent', () => {
   });
 
   it('should navigate to edit role page', () => {
-    const mockRole = { id: 10, name: 'Officer' };
-    component.onEditRole(mockRole as unknown as GetRolesResponse);
+    const mockRole: Role = { id: 10, name: 'Officer', description: 'Books loans' };
+    component.onEditRole(mockRole);
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/security/roles/edit', 10]);
   });
 });

@@ -20,7 +20,7 @@
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { TranslateService } from '@ngx-translate/core';
+import { I18N } from '../adapters';
 import { NotificationService } from '../services/notification.service';
 import { GlobalErrorHandler } from './global-error-handler';
 
@@ -37,8 +37,8 @@ describe('GlobalErrorHandler', () => {
         GlobalErrorHandler,
         { provide: NotificationService, useValue: notificationsSpy },
         {
-          provide: TranslateService,
-          useValue: { instant: (key: string) => key } as Partial<TranslateService>,
+          provide: I18N,
+          useValue: { translate: (key: string) => key },
         },
       ],
     });

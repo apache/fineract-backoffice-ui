@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { AdhocQueryApiService, AdHocRequest, EnumOptionData } from '../../../api';
 import {
   IonButton,
@@ -46,7 +46,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -67,7 +67,9 @@ import {
         <ion-card-header>
           <ion-card-title>
             {{
-              isEditMode() ? ('ADHOC_QUERY.EDIT' | translate) : ('ADHOC_QUERY.CREATE' | translate)
+              isEditMode()
+                ? ('ADHOC_QUERY.EDIT' | appTranslate)
+                : ('ADHOC_QUERY.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -75,9 +77,9 @@ import {
         <ion-card-content>
           <form #adhocForm="ngForm" (ngSubmit)="onSubmit()" class="entity-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'ADHOC_QUERY.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'ADHOC_QUERY.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'ADHOC_QUERY.NAME' | translate"
+                [attr.aria-label]="'ADHOC_QUERY.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="query().name"
                 required
@@ -85,9 +87,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'ADHOC_QUERY.QUERY' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'ADHOC_QUERY.QUERY' | appTranslate }}</ion-label>
               <ion-textarea
-                [attr.aria-label]="'ADHOC_QUERY.QUERY' | translate"
+                [attr.aria-label]="'ADHOC_QUERY.QUERY' | appTranslate"
                 name="query"
                 [(ngModel)]="query().query"
                 required
@@ -95,9 +97,11 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'ADHOC_QUERY.TABLE_NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'ADHOC_QUERY.TABLE_NAME' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'ADHOC_QUERY.TABLE_NAME' | translate"
+                [attr.aria-label]="'ADHOC_QUERY.TABLE_NAME' | appTranslate"
                 name="tableName"
                 [(ngModel)]="query().tableName"
                 required
@@ -106,10 +110,10 @@ import {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'ADHOC_QUERY.REPORT_RUN_FREQUENCY' | translate
+                'ADHOC_QUERY.REPORT_RUN_FREQUENCY' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'ADHOC_QUERY.REPORT_RUN_FREQUENCY' | translate"
+                [attr.aria-label]="'ADHOC_QUERY.REPORT_RUN_FREQUENCY' | appTranslate"
                 interface="popover"
                 name="reportRunFrequency"
                 [(ngModel)]="query().reportRunFrequency"
@@ -121,12 +125,12 @@ import {
             </ion-item>
 
             <ion-checkbox name="isActive" [(ngModel)]="query().isActive">
-              {{ 'ADHOC_QUERY.IS_ACTIVE' | translate }}
+              {{ 'ADHOC_QUERY.IS_ACTIVE' | appTranslate }}
             </ion-checkbox>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -135,9 +139,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

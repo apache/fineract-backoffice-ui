@@ -22,6 +22,50 @@ under the License.
 Thank you for your interest in contributing! This is a back-office web client for
 [Apache Fineract](https://github.com/apache/fineract).
 
+## Talk to the community first
+
+This repository is one part of the Apache Fineract project, and the people who can tell
+you whether an idea already exists, is already being worked on, or belongs somewhere else
+are on the project's own channels rather than in a GitHub thread.
+
+**The developer mailing list is where decisions are made.** It is the ASF's system of
+record: anything that shapes the project is expected to happen there, so a feature nobody
+has seen on the list has not really been proposed yet.
+
+|                        |                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| Subscribe              | Send a blank email to <dev-subscribe@fineract.apache.org>                      |
+| Post                   | <dev@fineract.apache.org>                                                      |
+| Read the archive first | [lists.apache.org](https://lists.apache.org/list.html?dev@fineract.apache.org) |
+
+**Matrix is where the day-to-day conversation happens.** Faster than email, and the right
+place for "is anyone already doing this?" before you spend a weekend on it.
+
+|                    |                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| Space (start here) | [#apache-fineract-home:matrix.org](https://matrix.to/#/%23apache-fineract-home:matrix.org) |
+| Developer chat     | [#apache-fineract-dev:matrix.org](https://matrix.to/#/%23apache-fineract-dev:matrix.org)   |
+| GSoC               | [#apache-fineract-gsoc:matrix.org](https://matrix.to/#/%23apache-fineract-gsoc:matrix.org) |
+
+Chat is not a substitute for the list. If a conversation in Matrix reaches a conclusion
+that affects other people, summarise it to <dev@fineract.apache.org> so it is on the
+record and reachable by anyone who was asleep in another timezone.
+
+### Which channel for what
+
+| You want to                                                                    | Go to                                                        |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Report a UI bug                                                                | GitHub Issues, here                                          |
+| Report platform behaviour — balances, rejected payloads, scheduler, accounting | [ASF Jira](https://issues.apache.org/jira/projects/FINERACT) |
+| **Propose a feature or a new screen**                                          | **Raise it on the dev list, then open an issue here**        |
+| Ask whether something is already being worked on                               | Matrix, then the dev list if it matters                      |
+| Discuss a design before writing code                                           | Dev list — a thread there saves rewriting a PR               |
+| Submit code                                                                    | A pull request, here                                         |
+
+A feature request opened here without any discussion is not wasted — it will be read —
+but it starts from a standing start. One that arrives with a dev-list thread behind it
+already has the context, the objections and often a reviewer.
+
 ## Reporting bugs
 
 Use this repository's **GitHub Issues** for anything about the web UI — a screen that

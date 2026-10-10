@@ -32,6 +32,7 @@ export interface PutClientsClientIdRequest {
     externalId?: string;
     firstname?: string;
     lastname?: string;
+    mobileNo?: string;
     resourceExternalId?: string;
 }
 

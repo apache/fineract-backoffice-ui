@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -47,7 +47,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -65,8 +65,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('TAX_COMPONENTS.EDIT' | translate)
-                : ('TAX_COMPONENTS.CREATE' | translate)
+                ? ('TAX_COMPONENTS.EDIT' | appTranslate)
+                : ('TAX_COMPONENTS.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -74,9 +74,9 @@ import {
         <ion-card-content>
           <form #tcForm="ngForm" (ngSubmit)="onSubmit()" class="tc-form">
             <ion-item fill="outline" class="form-item">
-              <ion-label position="stacked">{{ 'TAX_COMPONENTS.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'TAX_COMPONENTS.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'TAX_COMPONENTS.NAME' | translate"
+                [attr.aria-label]="'TAX_COMPONENTS.NAME' | appTranslate"
                 id="tax-component-name"
                 data-testid="tax-component-name"
                 name="name"
@@ -87,10 +87,10 @@ import {
 
             <ion-item fill="outline" class="form-item">
               <ion-label position="stacked">{{
-                'TAX_COMPONENTS.PERCENTAGE' | translate
+                'TAX_COMPONENTS.PERCENTAGE' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'TAX_COMPONENTS.PERCENTAGE' | translate"
+                [attr.aria-label]="'TAX_COMPONENTS.PERCENTAGE' | appTranslate"
                 id="tax-component-percentage"
                 data-testid="tax-component-percentage"
                 type="number"
@@ -110,7 +110,7 @@ import {
                 (click)="onCancel()"
                 [disabled]="isSaving()"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 id="tax-component-submit-btn"
@@ -121,9 +121,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

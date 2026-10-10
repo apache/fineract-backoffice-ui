@@ -20,7 +20,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -92,7 +92,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     ProductAccountingSectionComponent,
     AdvancedAccountingMappingsComponent,
     IonCard,
@@ -121,8 +121,8 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
           <ion-card-title>
             {{
               isEditMode()
-                ? ('PRODUCTS.EDIT_LOAN_PRODUCT' | translate)
-                : ('PRODUCTS.CREATE_LOAN_PRODUCT' | translate)
+                ? ('PRODUCTS.EDIT_LOAN_PRODUCT' | appTranslate)
+                : ('PRODUCTS.CREATE_LOAN_PRODUCT' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -133,16 +133,16 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
               <ion-row>
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+                    <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'COMMON.NAME' | translate"
+                      [attr.aria-label]="'COMMON.NAME' | appTranslate"
                       id="loan-product-name"
                       data-testid="loan-product-name"
                       name="name"
                       [ngModel]="product().name"
                       (ngModelChange)="patchProduct('name', $event)"
                       required
-                      placeholder="{{ 'COMMON.NAME' | translate }}"
+                      placeholder="{{ 'COMMON.NAME' | appTranslate }}"
                     ></ion-input>
                   </ion-item>
                 </ion-col>
@@ -150,10 +150,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.SHORT_NAME' | translate
+                      'PRODUCTS.SHORT_NAME' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PRODUCTS.SHORT_NAME' | translate"
+                      [attr.aria-label]="'PRODUCTS.SHORT_NAME' | appTranslate"
                       id="loan-product-short-name"
                       data-testid="loan-product-short-name"
                       name="shortName"
@@ -161,7 +161,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       (ngModelChange)="patchProduct('shortName', $event)"
                       required
                       maxlength="4"
-                      placeholder="{{ 'PRODUCTS.SHORT_NAME' | translate }}"
+                      placeholder="{{ 'PRODUCTS.SHORT_NAME' | appTranslate }}"
                     ></ion-input>
                   </ion-item>
                 </ion-col>
@@ -169,48 +169,50 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.DESCRIPTION' | translate
+                      'PRODUCTS.DESCRIPTION' | appTranslate
                     }}</ion-label>
                     <ion-textarea
-                      [attr.aria-label]="'PRODUCTS.DESCRIPTION' | translate"
+                      [attr.aria-label]="'PRODUCTS.DESCRIPTION' | appTranslate"
                       id="loan-product-description"
                       data-testid="loan-product-description"
                       name="description"
                       [ngModel]="product().description"
                       (ngModelChange)="patchProduct('description', $event)"
                       rows="3"
-                      placeholder="{{ 'PRODUCTS.DESCRIPTION' | translate }}"
+                      placeholder="{{ 'PRODUCTS.DESCRIPTION' | appTranslate }}"
                     ></ion-textarea>
                   </ion-item>
                 </ion-col>
 
                 <ion-col size="12">
                   <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{ 'COMMON.EXTERNAL_ID' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'COMMON.EXTERNAL_ID' | appTranslate
+                    }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'COMMON.EXTERNAL_ID' | translate"
+                      [attr.aria-label]="'COMMON.EXTERNAL_ID' | appTranslate"
                       id="loan-product-external-id"
                       data-testid="loan-product-external-id"
                       name="externalId"
                       [ngModel]="product().externalId"
                       (ngModelChange)="patchProduct('externalId', $event)"
-                      placeholder="{{ 'COMMON.EXTERNAL_ID' | translate }}"
+                      placeholder="{{ 'COMMON.EXTERNAL_ID' | appTranslate }}"
                     ></ion-input>
                   </ion-item>
                 </ion-col>
 
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{ 'PRODUCTS.FUND' | translate }}</ion-label>
+                    <ion-label position="stacked">{{ 'PRODUCTS.FUND' | appTranslate }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.FUND' | translate"
+                      [attr.aria-label]="'PRODUCTS.FUND' | appTranslate"
                       interface="popover"
                       id="loan-product-fund-id"
                       data-testid="loan-product-fund-id"
                       name="fundId"
                       [ngModel]="product().fundId"
                       (ngModelChange)="patchProduct('fundId', $event)"
-                      placeholder="{{ 'PRODUCTS.FUND' | translate }}"
+                      placeholder="{{ 'PRODUCTS.FUND' | appTranslate }}"
                     >
                       @for (fund of fundOptions(); track fund.id) {
                         <ion-select-option [value]="fund.id">{{ fund.name }}</ion-select-option>
@@ -222,17 +224,17 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.DELINQUENCY_BUCKET' | translate
+                      'PRODUCTS.DELINQUENCY_BUCKET' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.DELINQUENCY_BUCKET' | translate"
+                      [attr.aria-label]="'PRODUCTS.DELINQUENCY_BUCKET' | appTranslate"
                       interface="popover"
                       id="loan-product-delinquency-bucket-id"
                       data-testid="loan-product-delinquency-bucket-id"
                       name="delinquencyBucketId"
                       [ngModel]="product().delinquencyBucketId"
                       (ngModelChange)="patchProduct('delinquencyBucketId', $event)"
-                      placeholder="{{ 'PRODUCTS.DELINQUENCY_BUCKET' | translate }}"
+                      placeholder="{{ 'PRODUCTS.DELINQUENCY_BUCKET' | appTranslate }}"
                     >
                       @for (bucket of delinquencyBucketOptions(); track bucket.id) {
                         <ion-select-option [value]="bucket.id">{{ bucket.name }}</ion-select-option>
@@ -243,9 +245,11 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
 
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{ 'PRODUCTS.CURRENCY' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'PRODUCTS.CURRENCY' | appTranslate
+                    }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.CURRENCY' | translate"
+                      [attr.aria-label]="'PRODUCTS.CURRENCY' | appTranslate"
                       interface="popover"
                       id="loan-product-currency-code"
                       data-testid="loan-product-currency-code"
@@ -253,7 +257,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       [ngModel]="product().currencyCode"
                       (ngModelChange)="patchProduct('currencyCode', $event)"
                       required
-                      placeholder="{{ 'PRODUCTS.CURRENCY' | translate }}"
+                      placeholder="{{ 'PRODUCTS.CURRENCY' | appTranslate }}"
                     >
                       <ion-select-option value="USD">USD</ion-select-option>
                       <ion-select-option value="EUR">EUR</ion-select-option>
@@ -265,10 +269,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.DECIMAL_PLACES' | translate
+                      'PRODUCTS.DECIMAL_PLACES' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PRODUCTS.DECIMAL_PLACES' | translate"
+                      [attr.aria-label]="'PRODUCTS.DECIMAL_PLACES' | appTranslate"
                       id="loan-product-digits-after-decimal"
                       data-testid="loan-product-digits-after-decimal"
                       type="number"
@@ -282,9 +286,11 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
 
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{ 'PRODUCTS.PRINCIPAL' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'PRODUCTS.PRINCIPAL' | appTranslate
+                    }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PRODUCTS.PRINCIPAL' | translate"
+                      [attr.aria-label]="'PRODUCTS.PRINCIPAL' | appTranslate"
                       id="loan-product-principal"
                       data-testid="loan-product-principal"
                       type="number"
@@ -299,10 +305,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.INTEREST_RATE' | translate
+                      'PRODUCTS.INTEREST_RATE' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PRODUCTS.INTEREST_RATE' | translate"
+                      [attr.aria-label]="'PRODUCTS.INTEREST_RATE' | appTranslate"
                       id="loan-product-interest-rate"
                       data-testid="loan-product-interest-rate"
                       type="number"
@@ -317,10 +323,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'LOANS.REPAYMENTS_COUNT' | translate
+                      'LOANS.REPAYMENTS_COUNT' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'LOANS.REPAYMENTS_COUNT' | translate"
+                      [attr.aria-label]="'LOANS.REPAYMENTS_COUNT' | appTranslate"
                       id="loan-product-repayments-count"
                       data-testid="loan-product-repayments-count"
                       type="number"
@@ -335,10 +341,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'LOANS.REPAYMENT_EVERY' | translate
+                      'LOANS.REPAYMENT_EVERY' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'LOANS.REPAYMENT_EVERY' | translate"
+                      [attr.aria-label]="'LOANS.REPAYMENT_EVERY' | appTranslate"
                       id="loan-product-repayment-every"
                       data-testid="loan-product-repayment-every"
                       type="number"
@@ -353,9 +359,11 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <!-- Repayment Frequency Type -->
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{ 'COMMON.FREQUENCY' | translate }}</ion-label>
+                    <ion-label position="stacked">{{
+                      'COMMON.FREQUENCY' | appTranslate
+                    }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'COMMON.FREQUENCY' | translate"
+                      [attr.aria-label]="'COMMON.FREQUENCY' | appTranslate"
                       interface="popover"
                       id="loan-product-repayment-frequency"
                       data-testid="loan-product-repayment-frequency"
@@ -365,16 +373,16 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       required
                     >
                       <ion-select-option [value]="0">{{
-                        'COMMON.DAYS' | translate
+                        'COMMON.DAYS' | appTranslate
                       }}</ion-select-option>
                       <ion-select-option [value]="1">{{
-                        'COMMON.WEEKS' | translate
+                        'COMMON.WEEKS' | appTranslate
                       }}</ion-select-option>
                       <ion-select-option [value]="2">{{
-                        'COMMON.MONTHS' | translate
+                        'COMMON.MONTHS' | appTranslate
                       }}</ion-select-option>
                       <ion-select-option [value]="3">{{
-                        'COMMON.YEARS' | translate
+                        'COMMON.YEARS' | appTranslate
                       }}</ion-select-option>
                     </ion-select>
                   </ion-item>
@@ -384,10 +392,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.INTEREST_RATE_FREQUENCY_TYPE' | translate
+                      'PRODUCTS.INTEREST_RATE_FREQUENCY_TYPE' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.INTEREST_RATE_FREQUENCY_TYPE' | translate"
+                      [attr.aria-label]="'PRODUCTS.INTEREST_RATE_FREQUENCY_TYPE' | appTranslate"
                       interface="popover"
                       id="loan-product-interest-frequency"
                       data-testid="loan-product-interest-frequency"
@@ -397,10 +405,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       required
                     >
                       <ion-select-option [value]="2">{{
-                        'COMMON.PER_MONTH' | translate
+                        'COMMON.PER_MONTH' | appTranslate
                       }}</ion-select-option>
                       <ion-select-option [value]="3">{{
-                        'COMMON.PER_YEAR' | translate
+                        'COMMON.PER_YEAR' | appTranslate
                       }}</ion-select-option>
                     </ion-select>
                   </ion-item>
@@ -410,10 +418,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.AMORTIZATION_TYPE' | translate
+                      'PRODUCTS.AMORTIZATION_TYPE' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.AMORTIZATION_TYPE' | translate"
+                      [attr.aria-label]="'PRODUCTS.AMORTIZATION_TYPE' | appTranslate"
                       interface="popover"
                       id="loan-product-amortization-type"
                       data-testid="loan-product-amortization-type"
@@ -423,10 +431,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       required
                     >
                       <ion-select-option [value]="1">{{
-                        'LOANS.EQUAL_INSTALLMENTS' | translate
+                        'LOANS.EQUAL_INSTALLMENTS' | appTranslate
                       }}</ion-select-option>
                       <ion-select-option [value]="0">{{
-                        'LOANS.EQUAL_PRINCIPAL' | translate
+                        'LOANS.EQUAL_PRINCIPAL' | appTranslate
                       }}</ion-select-option>
                     </ion-select>
                   </ion-item>
@@ -436,10 +444,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.INTEREST_TYPE' | translate
+                      'PRODUCTS.INTEREST_TYPE' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.INTEREST_TYPE' | translate"
+                      [attr.aria-label]="'PRODUCTS.INTEREST_TYPE' | appTranslate"
                       interface="popover"
                       id="loan-product-interest-type"
                       data-testid="loan-product-interest-type"
@@ -449,10 +457,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       required
                     >
                       <ion-select-option [value]="0">{{
-                        'LOANS.DECLINING_BALANCE' | translate
+                        'LOANS.DECLINING_BALANCE' | appTranslate
                       }}</ion-select-option>
                       <ion-select-option [value]="1">{{
-                        'LOANS.FLAT' | translate
+                        'LOANS.FLAT' | appTranslate
                       }}</ion-select-option>
                     </ion-select>
                   </ion-item>
@@ -462,10 +470,10 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item fill="outline" class="form-item">
                     <ion-label position="stacked">{{
-                      'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | translate
+                      'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | translate"
+                      [attr.aria-label]="'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | appTranslate"
                       interface="popover"
                       id="loan-product-interest-calc-period"
                       data-testid="loan-product-interest-calc-period"
@@ -476,16 +484,16 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       required
                     >
                       <ion-select-option [value]="0">{{
-                        'LOANS.DAILY' | translate
+                        'LOANS.DAILY' | appTranslate
                       }}</ion-select-option>
                       <ion-select-option [value]="1">{{
-                        'LOANS.SAME_AS_REPAYMENT' | translate
+                        'LOANS.SAME_AS_REPAYMENT' | appTranslate
                       }}</ion-select-option>
                     </ion-select>
                   </ion-item>
                   @if (interestRecalculationEnabled()) {
                     <p class="field-note" data-testid="interest-calc-period-locked-note">
-                      {{ 'PRODUCTS.INTEREST_CALC_PERIOD_LOCKED_NOTE' | translate }}
+                      {{ 'PRODUCTS.INTEREST_CALC_PERIOD_LOCKED_NOTE' | appTranslate }}
                     </p>
                   }
                 </ion-col>
@@ -495,13 +503,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   <ion-item
                     fill="outline"
                     class="form-item"
-                    [appTooltip]="'HELP.LOAN_SCHEDULE_TYPE_DESC' | translate"
+                    [appTooltip]="'HELP.LOAN_SCHEDULE_TYPE_DESC' | appTranslate"
                   >
                     <ion-label position="stacked">{{
-                      'PRODUCTS.LOAN_SCHEDULE_TYPE' | translate
+                      'PRODUCTS.LOAN_SCHEDULE_TYPE' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.LOAN_SCHEDULE_TYPE' | translate"
+                      [attr.aria-label]="'PRODUCTS.LOAN_SCHEDULE_TYPE' | appTranslate"
                       interface="popover"
                       id="loan-product-schedule-type"
                       data-testid="loan-product-schedule-type"
@@ -524,13 +532,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   <ion-item
                     fill="outline"
                     class="form-item"
-                    [appTooltip]="'HELP.TRANSACTION_PROCESSING_STRATEGY_DESC' | translate"
+                    [appTooltip]="'HELP.TRANSACTION_PROCESSING_STRATEGY_DESC' | appTranslate"
                   >
                     <ion-label position="stacked">{{
-                      'PRODUCTS.TRANSACTION_PROCESSING_STRATEGY' | translate
+                      'PRODUCTS.TRANSACTION_PROCESSING_STRATEGY' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.TRANSACTION_PROCESSING_STRATEGY' | translate"
+                      [attr.aria-label]="'PRODUCTS.TRANSACTION_PROCESSING_STRATEGY' | appTranslate"
                       interface="popover"
                       id="loan-product-transaction-strategy"
                       data-testid="loan-product-transaction-strategy"
@@ -549,7 +557,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   </ion-item>
                   @if (isProgressive()) {
                     <p class="field-note" data-testid="strategy-locked-note">
-                      {{ 'PRODUCTS.STRATEGY_LOCKED_NOTE' | translate }}
+                      {{ 'PRODUCTS.STRATEGY_LOCKED_NOTE' | appTranslate }}
                     </p>
                   }
                 </ion-col>
@@ -560,13 +568,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                     <ion-item
                       fill="outline"
                       class="form-item"
-                      [appTooltip]="'HELP.LOAN_SCHEDULE_PROCESSING_TYPE_DESC' | translate"
+                      [appTooltip]="'HELP.LOAN_SCHEDULE_PROCESSING_TYPE_DESC' | appTranslate"
                     >
                       <ion-label position="stacked">{{
-                        'PRODUCTS.LOAN_SCHEDULE_PROCESSING_TYPE' | translate
+                        'PRODUCTS.LOAN_SCHEDULE_PROCESSING_TYPE' | appTranslate
                       }}</ion-label>
                       <ion-select
-                        [attr.aria-label]="'PRODUCTS.LOAN_SCHEDULE_PROCESSING_TYPE' | translate"
+                        [attr.aria-label]="'PRODUCTS.LOAN_SCHEDULE_PROCESSING_TYPE' | appTranslate"
                         interface="popover"
                         id="loan-product-schedule-processing-type"
                         data-testid="loan-product-schedule-processing-type"
@@ -592,14 +600,14 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
               <ion-row>
                 <ion-col size="12">
                   <h3 class="section-heading">
-                    {{ 'PRODUCTS.DISBURSEMENT_SETTINGS' | translate }}
+                    {{ 'PRODUCTS.DISBURSEMENT_SETTINGS' | appTranslate }}
                   </h3>
                 </ion-col>
 
                 <ion-col size="12" size-md="6">
                   <ion-item
                     class="form-item"
-                    [appTooltip]="'HELP.MULTI_DISBURSE_LOAN_DESC' | translate"
+                    [appTooltip]="'HELP.MULTI_DISBURSE_LOAN_DESC' | appTranslate"
                   >
                     <ion-checkbox
                       name="multiDisburseLoan"
@@ -607,7 +615,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       [ngModel]="multiDisburseEnabled()"
                       (ngModelChange)="onMultiDisburseChange($event)"
                     >
-                      {{ 'PRODUCTS.MULTI_DISBURSE_LOAN' | translate }}
+                      {{ 'PRODUCTS.MULTI_DISBURSE_LOAN' | appTranslate }}
                     </ion-checkbox>
                   </ion-item>
                 </ion-col>
@@ -617,13 +625,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                     <ion-item
                       fill="outline"
                       class="form-item"
-                      [appTooltip]="'HELP.MAX_TRANCHE_COUNT_DESC' | translate"
+                      [appTooltip]="'HELP.MAX_TRANCHE_COUNT_DESC' | appTranslate"
                     >
                       <ion-label position="stacked">{{
-                        'PRODUCTS.MAX_TRANCHE_COUNT' | translate
+                        'PRODUCTS.MAX_TRANCHE_COUNT' | appTranslate
                       }}</ion-label>
                       <ion-input
-                        [attr.aria-label]="'PRODUCTS.MAX_TRANCHE_COUNT' | translate"
+                        [attr.aria-label]="'PRODUCTS.MAX_TRANCHE_COUNT' | appTranslate"
                         type="number"
                         min="1"
                         data-testid="loan-product-max-tranche-count"
@@ -638,7 +646,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   <ion-col size="12" size-md="6">
                     <ion-item
                       class="form-item"
-                      [appTooltip]="'HELP.DISALLOW_EXPECTED_DISBURSEMENTS_DESC' | translate"
+                      [appTooltip]="'HELP.DISALLOW_EXPECTED_DISBURSEMENTS_DESC' | appTranslate"
                     >
                       <ion-checkbox
                         name="disallowExpectedDisbursements"
@@ -646,7 +654,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                         [ngModel]="product().disallowExpectedDisbursements"
                         (ngModelChange)="patchProduct('disallowExpectedDisbursements', $event)"
                       >
-                        {{ 'PRODUCTS.DISALLOW_EXPECTED_DISBURSEMENTS' | translate }}
+                        {{ 'PRODUCTS.DISALLOW_EXPECTED_DISBURSEMENTS' | appTranslate }}
                       </ion-checkbox>
                     </ion-item>
                   </ion-col>
@@ -657,7 +665,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   <ion-col size="12" size-md="6">
                     <ion-item
                       class="form-item"
-                      [appTooltip]="'HELP.ENABLE_DOWN_PAYMENT_DESC' | translate"
+                      [appTooltip]="'HELP.ENABLE_DOWN_PAYMENT_DESC' | appTranslate"
                     >
                       <ion-checkbox
                         name="enableDownPayment"
@@ -665,7 +673,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                         [ngModel]="downPaymentEnabled()"
                         (ngModelChange)="onEnableDownPaymentChange($event)"
                       >
-                        {{ 'PRODUCTS.ENABLE_DOWN_PAYMENT' | translate }}
+                        {{ 'PRODUCTS.ENABLE_DOWN_PAYMENT' | appTranslate }}
                       </ion-checkbox>
                     </ion-item>
                   </ion-col>
@@ -675,13 +683,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.DOWN_PAYMENT_PERCENTAGE_DESC' | translate"
+                        [appTooltip]="'HELP.DOWN_PAYMENT_PERCENTAGE_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.DOWN_PAYMENT_PERCENTAGE' | translate
+                          'PRODUCTS.DOWN_PAYMENT_PERCENTAGE' | appTranslate
                         }}</ion-label>
                         <ion-input
-                          [attr.aria-label]="'PRODUCTS.DOWN_PAYMENT_PERCENTAGE' | translate"
+                          [attr.aria-label]="'PRODUCTS.DOWN_PAYMENT_PERCENTAGE' | appTranslate"
                           type="number"
                           min="0"
                           max="100"
@@ -699,7 +707,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                     <ion-col size="12" size-md="6">
                       <ion-item
                         class="form-item"
-                        [appTooltip]="'HELP.AUTO_REPAYMENT_FOR_DOWN_PAYMENT_DESC' | translate"
+                        [appTooltip]="'HELP.AUTO_REPAYMENT_FOR_DOWN_PAYMENT_DESC' | appTranslate"
                       >
                         <ion-checkbox
                           name="enableAutoRepaymentForDownPayment"
@@ -709,7 +717,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                             patchProduct('enableAutoRepaymentForDownPayment', $event)
                           "
                         >
-                          {{ 'PRODUCTS.ENABLE_AUTO_REPAYMENT_FOR_DOWN_PAYMENT' | translate }}
+                          {{ 'PRODUCTS.ENABLE_AUTO_REPAYMENT_FOR_DOWN_PAYMENT' | appTranslate }}
                         </ion-checkbox>
                       </ion-item>
                     </ion-col>
@@ -717,7 +725,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 } @else {
                   <ion-col size="12">
                     <p class="field-note" data-testid="down-payment-unavailable-note">
-                      {{ 'PRODUCTS.DOWN_PAYMENT_PROGRESSIVE_ONLY_NOTE' | translate }}
+                      {{ 'PRODUCTS.DOWN_PAYMENT_PROGRESSIVE_ONLY_NOTE' | appTranslate }}
                     </p>
                   </ion-col>
                 }
@@ -730,14 +738,14 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-row>
                   <ion-col size="12">
                     <h3 class="section-heading">
-                      {{ 'PRODUCTS.INCOME_RECOGNITION' | translate }}
+                      {{ 'PRODUCTS.INCOME_RECOGNITION' | appTranslate }}
                     </h3>
                   </ion-col>
 
                   <ion-col size="12" size-md="6">
                     <ion-item
                       class="form-item"
-                      [appTooltip]="'HELP.ENABLE_INCOME_CAPITALIZATION_DESC' | translate"
+                      [appTooltip]="'HELP.ENABLE_INCOME_CAPITALIZATION_DESC' | appTranslate"
                     >
                       <ion-checkbox
                         name="enableIncomeCapitalization"
@@ -745,7 +753,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                         [ngModel]="incomeCapitalizationEnabled()"
                         (ngModelChange)="onEnableIncomeCapitalizationChange($event)"
                       >
-                        {{ 'PRODUCTS.ENABLE_INCOME_CAPITALIZATION' | translate }}
+                        {{ 'PRODUCTS.ENABLE_INCOME_CAPITALIZATION' | appTranslate }}
                       </ion-checkbox>
                     </ion-item>
                   </ion-col>
@@ -755,13 +763,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.CAPITALIZED_INCOME_TYPE_DESC' | translate"
+                        [appTooltip]="'HELP.CAPITALIZED_INCOME_TYPE_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.CAPITALIZED_INCOME_TYPE' | translate
+                          'PRODUCTS.CAPITALIZED_INCOME_TYPE' | appTranslate
                         }}</ion-label>
                         <ion-select
-                          [attr.aria-label]="'PRODUCTS.CAPITALIZED_INCOME_TYPE' | translate"
+                          [attr.aria-label]="'PRODUCTS.CAPITALIZED_INCOME_TYPE' | appTranslate"
                           interface="popover"
                           data-testid="loan-product-capitalized-income-type"
                           name="capitalizedIncomeType"
@@ -782,13 +790,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.INCOME_CALCULATION_TYPE_DESC' | translate"
+                        [appTooltip]="'HELP.INCOME_CALCULATION_TYPE_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.INCOME_CALCULATION_TYPE' | translate
+                          'PRODUCTS.INCOME_CALCULATION_TYPE' | appTranslate
                         }}</ion-label>
                         <ion-select
-                          [attr.aria-label]="'PRODUCTS.INCOME_CALCULATION_TYPE' | translate"
+                          [attr.aria-label]="'PRODUCTS.INCOME_CALCULATION_TYPE' | appTranslate"
                           interface="popover"
                           data-testid="loan-product-capitalized-income-calculation"
                           name="capitalizedIncomeCalculationType"
@@ -812,13 +820,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.INCOME_STRATEGY_DESC' | translate"
+                        [appTooltip]="'HELP.INCOME_STRATEGY_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.INCOME_STRATEGY' | translate
+                          'PRODUCTS.INCOME_STRATEGY' | appTranslate
                         }}</ion-label>
                         <ion-select
-                          [attr.aria-label]="'PRODUCTS.INCOME_STRATEGY' | translate"
+                          [attr.aria-label]="'PRODUCTS.INCOME_STRATEGY' | appTranslate"
                           interface="popover"
                           data-testid="loan-product-capitalized-income-strategy"
                           name="capitalizedIncomeStrategy"
@@ -839,7 +847,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   <ion-col size="12" size-md="6">
                     <ion-item
                       class="form-item"
-                      [appTooltip]="'HELP.ENABLE_BUY_DOWN_FEE_DESC' | translate"
+                      [appTooltip]="'HELP.ENABLE_BUY_DOWN_FEE_DESC' | appTranslate"
                     >
                       <ion-checkbox
                         name="enableBuyDownFee"
@@ -847,7 +855,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                         [ngModel]="buyDownFeeEnabled()"
                         (ngModelChange)="onEnableBuyDownFeeChange($event)"
                       >
-                        {{ 'PRODUCTS.ENABLE_BUY_DOWN_FEE' | translate }}
+                        {{ 'PRODUCTS.ENABLE_BUY_DOWN_FEE' | appTranslate }}
                       </ion-checkbox>
                     </ion-item>
                   </ion-col>
@@ -857,13 +865,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.BUY_DOWN_FEE_INCOME_TYPE_DESC' | translate"
+                        [appTooltip]="'HELP.BUY_DOWN_FEE_INCOME_TYPE_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.BUY_DOWN_FEE_INCOME_TYPE' | translate
+                          'PRODUCTS.BUY_DOWN_FEE_INCOME_TYPE' | appTranslate
                         }}</ion-label>
                         <ion-select
-                          [attr.aria-label]="'PRODUCTS.BUY_DOWN_FEE_INCOME_TYPE' | translate"
+                          [attr.aria-label]="'PRODUCTS.BUY_DOWN_FEE_INCOME_TYPE' | appTranslate"
                           interface="popover"
                           data-testid="loan-product-buy-down-fee-income-type"
                           name="buyDownFeeIncomeType"
@@ -884,13 +892,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.INCOME_CALCULATION_TYPE_DESC' | translate"
+                        [appTooltip]="'HELP.INCOME_CALCULATION_TYPE_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.INCOME_CALCULATION_TYPE' | translate
+                          'PRODUCTS.INCOME_CALCULATION_TYPE' | appTranslate
                         }}</ion-label>
                         <ion-select
-                          [attr.aria-label]="'PRODUCTS.INCOME_CALCULATION_TYPE' | translate"
+                          [attr.aria-label]="'PRODUCTS.INCOME_CALCULATION_TYPE' | appTranslate"
                           interface="popover"
                           data-testid="loan-product-buy-down-fee-calculation"
                           name="buyDownFeeCalculationType"
@@ -911,13 +919,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.INCOME_STRATEGY_DESC' | translate"
+                        [appTooltip]="'HELP.INCOME_STRATEGY_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.INCOME_STRATEGY' | translate
+                          'PRODUCTS.INCOME_STRATEGY' | appTranslate
                         }}</ion-label>
                         <ion-select
-                          [attr.aria-label]="'PRODUCTS.INCOME_STRATEGY' | translate"
+                          [attr.aria-label]="'PRODUCTS.INCOME_STRATEGY' | appTranslate"
                           interface="popover"
                           data-testid="loan-product-buy-down-fee-strategy"
                           name="buyDownFeeStrategy"
@@ -943,14 +951,14 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
               <ion-row>
                 <ion-col size="12">
                   <h3 class="section-heading">
-                    {{ 'PRODUCTS.INTEREST_RECALCULATION' | translate }}
+                    {{ 'PRODUCTS.INTEREST_RECALCULATION' | appTranslate }}
                   </h3>
                 </ion-col>
 
                 <ion-col size="12" size-md="6">
                   <ion-item
                     class="form-item"
-                    [appTooltip]="'HELP.INTEREST_RECALCULATION_DESC' | translate"
+                    [appTooltip]="'HELP.INTEREST_RECALCULATION_DESC' | appTranslate"
                   >
                     <ion-checkbox
                       name="isInterestRecalculationEnabled"
@@ -958,7 +966,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       [ngModel]="interestRecalculationEnabled()"
                       (ngModelChange)="onInterestRecalculationChange($event)"
                     >
-                      {{ 'PRODUCTS.ENABLE_INTEREST_RECALCULATION' | translate }}
+                      {{ 'PRODUCTS.ENABLE_INTEREST_RECALCULATION' | appTranslate }}
                     </ion-checkbox>
                   </ion-item>
                 </ion-col>
@@ -968,13 +976,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                     <ion-item
                       fill="outline"
                       class="form-item"
-                      [appTooltip]="'HELP.COMPOUNDING_METHOD_DESC' | translate"
+                      [appTooltip]="'HELP.COMPOUNDING_METHOD_DESC' | appTranslate"
                     >
                       <ion-label position="stacked">{{
-                        'PRODUCTS.COMPOUNDING_METHOD' | translate
+                        'PRODUCTS.COMPOUNDING_METHOD' | appTranslate
                       }}</ion-label>
                       <ion-select
-                        [attr.aria-label]="'PRODUCTS.COMPOUNDING_METHOD' | translate"
+                        [attr.aria-label]="'PRODUCTS.COMPOUNDING_METHOD' | appTranslate"
                         interface="popover"
                         data-testid="loan-product-compounding-method"
                         name="interestRecalculationCompoundingMethod"
@@ -995,13 +1003,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                     <ion-item
                       fill="outline"
                       class="form-item"
-                      [appTooltip]="'HELP.RESCHEDULE_STRATEGY_DESC' | translate"
+                      [appTooltip]="'HELP.RESCHEDULE_STRATEGY_DESC' | appTranslate"
                     >
                       <ion-label position="stacked">{{
-                        'PRODUCTS.RESCHEDULE_STRATEGY' | translate
+                        'PRODUCTS.RESCHEDULE_STRATEGY' | appTranslate
                       }}</ion-label>
                       <ion-select
-                        [attr.aria-label]="'PRODUCTS.RESCHEDULE_STRATEGY' | translate"
+                        [attr.aria-label]="'PRODUCTS.RESCHEDULE_STRATEGY' | appTranslate"
                         interface="popover"
                         data-testid="loan-product-reschedule-strategy"
                         name="rescheduleStrategyMethod"
@@ -1022,13 +1030,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                     <ion-item
                       fill="outline"
                       class="form-item"
-                      [appTooltip]="'HELP.REST_FREQUENCY_DESC' | translate"
+                      [appTooltip]="'HELP.REST_FREQUENCY_DESC' | appTranslate"
                     >
                       <ion-label position="stacked">{{
-                        'PRODUCTS.REST_FREQUENCY' | translate
+                        'PRODUCTS.REST_FREQUENCY' | appTranslate
                       }}</ion-label>
                       <ion-select
-                        [attr.aria-label]="'PRODUCTS.REST_FREQUENCY' | translate"
+                        [attr.aria-label]="'PRODUCTS.REST_FREQUENCY' | appTranslate"
                         interface="popover"
                         data-testid="loan-product-rest-frequency"
                         name="recalculationRestFrequencyType"
@@ -1050,13 +1058,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.REST_INTERVAL_DESC' | translate"
+                        [appTooltip]="'HELP.REST_INTERVAL_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.REST_INTERVAL' | translate
+                          'PRODUCTS.REST_INTERVAL' | appTranslate
                         }}</ion-label>
                         <ion-input
-                          [attr.aria-label]="'PRODUCTS.REST_INTERVAL' | translate"
+                          [attr.aria-label]="'PRODUCTS.REST_INTERVAL' | appTranslate"
                           type="number"
                           min="1"
                           data-testid="loan-product-rest-interval"
@@ -1075,13 +1083,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.COMPOUNDING_FREQUENCY_DESC' | translate"
+                        [appTooltip]="'HELP.COMPOUNDING_FREQUENCY_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.COMPOUNDING_FREQUENCY' | translate
+                          'PRODUCTS.COMPOUNDING_FREQUENCY' | appTranslate
                         }}</ion-label>
                         <ion-select
-                          [attr.aria-label]="'PRODUCTS.COMPOUNDING_FREQUENCY' | translate"
+                          [attr.aria-label]="'PRODUCTS.COMPOUNDING_FREQUENCY' | appTranslate"
                           interface="popover"
                           data-testid="loan-product-compounding-frequency"
                           name="recalculationCompoundingFrequencyType"
@@ -1103,13 +1111,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       <ion-item
                         fill="outline"
                         class="form-item"
-                        [appTooltip]="'HELP.COMPOUNDING_INTERVAL_DESC' | translate"
+                        [appTooltip]="'HELP.COMPOUNDING_INTERVAL_DESC' | appTranslate"
                       >
                         <ion-label position="stacked">{{
-                          'PRODUCTS.COMPOUNDING_INTERVAL' | translate
+                          'PRODUCTS.COMPOUNDING_INTERVAL' | appTranslate
                         }}</ion-label>
                         <ion-input
-                          [attr.aria-label]="'PRODUCTS.COMPOUNDING_INTERVAL' | translate"
+                          [attr.aria-label]="'PRODUCTS.COMPOUNDING_INTERVAL' | appTranslate"
                           type="number"
                           min="1"
                           data-testid="loan-product-compounding-interval"
@@ -1127,13 +1135,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                     <ion-item
                       fill="outline"
                       class="form-item"
-                      [appTooltip]="'HELP.PRE_CLOSURE_STRATEGY_DESC' | translate"
+                      [appTooltip]="'HELP.PRE_CLOSURE_STRATEGY_DESC' | appTranslate"
                     >
                       <ion-label position="stacked">{{
-                        'PRODUCTS.PRE_CLOSURE_STRATEGY' | translate
+                        'PRODUCTS.PRE_CLOSURE_STRATEGY' | appTranslate
                       }}</ion-label>
                       <ion-select
-                        [attr.aria-label]="'PRODUCTS.PRE_CLOSURE_STRATEGY' | translate"
+                        [attr.aria-label]="'PRODUCTS.PRE_CLOSURE_STRATEGY' | appTranslate"
                         interface="popover"
                         data-testid="loan-product-pre-closure-strategy"
                         name="preClosureInterestCalculationStrategy"
@@ -1154,7 +1162,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
 
                 <ion-col size="12">
                   <h3 class="section-heading">
-                    {{ 'PRODUCTS.OTHER_SETTINGS' | translate }}
+                    {{ 'PRODUCTS.OTHER_SETTINGS' | appTranslate }}
                   </h3>
                 </ion-col>
 
@@ -1162,13 +1170,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   <ion-item
                     fill="outline"
                     class="form-item"
-                    [appTooltip]="'HELP.CHARGE_OFF_BEHAVIOUR_DESC' | translate"
+                    [appTooltip]="'HELP.CHARGE_OFF_BEHAVIOUR_DESC' | appTranslate"
                   >
                     <ion-label position="stacked">{{
-                      'PRODUCTS.CHARGE_OFF_BEHAVIOUR' | translate
+                      'PRODUCTS.CHARGE_OFF_BEHAVIOUR' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.CHARGE_OFF_BEHAVIOUR' | translate"
+                      [attr.aria-label]="'PRODUCTS.CHARGE_OFF_BEHAVIOUR' | appTranslate"
                       interface="popover"
                       data-testid="loan-product-charge-off-behaviour"
                       name="chargeOffBehaviour"
@@ -1193,13 +1201,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   <ion-item
                     fill="outline"
                     class="form-item"
-                    [appTooltip]="'HELP.REPAYMENT_START_DATE_TYPE_DESC' | translate"
+                    [appTooltip]="'HELP.REPAYMENT_START_DATE_TYPE_DESC' | appTranslate"
                   >
                     <ion-label position="stacked">{{
-                      'PRODUCTS.REPAYMENT_START_DATE_TYPE' | translate
+                      'PRODUCTS.REPAYMENT_START_DATE_TYPE' | appTranslate
                     }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'PRODUCTS.REPAYMENT_START_DATE_TYPE' | translate"
+                      [attr.aria-label]="'PRODUCTS.REPAYMENT_START_DATE_TYPE' | appTranslate"
                       interface="popover"
                       data-testid="loan-product-repayment-start-date-type"
                       name="repaymentStartDateType"
@@ -1219,13 +1227,13 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                   <ion-item
                     fill="outline"
                     class="form-item"
-                    [appTooltip]="'HELP.FIXED_LENGTH_DESC' | translate"
+                    [appTooltip]="'HELP.FIXED_LENGTH_DESC' | appTranslate"
                   >
                     <ion-label position="stacked">{{
-                      'PRODUCTS.FIXED_LENGTH' | translate
+                      'PRODUCTS.FIXED_LENGTH' | appTranslate
                     }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'PRODUCTS.FIXED_LENGTH' | translate"
+                      [attr.aria-label]="'PRODUCTS.FIXED_LENGTH' | appTranslate"
                       type="number"
                       min="1"
                       data-testid="loan-product-fixed-length"
@@ -1239,7 +1247,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 <ion-col size="12" size-md="6">
                   <ion-item
                     class="form-item"
-                    [appTooltip]="'HELP.ACCRUAL_ACTIVITY_POSTING_DESC' | translate"
+                    [appTooltip]="'HELP.ACCRUAL_ACTIVITY_POSTING_DESC' | appTranslate"
                   >
                     <ion-checkbox
                       name="enableAccrualActivityPosting"
@@ -1247,7 +1255,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                       [ngModel]="product().enableAccrualActivityPosting"
                       (ngModelChange)="patchProduct('enableAccrualActivityPosting', $event)"
                     >
-                      {{ 'PRODUCTS.ENABLE_ACCRUAL_ACTIVITY_POSTING' | translate }}
+                      {{ 'PRODUCTS.ENABLE_ACCRUAL_ACTIVITY_POSTING' | appTranslate }}
                     </ion-checkbox>
                   </ion-item>
                 </ion-col>
@@ -1299,7 +1307,7 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
                 (click)="onCancel()"
                 [disabled]="isSaving()"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 id="loan-product-submit-btn"
@@ -1310,9 +1318,9 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>
@@ -1334,7 +1342,6 @@ const DAILY_INTEREST_CALCULATION_PERIOD = 0;
         gap: 16px;
       }
       .form-item {
-        --background: var(--ion-color-light, #f8f9fa);
         --border-radius: 8px;
         margin-bottom: 12px;
       }

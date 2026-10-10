@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { loanCommandPermission } from '../../core/guards/command-permissions';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
@@ -105,9 +106,12 @@ export const LOANS_ROUTES: Routes = [
       import('./loan-transaction-form.component').then((m) => m.LoanTransactionFormComponent),
   },
   {
+    // One path, 29 commands. It declared `UPDATE_LOAN`, which Fineract accepts for none of them
+    // — see issue #691 and `core/guards/command-permissions.ts`. The code is resolved from
+    // `:type` instead, so each command is gated on what the platform actually enforces.
     path: ':loanId/transactions/:type',
     canActivate: [authGuard, permissionGuard],
-    data: { permissions: 'UPDATE_LOAN' },
+    data: { permissions: loanCommandPermission },
     loadComponent: () =>
       import('./loan-transaction-form.component').then((m) => m.LoanTransactionFormComponent),
   },

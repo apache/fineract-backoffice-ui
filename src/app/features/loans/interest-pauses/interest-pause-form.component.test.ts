@@ -23,8 +23,8 @@ import { InterestPauseFormComponent } from './interest-pause-form.component';
 import { LoanInterestPauseService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('InterestPauseFormComponent', () => {
   let component: InterestPauseFormComponent;
@@ -48,8 +48,9 @@ describe('InterestPauseFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [InterestPauseFormComponent, TranslateModule.forRoot()],
+      imports: [InterestPauseFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: LoanInterestPauseService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         {
@@ -116,6 +117,7 @@ describe('InterestPauseFormComponent', () => {
     expect(component.variationId).toBe(7);
     expect(component.startDate()).toBe('2026-04-01');
     expect(component.endDate()).toBe('2026-04-08');
+    expect(component.isLoading()).toBe(false);
   });
 
   it('should put the formatted dates and navigate to the list in edit mode', async () => {

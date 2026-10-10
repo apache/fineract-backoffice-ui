@@ -88,7 +88,7 @@ export interface I18nAdapter {
  * relationship to the contract, and so tests can provide a plain object literal.
  *
  * Bound to the ngx-translate implementation by default, so a TestBed that already imports
- * `TranslateModule.forRoot()` needs nothing further — the same zero-configuration behaviour
+ * `provideTranslateService()` needs nothing further — the same zero-configuration behaviour
  * specs had before this boundary existed. Overriding in `app.config.ts` or a TestBed wins.
  */
 export const I18N = new InjectionToken<I18nAdapter>('I18nAdapter', {

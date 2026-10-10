@@ -20,7 +20,7 @@
 import { Component, inject } from '@angular/core';
 
 import { IonButton, ModalController } from '@ionic/angular/standalone';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../core/adapters';
 
 /**
  * Modal dialog that warns the user about an impending session timeout.
@@ -30,17 +30,17 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-inactivity-dialog',
   standalone: true,
-  imports: [IonButton, TranslateModule],
+  imports: [IonButton, TranslatePipe],
   template: `
     <div class="dialog">
-      <h2 class="dialog-title">{{ 'idle.warning.title' | translate }}</h2>
-      <p class="dialog-message">{{ 'idle.warning.message' | translate }}</p>
+      <h2 class="dialog-title">{{ 'idle.warning.title' | appTranslate }}</h2>
+      <p class="dialog-message">{{ 'idle.warning.message' | appTranslate }}</p>
       <div class="dialog-actions">
         <ion-button data-testid="idle-logout" fill="clear" color="medium" (click)="onLogout()">
-          {{ 'app.logout' | translate }}
+          {{ 'app.logout' | appTranslate }}
         </ion-button>
         <ion-button data-testid="idle-extend" color="primary" (click)="onExtend()">
-          {{ 'idle.warning.extend' | translate }}
+          {{ 'idle.warning.extend' | appTranslate }}
         </ion-button>
       </div>
     </div>

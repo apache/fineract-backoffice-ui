@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -61,7 +61,7 @@ const REDIRECT_URL = '/products/recurring';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     ProductAccountingSectionComponent,
     IonButton,
     IonSpinner,
@@ -83,8 +83,8 @@ const REDIRECT_URL = '/products/recurring';
           <ion-card-title>
             {{
               isEditMode()
-                ? ('PRODUCTS.EDIT_RECURRING_DEPOSIT_PRODUCT' | translate)
-                : ('PRODUCTS.CREATE_RECURRING_DEPOSIT_PRODUCT' | translate)
+                ? ('PRODUCTS.EDIT_RECURRING_DEPOSIT_PRODUCT' | appTranslate)
+                : ('PRODUCTS.CREATE_RECURRING_DEPOSIT_PRODUCT' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -93,9 +93,9 @@ const REDIRECT_URL = '/products/recurring';
           <form #productForm="ngForm" (ngSubmit)="onSubmit()" class="product-form">
             <div class="form-grid">
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.NAME' | translate"
+                  [attr.aria-label]="'COMMON.NAME' | appTranslate"
                   name="name"
                   [(ngModel)]="product()['name']"
                   required
@@ -103,9 +103,9 @@ const REDIRECT_URL = '/products/recurring';
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'PRODUCTS.SHORT_NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'PRODUCTS.SHORT_NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'PRODUCTS.SHORT_NAME' | translate"
+                  [attr.aria-label]="'PRODUCTS.SHORT_NAME' | appTranslate"
                   name="shortName"
                   [(ngModel)]="product()['shortName']"
                   required
@@ -114,9 +114,11 @@ const REDIRECT_URL = '/products/recurring';
               </ion-item>
 
               <ion-item fill="outline" class="full-width">
-                <ion-label position="stacked">{{ 'PRODUCTS.DESCRIPTION' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'PRODUCTS.DESCRIPTION' | appTranslate
+                }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'PRODUCTS.DESCRIPTION' | translate"
+                  [attr.aria-label]="'PRODUCTS.DESCRIPTION' | appTranslate"
                   name="description"
                   [(ngModel)]="product()['description']"
                   rows="2"
@@ -125,9 +127,9 @@ const REDIRECT_URL = '/products/recurring';
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'PRODUCTS.CURRENCY' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'PRODUCTS.CURRENCY' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'PRODUCTS.CURRENCY' | translate"
+                  [attr.aria-label]="'PRODUCTS.CURRENCY' | appTranslate"
                   interface="popover"
                   name="currencyCode"
                   [(ngModel)]="product()['currencyCode']"
@@ -143,10 +145,10 @@ const REDIRECT_URL = '/products/recurring';
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'PRODUCTS.DECIMAL_PLACES' | translate
+                  'PRODUCTS.DECIMAL_PLACES' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'PRODUCTS.DECIMAL_PLACES' | translate"
+                  [attr.aria-label]="'PRODUCTS.DECIMAL_PLACES' | appTranslate"
                   type="number"
                   name="digitsAfterDecimal"
                   [(ngModel)]="product()['digitsAfterDecimal']"
@@ -156,10 +158,10 @@ const REDIRECT_URL = '/products/recurring';
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'PRODUCTS.RECURRING_FREQUENCY' | translate
+                  'PRODUCTS.RECURRING_FREQUENCY' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'PRODUCTS.RECURRING_FREQUENCY' | translate"
+                  [attr.aria-label]="'PRODUCTS.RECURRING_FREQUENCY' | appTranslate"
                   type="number"
                   name="recurringFrequency"
                   [(ngModel)]="product()['recurringFrequency']"
@@ -169,24 +171,26 @@ const REDIRECT_URL = '/products/recurring';
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'PRODUCTS.FREQUENCY_TYPE' | translate
+                  'PRODUCTS.FREQUENCY_TYPE' | appTranslate
                 }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'PRODUCTS.FREQUENCY_TYPE' | translate"
+                  [attr.aria-label]="'PRODUCTS.FREQUENCY_TYPE' | appTranslate"
                   interface="popover"
                   name="recurringFrequencyType"
                   [(ngModel)]="product()['recurringFrequencyType']"
                   required
                 >
-                  <ion-select-option [value]="0">{{ 'COMMON.DAYS' | translate }}</ion-select-option>
+                  <ion-select-option [value]="0">{{
+                    'COMMON.DAYS' | appTranslate
+                  }}</ion-select-option>
                   <ion-select-option [value]="1">{{
-                    'COMMON.WEEKS' | translate
+                    'COMMON.WEEKS' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="2">{{
-                    'COMMON.MONTHS' | translate
+                    'COMMON.MONTHS' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="3">{{
-                    'COMMON.YEARS' | translate
+                    'COMMON.YEARS' | appTranslate
                   }}</ion-select-option>
                 </ion-select>
               </ion-item>
@@ -204,7 +208,7 @@ const REDIRECT_URL = '/products/recurring';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -213,9 +217,9 @@ const REDIRECT_URL = '/products/recurring';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

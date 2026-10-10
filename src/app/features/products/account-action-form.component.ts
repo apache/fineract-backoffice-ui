@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -61,7 +61,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -81,7 +81,7 @@ import {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ title | translate }}</ion-card-title>
+          <ion-card-title>{{ title | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -89,17 +89,17 @@ import {
             <div class="account-summary-panel">
               <div class="summary-grid">
                 <div class="summary-item">
-                  <span class="label">{{ 'COMMON.ACCOUNT_NO' | translate }}:</span>
+                  <span class="label">{{ 'COMMON.ACCOUNT_NO' | appTranslate }}:</span>
                   <span class="value">{{ accountDetails()!['accountNo'] }}</span>
                 </div>
                 <div class="summary-item">
-                  <span class="label">{{ 'COMMON.NAME' | translate }}:</span>
+                  <span class="label">{{ 'COMMON.NAME' | appTranslate }}:</span>
                   <span class="value">{{
                     accountDetails()!['clientName'] || accountDetails()!['groupName']
                   }}</span>
                 </div>
                 <div class="summary-item">
-                  <span class="label">{{ 'COMMON.PRODUCT' | translate }}:</span>
+                  <span class="label">{{ 'COMMON.PRODUCT' | appTranslate }}:</span>
                   <span class="value">{{
                     accountDetails()!['savingsProductName'] ||
                       accountDetails()!['productName'] ||
@@ -111,7 +111,7 @@ import {
                   getAmount(accountDetails()!['depositAmount'], accountDetails()!['principal'])
                 ) {
                   <div class="summary-item">
-                    <span class="label">{{ 'COMMON.AMOUNT' | translate }}:</span>
+                    <span class="label">{{ 'COMMON.AMOUNT' | appTranslate }}:</span>
                     <span class="value">{{
                       getAmount(accountDetails()!['depositAmount'], accountDetails()!['principal'])
                         | currency: getCurrencyCode(accountDetails()!['currency'])
@@ -121,7 +121,7 @@ import {
 
                 @if (accountDetails()!['nominalAnnualInterestRate'] !== undefined) {
                   <div class="summary-item">
-                    <span class="label">{{ 'COMMON.INTEREST_RATE' | translate }}:</span>
+                    <span class="label">{{ 'COMMON.INTEREST_RATE' | appTranslate }}:</span>
                     <span class="value">{{ accountDetails()!['nominalAnnualInterestRate'] }}%</span>
                   </div>
                 }
@@ -130,7 +130,7 @@ import {
                   accountDetails()!['depositPeriod'] || accountDetails()!['numberOfRepayments']
                 ) {
                   <div class="summary-item">
-                    <span class="label">{{ 'COMMON.TERM' | translate }}:</span>
+                    <span class="label">{{ 'COMMON.TERM' | appTranslate }}:</span>
                     <span class="value">
                       {{
                         accountDetails()!['depositPeriod'] ||
@@ -148,7 +148,7 @@ import {
 
                 @if (getTimelineSubmittedOnDate(accountDetails()!['timeline'])) {
                   <div class="summary-item full-width">
-                    <span class="label">{{ 'COMMON.SUBMITTED_ON' | translate }}:</span>
+                    <span class="label">{{ 'COMMON.SUBMITTED_ON' | appTranslate }}:</span>
                     <span class="value">{{
                       getFineractDate(getTimelineSubmittedOnDate(accountDetails()!['timeline']))
                         | date: 'longDate'
@@ -163,9 +163,9 @@ import {
             <!-- Staff selection (only for assignloanofficer) -->
             @if (command() === 'assignloanofficer') {
               <ion-item fill="outline" class="form-item">
-                <ion-label position="stacked">{{ 'LOANS.LOAN_OFFICER' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'LOANS.LOAN_OFFICER' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'LOANS.LOAN_OFFICER' | translate"
+                  [attr.aria-label]="'LOANS.LOAN_OFFICER' | appTranslate"
                   interface="popover"
                   id="account-action-officer"
                   data-testid="account-action-officer"
@@ -185,9 +185,9 @@ import {
             <!-- Charge selection (only for applycharges) -->
             @if (command() === 'applycharges') {
               <ion-item fill="outline" class="form-item">
-                <ion-label position="stacked">{{ 'LOANS.CHARGE' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'LOANS.CHARGE' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'LOANS.CHARGE' | translate"
+                  [attr.aria-label]="'LOANS.CHARGE' | appTranslate"
                   interface="popover"
                   id="account-action-charge"
                   data-testid="account-action-charge"
@@ -203,9 +203,9 @@ import {
               </ion-item>
 
               <ion-item fill="outline" class="form-item">
-                <ion-label position="stacked">{{ 'COMMON.AMOUNT' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.AMOUNT' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.AMOUNT' | translate"
+                  [attr.aria-label]="'COMMON.AMOUNT' | appTranslate"
                   id="account-action-amount"
                   data-testid="account-action-amount"
                   type="number"
@@ -218,9 +218,9 @@ import {
 
             <!-- Action Date -->
             <ion-item fill="outline" class="form-item">
-              <ion-label position="stacked">{{ dateLabel | translate }}</ion-label>
+              <ion-label position="stacked">{{ dateLabel | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="dateLabel | translate"
+                [attr.aria-label]="dateLabel | appTranslate"
                 id="account-action-date"
                 data-testid="account-action-date"
                 type="date"
@@ -235,10 +235,10 @@ import {
             @if (command() === 'approve' && accountType() === 'loan') {
               <ion-item fill="outline" class="form-item">
                 <ion-label position="stacked">{{
-                  'ACTIONS.EXPECTED_DISBURSEMENT_DATE' | translate
+                  'ACTIONS.EXPECTED_DISBURSEMENT_DATE' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'ACTIONS.EXPECTED_DISBURSEMENT_DATE' | translate"
+                  [attr.aria-label]="'ACTIONS.EXPECTED_DISBURSEMENT_DATE' | appTranslate"
                   id="account-action-disbursement-date"
                   data-testid="account-action-disbursement-date"
                   type="date"
@@ -252,9 +252,9 @@ import {
 
             <!-- Note -->
             <ion-item fill="outline" class="form-item">
-              <ion-label position="stacked">{{ 'COMMON.NOTE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'COMMON.NOTE' | appTranslate }}</ion-label>
               <ion-textarea
-                [attr.aria-label]="'COMMON.NOTE' | translate"
+                [attr.aria-label]="'COMMON.NOTE' | appTranslate"
                 id="account-action-note"
                 data-testid="account-action-note"
                 name="note"
@@ -273,7 +273,7 @@ import {
                 (click)="onCancel()"
                 [disabled]="isSaving()"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 id="account-action-submit-btn"
@@ -284,9 +284,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

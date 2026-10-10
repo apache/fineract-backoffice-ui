@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { HooksService, HookCreateRequest, HookTemplateData } from '../../../api';
 import {
   IonButton,
@@ -46,7 +46,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -65,16 +65,16 @@ import {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode() ? ('HOOKS.EDIT' | translate) : ('HOOKS.CREATE' | translate) }}
+            {{ isEditMode() ? ('HOOKS.EDIT' | appTranslate) : ('HOOKS.CREATE' | appTranslate) }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #hookForm="ngForm" (ngSubmit)="onSubmit()" class="entity-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'HOOKS.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'HOOKS.NAME' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'HOOKS.NAME' | translate"
+                [attr.aria-label]="'HOOKS.NAME' | appTranslate"
                 interface="popover"
                 name="name"
                 [(ngModel)]="hook().name"
@@ -88,9 +88,9 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'HOOKS.DISPLAY_NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'HOOKS.DISPLAY_NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'HOOKS.DISPLAY_NAME' | translate"
+                [attr.aria-label]="'HOOKS.DISPLAY_NAME' | appTranslate"
                 name="displayName"
                 [(ngModel)]="hook().displayName"
                 required
@@ -98,19 +98,19 @@ import {
             </ion-item>
 
             <ion-checkbox name="isActive" [(ngModel)]="hook().isActive">
-              {{ 'HOOKS.IS_ACTIVE' | translate }}
+              {{ 'HOOKS.IS_ACTIVE' | appTranslate }}
             </ion-checkbox>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="hookForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

@@ -18,7 +18,6 @@
  */
 
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../shared';
 import {
@@ -29,7 +28,7 @@ import {
 @Component({
   selector: 'app-standing-instruction-history',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent, CellTemplateDirective, DatePipe, DecimalPipe],
+  imports: [DataTableComponent, CellTemplateDirective, DatePipe, DecimalPipe],
   template: `
     <app-data-table
       title="CLIENTS.STANDING_INSTRUCTIONS_HISTORY"

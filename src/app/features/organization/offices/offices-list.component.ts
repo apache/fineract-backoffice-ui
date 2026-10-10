@@ -20,24 +20,24 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { OfficesService, GetOfficesResponse } from '../../../api';
+import { OFFICE_API, TranslatePipe } from '../../../core/adapters';
+import type { Office } from '../../../core/adapters';
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { TranslatePipe } from '../../../core/adapters';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-offices-list',
   standalone: true,
   imports: [
-    TranslateModule,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
     TooltipDirective,
     TranslatePipe,
+    HasPermissionDirective,
   ],
   template: `
     <app-data-table
@@ -52,7 +52,7 @@ import { TranslatePipe } from '../../../core/adapters';
       (create)="onCreateOffice()"
     >
       <ng-template appCellTemplate="openingDate" let-office>
-        {{ formatArrayDate(office.openingDate) }}
+        {{ office.openingDate ?? '-' }}
       </ng-template>
 
       <ng-template appCellTemplate="actions" let-office>
@@ -64,13 +64,21 @@ import { TranslatePipe } from '../../../core/adapters';
           [label]="'COMMON.VIEW' | appTranslate"
           (click)="onViewOffice(office)"
         />
+        <!--
+          Gated for the same reason the create button above is: the offices/edit/:id route
+          declares UPDATE_OFFICE, so a reader offered this control is being led to Access
+          Denied. The directive decides what is offered, never what is allowed — Fineract
+          refuses the PUT either way. See DOCS/RBAC.md step 4 and security.md.
+        -->
         <app-button
+          *appHasPermission="'UPDATE_OFFICE'"
           type="button"
           emphasis="quiet"
           intent="primary"
+          data-testid="office-edit"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
-          [label]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
+          [label]="'COMMON.EDIT' | appTranslate"
           (click)="onEditOffice(office)"
         />
       </ng-template>
@@ -78,7 +86,7 @@ import { TranslatePipe } from '../../../core/adapters';
   `,
 })
 export class OfficesListComponent implements OnInit {
-  private readonly officesService = inject(OfficesService);
+  private readonly officeApi = inject(OFFICE_API);
   private readonly router = inject(Router);
 
   readonly columns: ColumnDef[] = [
@@ -88,12 +96,12 @@ export class OfficesListComponent implements OnInit {
     { key: 'actions', label: 'COMMON.ACTIONS', sortable: false },
   ];
 
-  readonly offices = signal<GetOfficesResponse[]>([]);
+  readonly offices = signal<Office[]>([]);
 
   ngOnInit(): void {
-    this.officesService.getOffices(true).subscribe({
-      next: (data: GetOfficesResponse[]) => {
-        this.offices.set(data || []);
+    this.officeApi.list(true).subscribe({
+      next: (data: Office[]) => {
+        this.offices.set(data);
       },
       error: (err: unknown) => {
         console.error('Failed to load offices', err);
@@ -105,24 +113,11 @@ export class OfficesListComponent implements OnInit {
     this.router.navigate(['/organization/offices/create']);
   }
 
-  onViewOffice(office: GetOfficesResponse): void {
+  onViewOffice(office: Office): void {
     void this.router.navigate(['/organization/offices/view', office.id]);
   }
 
-  onEditOffice(office: GetOfficesResponse): void {
+  onEditOffice(office: Office): void {
     this.router.navigate(['/organization/offices/edit', office.id]);
-  }
-
-  /**
-   * Formats a Fineract array date [YYYY, MM, DD] into a readable string.
-   *
-   * @param dateArray - The raw date value from the API.
-   * @returns A formatted date string or a placeholder if invalid.
-   */
-  formatArrayDate(dateArray: unknown): string {
-    if (!dateArray || !Array.isArray(dateArray) || dateArray.length < 3) {
-      return '-';
-    }
-    return `${dateArray[0]}-${String(dateArray[1]).padStart(2, '0')}-${String(dateArray[2]).padStart(2, '0')}`;
   }
 }

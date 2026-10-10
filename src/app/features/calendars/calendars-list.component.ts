@@ -19,12 +19,12 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { ColumnDef, CellTemplateDirective } from '../../shared';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { CalendarService, CalendarData } from '../../api';
+import { I18N, TranslatePipe } from '../../core/adapters';
 import { formatArrayDate } from '../../core/utils/date-formatter';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { DialogService } from '../../core/services/dialog.service';
@@ -39,7 +39,7 @@ import { ButtonComponent } from '../../ui/button/button.component';
   selector: 'app-calendars-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -67,18 +67,18 @@ import { ButtonComponent } from '../../ui/button/button.component';
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         />
         <app-button
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'COMMON.DELETE' | translate"
+          [label]="'COMMON.DELETE' | appTranslate"
           icon="trash-outline"
-          [appTooltip]="'COMMON.DELETE' | translate"
+          [appTooltip]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(row)"
         />
       </ng-template>
@@ -90,7 +90,7 @@ export class CalendarsListComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly columns: ColumnDef[] = [
     { key: 'title', label: 'CALENDARS.TITLE_FIELD', sortable: true },
@@ -146,8 +146,8 @@ export class CalendarsListComponent implements OnInit {
 
     void this.dialogService
       .confirm({
-        title: this.translate.instant('CALENDARS.DELETE'),
-        message: this.translate.instant('CALENDARS.CONFIRM_DELETE', { name: row.title }),
+        title: this.i18n.translate('CALENDARS.DELETE'),
+        message: this.i18n.translate('CALENDARS.CONFIRM_DELETE', { name: row.title }),
         destructive: true,
       })
       .then((confirmed) => {

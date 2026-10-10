@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -58,7 +58,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -76,15 +76,17 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'POST_DATED_CHECKS.EDIT' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'POST_DATED_CHECKS.EDIT' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #checkForm="ngForm" (ngSubmit)="onSubmit()" class="check-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'POST_DATED_CHECKS.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'POST_DATED_CHECKS.NAME' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'POST_DATED_CHECKS.NAME' | translate"
+                [attr.aria-label]="'POST_DATED_CHECKS.NAME' | appTranslate"
                 name="name"
                 [ngModel]="name()"
                 (ngModelChange)="name.set($event)"
@@ -93,9 +95,11 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'POST_DATED_CHECKS.AMOUNT' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'POST_DATED_CHECKS.AMOUNT' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'POST_DATED_CHECKS.AMOUNT' | translate"
+                [attr.aria-label]="'POST_DATED_CHECKS.AMOUNT' | appTranslate"
                 type="number"
                 name="amount"
                 [ngModel]="amount()"
@@ -106,10 +110,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'POST_DATED_CHECKS.ACCOUNT_NO' | translate
+                'POST_DATED_CHECKS.ACCOUNT_NO' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'POST_DATED_CHECKS.ACCOUNT_NO' | translate"
+                [attr.aria-label]="'POST_DATED_CHECKS.ACCOUNT_NO' | appTranslate"
                 type="number"
                 name="accountNo"
                 [ngModel]="accountNo()"
@@ -119,7 +123,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'POST_DATED_CHECKS.DATE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'POST_DATED_CHECKS.DATE' | appTranslate
+              }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="date-picker"></ion-datetime-button>
               }
@@ -140,7 +146,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -149,9 +155,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

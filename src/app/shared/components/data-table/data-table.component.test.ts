@@ -21,13 +21,13 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { TranslateModule } from '@ngx-translate/core';
 import { DataTableComponent, ColumnDef } from './data-table.component';
 import { CellTemplateDirective } from './cell-template.directive';
 import { PageEvent, SortEvent } from '../../models/table.model';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
 import { provideTestConfig } from '../../../testing/config';
 import { AuthService } from '../../../core/services/auth.service';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 interface TestData {
   id: number;
@@ -66,8 +66,9 @@ describe('DataTableComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataTableComponent, TranslateModule.forRoot()],
+      imports: [DataTableComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideIonicTesting(),
         // The create button is now gated by `*appHasPermission`, which reads both the session
         // and the deployment's `rbacEnabled`; neither has a usable default in a bare TestBed.
@@ -162,7 +163,7 @@ describe('DataTableComponent', () => {
 
       component.onSortHeaderClick(nameColumn);
       fixture.detectChanges();
-      expect(component.sort()).toEqual({ active: '', direction: '' });
+      expect(component.currentSort()).toEqual({ active: '', direction: '' });
     });
 
     it('ignores clicks on non-sortable columns', () => {
@@ -171,7 +172,7 @@ describe('DataTableComponent', () => {
 
       component.onSortHeaderClick(COLUMNS[2]);
 
-      expect(component.sort().direction).toBe('');
+      expect(component.currentSort().direction).toBe('');
       expect(emitted).toBeUndefined();
     });
 
@@ -404,7 +405,7 @@ describe('DataTableComponent', () => {
       fixture.detectChanges();
 
       expect(document.activeElement).toBe(nameSortButton);
-      expect(component.sort()).toEqual({ active: 'name', direction: 'asc' });
+      expect(component.currentSort()).toEqual({ active: 'name', direction: 'asc' });
     });
 
     it('exposes the sorted column via aria-sort', () => {
@@ -446,6 +447,47 @@ describe('DataTableComponent', () => {
 
     it('should restore the table once a retry succeeds', () => {
       setInputs({ hasError: true });
+      setInputs({ hasError: false });
+
+      expect(errorPanel()).toBeNull();
+      expect(renderedNames()).toEqual(['Alice', 'Bob']);
+    });
+
+    it('withholds the retry when the read was refused rather than broken', () => {
+      // A 403 is refused identically on every attempt, so "try again" is a loop with no exit.
+      // Presentation only — Fineract has already refused by the time this renders.
+      setInputs({ hasError: true, errorStatus: 403 });
+
+      expect(errorPanel()).not.toBeNull();
+      expect(errorPanel().textContent).toContain('COMMON.ERRORS.LOAD_FORBIDDEN');
+      expect(fixture.nativeElement.querySelector('[data-testid="data-table-retry"]')).toBeNull();
+    });
+
+    it.each([500, 0, 404])(
+      'keeps the retry for a status that could succeed again (%i)',
+      (status) => {
+        setInputs({ hasError: true, errorStatus: status });
+
+        expect(errorPanel().textContent).toContain('COMMON.ERRORS.LOAD_FAILED');
+        expect(
+          fixture.nativeElement.querySelector('[data-testid="data-table-retry"]'),
+        ).not.toBeNull();
+      },
+    );
+
+    it('keeps the generic failure state when the caller forwards no status', () => {
+      // Every call site that has not been updated passes `hasError` alone, and must be unchanged.
+      setInputs({ hasError: true });
+
+      expect(errorPanel().textContent).toContain('COMMON.ERRORS.LOAD_FAILED');
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="data-table-retry"]'),
+      ).not.toBeNull();
+    });
+
+    it('shows nothing about a refusal once the error clears', () => {
+      // `isForbidden` reads `hasError` too, so a stale 403 cannot leak into a healthy table.
+      setInputs({ hasError: true, errorStatus: 403 });
       setInputs({ hasError: false });
 
       expect(errorPanel()).toBeNull();

@@ -98,19 +98,20 @@ test.describe('Dynamic report parameters against Fineract', () => {
         );
       });
       await page.getByTestId('run-report').click();
-      await reportResponse;
-      const rows = page.locator('table tbody tr');
-      await expect(rows.first()).toBeVisible({ timeout: 20000 });
-      const pageSize = page.getByTestId('paginator-page-size');
-      if (
-        (await pageSize.evaluate((select: HTMLElement & { value: unknown }) => select.value)) !==
-        100
-      ) {
-        await pageSize.click();
-        await page.locator('ion-popover').getByRole('radio', { name: '100' }).click();
-      }
-      await expect(page.locator('table')).toContainText(expectedClientName);
-      return rows.allTextContents();
+      const response = await reportResponse;
+
+      // The table must render — that is the half of this the user sees.
+      await expect(page.locator('table tbody tr').first()).toBeVisible({ timeout: 20000 });
+
+      // ...but the row set is read from what Fineract returned, not from the rendered page. The
+      // report's own paginator caps out at 100 rows, and Head Office accumulates clients on an
+      // instance that is not torn down between runs, so a client seeded moments ago sits past
+      // the last page a test could turn to. What this spec is about is which rows the parameter
+      // brought back, and the response says that without a ceiling.
+      const payload = (await response.json()) as { data?: { row?: unknown[] }[] };
+      const returned = (payload.data ?? []).map((entry) => (entry.row ?? []).join(' '));
+      expect(returned.join(' ')).toContain(expectedClientName);
+      return returned;
     };
 
     const headOfficeRows = await runForOffice(HEAD_OFFICE, headOfficeClient.displayName);

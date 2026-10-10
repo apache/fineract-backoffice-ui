@@ -93,6 +93,8 @@ opening a PR. `DOCS/CI_CHECKS.md` lists every CI job.
   that cannot be expressed with request mocks.
 - API-spec or generated-client changes: run `npm run verify-api-client` (requires Java 17) and
   `npm run api:surface`. Regenerate from the spec; do not edit `src/app/api/` manually.
+- Upgrading a third-party dependency: follow `DOCS/DEPENDENCY_UPGRADES.md`, which orders the
+  checks so a failure localises to one boundary.
 - New dependency or deployment change: run `bash scripts/check-license.sh` and consult
   `DOCS/LINT_POLICY.md` and `security.md`.
 
@@ -140,6 +142,11 @@ Third-party surfaces the application must be able to replace are reached through
 | `STORAGE`  | `localStorage` / `sessionStorage`                                                                                  |
 | `DOWNLOAD` | `URL.createObjectURL` plus a download anchor                                                                       |
 
+A fifth boundary, ADR 0006, guards the generated OpenAPI client: importing `src/app/api` outside
+`src/app/core/adapters/api/` fails `npm run lint`. It is not a facade over the generated
+services — see `DOCS/ADAPTERS.md` for what it does ask for, and
+`core/adapters/api/accounting-closure.api.ts` for the worked example.
+
 - Tokens resolve to their default implementation with no provider needed; override in
   `app.config.ts` to swap one.
 - UI primitives are reached through `src/app/ui/`; direct Ionic imports outside that boundary
@@ -162,6 +169,9 @@ Third-party surfaces the application must be able to replace are reached through
   authorization boundary, so do not treat a hidden route or disabled action as a security fix.
 - Treat `src/app/api/` as generated output. Update `public/api/fineract.json` or generator options,
   regenerate, and let the drift check prove the result.
+- Do not add a new import of `src/app/api` outside the API adapters; `npm run lint` fails on one.
+  A generated response type bound straight into a template is how a column that reads a
+  non-existent field renders the wrong status on every row — see ADR 0006.
 
 ## RBAC and feature flags
 

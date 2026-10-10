@@ -27,8 +27,8 @@ import {
   IonSelectOption,
 } from '@ionic/angular/standalone';
 
-import { StaffService, StaffData } from '../../api';
-import { OVERLAY, TranslatePipe } from '../../core/adapters';
+import { OVERLAY, STAFF_API, TranslatePipe } from '../../core/adapters';
+import type { Staff } from '../../core/adapters';
 
 export interface SavingsOfficerResult {
   toSavingsOfficerId: number;
@@ -114,14 +114,14 @@ export interface SavingsOfficerResult {
 })
 export class SavingsOfficerDialogComponent {
   private readonly overlay = inject(OVERLAY);
-  private readonly staffService = inject(StaffService);
+  private readonly staffApi = inject(STAFF_API);
 
-  readonly staff = signal<StaffData[]>([]);
+  readonly staff = signal<readonly Staff[]>([]);
   officerId: number | null = null;
 
   constructor() {
-    this.staffService.getStaff(undefined, undefined, true, 'active').subscribe({
-      next: (members) => this.staff.set(members ?? []),
+    this.staffApi.list({ loanOfficersOnly: true, status: 'active' }).subscribe({
+      next: (members) => this.staff.set(members),
       error: () => this.staff.set([]),
     });
   }

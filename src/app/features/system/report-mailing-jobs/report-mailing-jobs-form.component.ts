@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -130,7 +130,7 @@ function toDateTimeLocal(value: string | undefined): string {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -153,8 +153,8 @@ function toDateTimeLocal(value: string | undefined): string {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('REPORT_MAILING_JOBS.EDIT' | translate)
-                : ('REPORT_MAILING_JOBS.CREATE' | translate)
+                ? ('REPORT_MAILING_JOBS.EDIT' | appTranslate)
+                : ('REPORT_MAILING_JOBS.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -162,9 +162,11 @@ function toDateTimeLocal(value: string | undefined): string {
         <ion-card-content>
           <form #jobForm="ngForm" (ngSubmit)="onSubmit()" class="entity-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'REPORT_MAILING_JOBS.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'REPORT_MAILING_JOBS.NAME' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'REPORT_MAILING_JOBS.NAME' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="job().name"
                 required
@@ -173,10 +175,10 @@ function toDateTimeLocal(value: string | undefined): string {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'REPORT_MAILING_JOBS.DESCRIPTION' | translate
+                'REPORT_MAILING_JOBS.DESCRIPTION' | appTranslate
               }}</ion-label>
               <ion-textarea
-                [attr.aria-label]="'REPORT_MAILING_JOBS.DESCRIPTION' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.DESCRIPTION' | appTranslate"
                 name="description"
                 [(ngModel)]="job().description"
               ></ion-textarea>
@@ -184,10 +186,10 @@ function toDateTimeLocal(value: string | undefined): string {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'REPORT_MAILING_JOBS.EMAIL_RECIPIENTS' | translate
+                'REPORT_MAILING_JOBS.EMAIL_RECIPIENTS' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'REPORT_MAILING_JOBS.EMAIL_RECIPIENTS' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.EMAIL_RECIPIENTS' | appTranslate"
                 name="emailRecipients"
                 [(ngModel)]="job().emailRecipients"
                 required
@@ -196,10 +198,10 @@ function toDateTimeLocal(value: string | undefined): string {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'REPORT_MAILING_JOBS.EMAIL_SUBJECT' | translate
+                'REPORT_MAILING_JOBS.EMAIL_SUBJECT' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'REPORT_MAILING_JOBS.EMAIL_SUBJECT' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.EMAIL_SUBJECT' | appTranslate"
                 name="emailSubject"
                 [(ngModel)]="job().emailSubject"
                 required
@@ -208,10 +210,10 @@ function toDateTimeLocal(value: string | undefined): string {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'REPORT_MAILING_JOBS.EMAIL_MESSAGE' | translate
+                'REPORT_MAILING_JOBS.EMAIL_MESSAGE' | appTranslate
               }}</ion-label>
               <ion-textarea
-                [attr.aria-label]="'REPORT_MAILING_JOBS.EMAIL_MESSAGE' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.EMAIL_MESSAGE' | appTranslate"
                 name="emailMessage"
                 [(ngModel)]="job().emailMessage"
               ></ion-textarea>
@@ -219,10 +221,10 @@ function toDateTimeLocal(value: string | undefined): string {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'REPORT_MAILING_JOBS.STRETCHY_REPORT_ID' | translate
+                'REPORT_MAILING_JOBS.STRETCHY_REPORT_ID' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'REPORT_MAILING_JOBS.STRETCHY_REPORT_ID' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.STRETCHY_REPORT_ID' | appTranslate"
                 interface="popover"
                 name="stretchyReportId"
                 data-testid="report-mailing-job-report"
@@ -237,10 +239,10 @@ function toDateTimeLocal(value: string | undefined): string {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'REPORT_MAILING_JOBS.ATTACHMENT_FORMAT' | translate
+                'REPORT_MAILING_JOBS.ATTACHMENT_FORMAT' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'REPORT_MAILING_JOBS.ATTACHMENT_FORMAT' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.ATTACHMENT_FORMAT' | appTranslate"
                 interface="popover"
                 name="emailAttachmentFileFormatId"
                 data-testid="report-mailing-job-format"
@@ -255,10 +257,10 @@ function toDateTimeLocal(value: string | undefined): string {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'REPORT_MAILING_JOBS.START_DATE_TIME' | translate
+                'REPORT_MAILING_JOBS.START_DATE_TIME' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'REPORT_MAILING_JOBS.START_DATE_TIME' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.START_DATE_TIME' | appTranslate"
                 type="datetime-local"
                 name="startDateTime"
                 data-testid="report-mailing-job-start"
@@ -269,10 +271,10 @@ function toDateTimeLocal(value: string | undefined): string {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'REPORT_MAILING_JOBS.RECURRENCE' | translate
+                'REPORT_MAILING_JOBS.RECURRENCE' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'REPORT_MAILING_JOBS.RECURRENCE' | translate"
+                [attr.aria-label]="'REPORT_MAILING_JOBS.RECURRENCE' | appTranslate"
                 interface="popover"
                 name="recurrence"
                 data-testid="report-mailing-job-recurrence"
@@ -280,29 +282,29 @@ function toDateTimeLocal(value: string | undefined): string {
               >
                 @for (option of recurrenceOptions; track option.value) {
                   <ion-select-option [value]="option.value">{{
-                    option.label | translate
+                    option.label | appTranslate
                   }}</ion-select-option>
                 }
               </ion-select>
             </ion-item>
             <ion-note class="field-hint">{{
-              'REPORT_MAILING_JOBS.RECURRENCE_HINT' | translate
+              'REPORT_MAILING_JOBS.RECURRENCE_HINT' | appTranslate
             }}</ion-note>
 
             <ion-checkbox name="isActive" [(ngModel)]="job().isActive">
-              {{ 'REPORT_MAILING_JOBS.IS_ACTIVE' | translate }}
+              {{ 'REPORT_MAILING_JOBS.IS_ACTIVE' | appTranslate }}
             </ion-checkbox>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="jobForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

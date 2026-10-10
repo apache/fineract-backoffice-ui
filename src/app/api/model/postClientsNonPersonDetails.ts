@@ -23,13 +23,9 @@
  * Do not edit the class manually.
  */
 
-import { GetObligeeData } from './getObligeeData';
 
 
-/**
- * GetClientObligeeDetailsResponse
- */
-export interface GetClientObligeeDetailsResponse { 
-    obligees?: Set<GetObligeeData>;
+export interface PostClientsNonPersonDetails { 
+    constitutionId?: number;
 }
 

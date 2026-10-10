@@ -31,9 +31,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { IonItem, IonLabel, IonInput, IonList, IonSpinner } from '@ionic/angular/standalone';
-import { TranslateModule } from '@ngx-translate/core';
 import { debounceTime, distinctUntilChanged, switchMap, startWith } from 'rxjs/operators';
 import { ClientService, GetClientsResponse } from '../../../api';
+import { TranslatePipe } from '../../../core/adapters';
 
 /**
  * Reusable client search component with autocomplete.
@@ -44,16 +44,16 @@ import { ClientService, GetClientsResponse } from '../../../api';
 @Component({
   selector: 'app-client-search',
   standalone: true,
-  imports: [ReactiveFormsModule, IonItem, IonLabel, IonInput, IonList, IonSpinner, TranslateModule],
+  imports: [ReactiveFormsModule, IonItem, IonLabel, IonInput, IonList, IonSpinner, TranslatePipe],
   template: `
     <div class="client-search-wrapper">
       <ion-item fill="outline">
-        <ion-label position="stacked">{{ label() | translate }}</ion-label>
+        <ion-label position="stacked">{{ label() | appTranslate }}</ion-label>
         <ion-input
-          [attr.aria-label]="label() | translate"
+          [attr.aria-label]="label() | appTranslate"
           type="text"
           [formControl]="searchControl"
-          [placeholder]="'COMMON.SEARCH_PLACEHOLDER' | translate"
+          [placeholder]="'COMMON.SEARCH_PLACEHOLDER' | appTranslate"
           [required]="required()"
           id="client-search-input"
           data-testid="client-search-input"
@@ -90,7 +90,7 @@ import { ClientService, GetClientsResponse } from '../../../api';
       @if (showDropdown() && !isLoading() && searchInputVal() && filteredClients().length === 0) {
         <ion-list class="autocomplete-list">
           <ion-item class="autocomplete-item">
-            <ion-label color="medium">{{ 'COMMON.NO_DATA' | translate }}</ion-label>
+            <ion-label color="medium">{{ 'COMMON.NO_DATA' | appTranslate }}</ion-label>
           </ion-item>
         </ion-list>
       }

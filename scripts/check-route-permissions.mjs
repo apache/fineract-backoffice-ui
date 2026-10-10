@@ -139,6 +139,41 @@ const UNRESTRICTED = new Map([
   ],
 ]);
 
+/**
+ * Dispatch routes whose permission is resolved from a route parameter, and the map that does it.
+ *
+ * The same discipline as `UNRESTRICTED`: a decision has to be written down here to be accepted,
+ * so a new `permissions: someFunction` cannot quietly become an unchecked route. Unlike
+ * `UNRESTRICTED` these routes *are* gated — the check below reads the map and verifies it.
+ *
+ * Keyed by the identifier that appears in `data.permissions`.
+ */
+const PER_COMMAND = new Map([
+  [
+    'loanCommandPermission',
+    {
+      url: '/loans/:loanId/transactions/:type',
+      map: 'LOAN_COMMAND_PERMISSIONS',
+      reason:
+        'One path, 29 loan commands. It declared UPDATE_LOAN, which Fineract accepts for none ' +
+        'of them (issue #691); the code comes from :type instead.',
+    },
+  ],
+  [
+    'savingsCommandPermission',
+    {
+      url: '/products/savings-accounts/:accountId/transactions/:command',
+      map: 'SAVINGS_COMMAND_PERMISSIONS',
+      reason:
+        'Same shape and the same defect: UPDATE_SAVINGSACCOUNT authorises neither deposit nor ' +
+        'withdrawal, which live in Fineract transaction_savings grouping.',
+    },
+  ],
+]);
+
+/** Where the maps live, read textually for the same reason the route tables are. */
+const COMMAND_PERMISSIONS_FILE = 'src/app/core/guards/command-permissions.ts';
+
 /** Every `<feature>.routes.ts`, plus the root route table. */
 function routeFiles() {
   const files = ['src/app/app.routes.ts'];
@@ -194,13 +229,29 @@ function parseRoutes(file) {
   return found;
 }
 
-/** `permissions: 'X'` or `permissions: ['X', 'Y']` -> a sorted array of codes. */
+/**
+ * `permissions: 'X'`, `permissions: ['X', 'Y']`, or `permissions: someIdentifier`.
+ *
+ * The identifier form is a **dispatch route**: one path serving many commands, where the code
+ * is resolved from a route parameter at navigation time and no literal could be right. It
+ * returns the identifier rather than codes, and `PER_COMMAND` below is what makes that a
+ * recorded decision instead of a hole — a new dynamic declaration this script has never heard
+ * of still fails.
+ */
 function readPermissions(text) {
   const single = /^permissions:\s*'([^']+)'/.exec(text);
   if (single) return [single[1]];
   const many = /^permissions:\s*\[([^\]]*)\]/.exec(text);
   if (many) return [...many[1].matchAll(/'([^']+)'/g)].map((m) => m[1]).sort();
+  // Terminated by `,` or `}` — `data: { permissions: loanCommandPermission },` has the brace.
+  const dynamic = /^permissions:\s*([A-Za-z_$][\w$]*)\s*[,}]/.exec(text);
+  if (dynamic) return { dynamic: dynamic[1] };
   return undefined;
+}
+
+/** True for the identifier form returned by {@link readPermissions}. */
+function isDynamic(permissions) {
+  return permissions !== undefined && !Array.isArray(permissions) && 'dynamic' in permissions;
 }
 
 /** Rebuilds nesting from the depth markers and walks it into absolute URLs. */
@@ -249,6 +300,7 @@ const problems = [];
 // 1. Every screen either declares a permission or is a documented exemption.
 // ---------------------------------------------------------------------------------------------
 for (const route of screens) {
+  if (isDynamic(route.permissions)) continue;
   if (route.permissions?.length) continue;
   if (UNRESTRICTED.has(route.url)) continue;
   problems.push(
@@ -262,12 +314,12 @@ for (const route of screens) {
 // 2. A permission is only enforced if permissionGuard actually runs.
 // ---------------------------------------------------------------------------------------------
 for (const route of screens) {
-  if (!route.permissions?.length) continue;
+  if (!isDynamic(route.permissions) && !route.permissions?.length) continue;
   const guards = route.canActivate ?? '';
   if (!guards.includes('permissionGuard')) {
     problems.push(
       `${route.file}:${route.line}  ${route.url}\n` +
-        `    declares permissions ${JSON.stringify(route.permissions)} but no permissionGuard, ` +
+        `    declares permissions ${describe(route.permissions)} but no permissionGuard, ` +
         'so nothing enforces them.',
     );
   } else if (!/\bauthGuard\b\s*,\s*permissionGuard/.test(guards)) {
@@ -277,6 +329,64 @@ for (const route of screens) {
         'they are forbidden instead of being asked to sign in.',
     );
   }
+}
+
+// ---------------------------------------------------------------------------------------------
+// 2b. Dispatch routes: registered, and the map they resolve through is real.
+// ---------------------------------------------------------------------------------------------
+const commandSource = existsSync(join(ROOT, COMMAND_PERMISSIONS_FILE))
+  ? readFileSync(join(ROOT, COMMAND_PERMISSIONS_FILE), 'utf8')
+  : '';
+
+/** Codes in one exported `Record<string, string>` map, read textually. */
+function readCommandMap(name) {
+  const start = commandSource.indexOf(`export const ${name}`);
+  if (start === -1) return undefined;
+  const body = commandSource.slice(start, commandSource.indexOf('};', start));
+  return [...body.matchAll(/'([A-Z][A-Z0-9_]*)'/g)].map((m) => m[1]);
+}
+
+const dynamicRoutes = screens.filter((r) => isDynamic(r.permissions));
+for (const route of dynamicRoutes) {
+  const entry = PER_COMMAND.get(route.permissions.dynamic);
+  if (!entry) {
+    problems.push(
+      `${route.file}:${route.line}  ${route.url}\n` +
+        `    resolves its permission through '${route.permissions.dynamic}', which is not ` +
+        'recorded in PER_COMMAND in this script.\n' +
+        '    A dispatch route is a decision to gate on a parameter rather than a literal; ' +
+        'record it with the reason, as the existing two are.',
+    );
+    continue;
+  }
+  if (entry.url !== route.url) {
+    problems.push(
+      `PER_COMMAND entry '${route.permissions.dynamic}' records url '${entry.url}', but it is ` +
+        `declared on '${route.url}' (${route.file}:${route.line}).`,
+    );
+  }
+  const codes = readCommandMap(entry.map);
+  if (codes === undefined) {
+    problems.push(
+      `PER_COMMAND entry '${route.permissions.dynamic}' names map '${entry.map}', which is not ` +
+        `exported from ${COMMAND_PERMISSIONS_FILE}.`,
+    );
+  } else if (codes.length === 0) {
+    problems.push(
+      `${entry.map} in ${COMMAND_PERMISSIONS_FILE} is empty, so '${route.url}' is effectively ` +
+        'ungated. An empty map admits every command.',
+    );
+  }
+}
+
+for (const [identifier, entry] of PER_COMMAND) {
+  if (dynamicRoutes.some((r) => r.permissions.dynamic === identifier)) continue;
+  problems.push(
+    `PER_COMMAND entry '${identifier}' matches no route.\n` +
+      `    Recorded reason: ${entry.reason}\n` +
+      '    The route was renamed or went back to a literal permission; drop the entry rather ' +
+      'than leaving it to imply a decision about something that no longer exists.',
+  );
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -360,6 +470,7 @@ function readNavPermissions(entry) {
 }
 
 function describe(permissions) {
+  if (isDynamic(permissions)) return `per command, via ${permissions.dynamic}()`;
   return permissions?.length ? permissions.join(' , ') : '(none)';
 }
 
@@ -379,5 +490,6 @@ console.log(
     'guard order and navigation visibility all agree.',
 );
 console.log(
-  `  ${screens.length - UNRESTRICTED.size} gated, ${UNRESTRICTED.size} documented as unrestricted.`,
+  `  ${screens.length - UNRESTRICTED.size} gated (${dynamicRoutes.length} per command), ` +
+    `${UNRESTRICTED.size} documented as unrestricted.`,
 );

@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -49,7 +49,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -69,8 +69,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('LOAN_ORIGINATORS.EDIT' | translate)
-                : ('LOAN_ORIGINATORS.CREATE' | translate)
+                ? ('LOAN_ORIGINATORS.EDIT' | appTranslate)
+                : ('LOAN_ORIGINATORS.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -78,9 +78,9 @@ import {
         <ion-card-content>
           <form #originatorForm="ngForm" (ngSubmit)="onSubmit()" class="originator-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'LOAN_ORIGINATORS.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'LOAN_ORIGINATORS.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'LOAN_ORIGINATORS.NAME' | translate"
+                [attr.aria-label]="'LOAN_ORIGINATORS.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="originator().name"
                 required
@@ -89,10 +89,10 @@ import {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'LOAN_ORIGINATORS.EXTERNAL_ID' | translate
+                'LOAN_ORIGINATORS.EXTERNAL_ID' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'LOAN_ORIGINATORS.EXTERNAL_ID' | translate"
+                [attr.aria-label]="'LOAN_ORIGINATORS.EXTERNAL_ID' | appTranslate"
                 name="externalId"
                 [(ngModel)]="originator().externalId"
               ></ion-input>
@@ -100,10 +100,10 @@ import {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'LOAN_ORIGINATORS.ORIGINATOR_TYPE' | translate
+                'LOAN_ORIGINATORS.ORIGINATOR_TYPE' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'LOAN_ORIGINATORS.ORIGINATOR_TYPE' | translate"
+                [attr.aria-label]="'LOAN_ORIGINATORS.ORIGINATOR_TYPE' | appTranslate"
                 interface="popover"
                 name="originatorTypeId"
                 [(ngModel)]="originator().originatorTypeId"
@@ -116,10 +116,10 @@ import {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'LOAN_ORIGINATORS.CHANNEL_TYPE' | translate
+                'LOAN_ORIGINATORS.CHANNEL_TYPE' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'LOAN_ORIGINATORS.CHANNEL_TYPE' | translate"
+                [attr.aria-label]="'LOAN_ORIGINATORS.CHANNEL_TYPE' | appTranslate"
                 interface="popover"
                 name="channelTypeId"
                 [(ngModel)]="originator().channelTypeId"
@@ -131,9 +131,11 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'LOAN_ORIGINATORS.STATUS' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'LOAN_ORIGINATORS.STATUS' | appTranslate
+              }}</ion-label>
               <ion-select
-                [attr.aria-label]="'LOAN_ORIGINATORS.STATUS' | translate"
+                [attr.aria-label]="'LOAN_ORIGINATORS.STATUS' | appTranslate"
                 interface="popover"
                 name="status"
                 [(ngModel)]="originator().status"
@@ -146,7 +148,7 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -155,9 +157,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

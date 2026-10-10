@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -45,7 +45,7 @@ import { FINERACT_DATE_FORMAT, FINERACT_LOCALE } from '../../../core/utils/date-
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -63,16 +63,20 @@ import { FINERACT_DATE_FORMAT, FINERACT_LOCALE } from '../../../core/utils/date-
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode() ? ('TAX_GROUPS.EDIT' | translate) : ('TAX_GROUPS.CREATE' | translate) }}
+            {{
+              isEditMode()
+                ? ('TAX_GROUPS.EDIT' | appTranslate)
+                : ('TAX_GROUPS.CREATE' | appTranslate)
+            }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #tgForm="ngForm" (ngSubmit)="onSubmit()" class="tg-form">
             <ion-item fill="outline" class="form-item">
-              <ion-label position="stacked">{{ 'TAX_GROUPS.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'TAX_GROUPS.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'TAX_GROUPS.NAME' | translate"
+                [attr.aria-label]="'TAX_GROUPS.NAME' | appTranslate"
                 id="tax-group-name"
                 data-testid="tax-group-name"
                 name="name"
@@ -83,9 +87,9 @@ import { FINERACT_DATE_FORMAT, FINERACT_LOCALE } from '../../../core/utils/date-
             </ion-item>
 
             <ion-item fill="outline" class="form-item">
-              <ion-label position="stacked">{{ 'TAX_GROUPS.COMPONENTS' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'TAX_GROUPS.COMPONENTS' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'TAX_GROUPS.COMPONENTS' | translate"
+                [attr.aria-label]="'TAX_GROUPS.COMPONENTS' | appTranslate"
                 interface="popover"
                 id="tax-group-components"
                 data-testid="tax-group-components"
@@ -111,7 +115,7 @@ import { FINERACT_DATE_FORMAT, FINERACT_LOCALE } from '../../../core/utils/date-
                 (click)="onCancel()"
                 [disabled]="isSaving()"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 id="tax-group-submit-btn"
@@ -122,9 +126,9 @@ import { FINERACT_DATE_FORMAT, FINERACT_LOCALE } from '../../../core/utils/date-
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

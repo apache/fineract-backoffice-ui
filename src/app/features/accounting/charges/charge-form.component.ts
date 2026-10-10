@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   ChargesService,
   ChargeRequest,
@@ -55,7 +55,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     HelpIconComponent,
     IonButton,
     IonSpinner,
@@ -75,7 +75,7 @@ import {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode() ? ('CHARGES.EDIT' | translate) : ('CHARGES.CREATE' | translate) }}
+            {{ isEditMode() ? ('CHARGES.EDIT' | appTranslate) : ('CHARGES.CREATE' | appTranslate) }}
             <app-help-icon [helpTextKey]="'HELP.CHARGES_DESC'"></app-help-icon>
           </ion-card-title>
         </ion-card-header>
@@ -85,9 +85,9 @@ import {
             <div class="form-grid">
               <!-- Name -->
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.NAME' | translate"
+                  [attr.aria-label]="'COMMON.NAME' | appTranslate"
                   name="name"
                   [(ngModel)]="charge().name"
                   required
@@ -96,9 +96,9 @@ import {
 
               <!-- Charge Applies To -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Applies To</ion-label>
+                <ion-label position="stacked">{{ 'CHARGES.APPLIES_TO' | appTranslate }}</ion-label>
                 <ion-select
-                  aria-label="Applies To"
+                  [attr.aria-label]="'CHARGES.APPLIES_TO' | appTranslate"
                   interface="popover"
                   name="chargeAppliesTo"
                   [(ngModel)]="charge().chargeAppliesTo"
@@ -114,9 +114,9 @@ import {
 
               <!-- Currency -->
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.CURRENCY' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.CURRENCY' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'COMMON.CURRENCY' | translate"
+                  [attr.aria-label]="'COMMON.CURRENCY' | appTranslate"
                   interface="popover"
                   name="currencyCode"
                   [(ngModel)]="charge().currencyCode"
@@ -132,9 +132,9 @@ import {
 
               <!-- Charge Time Type -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Charge Time Type</ion-label>
+                <ion-label position="stacked">{{ 'CHARGES.TIME_TYPE' | appTranslate }}</ion-label>
                 <ion-select
-                  aria-label="Charge Time Type"
+                  [attr.aria-label]="'CHARGES.TIME_TYPE' | appTranslate"
                   interface="popover"
                   name="chargeTimeType"
                   [(ngModel)]="charge().chargeTimeType"
@@ -150,9 +150,11 @@ import {
 
               <!-- Charge Calculation Type -->
               <ion-item fill="outline">
-                <ion-label position="stacked">Calculation Type</ion-label>
+                <ion-label position="stacked">{{
+                  'CHARGES.CALCULATION_TYPE' | appTranslate
+                }}</ion-label>
                 <ion-select
-                  aria-label="Calculation Type"
+                  [attr.aria-label]="'CHARGES.CALCULATION_TYPE' | appTranslate"
                   interface="popover"
                   name="chargeCalculationType"
                   [(ngModel)]="charge().chargeCalculationType"
@@ -168,9 +170,9 @@ import {
 
               <!-- Amount -->
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.AMOUNT' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'COMMON.AMOUNT' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.AMOUNT' | translate"
+                  [attr.aria-label]="'COMMON.AMOUNT' | appTranslate"
                   type="number"
                   name="amount"
                   [(ngModel)]="charge().amount"
@@ -181,21 +183,21 @@ import {
               <!-- Active -->
               <div class="checkbox-container">
                 <ion-checkbox name="active" [(ngModel)]="charge().active">
-                  {{ 'COMMON.ACTIVE' | translate }}
+                  {{ 'COMMON.ACTIVE' | appTranslate }}
                 </ion-checkbox>
               </div>
 
               <!-- Penalty -->
               <div class="checkbox-container">
                 <ion-checkbox name="penalty" [(ngModel)]="charge().penalty">
-                  {{ 'COMMON.PENALTY' | translate }}
+                  {{ 'COMMON.PENALTY' | appTranslate }}
                 </ion-checkbox>
               </div>
             </div>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -204,9 +206,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

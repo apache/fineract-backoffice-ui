@@ -20,10 +20,11 @@
 import { AfterViewInit, Component, ElementRef, computed, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { IonButton } from '@ionic/angular/standalone';
 import { TranslatePipe } from '../../core/adapters';
 import { REQUIRED_PERMISSIONS_PARAM } from '../../core/guards/permission.guard';
 import { PermissionSummaryPipe } from '../../shared/pipes/permission-summary.pipe';
+import { IconComponent } from '../../ui/icon/icon.component';
 
 /**
  * The page a user lands on when `permissionGuard` refuses a route.
@@ -46,10 +47,10 @@ import { PermissionSummaryPipe } from '../../shared/pipes/permission-summary.pip
 @Component({
   selector: 'app-access-denied',
   standalone: true,
-  imports: [RouterLink, IonButton, IonIcon, TranslatePipe, PermissionSummaryPipe],
+  imports: [RouterLink, IonButton, IconComponent, TranslatePipe, PermissionSummaryPipe],
   template: `
     <div class="access-denied" role="alert" aria-live="polite">
-      <ion-icon name="lock-closed-outline" class="access-denied__icon" aria-hidden="true" />
+      <app-icon name="lock-closed-outline" class="access-denied__icon" />
 
       <!--
         tabindex="-1" makes the heading programmatically focusable without adding it to the tab

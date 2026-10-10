@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { HelpIconComponent } from '../../../shared';
 import { CreditBureauConfigurationService, CreditBureauIntegrationService } from '../../../api';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -63,7 +63,7 @@ interface LoanProductMappingRow {
   imports: [
     JsonPipe,
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     CdkTableModule,
     HelpIconComponent,
     IonButton,
@@ -81,7 +81,7 @@ interface LoanProductMappingRow {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ 'CREDIT_BUREAU_CONFIG.TITLE' | translate }}
+            {{ 'CREDIT_BUREAU_CONFIG.TITLE' | appTranslate }}
             <app-help-icon helpTextKey="HELP.CREDIT_BUREAU_CONFIG_DESC"></app-help-icon>
           </ion-card-title>
         </ion-card-header>
@@ -89,29 +89,29 @@ interface LoanProductMappingRow {
           @if (isLoading()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {
-            <h3>{{ 'CREDIT_BUREAU_CONFIG.BUREAUS' | translate }}</h3>
+            <h3>{{ 'CREDIT_BUREAU_CONFIG.BUREAUS' | appTranslate }}</h3>
             <table cdk-table [dataSource]="bureaus()" class="cbc-table">
               <ng-container cdkColumnDef="id">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'CREDIT_BUREAU_CONFIG.ID' | translate }}
+                  {{ 'CREDIT_BUREAU_CONFIG.ID' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.id }}</td>
               </ng-container>
               <ng-container cdkColumnDef="name">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'CREDIT_BUREAU_CONFIG.NAME' | translate }}
+                  {{ 'CREDIT_BUREAU_CONFIG.NAME' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.name }}</td>
               </ng-container>
               <ng-container cdkColumnDef="product">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'CREDIT_BUREAU_CONFIG.PRODUCT' | translate }}
+                  {{ 'CREDIT_BUREAU_CONFIG.PRODUCT' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.product }}</td>
               </ng-container>
               <ng-container cdkColumnDef="country">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'CREDIT_BUREAU_CONFIG.COUNTRY' | translate }}
+                  {{ 'CREDIT_BUREAU_CONFIG.COUNTRY' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.country }}</td>
               </ng-container>
@@ -119,29 +119,29 @@ interface LoanProductMappingRow {
               <tr cdk-row *cdkRowDef="let row; columns: bureauColumns"></tr>
             </table>
 
-            <h3 class="cbc-section">{{ 'CREDIT_BUREAU_CONFIG.MAPPINGS' | translate }}</h3>
+            <h3 class="cbc-section">{{ 'CREDIT_BUREAU_CONFIG.MAPPINGS' | appTranslate }}</h3>
             <table cdk-table [dataSource]="mappings()" class="cbc-table">
               <ng-container cdkColumnDef="loanProductName">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'CREDIT_BUREAU_CONFIG.LOAN_PRODUCT' | translate }}
+                  {{ 'CREDIT_BUREAU_CONFIG.LOAN_PRODUCT' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.loanProductName }}</td>
               </ng-container>
               <ng-container cdkColumnDef="organisationCreditBureauId">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'CREDIT_BUREAU_CONFIG.ORG_BUREAU_ID' | translate }}
+                  {{ 'CREDIT_BUREAU_CONFIG.ORG_BUREAU_ID' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.organisationCreditBureauId }}</td>
               </ng-container>
               <ng-container cdkColumnDef="alias">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'CREDIT_BUREAU_CONFIG.ALIAS' | translate }}
+                  {{ 'CREDIT_BUREAU_CONFIG.ALIAS' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.alias }}</td>
               </ng-container>
               <ng-container cdkColumnDef="isCreditCheckMandatory">
                 <th cdk-header-cell *cdkHeaderCellDef>
-                  {{ 'CREDIT_BUREAU_CONFIG.MANDATORY' | translate }}
+                  {{ 'CREDIT_BUREAU_CONFIG.MANDATORY' | appTranslate }}
                 </th>
                 <td cdk-cell *cdkCellDef="let row">{{ row.isCreditCheckMandatory }}</td>
               </ng-container>
@@ -149,15 +149,15 @@ interface LoanProductMappingRow {
               <tr cdk-row *cdkRowDef="let row; columns: mappingColumns"></tr>
             </table>
 
-            <h3 class="cbc-section">{{ 'CREDIT_BUREAU_CONFIG.INTEGRATION' | translate }}</h3>
+            <h3 class="cbc-section">{{ 'CREDIT_BUREAU_CONFIG.INTEGRATION' | appTranslate }}</h3>
 
             <div class="integration-form">
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
-                  'CREDIT_BUREAU_CONFIG.NATIONAL_ID' | translate
+                  'CREDIT_BUREAU_CONFIG.NATIONAL_ID' | appTranslate
                 }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'CREDIT_BUREAU_CONFIG.NATIONAL_ID' | translate"
+                  [attr.aria-label]="'CREDIT_BUREAU_CONFIG.NATIONAL_ID' | appTranslate"
                   [(ngModel)]="nationalId"
                   name="nationalId"
                 ></ion-input>
@@ -171,14 +171,14 @@ interface LoanProductMappingRow {
                     (click)="fetchReport(bureau.id)"
                     [disabled]="integrationLoading()"
                   >
-                    {{ 'CREDIT_BUREAU_CONFIG.FETCH_REPORT' | translate }}
+                    {{ 'CREDIT_BUREAU_CONFIG.FETCH_REPORT' | appTranslate }}
                   </ion-button>
                   <ion-button
                     fill="outline"
                     (click)="searchByNationalId(bureau.id)"
                     [disabled]="!nationalId || integrationLoading()"
                   >
-                    {{ 'CREDIT_BUREAU_CONFIG.SEARCH_NATIONAL_ID' | translate }}
+                    {{ 'CREDIT_BUREAU_CONFIG.SEARCH_NATIONAL_ID' | appTranslate }}
                   </ion-button>
                 </div>
               }
@@ -191,7 +191,7 @@ interface LoanProductMappingRow {
             @if (creditReport().length > 0) {
               <pre class="report-output">{{ creditReport() | json }}</pre>
             } @else if (reportFetched()) {
-              <p class="no-report">{{ 'CREDIT_BUREAU_CONFIG.NO_REPORT' | translate }}</p>
+              <p class="no-report">{{ 'CREDIT_BUREAU_CONFIG.NO_REPORT' | appTranslate }}</p>
             }
           }
         </ion-card-content>

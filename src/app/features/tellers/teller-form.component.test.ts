@@ -20,22 +20,39 @@
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TellerFormComponent } from './teller-form.component';
-import { TellerCashManagementService, OfficesService, PostTellersRequest } from '../../api';
-import { ActivatedRoute, Router } from '@angular/router';
+import { OFFICE_API, TELLER_API, type Teller } from '../../core/adapters';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
-describe('TellerFormComponent', () => {
+/** A teller as the adapter maps it. `startDate` is the platform's own ISO date. */
+const MAIN_TELLER: Teller = {
+  id: 1,
+  name: 'Main Teller',
+  description: 'Head office vault',
+  officeId: 1,
+  officeName: 'Head Office',
+  status: 'ACTIVE',
+  startDate: '2026-10-02',
+};
+
+describe('TellerFormComponent, creating', () => {
   let component: TellerFormComponent;
   let fixture: ComponentFixture<TellerFormComponent>;
-  let tellerServiceSpy: SpyObj<TellerCashManagementService>;
-  let officesServiceSpy: SpyObj<OfficesService>;
+  let tellerApiSpy: SpyObj<{
+    get: (id: number) => unknown;
+    create: (d: unknown) => unknown;
+    update: (id: number, u: unknown) => unknown;
+  }>;
+  let officeApiSpy: SpyObj<{ list: (all?: boolean) => unknown }>;
   let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    tellerServiceSpy = createSpyObj(['getTellersTellerId', 'postTellers', 'putTellersTellerId']);
-    officesServiceSpy = createSpyObj(['getOffices']);
+    tellerApiSpy = createSpyObj(['get', 'create', 'update']);
+    tellerApiSpy.create.mockReturnValue(of(undefined));
+    officeApiSpy = createSpyObj(['list']);
+    officeApiSpy.list.mockReturnValue(of([]));
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
@@ -43,20 +60,14 @@ describe('TellerFormComponent', () => {
       providers: [
         ...provideTranslateTesting(),
         provideNoopAnimations(),
-        { provide: TellerCashManagementService, useValue: tellerServiceSpy },
-        { provide: OfficesService, useValue: officesServiceSpy },
+        { provide: TELLER_API, useValue: tellerApiSpy },
+        { provide: OFFICE_API, useValue: officeApiSpy },
         { provide: Router, useValue: routerSpy },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            paramMap: of({ get: () => null }),
-          },
-        },
+        // No id: the form is in create mode.
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },
       ],
     }).compileComponents();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    officesServiceSpy.getOffices.mockReturnValue(of([]) as any);
     fixture = TestBed.createComponent(TellerFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -66,28 +77,101 @@ describe('TellerFormComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should format payload with numeric status and yyyy-MM-dd date', () => {
-    component.isEditMode.set(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    component.teller.set({ name: 'Test Teller', officeId: 1, status: 'ACTIVE' as any });
-    component.startDate = new Date(2026, 4, 9);
+  it('should load offices on init, as the whole list including inactive ones', () => {
+    expect(officeApiSpy.list).toHaveBeenCalledWith(true);
+  });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tellerServiceSpy.postTellers.mockReturnValue(of({}) as any);
+  it('submits the name, office, status and start date the form holds', () => {
+    component.teller.set({ name: 'Test Teller', officeId: 1, status: 'ACTIVE' });
+    component.startDate = new Date(2026, 4, 9);
 
     component.onSubmit();
 
-    const expectedPayload = expect.objectContaining({
+    expect(tellerApiSpy.create).toHaveBeenCalledWith({
       name: 'Test Teller',
       officeId: 1,
-      status: 300, // Numeric for Active
+      status: 'ACTIVE',
       startDate: '2026-05-09',
-      dateFormat: 'yyyy-MM-dd',
-      locale: 'en',
     });
+    expect(tellerApiSpy.update).not.toHaveBeenCalled();
+  });
 
-    expect(tellerServiceSpy.postTellers).toHaveBeenCalledWith(
-      expectedPayload as PostTellersRequest,
+  it('returns to the list after a successful create', () => {
+    component.teller.set({ name: 'Test Teller', officeId: 1, status: 'ACTIVE' });
+
+    component.onSubmit();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/tellers']);
+  });
+});
+
+describe('TellerFormComponent, editing', () => {
+  let component: TellerFormComponent;
+  let fixture: ComponentFixture<TellerFormComponent>;
+  let tellerApiSpy: SpyObj<{
+    get: (id: number) => unknown;
+    create: (d: unknown) => unknown;
+    update: (id: number, u: unknown) => unknown;
+  }>;
+  let officeApiSpy: SpyObj<{ list: (all?: boolean) => unknown }>;
+
+  beforeEach(async () => {
+    tellerApiSpy = createSpyObj(['get', 'create', 'update']);
+    tellerApiSpy.get.mockReturnValue(of(MAIN_TELLER));
+    tellerApiSpy.update.mockReturnValue(of(undefined));
+    officeApiSpy = createSpyObj(['list']);
+    officeApiSpy.list.mockReturnValue(of([]));
+
+    await TestBed.configureTestingModule({
+      imports: [TellerFormComponent],
+      providers: [
+        ...provideTranslateTesting(),
+        provideNoopAnimations(),
+        { provide: TELLER_API, useValue: tellerApiSpy },
+        { provide: OFFICE_API, useValue: officeApiSpy },
+        { provide: Router, useValue: createSpyObj(['navigate']) },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })) } },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TellerFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('loads the teller it was opened for', () => {
+    expect(tellerApiSpy.get).toHaveBeenCalledWith(1);
+    expect(component.teller()).toEqual({
+      name: 'Main Teller',
+      officeId: 1,
+      description: 'Head office vault',
+      status: 'ACTIVE',
+    });
+  });
+
+  /**
+   * The regression this block exists for.
+   *
+   * The form used to read the start date as a `[y, m, d]` array. For `'2026-10-02'` that built
+   * 1901-12-02, and the update saved it: editing any teller silently moved its start date back
+   * more than a century. The update must send back the date the teller already has.
+   */
+  it('saves the start date the teller already has, not a date rebuilt from it', () => {
+    component.onSubmit();
+
+    expect(tellerApiSpy.update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ name: 'Main Teller', status: 'ACTIVE', startDate: '2026-10-02' }),
     );
+    expect(tellerApiSpy.create).not.toHaveBeenCalled();
+  });
+
+  it('keeps the teller without an office on update, since the picker is disabled', () => {
+    component.onSubmit();
+
+    // An update has no office to send: the picker is disabled in edit mode and the platform is
+    // not asked to move a teller between offices.
+    const update = tellerApiSpy.update.mock.lastCall![1] as Record<string, unknown>;
+    expect('officeId' in update).toBe(false);
   });
 });

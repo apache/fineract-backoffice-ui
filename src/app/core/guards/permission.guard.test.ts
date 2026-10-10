@@ -23,6 +23,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { loanCommandPermission, savingsCommandPermission } from './command-permissions';
 import { permissionGuard, REQUIRED_PERMISSIONS_PARAM } from './permission.guard';
 import { AuthService, UserSession } from '../services/auth.service';
 import { provideTestConfig } from '../../testing/config';
@@ -50,12 +51,22 @@ describe('permissionGuard', () => {
     };
   }
 
-  /** Signs the given permission set in, then runs the guard against the given route data. */
-  function run(permissions: string[] | null, data: Record<string, unknown>): true | UrlTree {
+  /**
+   * Signs the given permission set in, then runs the guard against the given route data.
+   *
+   * `params` is only read by the function form of `data.permissions` — a dispatch route, where
+   * the code depends on which command is being opened.
+   */
+  function run(
+    permissions: string[] | null,
+    data: Record<string, unknown>,
+    params: Record<string, string> = {},
+  ): true | UrlTree {
     auth.currentUser.set(permissions ? session(permissions) : null);
+    const paramMap = { get: (name: string): string | null => params[name] ?? null };
     return TestBed.runInInjectionContext(() =>
       permissionGuard(
-        { data } as unknown as ActivatedRouteSnapshot,
+        { data, paramMap } as unknown as ActivatedRouteSnapshot,
         {
           url: '/somewhere',
         } as RouterStateSnapshot,
@@ -169,6 +180,90 @@ describe('permissionGuard', () => {
     expect(message).toContain('/somewhere');
     expect(message).toContain('READ_CLIENT');
     expect(message).toContain('tester');
+  });
+
+  describe('a dispatch route, whose permission depends on the command', () => {
+    it('gates each command on its own code', () => {
+      // The defect this exists for (#691): one path, many commands, and the code the platform
+      // enforces differs per command.
+      expect(
+        run(['DISBURSE_LOAN'], { permissions: loanCommandPermission }, { type: 'disburse' }),
+      ).toBe(true);
+      expect(
+        run(['REPAYMENT_LOAN'], { permissions: loanCommandPermission }, { type: 'repayment' }),
+      ).toBe(true);
+    });
+
+    it("refuses a holder of one command's code another command", () => {
+      // Without this, a single declaration would admit a disburser to the repayment form.
+      expect(
+        run(['DISBURSE_LOAN'], { permissions: loanCommandPermission }, { type: 'repayment' }),
+      ).toBe(FORBIDDEN);
+    });
+
+    it('refuses the code the route used to declare for every command', () => {
+      // UPDATE_LOAN is what was declared, and Fineract accepts it for none of these: it lives
+      // in the `portfolio` grouping while the commands live in `transaction_loan`. Admitting it
+      // is the half of #691 that led a user into a form that could only 403.
+      for (const type of ['disburse', 'repayment', 'approve']) {
+        expect(run(['UPDATE_LOAN'], { permissions: loanCommandPermission }, { type })).toBe(
+          FORBIDDEN,
+        );
+      }
+    });
+
+    it('admits an unmapped command rather than guessing a code for it', () => {
+      // A guessed code refuses a user the platform would have allowed, which is the more
+      // damaging and less visible failure. Four commands are deliberately unmapped; see
+      // command-permissions.ts.
+      expect(
+        run(['READ_LOAN'], { permissions: loanCommandPermission }, { type: 'reAmortize' }),
+      ).toBe(true);
+    });
+
+    it('admits when the parameter is absent entirely', () => {
+      // Cannot happen through the router, but a declaration that threw here would take the
+      // whole navigation down rather than refusing it.
+      expect(run(['READ_LOAN'], { permissions: loanCommandPermission })).toBe(true);
+    });
+
+    it('gates savings commands on the transaction_savings codes, not UPDATE_SAVINGSACCOUNT', () => {
+      expect(
+        run(
+          ['DEPOSIT_SAVINGSACCOUNT'],
+          { permissions: savingsCommandPermission },
+          { command: 'deposit' },
+        ),
+      ).toBe(true);
+      expect(
+        run(
+          ['WITHDRAWAL_SAVINGSACCOUNT'],
+          { permissions: savingsCommandPermission },
+          { command: 'withdrawal' },
+        ),
+      ).toBe(true);
+      expect(
+        run(
+          ['UPDATE_SAVINGSACCOUNT'],
+          { permissions: savingsCommandPermission },
+          { command: 'deposit' },
+        ),
+      ).toBe(FORBIDDEN);
+    });
+
+    it('still admits a superuser to every command', () => {
+      expect(
+        run(['ALL_FUNCTIONS'], { permissions: loanCommandPermission }, { type: 'disburse' }),
+      ).toBe(true);
+    });
+
+    it('does not let ALL_FUNCTIONS_READ reach a write command', () => {
+      // The read-only shortcut admits only when every required code begins with READ_, and a
+      // disbursement is not a read however the code is resolved.
+      expect(
+        run(['ALL_FUNCTIONS_READ'], { permissions: loanCommandPermission }, { type: 'disburse' }),
+      ).toBe(FORBIDDEN);
+    });
   });
 
   it('admits everyone when the deployment has RBAC turned off', () => {

@@ -35,10 +35,13 @@ import {
 } from '@ionic/angular/standalone';
 import { CellTemplateDirective, ColumnDef } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { TranslatePipe } from '../../../core/adapters';
+import {
+  CashierCurrency,
+  CashierTransaction,
+  TELLER_API,
+  TranslatePipe,
+} from '../../../core/adapters';
 import { switchMap } from 'rxjs/operators';
-import { CashierTransactionData, CurrencyData, TellerCashManagementService } from '../../../api';
-import { formatArrayDate } from '../../../core/utils/date-formatter';
 
 /**
  * The running cash position for one cashier, and the entries that produced it.
@@ -131,11 +134,11 @@ import { formatArrayDate } from '../../../core/utils/date-formatter';
         [totalRecords]="transactions().length"
         [localLogic]="true"
       >
-        <ng-template appCellTemplate="txnType" let-txn>
-          {{ txn.txnType?.value || '-' }}
+        <ng-template appCellTemplate="type" let-txn>
+          {{ txn.type || '-' }}
         </ng-template>
-        <ng-template appCellTemplate="txnDate" let-txn>
-          {{ formatDate(txn.txnDate) }}
+        <ng-template appCellTemplate="date" let-txn>
+          {{ txn.date || '-' }}
         </ng-template>
       </app-data-table>
     </div>
@@ -155,7 +158,7 @@ import { formatArrayDate } from '../../../core/utils/date-formatter';
   ],
 })
 export class CashierTransactionsComponent {
-  private readonly tellerService = inject(TellerCashManagementService);
+  private readonly tellerApi = inject(TELLER_API);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -164,18 +167,18 @@ export class CashierTransactionsComponent {
 
   readonly cashierName = signal('');
   readonly tellerName = signal('');
-  readonly currencies = signal<CurrencyData[]>([]);
+  readonly currencies = signal<CashierCurrency[]>([]);
   readonly currencyCode = signal('');
   readonly sumAllocated = signal(0);
   readonly sumSettled = signal(0);
   readonly netCash = signal(0);
-  readonly transactions = signal<CashierTransactionData[]>([]);
+  readonly transactions = signal<CashierTransaction[]>([]);
 
   readonly columns: ColumnDef[] = [
-    { key: 'txnType', label: 'COMMON.TYPE', sortable: false },
-    { key: 'txnAmount', label: 'COMMON.AMOUNT', sortable: true },
-    { key: 'txnDate', label: 'COMMON.DATE', sortable: true },
-    { key: 'txnNote', label: 'COMMON.NOTE', sortable: false },
+    { key: 'type', label: 'COMMON.TYPE', sortable: false },
+    { key: 'amount', label: 'COMMON.AMOUNT', sortable: true },
+    { key: 'date', label: 'COMMON.DATE', sortable: true },
+    { key: 'note', label: 'COMMON.NOTE', sortable: false },
   ];
 
   constructor() {
@@ -195,45 +198,28 @@ export class CashierTransactionsComponent {
    * transacted, so omitting it renders a confidently wrong screen rather than an error.
    */
   private load(): void {
-    this.tellerService
-      .getTellersTellerIdCashiersCashierIdTransactionsTemplate(this.tellerId(), this.cashierId())
+    this.tellerApi
+      .cashierTransactionTemplate(this.tellerId(), this.cashierId())
       .pipe(
         switchMap((template) => {
-          const currencies = template.currencyOptions ?? [];
+          const currencies = template.currencies;
           this.currencies.set(currencies);
           const code = this.currencyCode() || currencies[0]?.code || '';
           this.currencyCode.set(code);
-          return this.tellerService.getTellersTellerIdCashiersCashierIdSummaryandtransactions(
-            this.tellerId(),
-            this.cashierId(),
-            code,
-          );
+          return this.tellerApi.cashierSummary(this.tellerId(), this.cashierId(), code);
         }),
       )
       .subscribe({
         next: (summary) => {
-          this.cashierName.set(summary.cashierName ?? '');
-          this.tellerName.set(summary.tellerName ?? '');
-          this.sumAllocated.set(summary.sumCashAllocation ?? 0);
-          this.sumSettled.set(summary.sumCashSettlement ?? 0);
-          this.netCash.set(summary.netCash ?? 0);
-          this.transactions.set(summary.cashierTransactions?.pageItems ?? []);
+          this.cashierName.set(summary.cashierName);
+          this.tellerName.set(summary.tellerName);
+          this.sumAllocated.set(summary.allocated);
+          this.sumSettled.set(summary.settled);
+          this.netCash.set(summary.netCash);
+          this.transactions.set(summary.transactions);
         },
         error: () => this.transactions.set([]),
       });
-  }
-
-  /**
-   * Renders a transaction date.
-   *
-   * This endpoint returns `txnDate` as an ISO `'2026-08-05'` string, unlike the cashier and
-   * teller resources, which return `[year, month, day]` arrays for their own dates. Both shapes
-   * are handled because the difference is per-endpoint rather than per-version, and rendering
-   * `[2026,8,5]` into a table cell is the failure mode either assumption produces alone.
-   */
-  formatDate(value: unknown): string {
-    if (typeof value === 'string') return value.split('T', 1)[0];
-    return formatArrayDate(value);
   }
 
   onAllocate(): void {

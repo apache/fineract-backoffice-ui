@@ -172,9 +172,21 @@ export const ORGANIZATION_ROUTES: Routes = [
       import('./group-levels/group-levels-list.component').then((m) => m.GroupLevelsListComponent),
   },
   {
+    // `READ_OFFICE`, not `READ_OFFICETRANSACTION`. Measured against a running Fineract: the
+    // read is gated on the office code, and the transaction code does nothing for it.
+    //
+    //   READ_OFFICE alone              → GET /officetransactions 200
+    //   READ_OFFICETRANSACTION alone   → 403
+    //   READ_CLIENT alone (control)    → 403
+    //
+    // So this used to refuse everyone the platform admits and admit no one it does not, which
+    // is issue #665 — though not the fix that issue proposed: requiring **both** codes would
+    // still refuse a `READ_OFFICE` holder the platform serves. Writing is gated separately and
+    // correctly on the controls themselves (`CREATE_OFFICETRANSACTION`,
+    // `DELETE_OFFICETRANSACTION`), so widening the read here does not widen what can be done.
     path: 'office-transactions',
     canActivate: [authGuard, permissionGuard],
-    data: { permissions: 'READ_OFFICETRANSACTION' },
+    data: { permissions: 'READ_OFFICE' },
     title: 'OFFICE_TRANSACTIONS.TITLE',
     loadComponent: () =>
       import('./office-transactions/office-transactions-list.component').then(
@@ -182,9 +194,15 @@ export const ORGANIZATION_ROUTES: Routes = [
       ),
   },
   {
+    // Both codes, because the form needs both: `GET /officetransactions/template` answers 403
+    // without `READ_OFFICE` (measured, same as the list above), so a holder of the create code
+    // alone reaches a form whose office picker can never populate. The write code is kept as
+    // declared but is **unverified** — `POST /officetransactions` cannot be executed on this
+    // platform version at all, answering a SQL error about a missing `currency_multiplesof`
+    // column, which is recorded in #665 as a platform defect.
     path: 'office-transactions/create',
     canActivate: [authGuard, permissionGuard],
-    data: { permissions: 'CREATE_OFFICETRANSACTION' },
+    data: { permissions: ['CREATE_OFFICETRANSACTION', 'READ_OFFICE'], permissionsMatchAll: true },
     title: 'OFFICE_TRANSACTIONS.CREATE',
     loadComponent: () =>
       import('./office-transactions/office-transaction-form.component').then(

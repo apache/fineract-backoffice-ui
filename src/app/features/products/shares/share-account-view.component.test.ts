@@ -218,4 +218,25 @@ describe('ShareAccountViewComponent', () => {
     expect(component.hasError()).toBe(true);
     expect(component.isLoading()).toBe(false);
   });
+
+  describe('teardown', () => {
+    it('dismisses popovers when destroyed', async () => {
+      await setup(account(ACTIVE));
+
+      const withPopovers = component as unknown as {
+        popovers: () => readonly { dismiss: () => Promise<boolean> }[];
+      };
+      const popovers = withPopovers.popovers();
+      expect(popovers.length).toBeGreaterThan(0);
+      const dismissSpies = popovers.map((popover) =>
+        vi.spyOn(popover, 'dismiss').mockResolvedValue(true),
+      );
+
+      fixture.destroy();
+
+      for (const spy of dismissSpies) {
+        expect(spy).toHaveBeenCalled();
+      }
+    });
+  });
 });

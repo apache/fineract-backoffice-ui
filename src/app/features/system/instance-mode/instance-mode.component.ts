@@ -19,7 +19,7 @@
 
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { InstanceModeService, ChangeInstanceModeRequest } from '../../../api';
 import {
   IonButton,
@@ -40,7 +40,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -53,19 +53,19 @@ import {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'INSTANCE_MODE.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'INSTANCE_MODE.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <div class="toggle-list">
             <ion-toggle [(ngModel)]="mode.readEnabled">
-              {{ 'INSTANCE_MODE.READ_ENABLED' | translate }}
+              {{ 'INSTANCE_MODE.READ_ENABLED' | appTranslate }}
             </ion-toggle>
             <ion-toggle [(ngModel)]="mode.writeEnabled">
-              {{ 'INSTANCE_MODE.WRITE_ENABLED' | translate }}
+              {{ 'INSTANCE_MODE.WRITE_ENABLED' | appTranslate }}
             </ion-toggle>
             <ion-toggle [(ngModel)]="mode.batchWorkerEnabled">
-              {{ 'INSTANCE_MODE.BATCH_WORKER_ENABLED' | translate }}
+              {{ 'INSTANCE_MODE.BATCH_WORKER_ENABLED' | appTranslate }}
             </ion-toggle>
           </div>
 
@@ -73,9 +73,9 @@ import {
             <ion-button color="primary" type="button" [disabled]="isSaving()" (click)="onSave()">
               @if (isSaving()) {
                 <ion-spinner name="crescent"></ion-spinner>
-                {{ 'COMMON.SAVING' | translate }}
+                {{ 'COMMON.SAVING' | appTranslate }}
               } @else {
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               }
             </ion-button>
           </div>

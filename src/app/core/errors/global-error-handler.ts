@@ -19,7 +19,7 @@
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorHandler, Injectable, Injector, inject } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
+import { I18N } from '../adapters';
 import { NotificationService } from '../services/notification.service';
 
 /**
@@ -69,9 +69,9 @@ export class GlobalErrorHandler implements ErrorHandler {
     }
 
     try {
-      const translate = this.injector.get(TranslateService);
+      const i18n = this.injector.get(I18N);
       const notifications = this.injector.get(NotificationService);
-      void notifications.error(translate.instant('COMMON.ERRORS.UNEXPECTED'));
+      void notifications.error(i18n.translate('COMMON.ERRORS.UNEXPECTED'));
     } catch (reportingFailure) {
       // Anything thrown from here would re-enter handleError and loop. The original error is
       // already on the console, which is what matters.

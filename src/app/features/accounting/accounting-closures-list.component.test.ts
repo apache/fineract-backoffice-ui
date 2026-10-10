@@ -20,40 +20,55 @@
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountingClosuresListComponent } from './accounting-closures-list.component';
-import {
-  AccountingClosureService,
-  GetGlClosureResponse,
-  DeleteGlClosuresResponse,
-} from '../../api';
+import { ACCOUNTING_CLOSURE_API } from '../../core/adapters';
+import type { AccountingClosure, AccountingClosureApi } from '../../core/adapters';
 import { Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { HttpEvent } from '@angular/common/http';
+
+/**
+ * A closed period, in the application's own shape.
+ *
+ * This spec used to mock the generated `AccountingClosureService` and build fixtures from
+ * `GetGlClosureResponse`, which meant it reproduced that type's blind spots: it passed while
+ * the status column read a field no payload contains. Mocking the contract instead tests what
+ * the component is specified to do, and the mapping is tested where mapping happens — see
+ * `core/adapters/api/fineract-accounting-closure.api.test.ts`.
+ *
+ * It also drops the `as unknown as Observable<HttpEvent<…>>` casts the generated service's
+ * overloads forced on every mock here.
+ */
+const CLOSURE: AccountingClosure = {
+  id: 1,
+  officeId: 1,
+  officeName: 'Head Office',
+  closingDate: '2026-09-01',
+  comments: null,
+  isClosed: true,
+};
 
 describe('AccountingClosuresListComponent', () => {
   let component: AccountingClosuresListComponent;
   let fixture: ComponentFixture<AccountingClosuresListComponent>;
-  let closureServiceSpy: SpyObj<AccountingClosureService>;
+  let closureApiSpy: SpyObj<AccountingClosureApi>;
   let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    closureServiceSpy = createSpyObj(['getGlclosures', 'deleteGlclosuresGlClosureId']);
+    closureApiSpy = createSpyObj(['list', 'create', 'remove']);
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [AccountingClosuresListComponent],
       providers: [
         ...provideTranslateTesting(),
-        { provide: AccountingClosureService, useValue: closureServiceSpy },
+        { provide: ACCOUNTING_CLOSURE_API, useValue: closureApiSpy },
         { provide: Router, useValue: routerSpy },
         provideNoopAnimations(),
       ],
     }).compileComponents();
 
-    closureServiceSpy.getGlclosures.mockReturnValue(
-      of([]) as unknown as Observable<HttpEvent<GetGlClosureResponse[]>>,
-    );
+    closureApiSpy.list.mockReturnValue(of([CLOSURE]));
     fixture = TestBed.createComponent(AccountingClosuresListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -64,7 +79,26 @@ describe('AccountingClosuresListComponent', () => {
   });
 
   it('should load closures on init', () => {
-    expect(closureServiceSpy.getGlclosures).toHaveBeenCalled();
+    expect(closureApiSpy.list).toHaveBeenCalled();
+    expect(component.closures()).toEqual([CLOSURE]);
+  });
+
+  it('shows a closed period as closed', () => {
+    // The regression this migration fixes: the status cell read `isClosed` off the generated
+    // response, which has no such field, so every closed period rendered as "Open".
+    const chip = fixture.nativeElement.querySelector('.status-chip');
+    expect(chip?.classList.contains('closed')).toBe(true);
+    expect(chip?.textContent?.trim()).toBe('COMMON.CLOSED');
+  });
+
+  it('shows a re-opened period as open', () => {
+    closureApiSpy.list.mockReturnValue(of([{ ...CLOSURE, isClosed: false }]));
+    const reopened = TestBed.createComponent(AccountingClosuresListComponent);
+    reopened.detectChanges();
+
+    const chip = reopened.nativeElement.querySelector('.status-chip');
+    expect(chip?.classList.contains('open')).toBe(true);
+    expect(chip?.textContent?.trim()).toBe('COMMON.OPEN');
   });
 
   it('should navigate to create on onCreateClosure', () => {
@@ -74,13 +108,41 @@ describe('AccountingClosuresListComponent', () => {
 
   it('should delete closure when confirmed', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
-    closureServiceSpy.deleteGlclosuresGlClosureId.mockReturnValue(
-      of({}) as unknown as Observable<HttpEvent<DeleteGlClosuresResponse>>,
-    );
+    closureApiSpy.remove.mockReturnValue(of(undefined));
 
-    component.onDeleteClosure({ id: 1 } as unknown as GetGlClosureResponse);
+    component.onDeleteClosure(CLOSURE);
 
-    expect(closureServiceSpy.deleteGlclosuresGlClosureId).toHaveBeenCalledWith(1);
-    expect(closureServiceSpy.getGlclosures).toHaveBeenCalledTimes(2);
+    expect(closureApiSpy.remove).toHaveBeenCalledWith(1);
+    expect(closureApiSpy.list).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves the period alone when the confirmation is dismissed', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    component.onDeleteClosure(CLOSURE);
+
+    expect(closureApiSpy.remove).not.toHaveBeenCalled();
+  });
+
+  it('sets hasError to true when loading closures fails', () => {
+    closureApiSpy.list.mockReturnValue(throwError(() => new Error('Server down')));
+    const failedFixture = TestBed.createComponent(AccountingClosuresListComponent);
+    failedFixture.detectChanges();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(true);
+  });
+
+  it('retries loading closures and resets hasError on retry', () => {
+    closureApiSpy.list.mockReturnValue(throwError(() => new Error('Server down')));
+    const failedFixture = TestBed.createComponent(AccountingClosuresListComponent);
+    failedFixture.detectChanges();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(true);
+
+    closureApiSpy.list.mockReturnValue(of([CLOSURE]));
+    failedFixture.componentInstance.onRetry();
+
+    expect(failedFixture.componentInstance.hasError()).toBe(false);
+    expect(failedFixture.componentInstance.closures()).toEqual([CLOSURE]);
   });
 });

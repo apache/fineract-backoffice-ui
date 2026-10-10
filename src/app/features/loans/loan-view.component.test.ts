@@ -35,12 +35,12 @@ import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
 import { provideIonicTesting } from '../../testing/ionic-testing';
 import { DialogService } from '../../core/services/dialog.service';
 import { LOAN_SCHEDULE_TYPE } from '../products/loan-schedule-type';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
 
 const PRODUCT_NAME = 'Micro Loan Product';
 const EXTERNAL_ID = 'ext-456';
@@ -73,7 +73,10 @@ describe('LoanViewComponent', () => {
     charges: [],
   };
 
-  async function setup(loanOverrides: Record<string, unknown> = {}): Promise<void> {
+  async function setup(
+    loanOverrides: Record<string, unknown> = {},
+    capitalizedIncomeRows: unknown[] = [],
+  ): Promise<void> {
     TestBed.resetTestingModule();
 
     loansServiceSpy = createSpyObj([
@@ -111,11 +114,14 @@ describe('LoanViewComponent', () => {
       of({ ...cumulativeLoan, ...loanOverrides }) as any,
     );
     buyDownFeesSpy.getLoansLoanIdBuydownFees.mockReturnValue(of([]) as any);
-    capitalizedIncomeSpy.getLoansLoanIdCapitalizedIncomes.mockReturnValue(of([]) as any);
+    capitalizedIncomeSpy.getLoansLoanIdCapitalizedIncomes.mockReturnValue(
+      of(capitalizedIncomeRows) as any,
+    );
 
     await TestBed.configureTestingModule({
-      imports: [LoanViewComponent, TranslateModule.forRoot()],
+      imports: [LoanViewComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         provideIonicTesting(),
         { provide: LoansService, useValue: loansServiceSpy },
@@ -206,6 +212,37 @@ describe('LoanViewComponent', () => {
       expect(component.showCapitalizedIncome()).toBe(true);
       expect(component.showBuyDownFees()).toBe(false);
       expect(capitalizedIncomeSpy.getLoansLoanIdCapitalizedIncomes).toHaveBeenCalledWith(LOAN_ID);
+    });
+
+    /**
+     * The row carries amountAdjustment and chargedOffAmount alongside the three fields already
+     * rendered; both were previously fetched and dropped silently on the floor.
+     */
+    it('renders the amount adjustment and charged-off amount columns', async () => {
+      await setup(
+        {
+          loanScheduleType: { code: LOAN_SCHEDULE_TYPE.PROGRESSIVE, value: 'Progressive' },
+          enableIncomeCapitalization: true,
+        },
+        [
+          {
+            amount: 500,
+            amortizedAmount: 120,
+            unrecognizedAmount: 380,
+            amountAdjustment: 25,
+            chargedOffAmount: 50,
+          },
+        ],
+      );
+
+      component.activeTab.set(LOAN_TAB.capitalizedIncome);
+      fixture.detectChanges();
+
+      const rendered = fixture.nativeElement.textContent as string;
+      expect(rendered).toContain('LOANS.AMOUNT_ADJUSTMENT');
+      expect(rendered).toContain('LOANS.CHARGED_OFF_AMOUNT');
+      expect(rendered).toContain('25');
+      expect(rendered).toContain('50');
     });
 
     /**
@@ -349,6 +386,54 @@ describe('LoanViewComponent', () => {
       await setup({ status: { value: 'Closed (written off)', closedWrittenOff: true } });
 
       expect(component.isWrittenOff()).toBe(true);
+    });
+  });
+
+  /**
+   * `error.msg.loan.must.be.active.fully.paid.or.overpaid` — the platform takes a repayment in
+   * exactly three states. The button sat outside the state checks that already governed Approve
+   * and Disburse beside it, so a loan awaiting approval offered a repayment form that could only
+   * be rejected on submit.
+   */
+  describe('the repayment button by loan state', () => {
+    function repaymentButton(): Element | null {
+      return fixture.nativeElement.querySelector('[data-testid="loan-repayment-action"]');
+    }
+
+    it('is offered on an active loan', async () => {
+      await setup({ status: { value: 'Active', active: true } });
+
+      expect(component.canAcceptRepayment).toBe(true);
+      expect(repaymentButton()).not.toBeNull();
+    });
+
+    it('is offered on an overpaid loan and on one whose obligations are met', async () => {
+      await setup({ status: { value: 'Overpaid', overpaid: true } });
+      expect(component.canAcceptRepayment).toBe(true);
+
+      await setup({ status: { value: 'Closed (obligations met)', closedObligationsMet: true } });
+      expect(component.canAcceptRepayment).toBe(true);
+    });
+
+    it('is withheld from a loan awaiting approval', async () => {
+      await setup({ status: { value: 'Submitted and pending approval', pendingApproval: true } });
+
+      expect(component.canAcceptRepayment).toBe(false);
+      expect(repaymentButton()).toBeNull();
+    });
+
+    it('is withheld from an approved loan that has not been disbursed', async () => {
+      await setup({ status: { value: 'Approved', waitingForDisbursal: true } });
+
+      expect(component.canAcceptRepayment).toBe(false);
+      expect(repaymentButton()).toBeNull();
+    });
+
+    it('is withheld from a written-off loan', async () => {
+      await setup({ status: { value: 'Closed (written off)', closedWrittenOff: true } });
+
+      expect(component.canAcceptRepayment).toBe(false);
+      expect(repaymentButton()).toBeNull();
     });
   });
 
@@ -725,6 +810,25 @@ describe('LoanViewComponent', () => {
       expect(toEditableDate('2026-08-10T00:00:00')).toBe('2026-08-10');
       expect(toEditableDate(undefined)).toBe('');
       expect(toEditableDate([2026])).toBe('');
+    });
+  });
+
+  describe('teardown', () => {
+    it('dismisses popovers when destroyed', () => {
+      const withPopovers = component as unknown as {
+        popovers: () => readonly { dismiss: () => Promise<boolean> }[];
+      };
+      const popovers = withPopovers.popovers();
+      expect(popovers.length).toBeGreaterThan(0);
+      const dismissSpies = popovers.map((popover) =>
+        vi.spyOn(popover, 'dismiss').mockResolvedValue(true),
+      );
+
+      fixture.destroy();
+
+      for (const spy of dismissSpies) {
+        expect(spy).toHaveBeenCalled();
+      }
     });
   });
 });

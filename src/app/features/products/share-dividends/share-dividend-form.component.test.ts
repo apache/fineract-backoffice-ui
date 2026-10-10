@@ -23,8 +23,8 @@ import { ShareDividendFormComponent } from './share-dividend-form.component';
 import { SelfDividendService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ShareDividendFormComponent', () => {
   let component: ShareDividendFormComponent;
@@ -37,8 +37,9 @@ describe('ShareDividendFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [ShareDividendFormComponent, TranslateModule.forRoot()],
+      imports: [ShareDividendFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: SelfDividendService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         {

@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -34,7 +34,6 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { ProductMixService, LoanProductData } from '../../../api';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 
 /**
@@ -48,7 +47,7 @@ import { DialogService } from '../../../core/services/dialog.service';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -64,17 +63,17 @@ import { DialogService } from '../../../core/services/dialog.service';
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'PRODUCT_MIX.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'PRODUCT_MIX.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #mixForm="ngForm" (ngSubmit)="onSubmit()" class="mix-form">
             <ion-item fill="outline" class="form-item">
               <ion-label position="stacked">{{
-                'PRODUCT_MIX.RESTRICTED_PRODUCTS' | translate
+                'PRODUCT_MIX.RESTRICTED_PRODUCTS' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'PRODUCT_MIX.RESTRICTED_PRODUCTS' | translate"
+                [attr.aria-label]="'PRODUCT_MIX.RESTRICTED_PRODUCTS' | appTranslate"
                 interface="popover"
                 id="product-mix-restricted-products"
                 data-testid="product-mix-restricted-products"
@@ -99,7 +98,7 @@ import { DialogService } from '../../../core/services/dialog.service';
                 (click)="onDelete()"
                 [disabled]="!hasMix() || isSaving()"
               >
-                {{ 'PRODUCT_MIX.CLEAR' | translate }}
+                {{ 'PRODUCT_MIX.CLEAR' | appTranslate }}
               </ion-button>
               <ion-button
                 id="product-mix-cancel-btn"
@@ -110,7 +109,7 @@ import { DialogService } from '../../../core/services/dialog.service';
                 (click)="onCancel()"
                 [disabled]="isSaving()"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 id="product-mix-submit-btn"
@@ -121,9 +120,9 @@ import { DialogService } from '../../../core/services/dialog.service';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

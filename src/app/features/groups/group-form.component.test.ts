@@ -23,8 +23,8 @@ import { GroupFormComponent } from './group-form.component';
 import { GroupsService, OfficesService } from '../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
 
 describe('GroupFormComponent', () => {
   let component: GroupFormComponent;
@@ -39,8 +39,9 @@ describe('GroupFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [GroupFormComponent, TranslateModule.forRoot()],
+      imports: [GroupFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         { provide: GroupsService, useValue: groupsServiceSpy },
         { provide: OfficesService, useValue: officesServiceSpy },

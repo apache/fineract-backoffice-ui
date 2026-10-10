@@ -19,7 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { FloatingRatesService, FloatingRateData } from '../../../api';
@@ -33,7 +33,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-floating-rates-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -52,19 +52,19 @@ import { ButtonComponent } from '../../../ui/button/button.component';
       (create)="onCreate()"
     >
       <ng-template appCellTemplate="isBaseLendingRate" let-row>
-        {{ (row.isBaseLendingRate ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+        {{ (row.isBaseLendingRate ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
       </ng-template>
       <ng-template appCellTemplate="isActive" let-row>
-        {{ (row.isActive ? 'COMMON.YES' : 'COMMON.NO') | translate }}
+        {{ (row.isActive ? 'COMMON.YES' : 'COMMON.NO') | appTranslate }}
       </ng-template>
       <ng-template appCellTemplate="actions" let-row>
         <app-button
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         />
       </ng-template>

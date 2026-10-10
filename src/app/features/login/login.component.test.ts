@@ -150,6 +150,58 @@ describe('LoginComponent', () => {
     );
   });
 
+  describe('sign-in failure message', () => {
+    const submitWith = (failure: unknown): string | null => {
+      authServiceSpy.login.mockReturnValue(throwError(() => failure));
+      component['loginForm'].setValue({
+        serverUrl: mockApiUrl,
+        customUrl: '',
+        tenantId: 'default',
+        username: 'mifos',
+        // A form-submission fixture, not a credential.
+        password: 'wrongpassword',
+      });
+      component.onSubmit();
+      return (component as unknown as { error: WritableSignal<string | null> }).error();
+    };
+
+    it('names the credentials for a refused username or password', () => {
+      expect(
+        submitWith({
+          status: 401,
+          error: {
+            userMessageGlobalisationCode: 'error.msg.not.authenticated',
+            defaultUserMessage: 'Unauthenticated. Please login.',
+          },
+        }),
+      ).toBe('login.errors.invalidCredentials');
+    });
+
+    it("keeps the platform's own message for an unknown tenant", () => {
+      expect(
+        submitWith({
+          status: 401,
+          error: {
+            userMessageGlobalisationCode: 'error.msg.invalid.tenant.identifier',
+            defaultUserMessage: 'Invalid tenant identifier provided with request.',
+          },
+        }),
+      ).toBe('Invalid tenant identifier provided with request.');
+    });
+
+    it('points at the server selection when the sign-in endpoint is not there', () => {
+      expect(submitWith({ status: 404, error: null })).toBe('login.errors.endpointNotFound');
+    });
+
+    it('says the server could not be reached for a network or CORS failure', () => {
+      expect(submitWith({ status: 0, error: null })).toBe('login.errors.serverUnreachable');
+    });
+
+    it('falls back to a generic message when there is nothing more specific', () => {
+      expect(submitWith({ status: 500, error: null })).toBe('login.errors.failed');
+    });
+  });
+
   describe('identity-provider button', () => {
     it('is absent when the deployment has not turned it on', () => {
       expect(fixture.nativeElement.querySelector('[data-testid="login-sso-button"]')).toBeNull();

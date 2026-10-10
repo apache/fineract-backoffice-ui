@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { OFFICE_API, Office, TELLER_API, TellerStatus, TranslatePipe } from '../../core/adapters';
 import { toIsoDate } from '../../core/utils/date-formatter';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import {
@@ -44,14 +44,26 @@ import {
   IonDatetimeButton,
   IonModal,
 } from '@ionic/angular/standalone';
-import {
-  TellerCashManagementService,
-  OfficesService,
-  PostTellersRequest,
-  PutTellersRequest,
-  GetOfficesResponse,
-} from '../../api';
 import { createPickersReady } from '../../shared/utils/pickers-ready';
+
+/** What the form edits. The status is the platform's enum; the form offers ACTIVE and INACTIVE. */
+interface TellerForm {
+  name?: string;
+  officeId?: number;
+  description?: string;
+  status?: TellerStatus;
+}
+
+/**
+ * Reads an ISO `YYYY-MM-DD` as a local date.
+ *
+ * `new Date('2026-10-02')` is UTC midnight, which is the previous day west of Greenwich, so the
+ * date is read through its parts instead.
+ */
+function localDateFromIso(iso: string): Date {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
 
 /**
  * Component for creating and editing branch tellers.
@@ -67,7 +79,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -95,8 +107,8 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
           <ion-card-title>
             {{
               isEditMode()
-                ? ('TELLERS.EDIT_TELLER' | translate)
-                : ('TELLERS.CREATE_TELLER' | translate)
+                ? ('TELLERS.EDIT_TELLER' | appTranslate)
+                : ('TELLERS.CREATE_TELLER' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -107,10 +119,10 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               <ion-row>
                 <!-- Name -->
                 <ion-col size="12" size-md="6">
-                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_NAME_DESC' | translate">
-                    <ion-label position="stacked">{{ 'TELLERS.NAME' | translate }}</ion-label>
+                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_NAME_DESC' | appTranslate">
+                    <ion-label position="stacked">{{ 'TELLERS.NAME' | appTranslate }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'TELLERS.NAME' | translate"
+                      [attr.aria-label]="'TELLERS.NAME' | appTranslate"
                       type="text"
                       name="name"
                       [(ngModel)]="teller().name"
@@ -123,10 +135,10 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
 
                 <!-- Office -->
                 <ion-col size="12" size-md="6">
-                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_OFFICE_DESC' | translate">
-                    <ion-label position="stacked">{{ 'TELLERS.OFFICE' | translate }}</ion-label>
+                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_OFFICE_DESC' | appTranslate">
+                    <ion-label position="stacked">{{ 'TELLERS.OFFICE' | appTranslate }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'TELLERS.OFFICE' | translate"
+                      [attr.aria-label]="'TELLERS.OFFICE' | appTranslate"
                       interface="popover"
                       name="officeId"
                       [(ngModel)]="teller().officeId"
@@ -146,14 +158,14 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                 <ion-col size="12">
                   <ion-item
                     fill="outline"
-                    [appTooltip]="'HELP.TELLER_DESCRIPTION_DESC' | translate"
+                    [appTooltip]="'HELP.TELLER_DESCRIPTION_DESC' | appTranslate"
                     class="full-width"
                   >
                     <ion-label position="stacked">{{
-                      'TELLERS.DESCRIPTION' | translate
+                      'TELLERS.DESCRIPTION' | appTranslate
                     }}</ion-label>
                     <ion-textarea
-                      [attr.aria-label]="'TELLERS.DESCRIPTION' | translate"
+                      [attr.aria-label]="'TELLERS.DESCRIPTION' | appTranslate"
                       name="description"
                       [(ngModel)]="teller().description"
                       rows="3"
@@ -165,8 +177,13 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
 
                 <!-- Start Date -->
                 <ion-col size="12" size-md="6">
-                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_START_DATE_DESC' | translate">
-                    <ion-label position="stacked">{{ 'TELLERS.START_DATE' | translate }}</ion-label>
+                  <ion-item
+                    fill="outline"
+                    [appTooltip]="'HELP.TELLER_START_DATE_DESC' | appTranslate"
+                  >
+                    <ion-label position="stacked">{{
+                      'TELLERS.START_DATE' | appTranslate
+                    }}</ion-label>
                     @if (pickersReady()) {
                       <ion-datetime-button
                         datetime="teller-start-date-picker"
@@ -187,10 +204,10 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
 
                 <!-- Status -->
                 <ion-col size="12" size-md="6">
-                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_STATUS_DESC' | translate">
-                    <ion-label position="stacked">{{ 'TELLERS.STATUS' | translate }}</ion-label>
+                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_STATUS_DESC' | appTranslate">
+                    <ion-label position="stacked">{{ 'TELLERS.STATUS' | appTranslate }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'TELLERS.STATUS' | translate"
+                      [attr.aria-label]="'TELLERS.STATUS' | appTranslate"
                       interface="popover"
                       name="status"
                       [(ngModel)]="teller().status"
@@ -199,10 +216,10 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                       data-testid="teller-status-select"
                     >
                       <ion-select-option value="ACTIVE">{{
-                        'COMMON.ACTIVE' | translate
+                        'COMMON.ACTIVE' | appTranslate
                       }}</ion-select-option>
                       <ion-select-option value="INACTIVE">{{
-                        'COMMON.INACTIVE' | translate
+                        'COMMON.INACTIVE' | appTranslate
                       }}</ion-select-option>
                     </ion-select>
                   </ion-item>
@@ -210,10 +227,10 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
 
                 <!-- Usage -->
                 <ion-col size="12" size-md="6">
-                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_USAGE_DESC' | translate">
-                    <ion-label position="stacked">{{ 'TELLERS.USAGE' | translate }}</ion-label>
+                  <ion-item fill="outline" [appTooltip]="'HELP.TELLER_USAGE_DESC' | appTranslate">
+                    <ion-label position="stacked">{{ 'TELLERS.USAGE' | appTranslate }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'TELLERS.USAGE' | translate"
+                      [attr.aria-label]="'TELLERS.USAGE' | appTranslate"
                       interface="popover"
                       name="usage"
                       [(ngModel)]="usage"
@@ -238,7 +255,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                 id="teller-cancel-btn"
                 data-testid="teller-cancel-btn"
               >
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -249,9 +266,9 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent" slot="start"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>
@@ -284,10 +301,10 @@ export class TellerFormComponent implements OnInit {
   /** See `createPickersReady` — the date buttons must not outrun their pickers. */
   readonly pickersReady = createPickersReady();
 
-  /** Service for teller management API calls */
-  private readonly tellerService = inject(TellerCashManagementService);
-  /** Service for retrieving office hierarchy */
-  private readonly officesService = inject(OfficesService);
+  /** Teller operations, through the contract rather than the generated client */
+  private readonly tellerApi = inject(TELLER_API);
+  /** Office lookups, through the contract */
+  private readonly officeApi = inject(OFFICE_API);
   /** Router for post-submission navigation */
   private readonly router = inject(Router);
   /** Activated route for retrieving the teller ID in edit mode */
@@ -303,18 +320,17 @@ export class TellerFormComponent implements OnInit {
   /** State of the save operation */
   readonly isSaving = signal(false);
 
-  /** Post request model instance for template data binding */
-  readonly teller = signal<PostTellersRequest>({
+  readonly teller = signal<TellerForm>({
     status: 'ACTIVE',
   });
 
-  /** Usage value, not in PostTellersRequest but needed for form */
+  /** Usage value, not in the teller payload but needed for form */
   usage = 1;
 
-  /** Formatted start date for Fineract API */
+  /** Start date, as a local date. The picker is not bound to it, so it is only read on submit. */
   startDate: Date = new Date();
   /** List of available offices for teller assignment */
-  readonly offices = signal<GetOfficesResponse[]>([]);
+  readonly offices = signal<Office[]>([]);
 
   /**
    * Component initialization.
@@ -336,26 +352,28 @@ export class TellerFormComponent implements OnInit {
    * Retrieves the office list from the API.
    */
   private loadOffices(): void {
-    this.officesService.getOffices(true).subscribe((data) => {
+    this.officeApi.list(true).subscribe((data) => {
       this.offices.set(data);
     });
   }
 
   /**
    * Retrieves existing teller data for population in edit mode.
+   *
+   * The start date is kept so the update sends back the date the teller already has. It used to
+   * be read as a `[y, m, d]` array, which turned `'2026-10-02'` into 1901-12-02 and saved that.
    */
   private loadTellerData(): void {
     if (!this.tellerId) return;
-    this.tellerService.getTellersTellerId(this.tellerId).subscribe((data) => {
-      const dateArray = data.startDate as unknown as number[];
-      if (dateArray) {
-        this.startDate = new Date(dateArray[0], dateArray[1] - 1, dateArray[2]);
+    this.tellerApi.get(this.tellerId).subscribe((data) => {
+      if (data.startDate) {
+        this.startDate = localDateFromIso(data.startDate);
       }
       this.teller.set({
         name: data.name,
-        officeId: data.officeId,
-        description: (data as Record<string, unknown>)['description'] as string,
-        status: data.status as PostTellersRequest.StatusEnum,
+        officeId: data.officeId ?? undefined,
+        description: data.description ?? undefined,
+        status: data.status ?? undefined,
       });
     });
   }
@@ -372,31 +390,23 @@ export class TellerFormComponent implements OnInit {
    */
   onSubmit(): void {
     this.isSaving.set(true);
-    const formattedDate = toIsoDate(this.startDate);
+    const form = this.teller();
+    const fields = {
+      name: form.name!,
+      description: form.description,
+      // The button is disabled while the form is invalid, so a submitted form has a status. A
+      // missing one is sent as inactive, which is what anything but ACTIVE has always been.
+      status: form.status ?? 'INACTIVE',
+      startDate: toIsoDate(this.startDate),
+    };
 
     if (this.isEditMode() && this.tellerId) {
-      const payload: Record<string, unknown> = {
-        name: this.teller().name,
-        description: this.teller().description,
-        startDate: formattedDate,
-        status: this.teller().status === 'ACTIVE' ? 300 : 400,
-        dateFormat: 'yyyy-MM-dd',
-        locale: 'en',
-      };
-      this.tellerService.putTellersTellerId(this.tellerId, payload as PutTellersRequest).subscribe({
+      this.tellerApi.update(this.tellerId, fields).subscribe({
         next: () => this.router.navigate([this.LIST_PATH]),
         error: () => this.isSaving.set(false),
       });
     } else {
-      const payload: Record<string, unknown> = {
-        ...this.teller(),
-        startDate: formattedDate,
-        status: this.teller().status === 'ACTIVE' ? 300 : 400,
-        dateFormat: 'yyyy-MM-dd',
-        locale: 'en',
-      };
-
-      this.tellerService.postTellers(payload as PostTellersRequest).subscribe({
+      this.tellerApi.create({ ...fields, officeId: form.officeId! }).subscribe({
         next: () => this.router.navigate([this.LIST_PATH]),
         error: () => this.isSaving.set(false),
       });

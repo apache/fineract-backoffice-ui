@@ -18,7 +18,7 @@
  */
 
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { NotificationService, GetNotification } from '../../../api';
 import {
   IonButton,
@@ -40,7 +40,7 @@ import {
   selector: 'app-notifications-config',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonCardContent,
@@ -55,7 +55,7 @@ import {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'NOTIFICATIONS_CONFIG.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'NOTIFICATIONS_CONFIG.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -73,7 +73,7 @@ import {
               }
             </ion-list>
           } @else {
-            <p>{{ 'NOTIFICATIONS_CONFIG.EMPTY' | translate }}</p>
+            <p>{{ 'NOTIFICATIONS_CONFIG.EMPTY' | appTranslate }}</p>
           }
 
           <div class="form-actions">
@@ -85,9 +85,9 @@ import {
             >
               @if (isSaving()) {
                 <ion-spinner name="crescent"></ion-spinner>
-                {{ 'COMMON.SAVING' | translate }}
+                {{ 'COMMON.SAVING' | appTranslate }}
               } @else {
-                {{ 'NOTIFICATIONS_CONFIG.MARK_ALL_READ' | translate }}
+                {{ 'NOTIFICATIONS_CONFIG.MARK_ALL_READ' | appTranslate }}
               }
             </ion-button>
           </div>

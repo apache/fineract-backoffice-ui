@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { GuarantorsService, GuarantorsRequest, EnumOptionData } from '../../../api';
 import {
   FINERACT_DATE_FORMAT,
@@ -57,7 +57,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -78,16 +78,18 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ isEditMode ? ('GUARANTORS.EDIT' | translate) : ('GUARANTORS.CREATE' | translate) }}
+            {{
+              isEditMode ? ('GUARANTORS.EDIT' | appTranslate) : ('GUARANTORS.CREATE' | appTranslate)
+            }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           <form #guarantorForm="ngForm" (ngSubmit)="onSubmit()" class="guarantor-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.TYPE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'GUARANTORS.TYPE' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'GUARANTORS.TYPE' | translate"
+                [attr.aria-label]="'GUARANTORS.TYPE' | appTranslate"
                 interface="popover"
                 name="guarantorTypeId"
                 [(ngModel)]="guarantor().guarantorTypeId"
@@ -100,9 +102,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.ENTITY_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'GUARANTORS.ENTITY_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'GUARANTORS.ENTITY_ID' | translate"
+                [attr.aria-label]="'GUARANTORS.ENTITY_ID' | appTranslate"
                 type="number"
                 name="entityId"
                 [(ngModel)]="guarantor().entityId"
@@ -110,45 +112,49 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.FIRST_NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'GUARANTORS.FIRST_NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'GUARANTORS.FIRST_NAME' | translate"
+                [attr.aria-label]="'GUARANTORS.FIRST_NAME' | appTranslate"
                 name="firstname"
                 [(ngModel)]="guarantor().firstname"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.LAST_NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'GUARANTORS.LAST_NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'GUARANTORS.LAST_NAME' | translate"
+                [attr.aria-label]="'GUARANTORS.LAST_NAME' | appTranslate"
                 name="lastname"
                 [(ngModel)]="guarantor().lastname"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.ADDRESS_LINE1' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'GUARANTORS.ADDRESS_LINE1' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'GUARANTORS.ADDRESS_LINE1' | translate"
+                [attr.aria-label]="'GUARANTORS.ADDRESS_LINE1' | appTranslate"
                 name="addressLine1"
                 [(ngModel)]="guarantor().addressLine1"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.MOBILE_NUMBER' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'GUARANTORS.MOBILE_NUMBER' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'GUARANTORS.MOBILE_NUMBER' | translate"
+                [attr.aria-label]="'GUARANTORS.MOBILE_NUMBER' | appTranslate"
                 name="mobileNumber"
                 [(ngModel)]="guarantor().mobileNumber"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.SAVINGS_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'GUARANTORS.SAVINGS_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'GUARANTORS.SAVINGS_ID' | translate"
+                [attr.aria-label]="'GUARANTORS.SAVINGS_ID' | appTranslate"
                 type="number"
                 name="savingsId"
                 [(ngModel)]="guarantor().savingsId"
@@ -157,10 +163,10 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'GUARANTORS.CLIENT_RELATIONSHIP_TYPE_ID' | translate
+                'GUARANTORS.CLIENT_RELATIONSHIP_TYPE_ID' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'GUARANTORS.CLIENT_RELATIONSHIP_TYPE_ID' | translate"
+                [attr.aria-label]="'GUARANTORS.CLIENT_RELATIONSHIP_TYPE_ID' | appTranslate"
                 type="number"
                 name="clientRelationshipTypeId"
                 [(ngModel)]="guarantor().clientRelationshipTypeId"
@@ -168,9 +174,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.AMOUNT' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'GUARANTORS.AMOUNT' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'GUARANTORS.AMOUNT' | translate"
+                [attr.aria-label]="'GUARANTORS.AMOUNT' | appTranslate"
                 type="number"
                 name="amount"
                 [(ngModel)]="guarantor().amount"
@@ -178,7 +184,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.DOB' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'GUARANTORS.DOB' | appTranslate }}</ion-label>
               @if (pickersReady()) {
                 <ion-datetime-button datetime="dobDate-picker"></ion-datetime-button>
               }
@@ -198,7 +204,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -207,9 +213,9 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

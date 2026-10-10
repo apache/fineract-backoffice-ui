@@ -220,6 +220,23 @@ same origin. `deploy/nginx.conf.template` is a working reference for both.
 
 ---
 
+## Community
+
+This repository is part of the Apache Fineract project. Bugs in this UI belong in its GitHub
+Issues, but **features and design decisions are made on the project's developer mailing list**.
+
+- **Mailing list** — subscribe with a blank email to <dev-subscribe@fineract.apache.org>, post to
+  <dev@fineract.apache.org>, and search the
+  [archive](https://lists.apache.org/list.html?dev@fineract.apache.org) first.
+- **Matrix** — [the Fineract space](https://matrix.to/#/%23apache-fineract-home:matrix.org),
+  [developer room](https://matrix.to/#/%23apache-fineract-dev:matrix.org), and
+  [GSoC](https://matrix.to/#/%23apache-fineract-gsoc:matrix.org).
+
+[CONTRIBUTING.md](CONTRIBUTING.md#talk-to-the-community-first) has a table of which channel suits
+which kind of question.
+
+---
+
 ## License
 
 Copyright 2025-2026 The Apache Software Foundation

@@ -17,7 +17,7 @@
  * under the License.
  */
 import { Component, inject } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { WorkingCapitalLoanInternalCOBApiService } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -31,19 +31,19 @@ import {
 @Component({
   selector: 'app-wc-cob-tools',
   standalone: true,
-  imports: [TranslateModule, IonButton, IonCardContent, IonCardHeader, IonCardTitle, IonCard],
+  imports: [TranslatePipe, IonButton, IonCardContent, IonCardHeader, IonCardTitle, IonCard],
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'WC_COB_TOOLS.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'WC_COB_TOOLS.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="actions">
           <ion-button color="primary" (click)="setLastCobRun()">
-            {{ 'WC_COB_TOOLS.SET_LAST_RUN' | translate }}
+            {{ 'WC_COB_TOOLS.SET_LAST_RUN' | appTranslate }}
           </ion-button>
           <ion-button color="danger" (click)="deleteLastCobRun()">
-            {{ 'WC_COB_TOOLS.DELETE_LAST_RUN' | translate }}
+            {{ 'WC_COB_TOOLS.DELETE_LAST_RUN' | appTranslate }}
           </ion-button>
         </div>
       </ion-card-content>
@@ -63,7 +63,7 @@ import {
 export class WcCobToolsComponent {
   private wcCobService = inject(WorkingCapitalLoanInternalCOBApiService);
   private notifications = inject(NotificationService);
-  private translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   setLastCobRun(): void {
     this.wcCobService.postInternalWorkingCapitalLoansInternalLastCobRun().subscribe({
@@ -80,10 +80,10 @@ export class WcCobToolsComponent {
   }
 
   private showSuccess(): void {
-    this.notifications.success(this.translate.instant('WC_COB_TOOLS.SUCCESS'));
+    this.notifications.success(this.i18n.translate('WC_COB_TOOLS.SUCCESS'));
   }
 
   private showError(): void {
-    this.notifications.error(this.translate.instant('WC_COB_TOOLS.ERROR'));
+    this.notifications.error(this.i18n.translate('WC_COB_TOOLS.ERROR'));
   }
 }

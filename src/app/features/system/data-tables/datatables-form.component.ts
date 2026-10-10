@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -47,7 +47,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonIcon,
     IonButton,
     IonInput,
@@ -68,8 +68,8 @@ import {
           <ion-card-title>
             {{
               isEditMode
-                ? ('SYSTEM.EDIT_DATA_TABLE' | translate)
-                : ('SYSTEM.CREATE_DATA_TABLE' | translate)
+                ? ('SYSTEM.EDIT_DATA_TABLE' | appTranslate)
+                : ('SYSTEM.CREATE_DATA_TABLE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -78,9 +78,9 @@ import {
           <form #dtForm="ngForm" (ngSubmit)="onSubmit()" class="dt-form">
             <div class="header-grid">
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'SYSTEM.TABLE_NAME' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'SYSTEM.TABLE_NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'SYSTEM.TABLE_NAME' | translate"
+                  [attr.aria-label]="'SYSTEM.TABLE_NAME' | appTranslate"
                   name="datatableName"
                   [(ngModel)]="datatable().datatableName"
                   required
@@ -89,9 +89,9 @@ import {
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'SYSTEM.APP_TABLE' | translate }}</ion-label>
+                <ion-label position="stacked">{{ 'SYSTEM.APP_TABLE' | appTranslate }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'SYSTEM.APP_TABLE' | translate"
+                  [attr.aria-label]="'SYSTEM.APP_TABLE' | appTranslate"
                   interface="popover"
                   name="apptableName"
                   [(ngModel)]="datatable().apptableName"
@@ -111,19 +111,19 @@ import {
                 [(ngModel)]="datatable().multiRow"
                 [disabled]="isEditMode"
               >
-                {{ 'SYSTEM.MULTI_ROW' | translate }}
+                {{ 'SYSTEM.MULTI_ROW' | appTranslate }}
               </ion-checkbox>
             </div>
 
             <div class="columns-section">
-              <h3>{{ 'SYSTEM.COLUMNS' | translate }}</h3>
+              <h3>{{ 'SYSTEM.COLUMNS' | appTranslate }}</h3>
 
               @for (column of datatable().columns; track $index; let i = $index) {
                 <div class="column-row">
                   <ion-item fill="outline">
-                    <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+                    <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
                     <ion-input
-                      [attr.aria-label]="'COMMON.NAME' | translate"
+                      [attr.aria-label]="'COMMON.NAME' | appTranslate"
                       [name]="'colName' + i"
                       [(ngModel)]="column.name"
                       required
@@ -132,9 +132,9 @@ import {
                   </ion-item>
 
                   <ion-item fill="outline">
-                    <ion-label position="stacked">{{ 'COMMON.TYPE' | translate }}</ion-label>
+                    <ion-label position="stacked">{{ 'COMMON.TYPE' | appTranslate }}</ion-label>
                     <ion-select
-                      [attr.aria-label]="'COMMON.TYPE' | translate"
+                      [attr.aria-label]="'COMMON.TYPE' | appTranslate"
                       interface="popover"
                       [name]="'colType' + i"
                       [(ngModel)]="column.type"
@@ -149,9 +149,9 @@ import {
 
                   @if (column.type === 'String') {
                     <ion-item fill="outline">
-                      <ion-label position="stacked">{{ 'SYSTEM.LENGTH' | translate }}</ion-label>
+                      <ion-label position="stacked">{{ 'SYSTEM.LENGTH' | appTranslate }}</ion-label>
                       <ion-input
-                        [attr.aria-label]="'SYSTEM.LENGTH' | translate"
+                        [attr.aria-label]="'SYSTEM.LENGTH' | appTranslate"
                         type="number"
                         [name]="'colLength' + i"
                         [(ngModel)]="column.length"
@@ -161,9 +161,9 @@ import {
                     </ion-item>
                   } @else if (column.type === 'Dropdown') {
                     <ion-item fill="outline">
-                      <ion-label position="stacked">{{ 'SYSTEM.CODE' | translate }}</ion-label>
+                      <ion-label position="stacked">{{ 'SYSTEM.CODE' | appTranslate }}</ion-label>
                       <ion-select
-                        [attr.aria-label]="'SYSTEM.CODE' | translate"
+                        [attr.aria-label]="'SYSTEM.CODE' | appTranslate"
                         interface="popover"
                         [name]="'colCode' + i"
                         [(ngModel)]="column.code"
@@ -185,21 +185,21 @@ import {
                       [(ngModel)]="column.mandatory"
                       [disabled]="isEditMode"
                     >
-                      {{ 'SYSTEM.MANDATORY' | translate }}
+                      {{ 'SYSTEM.MANDATORY' | appTranslate }}
                     </ion-checkbox>
                     <ion-checkbox
                       [name]="'colUnique' + i"
                       [(ngModel)]="column.unique"
                       [disabled]="isEditMode"
                     >
-                      {{ 'SYSTEM.UNIQUE' | translate }}
+                      {{ 'SYSTEM.UNIQUE' | appTranslate }}
                     </ion-checkbox>
                     <ion-checkbox
                       [name]="'colIndexed' + i"
                       [(ngModel)]="column.indexed"
                       [disabled]="isEditMode"
                     >
-                      {{ 'SYSTEM.INDEXED' | translate }}
+                      {{ 'SYSTEM.INDEXED' | appTranslate }}
                     </ion-checkbox>
                   </div>
 
@@ -209,7 +209,7 @@ import {
                       color="danger"
                       type="button"
                       (click)="removeColumn(i)"
-                      [attr.aria-label]="'SYSTEM.REMOVE_COLUMN' | translate"
+                      [attr.aria-label]="'SYSTEM.REMOVE_COLUMN' | appTranslate"
                     >
                       <ion-icon name="trash-outline"></ion-icon>
                     </ion-button>
@@ -226,17 +226,17 @@ import {
                   class="add-col-btn"
                 >
                   <ion-icon name="add-outline"></ion-icon>
-                  {{ 'SYSTEM.ADD_COLUMN' | translate }}
+                  {{ 'SYSTEM.ADD_COLUMN' | appTranslate }}
                 </ion-button>
               }
             </div>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="!dtForm.form.valid">
-                {{ 'COMMON.SAVE' | translate }}
+                {{ 'COMMON.SAVE' | appTranslate }}
               </ion-button>
             </div>
           </form>

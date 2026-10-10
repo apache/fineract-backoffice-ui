@@ -35,6 +35,7 @@ import { Observable, of } from 'rxjs';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { HttpEvent } from '@angular/common/http';
+import { expectLookedUp } from '../../testing/translated-text';
 
 describe('JournalEntryFormComponent', () => {
   let component: JournalEntryFormComponent;
@@ -118,5 +119,15 @@ describe('JournalEntryFormComponent', () => {
         credits: component.credits,
       }),
     );
+  });
+
+  it('renders its labels through the translation adapter', () => {
+    expectLookedUp(fixture.nativeElement, [
+      'JOURNAL_ENTRIES.CREATE',
+      'JOURNAL_ENTRIES.TRANSACTION_DATE',
+      'JOURNAL_ENTRIES.REFERENCE_NUMBER',
+      'JOURNAL_ENTRIES.ADD_DEBIT',
+      'JOURNAL_ENTRIES.ADD_CREDIT',
+    ]);
   });
 });

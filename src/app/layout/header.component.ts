@@ -29,7 +29,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../core/adapters';
 import { AuthService } from '../core/services/auth.service';
 import { NgTemplateOutlet } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -85,7 +85,7 @@ type HeaderSearchResult =
   imports: [
     NgTemplateOutlet,
     RouterModule,
-    TranslateModule,
+    TranslatePipe,
     IonIcon,
     IonSearchbar,
     IonList,
@@ -114,7 +114,7 @@ type HeaderSearchResult =
                 ? 'nav.closeMenu'
                 : 'nav.openMenu'
               : 'nav.toggleSidebar'
-            ) | translate
+            ) | appTranslate
           "
         >
           @if (viewport.isMobile() || sidebarService.isCollapsed()) {
@@ -130,10 +130,10 @@ type HeaderSearchResult =
         -->
         <img
           [src]="logoSrc()"
-          [alt]="(brandName() || ('app.title' | translate)) + ' logo'"
+          [alt]="(brandName() || ('app.title' | appTranslate)) + ' logo'"
           class="logo"
         />
-        <span class="app-title">{{ brandName() || ('app.title' | translate) }}</span>
+        <span class="app-title">{{ brandName() || ('app.title' | appTranslate) }}</span>
         @if (viewport.isMobile() && !mobileSearchOpen()) {
           <!--
             On a phone the bar answers "where am I", which the product name cannot: the name is
@@ -143,8 +143,8 @@ type HeaderSearchResult =
           <h1 class="page-title">
             {{
               pageTitleKey()
-                ? (pageTitleKey() | translate)
-                : brandName() || ('app.title' | translate)
+                ? (pageTitleKey() | appTranslate)
+                : brandName() || ('app.title' | appTranslate)
             }}
           </h1>
         }
@@ -155,7 +155,7 @@ type HeaderSearchResult =
           class="global-search-field"
           id="global-search"
           data-testid="global-search"
-          [placeholder]="'COMMON.SEARCH' | translate"
+          [placeholder]="'COMMON.SEARCH' | appTranslate"
           [value]="searchQuery"
           (ionInput)="onSearchInput($event)"
           (ionBlur)="onSearchBlur()"
@@ -175,7 +175,7 @@ type HeaderSearchResult =
                 <ion-label>
                   <div class="search-result-item">
                     @if (result.kind === 'nav') {
-                      <span class="result-type">{{ 'SEARCH.PAGE_TYPE' | translate }}</span>
+                      <span class="result-type">{{ 'SEARCH.PAGE_TYPE' | appTranslate }}</span>
                       <span class="result-name">{{ result.nav.label }}</span>
                       @if (result.nav.groupLabel) {
                         <span class="result-acc">{{ result.nav.groupLabel }}</span>
@@ -201,14 +201,16 @@ type HeaderSearchResult =
             class="icon-btn"
             (click)="toggleMobileSearch()"
             [attr.aria-expanded]="mobileSearchOpen()"
-            [attr.aria-label]="(mobileSearchOpen() ? 'COMMON.CLOSE' : 'COMMON.SEARCH') | translate"
+            [attr.aria-label]="
+              (mobileSearchOpen() ? 'COMMON.CLOSE' : 'COMMON.SEARCH') | appTranslate
+            "
           >
             <ion-icon [name]="mobileSearchOpen() ? 'close-outline' : 'search-outline'"></ion-icon>
           </button>
           <button
             id="header-overflow"
             class="icon-btn"
-            [attr.aria-label]="'nav.moreActions' | translate"
+            [attr.aria-label]="'nav.moreActions' | appTranslate"
           >
             <ion-icon name="ellipsis-vertical-outline"></ion-icon>
           </button>
@@ -241,12 +243,16 @@ type HeaderSearchResult =
 
     <ng-template #headerActions>
       <div class="system-info">
+        <!-- GET /businessdate answers [] when the business date feature is not configured; a
+             permanent "-" would only take up header space, so the chip is left out. -->
+        @if (businessDate(); as date) {
+          <div class="info-group">
+            <span class="label">{{ 'COMMON.BUSINESS_DATE' | appTranslate }}:</span>
+            <span class="value">{{ date }}</span>
+          </div>
+        }
         <div class="info-group">
-          <span class="label">{{ 'COMMON.BUSINESS_DATE' | translate }}:</span>
-          <span class="value">{{ businessDate() }}</span>
-        </div>
-        <div class="info-group">
-          <span class="label">{{ 'COMMON.RENDER_TIME' | translate }}:</span>
+          <span class="label">{{ 'COMMON.RENDER_TIME' | appTranslate }}:</span>
           <span class="value">{{ renderTime() }}</span>
         </div>
       </div>
@@ -254,8 +260,8 @@ type HeaderSearchResult =
       <button
         class="theme-toggle-btn"
         (click)="themeService.toggleDarkMode()"
-        [appTooltip]="'COMMON.TOGGLE_THEME' | translate"
-        [attr.aria-label]="'COMMON.TOGGLE_THEME' | translate"
+        [appTooltip]="'COMMON.TOGGLE_THEME' | appTranslate"
+        [attr.aria-label]="'COMMON.TOGGLE_THEME' | appTranslate"
       >
         @if (themeService.isDarkMode()) {
           <ion-icon name="sunny-outline"></ion-icon>
@@ -266,9 +272,9 @@ type HeaderSearchResult =
 
       <!-- Described, not labelled: an aria-label would replace the visible "Guide" as the
            accessible name, which breaks WCAG 2.5.3 Label in Name for voice input. -->
-      <button class="tour-btn" (click)="startTour()" [appTooltip]="'GUIDE.OPEN' | translate">
+      <button class="tour-btn" (click)="startTour()" [appTooltip]="'GUIDE.OPEN' | appTranslate">
         <ion-icon name="compass-outline" aria-hidden="true"></ion-icon>
-        {{ 'GUIDE.OPEN_SHORT' | translate }}
+        {{ 'GUIDE.OPEN_SHORT' | appTranslate }}
       </button>
 
       <div class="user-info">
@@ -280,21 +286,21 @@ type HeaderSearchResult =
         id="lang-select"
         #langSelect
         (change)="switchLanguage(langSelect.value)"
-        [attr.aria-label]="'app.language.select' | translate"
+        [attr.aria-label]="'app.language.select' | appTranslate"
       >
-        <option value="en" [selected]="translate.getCurrentLang() === 'en'">
-          {{ 'app.language.en' | translate }}
+        <option value="en" [selected]="i18n.currentLang() === 'en'">
+          {{ 'app.language.en' | appTranslate }}
         </option>
-        <option value="hi" [selected]="translate.getCurrentLang() === 'hi'">
-          {{ 'app.language.hi' | translate }}
+        <option value="hi" [selected]="i18n.currentLang() === 'hi'">
+          {{ 'app.language.hi' | appTranslate }}
         </option>
-        <option value="ko" [selected]="translate.getCurrentLang() === 'ko'">
-          {{ 'app.language.ko' | translate }}
+        <option value="ko" [selected]="i18n.currentLang() === 'ko'">
+          {{ 'app.language.ko' | appTranslate }}
         </option>
       </select>
 
-      <button class="logout-btn" (click)="logout()" [attr.aria-label]="'app.logout' | translate">
-        {{ 'app.logout' | translate }}
+      <button class="logout-btn" (click)="logout()" [attr.aria-label]="'app.logout' | appTranslate">
+        {{ 'app.logout' | appTranslate }}
       </button>
     </ng-template>
   `,
@@ -688,7 +694,7 @@ type HeaderSearchResult =
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   protected readonly authService = inject(AuthService);
-  protected readonly translate = inject(TranslateService);
+  protected readonly i18n = inject(I18N);
   protected readonly guidanceService = inject(GuidanceService);
   protected readonly sidebarService = inject(SidebarService);
   protected readonly themeService = inject(ThemeService);
@@ -719,7 +725,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
    * signal written from `ngOnInit` — both deliberate. Writing a signal the template reads while
    * change detection is running is the NG0100 pattern, and this suite runs against a build with
    * `checkNoChanges({ exhaustive: true })`. Leaving it as a key also means the template's
-   * `| translate` pipe handles a language change, so there is no second subscription for that.
+   * `| appTranslate` pipe handles a language change, so there is no second subscription for that.
    *
    * Mirrors BreadcrumbComponent, which solves the same problem the same way.
    */
@@ -752,7 +758,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   protected readonly showResults = signal(false);
   private searchSubject = new Subject<string>();
 
-  readonly businessDate = signal<string>('-');
+  readonly businessDate = signal<string | null>(null);
   readonly renderTime = signal<string>('-');
   private renderTimeInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -884,7 +890,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
    * @param lang - The target language code (e.g., 'en', 'hi', 'ko')
    */
   switchLanguage(lang: string) {
-    this.translate.use(lang);
+    this.i18n.use(lang);
   }
 
   /**

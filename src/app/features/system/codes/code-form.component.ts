@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import { CodesService, PostCodesRequest, PutCodesRequest, GetCodesResponse } from '../../../api';
 import {
   IonButton,
@@ -40,7 +40,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -57,7 +57,9 @@ import {
         <ion-card-header>
           <ion-card-title>
             {{
-              isEditMode() ? ('CODES.EDIT_TITLE' | translate) : ('CODES.CREATE_TITLE' | translate)
+              isEditMode()
+                ? ('CODES.EDIT_TITLE' | appTranslate)
+                : ('CODES.CREATE_TITLE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -65,9 +67,9 @@ import {
         <ion-card-content>
           <form #codeForm="ngForm" (ngSubmit)="onSubmit()" class="code-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'CODES.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'CODES.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'CODES.NAME' | translate"
+                [attr.aria-label]="'CODES.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="code().name"
                 required
@@ -76,14 +78,14 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'CODES.CANCEL' | translate }}
+                {{ 'CODES.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="codeForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'CODES.SAVE' | translate }}
+                  {{ 'CODES.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

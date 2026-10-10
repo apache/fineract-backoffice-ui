@@ -17,7 +17,15 @@
  * under the License.
  */
 
-import { computed, inject, signal, Component, OnInit } from '@angular/core';
+import {
+  computed,
+  inject,
+  signal,
+  Component,
+  OnInit,
+  OnDestroy,
+  viewChildren,
+} from '@angular/core';
 import { from } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { I18N, TranslatePipe } from '../../core/adapters';
@@ -157,6 +165,7 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
               @if (account()?.status?.submittedAndPendingApproval) {
                 <ion-button
                   color="secondary"
+                  data-testid="savings-approve-action"
                   appRequiresPermission="APPROVE_SAVINGSACCOUNT"
                   (click)="onSavingsAction('approve')"
                   [appTooltip]="'SAVINGS.APPROVE' | appTranslate"
@@ -190,6 +199,7 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
               @if (account()?.status?.approved) {
                 <ion-button
                   color="primary"
+                  data-testid="savings-activate-action"
                   appRequiresPermission="ACTIVATE_SAVINGSACCOUNT"
                   (click)="onSavingsAction('activate')"
                   [appTooltip]="'SAVINGS.ACTIVATE' | appTranslate"
@@ -220,25 +230,46 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
                   {{ 'SAVINGS.CLOSE' | appTranslate }}
                 </ion-button>
               }
-              <ion-button
-                color="primary"
-                appRequiresPermission="DEPOSIT_SAVINGSACCOUNT"
-                (click)="onTransaction('deposit')"
-                [appTooltip]="'SAVINGS.DEPOSIT_CASH' | appTranslate"
-              >
-                <ion-icon name="add-circle-outline"></ion-icon>
-                {{ 'SAVINGS.DEPOSIT' | appTranslate }}
-              </ion-button>
-              <ion-button
-                color="danger"
-                appRequiresPermission="WITHDRAW_SAVINGSACCOUNT"
-                (click)="onTransaction('withdrawal')"
-                [appTooltip]="'SAVINGS.WITHDRAW_CASH' | appTranslate"
-              >
-                <ion-icon name="remove-circle-outline"></ion-icon>
-                {{ 'SAVINGS.WITHDRAW' | appTranslate }}
-              </ion-button>
+              <!--
+                Behind the same status check as Close and the Actions menu below. The platform
+                refuses a deposit or a withdrawal on anything but an active account
+                (error.msg.savingsaccount.transaction.account.is.not.active), so on an account
+                still awaiting approval these two offered a transaction form that could only end
+                in a rejection.
+              -->
               @if (isActive()) {
+                <ion-button
+                  color="primary"
+                  data-testid="savings-deposit-action"
+                  appRequiresPermission="DEPOSIT_SAVINGSACCOUNT"
+                  (click)="onTransaction('deposit')"
+                  [appTooltip]="'SAVINGS.DEPOSIT_CASH' | appTranslate"
+                >
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                  {{ 'SAVINGS.DEPOSIT' | appTranslate }}
+                </ion-button>
+                <!--
+                  WITHDRAWAL_SAVINGSACCOUNT, not WITHDRAW_SAVINGSACCOUNT. Both codes exist and
+                  they are not interchangeable — one letter apart, two different operations.
+                  Measured against a running Fineract with an empty body, which separates
+                  authorisation from validation:
+
+                    transactions?command=withdrawal  WITHDRAWAL_ 400   WITHDRAW_ 403
+                    ?command=withdrawnByApplicant    WITHDRAWAL_ 403   WITHDRAW_ 400
+
+                  WITHDRAW_SAVINGSACCOUNT is what the Withdrawn-by-applicant button above uses,
+                  correctly: it withdraws the *application*. This button withdraws *cash*.
+                -->
+                <ion-button
+                  color="danger"
+                  data-testid="savings-withdraw-action"
+                  appRequiresPermission="WITHDRAWAL_SAVINGSACCOUNT"
+                  (click)="onTransaction('withdrawal')"
+                  [appTooltip]="'SAVINGS.WITHDRAW_CASH' | appTranslate"
+                >
+                  <ion-icon name="remove-circle-outline"></ion-icon>
+                  {{ 'SAVINGS.WITHDRAW' | appTranslate }}
+                </ion-button>
                 <ion-button color="primary" id="savingsMenu-trigger" data-testid="savings-actions">
                   <ion-icon name="caret-down-outline"></ion-icon>
                   {{ 'COMMON.ACTIONS' | appTranslate }}
@@ -420,24 +451,28 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
                 <ion-card-header>
                   <ion-card-title>
                     <ion-icon name="information-circle-outline"></ion-icon>
-                    Interest Settings
+                    {{ 'SAVINGS.INTEREST_SETTINGS' | appTranslate }}
                   </ion-card-title>
                 </ion-card-header>
                 <ion-card-content class="details-list">
                   <div class="detail-item">
-                    <span class="label">Nominal Annual Interest Rate</span>
+                    <span class="label">{{
+                      'SAVINGS.NOMINAL_ANNUAL_INTEREST_RATE' | appTranslate
+                    }}</span>
                     <span class="value">{{ account()?.nominalAnnualInterestRate }}%</span>
                   </div>
                   <div class="detail-item">
-                    <span class="label">Compounding Period</span>
+                    <span class="label">{{ 'SAVINGS.COMPOUNDING_PERIOD' | appTranslate }}</span>
                     <span class="value">{{ account()?.interestCompoundingPeriodType?.value }}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="label">Posting Period</span>
+                    <span class="label">{{ 'SAVINGS.POSTING_PERIOD' | appTranslate }}</span>
                     <span class="value">{{ account()?.interestPostingPeriodType?.value }}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="label">Interest Calculation Day-in-Year</span>
+                    <span class="label">{{
+                      'SAVINGS.INTEREST_CALC_DAYS_IN_YEAR' | appTranslate
+                    }}</span>
                     <span class="value">{{
                       account()?.interestCalculationDaysInYearType?.value
                     }}</span>
@@ -449,24 +484,24 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
                 <ion-card-header>
                   <ion-card-title>
                     <ion-icon name="pulse-outline"></ion-icon>
-                    Timeline & Balance
+                    {{ 'SAVINGS.TIMELINE_AND_BALANCE' | appTranslate }}
                   </ion-card-title>
                 </ion-card-header>
                 <ion-card-content class="details-list">
                   <div class="detail-item">
-                    <span class="label">Submitted On Date</span>
+                    <span class="label">{{ 'COMMON.SUBMITTED_ON_DATE' | appTranslate }}</span>
                     <span class="value">{{ formattedSubmittedDate }}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="label">Activated On Date</span>
+                    <span class="label">{{ 'SAVINGS.ACTIVATED_ON_DATE' | appTranslate }}</span>
                     <span class="value">{{ formattedActivatedDate }}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="label">Field Officer</span>
+                    <span class="label">{{ 'SAVINGS.FIELD_OFFICER' | appTranslate }}</span>
                     <span class="value">{{ account()?.fieldOfficerName || '-' }}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="label">Account Balance</span>
+                    <span class="label">{{ 'SAVINGS.BALANCE' | appTranslate }}</span>
                     <span class="value">
                       {{ account()?.currency?.displaySymbol }}
                       {{ account()?.summary?.accountBalance || 0 | number: '1.2-2' }}
@@ -807,10 +842,12 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
     `,
   ],
 })
-export class SavingsAccountViewComponent implements OnInit {
+export class SavingsAccountViewComponent implements OnInit, OnDestroy {
   /** Selected tab; mat-tab-group tracked this internally, ion-segment does not. */
   /** Exposed so the template names its tabs instead of numbering them. */
   protected readonly TAB = SAVINGS_TAB;
+
+  private readonly popovers = viewChildren(IonPopover);
 
   readonly activeTab = signal<SavingsTab>(SAVINGS_TAB.overview);
   private readonly savingsService = inject(SavingsAccountService);
@@ -860,6 +897,12 @@ export class SavingsAccountViewComponent implements OnInit {
         this.loadAccountData();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    for (const popover of this.popovers()) {
+      void popover.dismiss().catch(() => false);
+    }
   }
 
   loadAccountData() {

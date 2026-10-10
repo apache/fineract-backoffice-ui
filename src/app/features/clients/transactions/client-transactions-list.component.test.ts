@@ -23,9 +23,9 @@ import { ClientTransactionsListComponent } from './client-transactions-list.comp
 import { ClientTransactionService } from '../../../api';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DialogService } from '../../../core/services/dialog.service';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ClientTransactionsListComponent', () => {
   let component: ClientTransactionsListComponent;
@@ -47,8 +47,9 @@ describe('ClientTransactionsListComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [ClientTransactionsListComponent, TranslateModule.forRoot()],
+      imports: [ClientTransactionsListComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: ClientTransactionService, useValue: serviceSpy },
         { provide: DialogService, useValue: dialogService },
         {

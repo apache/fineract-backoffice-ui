@@ -23,8 +23,8 @@ import { SavingsChargeFormComponent } from './savings-charge-form.component';
 import { SavingsChargesService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('SavingsChargeFormComponent', () => {
   let component: SavingsChargeFormComponent;
@@ -47,8 +47,9 @@ describe('SavingsChargeFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [SavingsChargeFormComponent, TranslateModule.forRoot()],
+      imports: [SavingsChargeFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: SavingsChargesService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         {

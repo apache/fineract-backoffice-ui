@@ -19,7 +19,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   IonButton,
@@ -67,7 +67,7 @@ export type InteropTab = (typeof INTEROP_TAB)[keyof typeof INTEROP_TAB];
   imports: [
     FormsModule,
     JsonPipe,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonTextarea,
@@ -85,35 +85,37 @@ export type InteropTab = (typeof INTEROP_TAB)[keyof typeof INTEROP_TAB];
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'INTEROP.TRANSFER_TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'INTEROP.TRANSFER_TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)">
           <ion-segment-button [value]="TAB.load">
-            <ion-label>{{ 'INTEROP.LOAD_TRANSFER' | translate }}</ion-label>
+            <ion-label>{{ 'INTEROP.LOAD_TRANSFER' | appTranslate }}</ion-label>
           </ion-segment-button>
           <ion-segment-button [value]="TAB.create">
-            <ion-label>{{ 'INTEROP.CREATE_TRANSFER' | translate }}</ion-label>
+            <ion-label>{{ 'INTEROP.CREATE_TRANSFER' | appTranslate }}</ion-label>
           </ion-segment-button>
           <ion-segment-button [value]="TAB.result">
-            <ion-label>Disburse / Repay</ion-label>
+            <ion-label>{{ 'INTEROP.DISBURSE_REPAY' | appTranslate }}</ion-label>
           </ion-segment-button>
         </ion-segment>
 
         @if (activeTab() === TAB.load) {
           <div class="tab-content">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'INTEROP.TRANSACTION_CODE' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'INTEROP.TRANSACTION_CODE' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEROP.TRANSACTION_CODE' | translate"
+                [attr.aria-label]="'INTEROP.TRANSACTION_CODE' | appTranslate"
                 [(ngModel)]="transactionCode"
               ></ion-input>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'INTEROP.TRANSFER_CODE' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'INTEROP.TRANSFER_CODE' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEROP.TRANSFER_CODE' | translate"
+                [attr.aria-label]="'INTEROP.TRANSFER_CODE' | appTranslate"
                 [(ngModel)]="transferCode"
               ></ion-input>
             </ion-item>
@@ -123,7 +125,7 @@ export type InteropTab = (typeof INTEROP_TAB)[keyof typeof INTEROP_TAB];
               (click)="loadTransfer()"
               [disabled]="!transactionCode || !transferCode"
             >
-              {{ 'INTEROP.LOAD_TRANSFER' | translate }}
+              {{ 'INTEROP.LOAD_TRANSFER' | appTranslate }}
             </ion-button>
 
             @if (result()) {
@@ -134,18 +136,18 @@ export type InteropTab = (typeof INTEROP_TAB)[keyof typeof INTEROP_TAB];
         @if (activeTab() === TAB.create) {
           <div class="tab-content">
             <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{ 'INTEROP.TRANSFER_BODY' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'INTEROP.TRANSFER_BODY' | appTranslate }}</ion-label>
               <ion-textarea
-                [attr.aria-label]="'INTEROP.TRANSFER_BODY' | translate"
+                [attr.aria-label]="'INTEROP.TRANSFER_BODY' | appTranslate"
                 rows="10"
                 [(ngModel)]="transferBodyJson"
               ></ion-textarea>
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'INTEROP.ACTION' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'INTEROP.ACTION' | appTranslate }}</ion-label>
               <ion-select
-                [attr.aria-label]="'INTEROP.ACTION' | translate"
+                [attr.aria-label]="'INTEROP.ACTION' | appTranslate"
                 interface="popover"
                 [(ngModel)]="transferAction"
               >
@@ -155,7 +157,7 @@ export type InteropTab = (typeof INTEROP_TAB)[keyof typeof INTEROP_TAB];
             </ion-item>
 
             <ion-button color="secondary" (click)="createTransfer()">
-              {{ 'INTEROP.CREATE_TRANSFER' | translate }}
+              {{ 'INTEROP.CREATE_TRANSFER' | appTranslate }}
             </ion-button>
 
             @if (result()) {
@@ -166,23 +168,23 @@ export type InteropTab = (typeof INTEROP_TAB)[keyof typeof INTEROP_TAB];
         @if (activeTab() === TAB.result) {
           <div class="tab-content">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'INTEROP.ACCOUNT_ID' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'INTEROP.ACCOUNT_ID' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'INTEROP.ACCOUNT_ID' | translate"
+                [attr.aria-label]="'INTEROP.ACCOUNT_ID' | appTranslate"
                 [(ngModel)]="disburseAccountId"
               ></ion-input>
             </ion-item>
 
             <div class="button-row">
               <ion-button color="primary" (click)="disburse()" [disabled]="!disburseAccountId">
-                {{ 'INTEROP.DISBURSE' | translate }}
+                {{ 'INTEROP.DISBURSE' | appTranslate }}
               </ion-button>
               <ion-button
                 color="secondary"
                 (click)="loanRepayment()"
                 [disabled]="!disburseAccountId"
               >
-                {{ 'INTEROP.LOAN_REPAYMENT' | translate }}
+                {{ 'INTEROP.LOAN_REPAYMENT' | appTranslate }}
               </ion-button>
             </div>
 

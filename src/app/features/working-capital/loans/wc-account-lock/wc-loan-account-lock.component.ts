@@ -18,7 +18,7 @@
  */
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../../core/adapters';
 import { WorkingCapitalLoanAccountLockService } from '../../../../api';
 import { NotificationService } from '../../../../core/services/notification.service';
 import {
@@ -38,7 +38,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonInput,
     IonItem,
@@ -52,16 +52,16 @@ import {
   template: `
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{ 'WC_LOAN_ACCOUNT_LOCK.TITLE' | translate }}</ion-card-title>
+        <ion-card-title>{{ 'WC_LOAN_ACCOUNT_LOCK.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="form-fields">
           <ion-item fill="outline">
             <ion-label position="stacked">{{
-              'WC_LOAN_ACCOUNT_LOCK.LOAN_ID' | translate
+              'WC_LOAN_ACCOUNT_LOCK.LOAN_ID' | appTranslate
             }}</ion-label>
             <ion-input
-              [attr.aria-label]="'WC_LOAN_ACCOUNT_LOCK.LOAN_ID' | translate"
+              [attr.aria-label]="'WC_LOAN_ACCOUNT_LOCK.LOAN_ID' | appTranslate"
               type="number"
               [(ngModel)]="loanId"
               required
@@ -70,10 +70,10 @@ import {
 
           <ion-item fill="outline">
             <ion-label position="stacked">{{
-              'WC_LOAN_ACCOUNT_LOCK.LOCK_OWNER' | translate
+              'WC_LOAN_ACCOUNT_LOCK.LOCK_OWNER' | appTranslate
             }}</ion-label>
             <ion-input
-              [attr.aria-label]="'WC_LOAN_ACCOUNT_LOCK.LOCK_OWNER' | translate"
+              [attr.aria-label]="'WC_LOAN_ACCOUNT_LOCK.LOCK_OWNER' | appTranslate"
               type="text"
               [(ngModel)]="lockOwner"
             ></ion-input>
@@ -85,7 +85,7 @@ import {
             @if (isLoading()) {
               <ion-spinner name="crescent"></ion-spinner>
             } @else {
-              {{ 'WC_LOAN_ACCOUNT_LOCK.PLACE_LOCK' | translate }}
+              {{ 'WC_LOAN_ACCOUNT_LOCK.PLACE_LOCK' | appTranslate }}
             }
           </ion-button>
         </div>
@@ -113,7 +113,7 @@ import {
 export class WcLoanAccountLockComponent {
   private accountLockService = inject(WorkingCapitalLoanAccountLockService);
   private notifications = inject(NotificationService);
-  private translate = inject(TranslateService);
+  private i18n = inject(I18N);
 
   loanId = 0;
   lockOwner = '';
@@ -126,7 +126,7 @@ export class WcLoanAccountLockComponent {
       .subscribe({
         next: () => {
           this.isLoading.set(false);
-          this.notifications.success(this.translate.instant('WC_LOAN_ACCOUNT_LOCK.SUCCESS'));
+          this.notifications.success(this.i18n.translate('WC_LOAN_ACCOUNT_LOCK.SUCCESS'));
         },
       });
   }

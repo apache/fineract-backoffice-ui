@@ -23,8 +23,8 @@ import { BulkReassignmentComponent } from './bulk-reassignment.component';
 import { BulkLoansService } from '../../../api';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('BulkReassignmentComponent', () => {
   let component: BulkReassignmentComponent;
@@ -46,8 +46,9 @@ describe('BulkReassignmentComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [BulkReassignmentComponent, TranslateModule.forRoot()],
+      imports: [BulkReassignmentComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: BulkLoansService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         provideNoopAnimations(),

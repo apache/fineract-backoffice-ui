@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../core/adapters';
 import {
   GeneralLedgerAccountService,
   PostGLAccountsRequest,
@@ -51,7 +51,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     HelpIconComponent,
     IonButton,
     IonSpinner,
@@ -76,8 +76,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('ACCOUNTING.EDIT_GL_ACCOUNT' | translate)
-                : ('ACCOUNTING.CREATE_GL_ACCOUNT' | translate)
+                ? ('ACCOUNTING.EDIT_GL_ACCOUNT' | appTranslate)
+                : ('ACCOUNTING.CREATE_GL_ACCOUNT' | appTranslate)
             }}
             <app-help-icon [helpTextKey]="'HELP.CHART_OF_ACCOUNTS_DESC'"></app-help-icon>
           </ion-card-title>
@@ -86,83 +86,85 @@ import {
         <ion-card-content>
           <form #accountForm="ngForm" (ngSubmit)="onSubmit()" class="account-form">
             <div class="form-grid">
-              <ion-item fill="outline" [appTooltip]="'HELP.ACCOUNT_NAME_DESC' | translate">
-                <ion-label position="stacked">{{ 'COMMON.NAME' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.ACCOUNT_NAME_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'COMMON.NAME' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'COMMON.NAME' | translate"
+                  [attr.aria-label]="'COMMON.NAME' | appTranslate"
                   name="name"
                   [(ngModel)]="account().name"
                   required
                 ></ion-input>
               </ion-item>
 
-              <ion-item fill="outline" [appTooltip]="'HELP.GL_CODE_DESC' | translate">
-                <ion-label position="stacked">{{ 'ACCOUNTING.GL_CODE' | translate }}</ion-label>
+              <ion-item fill="outline" [appTooltip]="'HELP.GL_CODE_DESC' | appTranslate">
+                <ion-label position="stacked">{{ 'ACCOUNTING.GL_CODE' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'ACCOUNTING.GL_CODE' | translate"
+                  [attr.aria-label]="'ACCOUNTING.GL_CODE' | appTranslate"
                   name="glCode"
                   [(ngModel)]="account().glCode"
                   required
                 ></ion-input>
               </ion-item>
 
-              <ion-item fill="outline" [appTooltip]="'HELP.ACCOUNT_TYPE_DESC' | translate">
+              <ion-item fill="outline" [appTooltip]="'HELP.ACCOUNT_TYPE_DESC' | appTranslate">
                 <ion-label position="stacked">{{
-                  'ACCOUNTING.ACCOUNT_TYPE' | translate
+                  'ACCOUNTING.ACCOUNT_TYPE' | appTranslate
                 }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'ACCOUNTING.ACCOUNT_TYPE' | translate"
+                  [attr.aria-label]="'ACCOUNTING.ACCOUNT_TYPE' | appTranslate"
                   interface="popover"
                   name="type"
                   [(ngModel)]="account().type"
                   required
                 >
                   <ion-select-option [value]="1">{{
-                    'ACCOUNTING.ASSET' | translate
+                    'ACCOUNTING.ASSET' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="2">{{
-                    'ACCOUNTING.LIABILITY' | translate
+                    'ACCOUNTING.LIABILITY' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="3">{{
-                    'ACCOUNTING.EQUITY' | translate
+                    'ACCOUNTING.EQUITY' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="4">{{
-                    'ACCOUNTING.INCOME' | translate
+                    'ACCOUNTING.INCOME' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="5">{{
-                    'ACCOUNTING.EXPENSE' | translate
+                    'ACCOUNTING.EXPENSE' | appTranslate
                   }}</ion-select-option>
                 </ion-select>
               </ion-item>
 
-              <ion-item fill="outline" [appTooltip]="'HELP.ACCOUNT_USAGE_DESC' | translate">
+              <ion-item fill="outline" [appTooltip]="'HELP.ACCOUNT_USAGE_DESC' | appTranslate">
                 <ion-label position="stacked">{{
-                  'ACCOUNTING.ACCOUNT_USAGE' | translate
+                  'ACCOUNTING.ACCOUNT_USAGE' | appTranslate
                 }}</ion-label>
                 <ion-select
-                  [attr.aria-label]="'ACCOUNTING.ACCOUNT_USAGE' | translate"
+                  [attr.aria-label]="'ACCOUNTING.ACCOUNT_USAGE' | appTranslate"
                   interface="popover"
                   name="usage"
                   [(ngModel)]="account().usage"
                   required
                 >
                   <ion-select-option [value]="1">{{
-                    'ACCOUNTING.DETAIL' | translate
+                    'ACCOUNTING.DETAIL' | appTranslate
                   }}</ion-select-option>
                   <ion-select-option [value]="2">{{
-                    'ACCOUNTING.HEADER' | translate
+                    'ACCOUNTING.HEADER' | appTranslate
                   }}</ion-select-option>
                 </ion-select>
               </ion-item>
 
               <ion-item
                 fill="outline"
-                [appTooltip]="'HELP.DESCRIPTION_DESC' | translate"
+                [appTooltip]="'HELP.DESCRIPTION_DESC' | appTranslate"
                 class="full-width"
               >
-                <ion-label position="stacked">{{ 'PRODUCTS.DESCRIPTION' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'PRODUCTS.DESCRIPTION' | appTranslate
+                }}</ion-label>
                 <ion-textarea
-                  [attr.aria-label]="'PRODUCTS.DESCRIPTION' | translate"
+                  [attr.aria-label]="'PRODUCTS.DESCRIPTION' | appTranslate"
                   name="description"
                   [(ngModel)]="account().description"
                   rows="3"
@@ -174,10 +176,10 @@ import {
                   name="manualEntriesAllowed"
                   [(ngModel)]="account().manualEntriesAllowed"
                 >
-                  {{ 'ACCOUNTING.ALLOW_MANUAL_ENTRIES' | translate }}
+                  {{ 'ACCOUNTING.ALLOW_MANUAL_ENTRIES' | appTranslate }}
                 </ion-checkbox>
                 <ion-icon
-                  [appTooltip]="'HELP.ALLOW_MANUAL_ENTRIES_DESC' | translate"
+                  [appTooltip]="'HELP.ALLOW_MANUAL_ENTRIES_DESC' | appTranslate"
                   class="help-icon"
                   name="help-circle-outline"
                 ></ion-icon>
@@ -186,7 +188,7 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -195,9 +197,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

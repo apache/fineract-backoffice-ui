@@ -23,7 +23,8 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Observable, of, throwError } from 'rxjs';
 
 import { OfficeFormComponent } from './office-form.component';
-import { OfficesService } from '../../../api';
+import { OFFICE_API } from '../../../core/adapters';
+import type { Office } from '../../../core/adapters';
 import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { asyncOf, renderComponent } from '../../../testing/render';
@@ -31,7 +32,27 @@ import { asyncOf, renderComponent } from '../../../testing/render';
 describe('OfficeFormComponent', () => {
   let component: OfficeFormComponent;
   let fixture: ComponentFixture<OfficeFormComponent>;
-  let officesServiceSpy: SpyObj<OfficesService>;
+  let officeApiSpy: SpyObj<{
+    list: (all?: boolean) => unknown;
+    get: (id: number) => unknown;
+    create: (draft: unknown) => unknown;
+    update: (id: number, draft: unknown) => unknown;
+  }>;
+
+  /** `Office` as the adapter maps it — the opening date already an ISO string. */
+  function office(overrides: Partial<Office>): Office {
+    return {
+      id: 1,
+      name: 'Head Office',
+      nameDecorated: 'Head Office',
+      externalId: null,
+      hierarchy: '.',
+      parentId: null,
+      parentName: null,
+      openingDate: '2009-01-01',
+      ...overrides,
+    };
+  }
   let routerSpy: SpyObj<Router>;
   let activatedRouteParams: Observable<unknown>;
 
@@ -41,25 +62,22 @@ describe('OfficeFormComponent', () => {
   const TEST_OPENING_DATE = '2026-06-16';
 
   beforeEach(async () => {
-    officesServiceSpy = createSpyObj([
-      'getOffices',
-      'getOfficesOfficeId',
-      'putOfficesOfficeId',
-      'postOffices',
-    ]);
+    officeApiSpy = createSpyObj(['list', 'get', 'create', 'update']);
 
     routerSpy = createSpyObj(['navigate']);
 
-    officesServiceSpy.getOffices.mockReturnValue(of([]) as unknown as Observable<never>);
+    officeApiSpy.list.mockReturnValue(of([]) as unknown as Observable<never>);
 
-    officesServiceSpy.getOfficesOfficeId.mockReturnValue(
-      of({
-        id: 12,
-        name: TEST_OFFICE,
-        externalId: 'ext12',
-        openingDate: [2026, 6, 16] as unknown as number[],
-      }) as unknown as Observable<never>,
+    // The previous fixture wrote `openingDate: [2026, 6, 16] as unknown as number[]` to get a
+    // realistic value past a type that declares `string`. The contract removes the need: the
+    // date is an ISO string here because that is what the mapper produces.
+    officeApiSpy.get.mockReturnValue(
+      of(
+        office({ id: 12, name: TEST_OFFICE, externalId: 'ext12', openingDate: TEST_OPENING_DATE }),
+      ) as unknown as Observable<never>,
     );
+    officeApiSpy.create.mockReturnValue(of(13) as unknown as Observable<never>);
+    officeApiSpy.update.mockReturnValue(of(undefined) as unknown as Observable<never>);
 
     activatedRouteParams = of({
       get: () => null,
@@ -68,7 +86,7 @@ describe('OfficeFormComponent', () => {
     await TestBed.configureTestingModule({
       imports: [OfficeFormComponent],
       providers: [
-        { provide: OfficesService, useValue: officesServiceSpy },
+        { provide: OFFICE_API, useValue: officeApiSpy },
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
@@ -91,13 +109,11 @@ describe('OfficeFormComponent', () => {
 
     it('should create and load offices', () => {
       expect(component).toBeTruthy();
-      expect(officesServiceSpy.getOffices).toHaveBeenCalledWith(true);
+      expect(officeApiSpy.list).toHaveBeenCalledWith(true);
       expect(component.isEditMode()).toBe(false);
     });
 
     it('should submit form in create mode', () => {
-      officesServiceSpy.postOffices.mockReturnValue(of({}) as unknown as Observable<never>);
-
       component.office.set({
         name: NEW_OFFICE,
         parentId: 1,
@@ -110,20 +126,20 @@ describe('OfficeFormComponent', () => {
 
       expect(component.isSaving()).toBe(true);
 
-      expect(officesServiceSpy.postOffices).toHaveBeenCalledWith({
+      // No dateFormat and no locale: the adapter owns those. Asserting their absence is what
+      // would catch them creeping back into the form.
+      expect(officeApiSpy.create).toHaveBeenCalledWith({
         name: NEW_OFFICE,
         parentId: 1,
         externalId: 'extNew',
         openingDate: '2026-06-15',
-        dateFormat: 'yyyy-MM-dd',
-        locale: 'en',
       });
 
       expect(routerSpy.navigate).toHaveBeenCalledWith([OFFICES_PATH]);
     });
 
     it('should handle error in create mode', () => {
-      officesServiceSpy.postOffices.mockReturnValue(
+      officeApiSpy.create.mockReturnValue(
         throwError(() => new Error('Error')) as unknown as Observable<never>,
       );
 
@@ -149,16 +165,16 @@ describe('OfficeFormComponent', () => {
     });
 
     it('renders an option per office returned by the API', async () => {
-      officesServiceSpy.getOffices.mockReturnValue(
+      officeApiSpy.list.mockReturnValue(
         asyncOf([
-          { id: 1, name: 'Head Office' },
-          { id: 2, name: 'Branch Office' },
+          office({ id: 1, name: 'Head Office' }),
+          office({ id: 2, name: 'Branch Office' }),
         ]) as unknown as Observable<never>,
       );
 
       const rendered = await renderComponent(OfficeFormComponent, {
         providers: [
-          { provide: OfficesService, useValue: officesServiceSpy },
+          { provide: OFFICE_API, useValue: officeApiSpy },
           { provide: Router, useValue: routerSpy },
           {
             provide: ActivatedRoute,
@@ -194,7 +210,7 @@ describe('OfficeFormComponent', () => {
       await TestBed.configureTestingModule({
         imports: [OfficeFormComponent],
         providers: [
-          { provide: OfficesService, useValue: officesServiceSpy },
+          { provide: OFFICE_API, useValue: officeApiSpy },
           { provide: Router, useValue: routerSpy },
           {
             provide: ActivatedRoute,
@@ -215,18 +231,16 @@ describe('OfficeFormComponent', () => {
       expect(component.isEditMode()).toBe(true);
       expect(component.officeId).toBe(12);
 
-      expect(officesServiceSpy.getOfficesOfficeId).toHaveBeenCalledWith(12);
+      expect(officeApiSpy.get).toHaveBeenCalledWith(12);
 
       expect(component.office().name).toBe(TEST_OFFICE);
       expect(component.openingDate()).toBe(TEST_OPENING_DATE);
-
-      officesServiceSpy.putOfficesOfficeId.mockReturnValue(of({}) as unknown as Observable<never>);
 
       component.openingDate.set(TEST_OPENING_DATE);
 
       component.onSubmit();
 
-      expect(officesServiceSpy.putOfficesOfficeId).toHaveBeenCalledWith(
+      expect(officeApiSpy.update).toHaveBeenCalledWith(
         12,
         expect.objectContaining({
           name: TEST_OFFICE,

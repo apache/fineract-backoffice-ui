@@ -23,14 +23,14 @@
  * Do not edit the class manually.
  */
 
-import { ClientIdentifierRequest } from './clientIdentifierRequest';
+import { PutClientsClientIdIdentifiersIdentifierIdChanges } from './putClientsClientIdIdentifiersIdentifierIdChanges';
 
 
 /**
  * PutClientsClientIdIdentifiersIdentifierIdResponse
  */
 export interface PutClientsClientIdIdentifiersIdentifierIdResponse { 
-    changes?: ClientIdentifierRequest;
+    changes?: PutClientsClientIdIdentifiersIdentifierIdChanges;
     clientId?: number;
     officeId?: number;
     resourceId?: number;

@@ -23,9 +23,11 @@ import { SavingsAccountTransactionFormComponent } from './savings-account-transa
 import { SavingsAccountTransactionsService } from '../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideFakeAdapters } from '../../testing/adapters';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
+import { NgForm } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
 function createComponent(command: string) {
   const transactionSpy: SpyObj<SavingsAccountTransactionsService> = createSpyObj([
@@ -48,8 +50,9 @@ function createComponent(command: string) {
   const adapters = provideFakeAdapters();
 
   TestBed.configureTestingModule({
-    imports: [SavingsAccountTransactionFormComponent, TranslateModule.forRoot()],
+    imports: [SavingsAccountTransactionFormComponent],
     providers: [
+      ...provideTranslateTesting(),
       ...adapters.providers,
       { provide: SavingsAccountTransactionsService, useValue: transactionSpy },
       { provide: Router, useValue: routerSpy },
@@ -120,5 +123,49 @@ describe('SavingsAccountTransactionFormComponent', () => {
 
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/products/savings-accounts']);
     expect(transactionSpy.postSavingsaccountsSavingsIdTransactions).not.toHaveBeenCalled();
+  });
+});
+
+describe('SavingsAccountTransactionFormComponent payment type', () => {
+  /**
+   * The payment type's own control, not the whole form: the amount is also required, so the
+   * form's validity would not show which field refused.
+   */
+  async function paymentTypeControl(
+    fixture: ComponentFixture<SavingsAccountTransactionFormComponent>,
+  ) {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const form = fixture.debugElement.query(By.directive(NgForm)).injector.get(NgForm);
+    return form.controls['paymentTypeId'];
+  }
+
+  /** Chooses an option the way the select does: its value, then `ionChange`, which the form reads. */
+  function choosePaymentType(
+    fixture: ComponentFixture<SavingsAccountTransactionFormComponent>,
+    id: number,
+  ) {
+    const select = fixture.debugElement.query(By.css('ion-select[name="paymentTypeId"]'))
+      .nativeElement as HTMLElement & { value: unknown };
+    select.value = id;
+    select.dispatchEvent(new CustomEvent('ionChange', { detail: { value: id } }));
+  }
+
+  it.each(['deposit', 'withdrawal'])(
+    'does not accept a %s without a payment type, which the platform refuses',
+    async (command) => {
+      const { fixture } = createComponent(command);
+
+      expect((await paymentTypeControl(fixture)).invalid).toBe(true);
+
+      choosePaymentType(fixture, 1);
+      expect((await paymentTypeControl(fixture)).valid).toBe(true);
+    },
+  );
+
+  it('does not render a payment type to post interest, which moves no money', async () => {
+    const { fixture } = createComponent('postInterestAsOn');
+
+    expect(await paymentTypeControl(fixture)).toBeUndefined();
   });
 });

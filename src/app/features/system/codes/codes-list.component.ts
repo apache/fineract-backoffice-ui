@@ -20,10 +20,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 
 import { CodesService, GetCodesResponse } from '../../../api';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
@@ -35,7 +35,7 @@ import { DialogService } from '../../../core/services/dialog.service';
   selector: 'app-codes-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     StatusBadgeComponent,
     DataTableComponent,
     CellTemplateDirective,
@@ -67,7 +67,7 @@ import { DialogService } from '../../../core/services/dialog.service';
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'CODES.EDIT' | translate"
+          [attr.aria-label]="'CODES.EDIT' | appTranslate"
           (click)="onEdit(row)"
         >
           <ion-icon name="create-outline" slot="icon-only"></ion-icon>
@@ -75,7 +75,7 @@ import { DialogService } from '../../../core/services/dialog.service';
         <ion-button
           fill="clear"
           color="secondary"
-          [attr.aria-label]="'CODES.CODE_VALUES' | translate"
+          [attr.aria-label]="'CODES.CODE_VALUES' | appTranslate"
           (click)="onCodeValues(row)"
         >
           <ion-icon name="list-outline" slot="icon-only"></ion-icon>
@@ -86,7 +86,7 @@ import { DialogService } from '../../../core/services/dialog.service';
           <ion-button
             fill="clear"
             color="danger"
-            [attr.aria-label]="'CODES.DELETE' | translate"
+            [attr.aria-label]="'CODES.DELETE' | appTranslate"
             (click)="onDelete(row)"
           >
             <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
@@ -100,7 +100,7 @@ export class CodesListComponent implements OnInit {
   private readonly codesService = inject(CodesService);
   private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly codes = signal<GetCodesResponse[]>([]);
   readonly loading = signal(false);
@@ -153,8 +153,8 @@ export class CodesListComponent implements OnInit {
     // "CODES.CONFIRM_DELETE: <name>". Now the app's own confirm, with the string resolved.
     void this.dialogService
       .confirm({
-        title: this.translate.instant('CODES.DELETE'),
-        message: this.translate.instant('CODES.CONFIRM_DELETE', { name: row.name }),
+        title: this.i18n.translate('CODES.DELETE'),
+        message: this.i18n.translate('CODES.CONFIRM_DELETE', { name: row.name }),
         destructive: true,
       })
       .then((confirmed) => {

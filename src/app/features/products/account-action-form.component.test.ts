@@ -31,8 +31,8 @@ import {
 } from '../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError, Observable } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
 
 describe('AccountActionFormComponent', () => {
   const SAVINGS_PATH = '/products/savings-accounts';
@@ -112,8 +112,9 @@ describe('AccountActionFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [AccountActionFormComponent, TranslateModule.forRoot()],
+      imports: [AccountActionFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: SavingsAccountService, useValue: savingsSpy },
         { provide: FixedDepositAccountService, useValue: fixedSpy },
         { provide: RecurringDepositAccountService, useValue: recurringSpy },

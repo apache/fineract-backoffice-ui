@@ -22,14 +22,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { CashierTransactionsComponent } from './cashier-transactions.component';
-import { TellerCashManagementService } from '../../../api';
+import { TELLER_API, type TellerApi } from '../../../core/adapters';
 import { asyncOf, renderComponent } from '../../../testing/render';
 import { provideFakeAdapters } from '../../../testing/adapters';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
 
 describe('CashierTransactionsComponent', () => {
-  let tellerServiceSpy: SpyObj<TellerCashManagementService>;
+  let tellerApiSpy: SpyObj<TellerApi>;
   let routerSpy: SpyObj<Router>;
 
   const AUG_5 = '2026-08-05';
@@ -44,7 +44,7 @@ describe('CashierTransactionsComponent', () => {
         ...provideTranslateTesting(),
         provideNoopAnimations(),
         provideIonicTesting(),
-        { provide: TellerCashManagementService, useValue: tellerServiceSpy },
+        { provide: TELLER_API, useValue: tellerApiSpy },
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
@@ -55,37 +55,25 @@ describe('CashierTransactionsComponent', () => {
   }
 
   beforeEach(() => {
-    tellerServiceSpy = createSpyObj([
-      'getTellersTellerIdCashiersCashierIdTransactionsTemplate',
-      'getTellersTellerIdCashiersCashierIdSummaryandtransactions',
-    ]);
+    tellerApiSpy = createSpyObj<TellerApi>(['cashierTransactionTemplate', 'cashierSummary']);
     routerSpy = createSpyObj(['navigate']);
 
-    tellerServiceSpy.getTellersTellerIdCashiersCashierIdTransactionsTemplate.mockReturnValue(
-      asyncOf({
-        currencyOptions: [{ code: 'USD', name: 'US Dollar', displayLabel: 'US Dollar ($)' }],
-      }) as unknown as Observable<never>,
-    );
-
-    tellerServiceSpy.getTellersTellerIdCashiersCashierIdSummaryandtransactions.mockReturnValue(
+    tellerApiSpy.cashierTransactionTemplate.mockReturnValue(
       asyncOf({
         cashierName: 'Officer, Probe',
         tellerName: 'Main Teller',
-        sumCashAllocation: 5000,
-        sumCashSettlement: 1200,
+        currencies: [{ code: 'USD', label: 'US Dollar ($)' }],
+      }) as unknown as Observable<never>,
+    );
+
+    tellerApiSpy.cashierSummary.mockReturnValue(
+      asyncOf({
+        cashierName: 'Officer, Probe',
+        tellerName: 'Main Teller',
+        allocated: 5000,
+        settled: 1200,
         netCash: 3800,
-        cashierTransactions: {
-          pageItems: [
-            {
-              id: 3,
-              txnType: { id: 101, value: 'Allocate Cash' },
-              txnAmount: 5000,
-              txnDate: [2026, 8, 5],
-              txnNote: 'vault float',
-            },
-          ],
-          totalFilteredRecords: 1,
-        },
+        transactions: [{ type: 'Allocate Cash', amount: 5000, date: AUG_5, note: 'vault float' }],
       }) as unknown as Observable<never>,
     );
   });
@@ -109,27 +97,15 @@ describe('CashierTransactionsComponent', () => {
     // Not cosmetic: called without a currencyCode the endpoint answers 200 with every total at
     // zero and no transactions, so a cashier holding cash renders identically to one that never
     // transacted. The bug is silent by construction, which is why it is asserted here.
-    const args =
-      tellerServiceSpy.getTellersTellerIdCashiersCashierIdSummaryandtransactions.mock.lastCall!;
-    expect(args[0]).toBe(TELLER_ID);
-    expect(args[1]).toBe(CASHIER_ID);
-    expect(args[2]).toBe('USD');
-  });
-
-  it('formats the transaction date in either shape the platform returns', async () => {
-    const fixture = await render();
-
-    // This endpoint returns an ISO string; the cashier and teller resources return [y, m, d].
-    expect(fixture.componentInstance.formatDate(AUG_5)).toBe(AUG_5);
-    expect(fixture.componentInstance.formatDate([2026, 8, 5])).toBe(AUG_5);
-    expect(fixture.componentInstance.formatDate(null)).toBe('-');
+    expect(tellerApiSpy.cashierSummary).toHaveBeenCalledWith(TELLER_ID, CASHIER_ID, 'USD');
   });
 
   it('exposes the transactions the summary carried', async () => {
     const fixture = await render();
 
-    expect(fixture.componentInstance.transactions()).toHaveLength(1);
-    expect(fixture.componentInstance.transactions()[0].txnNote).toBe('vault float');
+    expect(fixture.componentInstance.transactions()).toEqual([
+      { type: 'Allocate Cash', amount: 5000, date: AUG_5, note: 'vault float' },
+    ]);
   });
 
   it('routes to each command with the cashier it belongs to', async () => {
@@ -157,7 +133,7 @@ describe('CashierTransactionsComponent', () => {
   });
 
   it('shows an empty table rather than failing when the summary cannot be read', async () => {
-    tellerServiceSpy.getTellersTellerIdCashiersCashierIdSummaryandtransactions.mockReturnValue(
+    tellerApiSpy.cashierSummary.mockReturnValue(
       new Observable((subscriber) => subscriber.error(new Error('boom'))) as Observable<never>,
     );
     const fixture = await render();

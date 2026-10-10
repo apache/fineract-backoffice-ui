@@ -19,13 +19,13 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ProvisioningCategoryService, ProvisioningCategoryData } from '../../../api';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { DialogService } from '../../../core/services/dialog.service';
 import { ButtonComponent } from '../../../ui/button/button.component';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 
 /**
  * Lists provisioning categories. Categories are small master-data records
@@ -35,7 +35,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-provisioning-categories-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -50,26 +50,28 @@ import { ButtonComponent } from '../../../ui/button/button.component';
       [columns]="columns"
       [data]="categories()"
       [totalRecords]="categories().length"
+      [hasError]="hasError()"
       [localLogic]="true"
       (create)="onCreate()"
+      (retry)="onRetry()"
     >
       <ng-template appCellTemplate="actions" let-row>
         <app-button
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         />
         <app-button
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'COMMON.DELETE' | translate"
+          [label]="'COMMON.DELETE' | appTranslate"
           icon="trash-outline"
-          [appTooltip]="'COMMON.DELETE' | translate"
+          [appTooltip]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(row)"
         />
       </ng-template>
@@ -80,7 +82,7 @@ export class ProvisioningCategoriesListComponent implements OnInit {
   private readonly categoryService = inject(ProvisioningCategoryService);
   private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly columns: ColumnDef[] = [
     { key: 'categoryName', label: 'PROVISIONING_CATEGORIES.NAME', sortable: true },
@@ -89,6 +91,7 @@ export class ProvisioningCategoriesListComponent implements OnInit {
   ];
 
   readonly categories = signal<ProvisioningCategoryData[]>([]);
+  readonly hasError = signal(false);
 
   ngOnInit(): void {
     this.load();
@@ -98,11 +101,17 @@ export class ProvisioningCategoriesListComponent implements OnInit {
     this.categoryService.getProvisioningcategory().subscribe({
       next: (data: ProvisioningCategoryData[]) => {
         this.categories.set(data || []);
+        this.hasError.set(false);
       },
       error: (err: unknown) => {
         console.error('Failed to load provisioning categories', err);
+        this.hasError.set(true);
       },
     });
+  }
+
+  onRetry(): void {
+    this.load();
   }
 
   onCreate(): void {
@@ -117,8 +126,8 @@ export class ProvisioningCategoriesListComponent implements OnInit {
     if (!row.id) return;
     void this.dialogService
       .confirm({
-        title: this.translate.instant('PROVISIONING_CATEGORIES.DELETE'),
-        message: this.translate.instant('PROVISIONING_CATEGORIES.CONFIRM_DELETE', {
+        title: this.i18n.translate('PROVISIONING_CATEGORIES.DELETE'),
+        message: this.i18n.translate('PROVISIONING_CATEGORIES.CONFIRM_DELETE', {
           name: row.categoryName,
         }),
         destructive: true,

@@ -20,10 +20,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 
 import {
   CodesService,
@@ -40,7 +40,7 @@ import { DialogService } from '../../../core/services/dialog.service';
   selector: 'app-code-values-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     StatusBadgeComponent,
     DataTableComponent,
     CellTemplateDirective,
@@ -72,7 +72,7 @@ import { DialogService } from '../../../core/services/dialog.service';
         <ion-button
           fill="clear"
           color="primary"
-          [attr.aria-label]="'COMMON.EDIT' | translate"
+          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         >
           <ion-icon name="create-outline" slot="icon-only"></ion-icon>
@@ -80,7 +80,7 @@ import { DialogService } from '../../../core/services/dialog.service';
         <ion-button
           fill="clear"
           color="danger"
-          [attr.aria-label]="'COMMON.DELETE' | translate"
+          [attr.aria-label]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(row)"
         >
           <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
@@ -95,7 +95,7 @@ export class CodeValuesListComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   private readonly CODES_BASE = '/system/codes';
 
@@ -168,8 +168,8 @@ export class CodeValuesListComponent implements OnInit {
     // "CODE_VALUES.CONFIRM_DELETE: <name>". Whether the value may be deleted is the API's call.
     void this.dialogService
       .confirm({
-        title: this.translate.instant('COMMON.DELETE'),
-        message: this.translate.instant('CODE_VALUES.CONFIRM_DELETE', { name: row.name }),
+        title: this.i18n.translate('COMMON.DELETE'),
+        message: this.i18n.translate('CODE_VALUES.CONFIRM_DELETE', { name: row.name }),
         destructive: true,
       })
       .then((confirmed) => {

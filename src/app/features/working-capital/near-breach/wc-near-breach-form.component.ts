@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   IonButton,
   IonCard,
@@ -49,7 +49,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -69,8 +69,8 @@ import {
           <ion-card-title>
             {{
               isEditMode()
-                ? ('WC_NEAR_BREACH.EDIT' | translate)
-                : ('WC_NEAR_BREACH.CREATE' | translate)
+                ? ('WC_NEAR_BREACH.EDIT' | appTranslate)
+                : ('WC_NEAR_BREACH.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -78,9 +78,9 @@ import {
         <ion-card-content>
           <form #nbForm="ngForm" (ngSubmit)="onSubmit()" class="wc-form">
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'WC_NEAR_BREACH.NAME' | translate }}</ion-label>
+              <ion-label position="stacked">{{ 'WC_NEAR_BREACH.NAME' | appTranslate }}</ion-label>
               <ion-input
-                [attr.aria-label]="'WC_NEAR_BREACH.NAME' | translate"
+                [attr.aria-label]="'WC_NEAR_BREACH.NAME' | appTranslate"
                 name="name"
                 [(ngModel)]="item().nearBreachName"
                 required
@@ -88,9 +88,11 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'WC_NEAR_BREACH.THRESHOLD' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'WC_NEAR_BREACH.THRESHOLD' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'WC_NEAR_BREACH.THRESHOLD' | translate"
+                [attr.aria-label]="'WC_NEAR_BREACH.THRESHOLD' | appTranslate"
                 type="number"
                 name="threshold"
                 [(ngModel)]="item().nearBreachThreshold"
@@ -98,9 +100,11 @@ import {
             </ion-item>
 
             <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'WC_NEAR_BREACH.FREQUENCY' | translate }}</ion-label>
+              <ion-label position="stacked">{{
+                'WC_NEAR_BREACH.FREQUENCY' | appTranslate
+              }}</ion-label>
               <ion-input
-                [attr.aria-label]="'WC_NEAR_BREACH.FREQUENCY' | translate"
+                [attr.aria-label]="'WC_NEAR_BREACH.FREQUENCY' | appTranslate"
                 type="number"
                 name="frequency"
                 [(ngModel)]="item().nearBreachFrequency"
@@ -109,10 +113,10 @@ import {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'WC_NEAR_BREACH.FREQUENCY_TYPE' | translate
+                'WC_NEAR_BREACH.FREQUENCY_TYPE' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'WC_NEAR_BREACH.FREQUENCY_TYPE' | translate"
+                [attr.aria-label]="'WC_NEAR_BREACH.FREQUENCY_TYPE' | appTranslate"
                 interface="popover"
                 name="frequencyType"
                 [(ngModel)]="item().nearBreachFrequencyType"
@@ -125,14 +129,14 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button color="primary" type="submit" [disabled]="nbForm.invalid || isSaving()">
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

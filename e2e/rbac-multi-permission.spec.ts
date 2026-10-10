@@ -29,9 +29,9 @@
  * defence-in-depth and showing only the first would invite the wrong conclusion.
  */
 
-import { test, expect, Page } from './fixtures';
+import { test, expect } from './fixtures';
 import { landsOn } from './utils/settled-route';
-import { SERVER_URL, TENANT_ID } from './utils/fineract-login';
+import { loginAsSeededUser } from './utils/fineract-login';
 import {
   createApiContext,
   ensureReferenceData,
@@ -44,27 +44,6 @@ import {
 } from './utils/seed-api';
 
 test.describe.configure({ mode: 'serial', timeout: 180_000 });
-
-/** Signs in as a seeded restricted user rather than as the suite's superuser. */
-async function loginAs(page: Page, user: SeededRestrictedUser): Promise<void> {
-  await page.goto('/login');
-  const serverSelect = page.locator('#serverUrl');
-  await serverSelect.waitFor({ state: 'visible' });
-  const preset = await serverSelect.locator(`option[value="${SERVER_URL}"]`).count();
-  if (preset > 0) {
-    await serverSelect.selectOption(SERVER_URL);
-  } else {
-    await serverSelect.selectOption('custom');
-    await page.locator('#customUrl').fill(SERVER_URL);
-  }
-  await page.locator('#tenantId').fill(TENANT_ID);
-  await page.locator('#username').fill(user.username);
-  await page.locator('#password').fill(user.password);
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page.getByRole('navigation', { name: 'Main Navigation' })).toBeVisible({
-    timeout: 30_000,
-  });
-}
 
 test.describe('a route declaring more than one permission code (OR semantics)', () => {
   // /tasks/work-queues declares data: { permissions: ['READ_LOAN', 'READ_CLIENT'] } with no
@@ -85,19 +64,19 @@ test.describe('a route declaring more than one permission code (OR semantics)', 
   });
 
   test('is admitted by either declared code alone', async ({ page }) => {
-    await loginAs(page, loanOnly);
+    await loginAsSeededUser(page, loanOnly);
     expect(await landsOn(page, '/tasks/work-queues')).toBe('/tasks/work-queues');
   });
 
   test('is admitted by the other declared code alone', async ({ page }) => {
-    await loginAs(page, clientOnly);
+    await loginAsSeededUser(page, clientOnly);
     expect(await landsOn(page, '/tasks/work-queues')).toBe('/tasks/work-queues');
   });
 
   test('is refused when holding neither declared code, by the router and by the backend', async ({
     page,
   }) => {
-    await loginAs(page, neither);
+    await loginAsSeededUser(page, neither);
     expect(await landsOn(page, '/tasks/work-queues')).toBe('/forbidden');
 
     // The screen's own reads are refused too — an OR-admitted route is not itself a grant of
@@ -122,7 +101,7 @@ test.describe('ALL_FUNCTIONS_READ, against the real Fineract permission catalogu
   });
 
   test('reaches read screens across modules it holds no specific code for', async ({ page }) => {
-    await loginAs(page, readOnlySuperuser);
+    await loginAsSeededUser(page, readOnlySuperuser);
     expect(await landsOn(page, '/clients')).toBe('/clients');
     expect(await landsOn(page, '/loans')).toBe('/loans');
     expect(await landsOn(page, '/accounting/chart-of-accounts')).toBe(
@@ -131,7 +110,7 @@ test.describe('ALL_FUNCTIONS_READ, against the real Fineract permission catalogu
   });
 
   test('is refused every write screen, and the writes themselves', async ({ page }) => {
-    await loginAs(page, readOnlySuperuser);
+    await loginAsSeededUser(page, readOnlySuperuser);
 
     expect(await landsOn(page, '/clients/create')).toBe('/forbidden');
     expect(await landsOn(page, '/accounting/journal-entries/create')).toBe('/forbidden');
@@ -166,7 +145,7 @@ test.describe('a restricted session across a real page reload', () => {
   test('keeps the same permission boundary after reloading, not just after a fresh login', async ({
     page,
   }) => {
-    await loginAs(page, restricted);
+    await loginAsSeededUser(page, restricted);
     expect(await landsOn(page, '/clients')).toBe('/clients');
 
     await page.reload();
@@ -199,7 +178,7 @@ test.describe('a second real action-level gate, distinct from loan repayment', (
       await api.dispose();
     }
 
-    await loginAs(page, approver);
+    await loginAsSeededUser(page, approver);
     expect(await landsOn(page, `/loans/view/${loan.loanId}`)).toBe(`/loans/view/${loan.loanId}`);
 
     // getByRole would resolve to Ionic's internal shadow-DOM native <button>, which does not
@@ -237,7 +216,7 @@ test.describe('Security module writes (users, roles), against the real backend',
   });
 
   test('reaches the list screens but is refused the write screens', async ({ page }) => {
-    await loginAs(page, restricted);
+    await loginAsSeededUser(page, restricted);
     expect(await landsOn(page, '/security/users')).toBe('/security/users');
     expect(await landsOn(page, '/security/roles')).toBe('/security/roles');
     expect(await landsOn(page, '/security/users/create')).toBe('/forbidden');

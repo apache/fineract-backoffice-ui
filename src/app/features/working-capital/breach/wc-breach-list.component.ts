@@ -19,8 +19,8 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { WorkingCapitalBreachService, WorkingCapitalBreachData } from '../../../api';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
@@ -38,7 +38,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-wc-breach-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -61,18 +61,18 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         />
         <app-button
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'COMMON.DELETE' | translate"
+          [label]="'COMMON.DELETE' | appTranslate"
           icon="trash-outline"
-          [appTooltip]="'COMMON.DELETE' | translate"
+          [appTooltip]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(row)"
         />
       </ng-template>
@@ -83,7 +83,7 @@ export class WcBreachListComponent implements OnInit {
   private readonly breachService = inject(WorkingCapitalBreachService);
   private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
-  private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   readonly columns: ColumnDef[] = [
     { key: 'name', label: 'WC_BREACH.NAME', sortable: true },
@@ -123,8 +123,8 @@ export class WcBreachListComponent implements OnInit {
     if (!row.id) return;
     void this.dialogService
       .confirm({
-        title: this.translate.instant('WC_BREACH.DELETE'),
-        message: this.translate.instant('WC_BREACH.CONFIRM_DELETE', { name: row.name }),
+        title: this.i18n.translate('WC_BREACH.DELETE'),
+        message: this.i18n.translate('WC_BREACH.CONFIRM_DELETE', { name: row.name }),
         destructive: true,
       })
       .then((confirmed) => {

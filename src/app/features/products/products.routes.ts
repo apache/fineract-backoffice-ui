@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { savingsCommandPermission } from '../../core/guards/command-permissions';
 import { authGuard } from '../../core/guards/auth.guard';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
@@ -277,9 +278,13 @@ export const PRODUCTS_ROUTES: Routes = [
       import('./savings-account-view.component').then((m) => m.SavingsAccountViewComponent),
   },
   {
+    // Same shape as the loan transaction route, and it had the same defect: it declared
+    // `UPDATE_SAVINGSACCOUNT`, which Fineract refuses for deposit and withdrawal alike — those
+    // live in its `transaction_savings` grouping. See issue #691 and
+    // `core/guards/command-permissions.ts`.
     path: 'savings-accounts/:accountId/transactions/:command',
     canActivate: [authGuard, permissionGuard],
-    data: { permissions: 'UPDATE_SAVINGSACCOUNT' },
+    data: { permissions: savingsCommandPermission },
     title: 'SAVINGS.TRANSACTION',
     loadComponent: () =>
       import('./savings-account-transaction-form.component').then(

@@ -69,9 +69,10 @@ CLI, which can be a different major version.
     Configuration is loaded from `public/config.json` at runtime; do not edit an environment file
     to configure a deployment.
 
-    For a local Fineract instance listening on `https://127.0.0.1:8443`, choose **Local Proxy
-    Server** (`/fineract-provider/api/v1`) on the sign-in page. `proxy.conf.json` forwards that path
-    to Fineract and avoids cross-origin requests.
+    For a local Fineract instance listening on `https://127.0.0.1:8443`, `proxy.conf.json` forwards
+    both `/api/v1`, the default endpoint, and `/fineract-provider/api/v1`, the **Local Proxy Server**
+    option on the sign-in page, to it. Either works with `npm start`, and neither makes a
+    cross-origin request.
 
     For a deployed or remote instance, set `fineractApiUrl` in `config.json`. An absolute URL must
     also appear in `allowedApiOrigins`, because the selected endpoint receives the user's

@@ -861,7 +861,8 @@ const NAV_CONFIG_BASE: readonly NavItemConfig[] = [
       {
         id: 'organization.office-transactions',
         route: '/organization/office-transactions',
-        requiredPermissions: 'READ_OFFICETRANSACTION',
+        // Matches the route, which asks for what the platform enforces — see the note there.
+        requiredPermissions: 'READ_OFFICE',
         labelKey: 'OFFICE_TRANSACTIONS.TITLE',
         icon: ICON_SWAP_HORIZONTAL_OUTLINE,
       },

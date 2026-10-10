@@ -23,8 +23,8 @@ import { ClientChargeFormComponent } from './client-charge-form.component';
 import { ClientChargesService } from '../../../api';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('ClientChargeFormComponent', () => {
   let component: ClientChargeFormComponent;
@@ -42,8 +42,9 @@ describe('ClientChargeFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [ClientChargeFormComponent, TranslateModule.forRoot()],
+      imports: [ClientChargeFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         { provide: ClientChargesService, useValue: serviceSpy },
         { provide: Router, useValue: routerSpy },
         {

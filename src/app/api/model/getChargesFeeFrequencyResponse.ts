@@ -25,7 +25,9 @@
 
 
 
-export interface PutFinancialActivityAccountscommentsSwagger { 
-    glAccountId?: number;
+export interface GetChargesFeeFrequencyResponse { 
+    code?: string;
+    id?: number;
+    value?: string;
 }
 

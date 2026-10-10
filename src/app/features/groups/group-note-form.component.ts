@@ -32,8 +32,7 @@ import {
   IonTextarea,
 } from '@ionic/angular/standalone';
 
-import { NotesService } from '../../api';
-import { I18N, TranslatePipe } from '../../core/adapters';
+import { ENTITY_NOTES_API, I18N, TranslatePipe } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
 
 /** Adds or edits a note against a group. */
@@ -125,7 +124,7 @@ import { NotificationService } from '../../core/services/notification.service';
   ],
 })
 export class GroupNoteFormComponent implements OnInit {
-  private readonly noteService = inject(NotesService);
+  private readonly notesApi = inject(ENTITY_NOTES_API);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly notifications = inject(NotificationService);
@@ -157,30 +156,23 @@ export class GroupNoteFormComponent implements OnInit {
   }
 
   private loadNote(): void {
-    this.noteService
-      .getResourceTypeResourceIdNotesNoteId('groups', this.groupId, this.noteId!)
-      .subscribe({
-        next: (data) => this.note.set(data.note ?? ''),
-        // No toast: errorInterceptor already raises one with the platform's message.
-        error: () => undefined,
-      });
+    this.notesApi.get('groups', this.groupId, this.noteId!).subscribe({
+      next: (data) => this.note.set(data.note),
+      // No toast: errorInterceptor already raises one with the platform's message.
+      error: () => undefined,
+    });
   }
 
   onSubmit(): void {
     if (this.isSaving()) return;
     this.isSaving.set(true);
 
-    const request = { note: this.note() };
-    // Typed as `Observable<unknown>`: create and update resolve to different response models,
-    // and the union of the two overload sets has no callable `subscribe`.
-    const save$: Observable<unknown> = this.isEditMode
-      ? this.noteService.putResourceTypeResourceIdNotesNoteId(
-          'groups',
-          this.groupId,
-          this.noteId!,
-          request,
-        )
-      : this.noteService.postResourceTypeResourceIdNotes('groups', this.groupId, request);
+    // Both operations are `Observable<void>` on the contract, so this no longer needs the
+    // `Observable<unknown>` the generated overloads forced: their response models differed, and
+    // the union of the two overload sets had no callable `subscribe`.
+    const save$: Observable<void> = this.isEditMode
+      ? this.notesApi.update('groups', this.groupId, this.noteId!, this.note())
+      : this.notesApi.create('groups', this.groupId, this.note());
 
     save$.subscribe({
       next: () => {

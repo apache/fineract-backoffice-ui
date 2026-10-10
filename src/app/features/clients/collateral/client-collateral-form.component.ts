@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '../../../core/adapters';
 import {
   ClientCollateralManagementService,
   ClientCollateralCreateRequest,
@@ -51,7 +51,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -71,8 +71,8 @@ import {
           <ion-card-title>
             {{
               isEditMode
-                ? ('CLIENT_COLLATERAL.EDIT' | translate)
-                : ('CLIENT_COLLATERAL.CREATE' | translate)
+                ? ('CLIENT_COLLATERAL.EDIT' | appTranslate)
+                : ('CLIENT_COLLATERAL.CREATE' | appTranslate)
             }}
           </ion-card-title>
         </ion-card-header>
@@ -81,10 +81,10 @@ import {
           <form #collateralForm="ngForm" (ngSubmit)="onSubmit()" class="collateral-form">
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'CLIENT_COLLATERAL.PRODUCT' | translate
+                'CLIENT_COLLATERAL.PRODUCT' | appTranslate
               }}</ion-label>
               <ion-select
-                [attr.aria-label]="'CLIENT_COLLATERAL.PRODUCT' | translate"
+                [attr.aria-label]="'CLIENT_COLLATERAL.PRODUCT' | appTranslate"
                 interface="popover"
                 name="collateralId"
                 [(ngModel)]="collateral().collateralId"
@@ -99,10 +99,10 @@ import {
 
             <ion-item fill="outline">
               <ion-label position="stacked">{{
-                'CLIENT_COLLATERAL.QUANTITY' | translate
+                'CLIENT_COLLATERAL.QUANTITY' | appTranslate
               }}</ion-label>
               <ion-input
-                [attr.aria-label]="'CLIENT_COLLATERAL.QUANTITY' | translate"
+                [attr.aria-label]="'CLIENT_COLLATERAL.QUANTITY' | appTranslate"
                 type="number"
                 name="quantity"
                 [(ngModel)]="collateral().quantity"
@@ -112,7 +112,7 @@ import {
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
-                {{ 'COMMON.CANCEL' | translate }}
+                {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
               <ion-button
                 color="primary"
@@ -121,9 +121,9 @@ import {
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
-                  {{ 'COMMON.SAVING' | translate }}
+                  {{ 'COMMON.SAVING' | appTranslate }}
                 } @else {
-                  {{ 'COMMON.SAVE' | translate }}
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 }
               </ion-button>
             </div>

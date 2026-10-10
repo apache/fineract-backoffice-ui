@@ -19,11 +19,10 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { GuarantorsService, GuarantorData } from '../../../api';
-import { I18N } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../../ui/button/button.component';
@@ -36,7 +35,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   selector: 'app-guarantors-list',
   standalone: true,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DataTableComponent,
     CellTemplateDirective,
     ButtonComponent,
@@ -61,25 +60,25 @@ import { ButtonComponent } from '../../../ui/button/button.component';
         {{ row.guarantorType?.value }}
       </ng-template>
       <ng-template appCellTemplate="status" let-row>
-        {{ row.status ? ('COMMON.ACTIVE' | translate) : ('COMMON.INACTIVE' | translate) }}
+        {{ row.status ? ('COMMON.ACTIVE' | appTranslate) : ('COMMON.INACTIVE' | appTranslate) }}
       </ng-template>
       <ng-template appCellTemplate="actions" let-row>
         <app-button
           type="button"
           intent="primary"
           emphasis="quiet"
-          [label]="'COMMON.EDIT' | translate"
+          [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
-          [appTooltip]="'COMMON.EDIT' | translate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEdit(row)"
         />
         <app-button
           type="button"
           intent="danger"
           emphasis="quiet"
-          [label]="'COMMON.DELETE' | translate"
+          [label]="'COMMON.DELETE' | appTranslate"
           icon="trash-outline"
-          [appTooltip]="'COMMON.DELETE' | translate"
+          [appTooltip]="'COMMON.DELETE' | appTranslate"
           (click)="onDelete(row)"
         />
       </ng-template>

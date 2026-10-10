@@ -28,9 +28,9 @@ import {
 } from '../../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { HttpEvent } from '@angular/common/http';
+import { provideTranslateTesting } from '../../../testing/i18n-testing';
 
 describe('CollateralFormComponent', () => {
   let component: CollateralFormComponent;
@@ -48,8 +48,9 @@ describe('CollateralFormComponent', () => {
     routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [CollateralFormComponent, TranslateModule.forRoot()],
+      imports: [CollateralFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideNoopAnimations(),
         { provide: LoanCollateralService, useValue: collateralServiceSpy },
         { provide: Router, useValue: routerSpy },

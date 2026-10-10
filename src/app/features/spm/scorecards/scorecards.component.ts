@@ -19,7 +19,6 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { ColumnDef } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ScoreCardService, Scorecard } from '../../../api';
@@ -38,7 +37,7 @@ interface ScorecardRow {
 @Component({
   selector: 'app-scorecards',
   standalone: true,
-  imports: [TranslateModule, DataTableComponent],
+  imports: [DataTableComponent],
   template: `
     <app-data-table
       title="SCORECARDS.TITLE"

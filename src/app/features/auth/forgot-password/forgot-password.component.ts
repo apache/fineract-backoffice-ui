@@ -18,7 +18,7 @@
  */
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { PasswordManagementService, ForgotPasswordRequest } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -38,7 +38,7 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     IonButton,
     IonSpinner,
     IonInput,
@@ -53,20 +53,22 @@ import {
     <div class="forgot-password-container">
       <ion-card class="forgot-password-card">
         <ion-card-header>
-          <ion-card-title>{{ 'FORGOT_PASSWORD.TITLE' | translate }}</ion-card-title>
+          <ion-card-title>{{ 'FORGOT_PASSWORD.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
           @if (sent()) {
             <div class="success-message">
-              {{ 'FORGOT_PASSWORD.SUCCESS_MSG' | translate }}
+              {{ 'FORGOT_PASSWORD.SUCCESS_MSG' | appTranslate }}
             </div>
           } @else {
             <form #forgotForm="ngForm" (ngSubmit)="onSubmit()">
               <ion-item fill="outline" class="full-width">
-                <ion-label position="stacked">{{ 'FORGOT_PASSWORD.EMAIL' | translate }}</ion-label>
+                <ion-label position="stacked">{{
+                  'FORGOT_PASSWORD.EMAIL' | appTranslate
+                }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'FORGOT_PASSWORD.EMAIL' | translate"
+                  [attr.aria-label]="'FORGOT_PASSWORD.EMAIL' | appTranslate"
                   type="email"
                   name="email"
                   [(ngModel)]="email"
@@ -85,7 +87,7 @@ import {
                   @if (isSending()) {
                     <ion-spinner name="crescent"></ion-spinner>
                   }
-                  {{ 'FORGOT_PASSWORD.SEND' | translate }}
+                  {{ 'FORGOT_PASSWORD.SEND' | appTranslate }}
                 </ion-button>
               </div>
             </form>
@@ -131,7 +133,7 @@ import {
 export class ForgotPasswordComponent {
   private passwordManagementService = inject(PasswordManagementService);
   private notifications = inject(NotificationService);
-  private translate = inject(TranslateService);
+  private readonly i18n = inject(I18N);
 
   email = '';
   readonly isSending = signal(false);
@@ -151,7 +153,7 @@ export class ForgotPasswordComponent {
         },
         error: () => {
           this.isSending.set(false);
-          this.translate.get('FORGOT_PASSWORD.ERROR').subscribe((msg: string) => {
+          this.i18n.translateAsync('FORGOT_PASSWORD.ERROR').subscribe((msg: string) => {
             this.notifications.success(msg);
           });
         },

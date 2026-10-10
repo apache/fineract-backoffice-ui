@@ -24,9 +24,9 @@ import { ClientService, OfficesService } from '../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService } from '../../core/services/dialog.service';
 import { of, Observable } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideIonicTesting } from '../../testing/ionic-testing';
+import { provideTranslateTesting } from '../../testing/i18n-testing';
 
 describe('ClientFormComponent', () => {
   const HEAD_OFFICE = 'Head Office';
@@ -63,8 +63,9 @@ describe('ClientFormComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [ClientFormComponent, TranslateModule.forRoot()],
+      imports: [ClientFormComponent],
       providers: [
+        ...provideTranslateTesting(),
         provideIonicTesting(),
         { provide: ClientService, useValue: clientServiceSpy },
         { provide: OfficesService, useValue: officesServiceSpy },
@@ -189,8 +190,9 @@ describe('ClientFormComponent', () => {
       TestBed.resetTestingModule();
 
       await TestBed.configureTestingModule({
-        imports: [ClientFormComponent, TranslateModule.forRoot()],
+        imports: [ClientFormComponent],
         providers: [
+          ...provideTranslateTesting(),
           { provide: ClientService, useValue: clientServiceSpy },
           { provide: OfficesService, useValue: officesServiceSpy },
           { provide: Router, useValue: routerSpy },
@@ -234,8 +236,9 @@ describe('ClientFormComponent', () => {
       TestBed.resetTestingModule();
 
       await TestBed.configureTestingModule({
-        imports: [ClientFormComponent, TranslateModule.forRoot()],
+        imports: [ClientFormComponent],
         providers: [
+          ...provideTranslateTesting(),
           { provide: ClientService, useValue: clientServiceSpy },
           { provide: OfficesService, useValue: officesServiceSpy },
           { provide: Router, useValue: routerSpy },
