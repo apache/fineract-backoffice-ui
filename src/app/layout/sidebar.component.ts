@@ -140,6 +140,7 @@ function entityOf(code: string): string | null {
             <a
               [routerLink]="item.route"
               routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
               class="nav-item"
               [class.sub-item]="depth > 0"
               [attr.title]="capabilities(item)"
