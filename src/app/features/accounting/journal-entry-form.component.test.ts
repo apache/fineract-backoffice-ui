@@ -130,4 +130,38 @@ describe('JournalEntryFormComponent', () => {
       'JOURNAL_ENTRIES.ADD_CREDIT',
     ]);
   });
+
+  describe('required-field feedback (#585)', () => {
+    it('marks required fields with asterisk and leaves optional referenceNumber unmarked', () => {
+      const html = (fixture.nativeElement as HTMLElement).innerHTML;
+      const markerCount = (html.match(/class="required-marker"/g) ?? []).length;
+      // Office, Currency, Transaction Date, 1 Debit (account, amount), 1 Credit (account, amount) = 7
+      expect(markerCount).toBe(7);
+    });
+
+    it('shows no field error until user touches the field', () => {
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="journal-office-error"]'),
+      ).toBeNull();
+    });
+
+    it('shows required error once empty required field is blurred', () => {
+      const select = fixture.nativeElement.querySelector('#journal-office-select')!;
+      select.dispatchEvent(new CustomEvent('ionBlur'));
+      fixture.detectChanges();
+
+      const error = fixture.nativeElement.querySelector('[data-testid="journal-office-error"]');
+      expect(error).not.toBeNull();
+      expect(error!.textContent).toContain('COMMON.REQUIRED');
+    });
+
+    it('shows submit hint while form is incomplete', async () => {
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const hint = fixture.nativeElement.querySelector('[data-testid="journal-submit-hint"]');
+      expect(hint).not.toBeNull();
+      expect(hint!.textContent).toContain('COMMON.COMPLETE_REQUIRED_FIELDS');
+    });
+  });
 });

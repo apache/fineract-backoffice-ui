@@ -48,6 +48,7 @@ import {
   IonItem,
   IonLabel,
   IonModal,
+  IonNote,
   IonSelect,
   IonSelectOption,
   IonSpinner,
@@ -75,6 +76,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
     IonTextarea,
     IonItem,
     IonLabel,
+    IonNote,
     IonCardContent,
     IonCardHeader,
     IonCardTitle,
@@ -99,72 +101,125 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
           <form #entryForm="ngForm" (ngSubmit)="onSubmit()" class="journal-entry-form">
             <div class="form-grid">
               <!-- Office -->
-              <ion-item fill="outline">
-                <ion-label position="stacked">Office</ion-label>
-                <ion-select
-                  aria-label="Office"
-                  interface="popover"
-                  name="officeId"
-                  [(ngModel)]="command.officeId"
-                  required
-                >
-                  @for (office of offices(); track office.id) {
-                    <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
-                  }
-                </ion-select>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">
+                    <span>Office</span
+                    ><span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-select
+                    aria-label="Office"
+                    interface="popover"
+                    name="officeId"
+                    [(ngModel)]="command.officeId"
+                    #officeIdModel="ngModel"
+                    (ionBlur)="officeIdModel.control.markAsTouched()"
+                    required
+                    id="journal-office-select"
+                    data-testid="journal-office-select"
+                    [attr.aria-invalid]="officeIdModel.invalid && officeIdModel.touched"
+                    [attr.aria-describedby]="
+                      officeIdModel.invalid && officeIdModel.touched ? 'journal-office-error' : null
+                    "
+                  >
+                    @for (office of offices(); track office.id) {
+                      <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+                @if (officeIdModel.invalid && officeIdModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="journal-office-error"
+                    role="alert"
+                    data-testid="journal-office-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
 
               <!-- Currency -->
-              <ion-item fill="outline">
-                <ion-label position="stacked">Currency</ion-label>
-                <ion-select
-                  aria-label="Currency"
-                  interface="popover"
-                  name="currencyCode"
-                  [(ngModel)]="command.currencyCode"
-                  required
-                >
-                  @for (currency of currencies(); track currency.code) {
-                    <ion-select-option [value]="currency.code">{{
-                      currency.name
-                    }}</ion-select-option>
-                  }
-                </ion-select>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">
+                    <span>Currency</span
+                    ><span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-select
+                    aria-label="Currency"
+                    interface="popover"
+                    name="currencyCode"
+                    [(ngModel)]="command.currencyCode"
+                    #currencyCodeModel="ngModel"
+                    (ionBlur)="currencyCodeModel.control.markAsTouched()"
+                    required
+                    id="journal-currency-select"
+                    data-testid="journal-currency-select"
+                    [attr.aria-invalid]="currencyCodeModel.invalid && currencyCodeModel.touched"
+                    [attr.aria-describedby]="
+                      currencyCodeModel.invalid && currencyCodeModel.touched
+                        ? 'journal-currency-error'
+                        : null
+                    "
+                  >
+                    @for (currency of currencies(); track currency.code) {
+                      <ion-select-option [value]="currency.code">{{
+                        currency.name
+                      }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+                @if (currencyCodeModel.invalid && currencyCodeModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="journal-currency-error"
+                    role="alert"
+                    data-testid="journal-currency-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
 
               <!-- Transaction Date -->
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'JOURNAL_ENTRIES.TRANSACTION_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="transactionDate-picker"></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="transactionDate-picker"
-                      data-testid="transactionDate-picker"
-                      presentation="date"
-                      name="transactionDate"
-                      [(ngModel)]="transactionDate"
-                      required
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked"
+                    >{{ 'JOURNAL_ENTRIES.TRANSACTION_DATE' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  @if (pickersReady()) {
+                    <ion-datetime-button datetime="transactionDate-picker"></ion-datetime-button>
+                  }
+                  <ion-modal [keepContentsMounted]="true">
+                    <ng-template>
+                      <ion-datetime
+                        id="transactionDate-picker"
+                        data-testid="transactionDate-picker"
+                        presentation="date"
+                        name="transactionDate"
+                        [(ngModel)]="transactionDate"
+                        required
+                      ></ion-datetime>
+                    </ng-template>
+                  </ion-modal>
+                </ion-item>
+              </div>
 
               <!-- Reference Number -->
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'JOURNAL_ENTRIES.REFERENCE_NUMBER' | appTranslate
-                }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'JOURNAL_ENTRIES.REFERENCE_NUMBER' | appTranslate"
-                  name="referenceNumber"
-                  [(ngModel)]="command.referenceNumber"
-                ></ion-input>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">{{
+                    'JOURNAL_ENTRIES.REFERENCE_NUMBER' | appTranslate
+                  }}</ion-label>
+                  <ion-input
+                    [attr.aria-label]="'JOURNAL_ENTRIES.REFERENCE_NUMBER' | appTranslate"
+                    name="referenceNumber"
+                    [(ngModel)]="command.referenceNumber"
+                  ></ion-input>
+                </ion-item>
+              </div>
             </div>
 
             <div class="entries-section">
@@ -172,7 +227,9 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               @for (debit of debits; track $index) {
                 <div class="entry-row">
                   <ion-item fill="outline" class="account-field">
-                    <ion-label position="stacked">Account</ion-label>
+                    <ion-label position="stacked"
+                      >Account<span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
                     <ion-select
                       aria-label="Account"
                       interface="popover"
@@ -188,7 +245,9 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                     </ion-select>
                   </ion-item>
                   <ion-item fill="outline" class="amount-field">
-                    <ion-label position="stacked">Amount</ion-label>
+                    <ion-label position="stacked"
+                      >Amount<span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
                     <ion-input
                       aria-label="Amount"
                       type="number"
@@ -220,7 +279,9 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               @for (credit of credits; track $index) {
                 <div class="entry-row">
                   <ion-item fill="outline" class="account-field">
-                    <ion-label position="stacked">Account</ion-label>
+                    <ion-label position="stacked"
+                      >Account<span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
                     <ion-select
                       aria-label="Account"
                       interface="popover"
@@ -236,7 +297,9 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                     </ion-select>
                   </ion-item>
                   <ion-item fill="outline" class="amount-field">
-                    <ion-label position="stacked">Amount</ion-label>
+                    <ion-label position="stacked"
+                      >Amount<span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
                     <ion-input
                       aria-label="Amount"
                       type="number"
@@ -291,6 +354,15 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                 }
               </ion-button>
             </div>
+            @if (entryForm.invalid) {
+              <ion-note
+                color="medium"
+                class="submit-hint"
+                data-testid="journal-submit-hint"
+                aria-live="polite"
+                >{{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}</ion-note
+              >
+            }
             @if (!isBalanced()) {
               <p class="error-text">Total debits must equal total credits.</p>
             }
@@ -333,8 +405,24 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
       .amount-field {
         flex: 1;
       }
-      .full-width {
-        width: 100%;
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
+      .field-error {
+        display: block;
+        padding-inline-start: 4px;
+        margin-top: -4px;
+        font-size: 0.8125rem;
+      }
+      .submit-hint {
+        display: block;
+        text-align: end;
+        font-size: 0.8125rem;
       }
       .error-text {
         color: #f44336;

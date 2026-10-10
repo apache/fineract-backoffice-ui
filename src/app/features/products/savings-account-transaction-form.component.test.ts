@@ -169,3 +169,67 @@ describe('SavingsAccountTransactionFormComponent payment type', () => {
     expect(await paymentTypeControl(fixture)).toBeUndefined();
   });
 });
+
+describe('SavingsAccountTransactionFormComponent required-field feedback (#585)', () => {
+  it('marks required fields with asterisk and leaves optional note unmarked for deposit', () => {
+    const { fixture } = createComponent('deposit');
+    fixture.detectChanges();
+
+    const html = (fixture.nativeElement as HTMLElement).innerHTML;
+    const markerCount = (html.match(/class="required-marker"/g) ?? []).length;
+    // transactionDate, transactionAmount, paymentTypeId
+    expect(markerCount).toBe(3);
+  });
+
+  it('shows no field error until user touches the field', () => {
+    const { fixture } = createComponent('deposit');
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="transaction-amount-error"]'),
+    ).toBeNull();
+  });
+
+  it('shows required error once empty amount field is blurred', () => {
+    const { fixture } = createComponent('deposit');
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('#transaction-amount-input')!;
+    input.dispatchEvent(new CustomEvent('ionBlur'));
+    fixture.detectChanges();
+
+    const error = fixture.nativeElement.querySelector('[data-testid="transaction-amount-error"]');
+    expect(error).not.toBeNull();
+    expect(error!.textContent).toContain('COMMON.REQUIRED');
+  });
+
+  it('hides field error once value is entered', () => {
+    const { fixture } = createComponent('deposit');
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('#transaction-amount-input')!;
+    input.dispatchEvent(new CustomEvent('ionBlur'));
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="transaction-amount-error"]'),
+    ).not.toBeNull();
+
+    (input as HTMLInputElement).value = '500';
+    input.dispatchEvent(new CustomEvent('ionInput'));
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="transaction-amount-error"]'),
+    ).toBeNull();
+  });
+
+  it('shows submit hint while form is incomplete', async () => {
+    const { fixture } = createComponent('deposit');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const hint = fixture.nativeElement.querySelector('[data-testid="transaction-submit-hint"]');
+    expect(hint).not.toBeNull();
+    expect(hint!.textContent).toContain('COMMON.COMPLETE_REQUIRED_FIELDS');
+  });
+});

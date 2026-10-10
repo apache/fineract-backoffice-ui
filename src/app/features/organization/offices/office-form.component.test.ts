@@ -249,4 +249,57 @@ describe('OfficeFormComponent', () => {
       );
     });
   });
+
+  describe('required-field feedback (#585)', () => {
+    beforeEach(() => {
+      fixture = TestBed.createComponent(OfficeFormComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('marks required fields with asterisk and leaves optional externalId unmarked', () => {
+      const html = (fixture.nativeElement as HTMLElement).innerHTML;
+      const markerCount = (html.match(/class="required-marker"/g) ?? []).length;
+      // name, parentId, openingDate
+      expect(markerCount).toBe(3);
+    });
+
+    it('shows no field error until user touches the field', () => {
+      expect(fixture.nativeElement.querySelector('[data-testid="office-name-error"]')).toBeNull();
+    });
+
+    it('shows required error once an empty required field is blurred', () => {
+      const nameInput = fixture.nativeElement.querySelector('#office-name-input')!;
+      nameInput.dispatchEvent(new CustomEvent('ionBlur'));
+      fixture.detectChanges();
+
+      const error = fixture.nativeElement.querySelector('[data-testid="office-name-error"]');
+      expect(error).not.toBeNull();
+      expect(error!.textContent).toContain('COMMON.REQUIRED');
+    });
+
+    it('hides field error once value is entered', () => {
+      const nameInput = fixture.nativeElement.querySelector('#office-name-input')!;
+      nameInput.dispatchEvent(new CustomEvent('ionBlur'));
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="office-name-error"]'),
+      ).not.toBeNull();
+
+      (nameInput as HTMLInputElement).value = 'Branch Alpha';
+      nameInput.dispatchEvent(new CustomEvent('ionInput'));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[data-testid="office-name-error"]')).toBeNull();
+    });
+
+    it('shows submit hint while form is incomplete', async () => {
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const hint = fixture.nativeElement.querySelector('[data-testid="office-submit-hint"]');
+      expect(hint).not.toBeNull();
+      expect(hint!.textContent).toContain('COMMON.COMPLETE_REQUIRED_FIELDS');
+    });
+  });
 });

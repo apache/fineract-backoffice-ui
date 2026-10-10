@@ -201,4 +201,55 @@ describe('StaffFormComponent', () => {
       }),
     );
   });
+
+  describe('required-field feedback (#585)', () => {
+    it('marks required fields with asterisk and leaves optional fields unmarked', () => {
+      const html = (fixture.nativeElement as HTMLElement).innerHTML;
+      const markerCount = (html.match(/class="required-marker"/g) ?? []).length;
+      // officeId, firstname, lastname
+      expect(markerCount).toBe(3);
+    });
+
+    it('shows no field error until user touches the field', () => {
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="staff-firstname-error"]'),
+      ).toBeNull();
+    });
+
+    it('shows required error once an empty required field is blurred', () => {
+      const input = fixture.nativeElement.querySelector('#staff-firstname-input')!;
+      input.dispatchEvent(new CustomEvent('ionBlur'));
+      fixture.detectChanges();
+
+      const error = fixture.nativeElement.querySelector('[data-testid="staff-firstname-error"]');
+      expect(error).not.toBeNull();
+      expect(error!.textContent).toContain('COMMON.REQUIRED');
+    });
+
+    it('hides field error once value is entered', () => {
+      const input = fixture.nativeElement.querySelector('#staff-firstname-input')!;
+      input.dispatchEvent(new CustomEvent('ionBlur'));
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="staff-firstname-error"]'),
+      ).not.toBeNull();
+
+      (input as HTMLInputElement).value = 'Ada';
+      input.dispatchEvent(new CustomEvent('ionInput'));
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="staff-firstname-error"]'),
+      ).toBeNull();
+    });
+
+    it('shows submit hint while form is incomplete', async () => {
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const hint = fixture.nativeElement.querySelector('[data-testid="staff-submit-hint"]');
+      expect(hint).not.toBeNull();
+      expect(hint!.textContent).toContain('COMMON.COMPLETE_REQUIRED_FIELDS');
+    });
+  });
 });

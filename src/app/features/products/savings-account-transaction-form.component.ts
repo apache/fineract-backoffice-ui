@@ -35,6 +35,7 @@ import {
   IonItem,
   IonLabel,
   IonModal,
+  IonNote,
   IonSelect,
   IonSelectOption,
   IonSpinner,
@@ -60,6 +61,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
     IonTextarea,
     IonItem,
     IonLabel,
+    IonNote,
     IonCardContent,
     IonCardHeader,
     IonCardTitle,
@@ -90,45 +92,73 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
           <form #transactionForm="ngForm" (ngSubmit)="onSubmit()" class="transaction-form">
             <div class="form-grid">
               <!-- Transaction Date -->
-              <ion-item fill="outline" [appTooltip]="'HELP.TRANSACTION_DATE_DESC' | appTranslate">
-                <ion-label position="stacked">{{
-                  'COMMON.TRANSACTION_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="transactionDate-picker"></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="transactionDate-picker"
-                      data-testid="transactionDate-picker"
-                      presentation="date"
-                      name="transactionDate"
-                      [ngModel]="transactionDate()"
-                      (ngModelChange)="transactionDate.set($event)"
-                      required
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
+              <div class="field">
+                <ion-item fill="outline" [appTooltip]="'HELP.TRANSACTION_DATE_DESC' | appTranslate">
+                  <ion-label position="stacked"
+                    >{{ 'COMMON.TRANSACTION_DATE' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  @if (pickersReady()) {
+                    <ion-datetime-button datetime="transactionDate-picker"></ion-datetime-button>
+                  }
+                  <ion-modal [keepContentsMounted]="true">
+                    <ng-template>
+                      <ion-datetime
+                        id="transactionDate-picker"
+                        data-testid="transactionDate-picker"
+                        presentation="date"
+                        name="transactionDate"
+                        [ngModel]="transactionDate()"
+                        (ngModelChange)="transactionDate.set($event)"
+                        required
+                      ></ion-datetime>
+                    </ng-template>
+                  </ion-modal>
+                </ion-item>
+              </div>
 
               @if (command() !== 'postInterestAsOn') {
                 <!-- Transaction Amount -->
-                <ion-item
-                  fill="outline"
-                  [appTooltip]="'HELP.TRANSACTION_AMOUNT_DESC' | appTranslate"
-                >
-                  <ion-label position="stacked">{{
-                    'COMMON.TRANSACTION_AMOUNT' | appTranslate
-                  }}</ion-label>
-                  <ion-input
-                    [attr.aria-label]="'COMMON.TRANSACTION_AMOUNT' | appTranslate"
-                    type="number"
-                    name="transactionAmount"
-                    [(ngModel)]="transaction.transactionAmount"
-                    required
-                  ></ion-input>
-                </ion-item>
+                <div class="field">
+                  <ion-item
+                    fill="outline"
+                    [appTooltip]="'HELP.TRANSACTION_AMOUNT_DESC' | appTranslate"
+                  >
+                    <ion-label position="stacked"
+                      >{{ 'COMMON.TRANSACTION_AMOUNT' | appTranslate
+                      }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
+                    <ion-input
+                      [attr.aria-label]="'COMMON.TRANSACTION_AMOUNT' | appTranslate"
+                      type="number"
+                      name="transactionAmount"
+                      [(ngModel)]="transaction.transactionAmount"
+                      #transactionAmountModel="ngModel"
+                      (ionBlur)="transactionAmountModel.control.markAsTouched()"
+                      required
+                      id="transaction-amount-input"
+                      data-testid="transaction-amount-input"
+                      [attr.aria-invalid]="
+                        transactionAmountModel.invalid && transactionAmountModel.touched
+                      "
+                      [attr.aria-describedby]="
+                        transactionAmountModel.invalid && transactionAmountModel.touched
+                          ? 'transaction-amount-error'
+                          : null
+                      "
+                    ></ion-input>
+                  </ion-item>
+                  @if (transactionAmountModel.invalid && transactionAmountModel.touched) {
+                    <ion-note
+                      color="danger"
+                      class="field-error"
+                      id="transaction-amount-error"
+                      role="alert"
+                      data-testid="transaction-amount-error"
+                      >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                    >
+                  }
+                </div>
 
                 <!--
                   Required, because the platform requires it. A deposit or withdrawal without a
@@ -144,37 +174,64 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                   it does not apply to the one command that posts no payment.
                 -->
                 <!-- Payment Type -->
-                <ion-item fill="outline" [appTooltip]="'HELP.PAYMENT_TYPE_DESC' | appTranslate">
-                  <ion-label position="stacked">{{
-                    'COMMON.PAYMENT_TYPE' | appTranslate
-                  }}</ion-label>
-                  <ion-select
-                    [attr.aria-label]="'COMMON.PAYMENT_TYPE' | appTranslate"
-                    interface="popover"
-                    name="paymentTypeId"
-                    [(ngModel)]="transaction.paymentTypeId"
-                    required
-                  >
-                    @for (type of paymentTypeOptions(); track type['id']) {
-                      <ion-select-option [value]="type['id']">{{ type['name'] }}</ion-select-option>
-                    }
-                  </ion-select>
-                </ion-item>
+                <div class="field">
+                  <ion-item fill="outline" [appTooltip]="'HELP.PAYMENT_TYPE_DESC' | appTranslate">
+                    <ion-label position="stacked">
+                      <span>{{ 'COMMON.PAYMENT_TYPE' | appTranslate }}</span
+                      ><span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
+                    <ion-select
+                      [attr.aria-label]="'COMMON.PAYMENT_TYPE' | appTranslate"
+                      interface="popover"
+                      name="paymentTypeId"
+                      [(ngModel)]="transaction.paymentTypeId"
+                      #paymentTypeIdModel="ngModel"
+                      (ionBlur)="paymentTypeIdModel.control.markAsTouched()"
+                      required
+                      id="transaction-payment-type-select"
+                      data-testid="transaction-payment-type-select"
+                      [attr.aria-invalid]="paymentTypeIdModel.invalid && paymentTypeIdModel.touched"
+                      [attr.aria-describedby]="
+                        paymentTypeIdModel.invalid && paymentTypeIdModel.touched
+                          ? 'transaction-payment-type-error'
+                          : null
+                      "
+                    >
+                      @for (type of paymentTypeOptions(); track type['id']) {
+                        <ion-select-option [value]="type['id']">{{
+                          type['name']
+                        }}</ion-select-option>
+                      }
+                    </ion-select>
+                  </ion-item>
+                  @if (paymentTypeIdModel.invalid && paymentTypeIdModel.touched) {
+                    <ion-note
+                      color="danger"
+                      class="field-error"
+                      id="transaction-payment-type-error"
+                      role="alert"
+                      data-testid="transaction-payment-type-error"
+                      >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                    >
+                  }
+                </div>
 
                 <!-- Note -->
-                <ion-item
-                  fill="outline"
-                  [appTooltip]="'HELP.NOTE_DESC' | appTranslate"
-                  class="full-width"
-                >
-                  <ion-label position="stacked">{{ 'COMMON.NOTE' | appTranslate }}</ion-label>
-                  <ion-textarea
-                    [attr.aria-label]="'COMMON.NOTE' | appTranslate"
-                    name="note"
-                    [(ngModel)]="note"
-                    rows="3"
-                  ></ion-textarea>
-                </ion-item>
+                <div class="field">
+                  <ion-item
+                    fill="outline"
+                    [appTooltip]="'HELP.NOTE_DESC' | appTranslate"
+                    class="full-width"
+                  >
+                    <ion-label position="stacked">{{ 'COMMON.NOTE' | appTranslate }}</ion-label>
+                    <ion-textarea
+                      [attr.aria-label]="'COMMON.NOTE' | appTranslate"
+                      name="note"
+                      [(ngModel)]="note"
+                      rows="3"
+                    ></ion-textarea>
+                  </ion-item>
+                </div>
               }
             </div>
 
@@ -195,6 +252,15 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                 }
               </ion-button>
             </div>
+            @if (transactionForm.invalid) {
+              <ion-note
+                color="medium"
+                class="submit-hint"
+                data-testid="transaction-submit-hint"
+                aria-live="polite"
+                >{{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}</ion-note
+              >
+            }
           </form>
         </ion-card-content>
       </ion-card>
@@ -216,6 +282,25 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
         gap: 16px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
+      .field-error {
+        display: block;
+        padding-inline-start: 4px;
+        margin-top: -4px;
+        font-size: 0.8125rem;
+      }
+      .submit-hint {
+        display: block;
+        text-align: end;
+        font-size: 0.8125rem;
       }
     `,
   ],

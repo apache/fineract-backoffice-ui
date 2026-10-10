@@ -36,6 +36,7 @@ import {
   IonItem,
   IonLabel,
   IonModal,
+  IonNote,
   IonSelect,
   IonSelectOption,
 } from '@ionic/angular/standalone';
@@ -52,6 +53,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
     IonInput,
     IonItem,
     IonLabel,
+    IonNote,
     IonCardContent,
     IonCardHeader,
     IonCardTitle,
@@ -79,94 +81,175 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
         <ion-card-content>
           <form #staffForm="ngForm" (ngSubmit)="onSubmit()" class="staff-form">
             <div class="form-grid">
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.OFFICE' | appTranslate }}</ion-label>
-                <ion-select
-                  [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
-                  interface="popover"
-                  name="officeId"
-                  [(ngModel)]="staff().officeId"
-                  required
-                  [disabled]="isEditMode"
-                >
-                  @for (office of offices(); track office.id) {
-                    <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
-                  }
-                </ion-select>
-              </ion-item>
-
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'CLIENTS.FIRST_NAME' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
-                  name="firstname"
-                  [(ngModel)]="staff().firstname"
-                  required
-                  [disabled]="isEditMode"
-                ></ion-input>
-              </ion-item>
-
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'CLIENTS.LAST_NAME' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
-                  name="lastname"
-                  [(ngModel)]="staff().lastname"
-                  required
-                  [disabled]="isEditMode"
-                ></ion-input>
-              </ion-item>
-
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.EXTERNAL_ID' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'COMMON.EXTERNAL_ID' | appTranslate"
-                  name="externalId"
-                  [(ngModel)]="staff().externalId"
-                ></ion-input>
-              </ion-item>
-
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'CLIENTS.MOBILE_NO' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'CLIENTS.MOBILE_NO' | appTranslate"
-                  name="mobileNo"
-                  [(ngModel)]="staff().mobileNo"
-                  [disabled]="isEditMode"
-                ></ion-input>
-              </ion-item>
-
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'COMMON.EMAIL' | appTranslate }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'COMMON.EMAIL' | appTranslate"
-                  type="email"
-                  name="emailAddress"
-                  [(ngModel)]="staff().emailAddress"
-                ></ion-input>
-              </ion-item>
-
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'ACTIONS.ACTIVATION_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="joiningDate-picker"></ion-datetime-button>
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">
+                    <span>{{ 'COMMON.OFFICE' | appTranslate }}</span
+                    ><span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-select
+                    [attr.aria-label]="'COMMON.OFFICE' | appTranslate"
+                    interface="popover"
+                    name="officeId"
+                    [(ngModel)]="staff().officeId"
+                    #officeIdModel="ngModel"
+                    (ionBlur)="officeIdModel.control.markAsTouched()"
+                    required
+                    id="staff-office-select"
+                    data-testid="staff-office-select"
+                    [disabled]="isEditMode"
+                    [attr.aria-invalid]="officeIdModel.invalid && officeIdModel.touched"
+                    [attr.aria-describedby]="
+                      officeIdModel.invalid && officeIdModel.touched ? 'staff-office-error' : null
+                    "
+                  >
+                    @for (office of offices(); track office.id) {
+                      <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+                @if (officeIdModel.invalid && officeIdModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="staff-office-error"
+                    role="alert"
+                    data-testid="staff-office-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
                 }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="joiningDate-picker"
-                      data-testid="joiningDate-picker"
-                      presentation="date"
-                      name="joiningDate"
-                      [ngModel]="joiningDate()"
-                      (ngModelChange)="joiningDate.set($event)"
-                      [disabled]="isEditMode"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
+              </div>
+
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked"
+                    >{{ 'CLIENTS.FIRST_NAME' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-input
+                    [attr.aria-label]="'CLIENTS.FIRST_NAME' | appTranslate"
+                    name="firstname"
+                    [(ngModel)]="staff().firstname"
+                    #firstnameModel="ngModel"
+                    (ionBlur)="firstnameModel.control.markAsTouched()"
+                    required
+                    id="staff-firstname-input"
+                    data-testid="staff-firstname-input"
+                    [disabled]="isEditMode"
+                    [attr.aria-invalid]="firstnameModel.invalid && firstnameModel.touched"
+                    [attr.aria-describedby]="
+                      firstnameModel.invalid && firstnameModel.touched
+                        ? 'staff-firstname-error'
+                        : null
+                    "
+                  ></ion-input>
+                </ion-item>
+                @if (firstnameModel.invalid && firstnameModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="staff-firstname-error"
+                    role="alert"
+                    data-testid="staff-firstname-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
+
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked"
+                    >{{ 'CLIENTS.LAST_NAME' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
+                  <ion-input
+                    [attr.aria-label]="'CLIENTS.LAST_NAME' | appTranslate"
+                    name="lastname"
+                    [(ngModel)]="staff().lastname"
+                    #lastnameModel="ngModel"
+                    (ionBlur)="lastnameModel.control.markAsTouched()"
+                    required
+                    id="staff-lastname-input"
+                    data-testid="staff-lastname-input"
+                    [disabled]="isEditMode"
+                    [attr.aria-invalid]="lastnameModel.invalid && lastnameModel.touched"
+                    [attr.aria-describedby]="
+                      lastnameModel.invalid && lastnameModel.touched ? 'staff-lastname-error' : null
+                    "
+                  ></ion-input>
+                </ion-item>
+                @if (lastnameModel.invalid && lastnameModel.touched) {
+                  <ion-note
+                    color="danger"
+                    class="field-error"
+                    id="staff-lastname-error"
+                    role="alert"
+                    data-testid="staff-lastname-error"
+                    >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                  >
+                }
+              </div>
+
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">{{
+                    'COMMON.EXTERNAL_ID' | appTranslate
+                  }}</ion-label>
+                  <ion-input
+                    [attr.aria-label]="'COMMON.EXTERNAL_ID' | appTranslate"
+                    name="externalId"
+                    [(ngModel)]="staff().externalId"
+                  ></ion-input>
+                </ion-item>
+              </div>
+
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">{{ 'CLIENTS.MOBILE_NO' | appTranslate }}</ion-label>
+                  <ion-input
+                    [attr.aria-label]="'CLIENTS.MOBILE_NO' | appTranslate"
+                    name="mobileNo"
+                    [(ngModel)]="staff().mobileNo"
+                    [disabled]="isEditMode"
+                  ></ion-input>
+                </ion-item>
+              </div>
+
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">{{ 'COMMON.EMAIL' | appTranslate }}</ion-label>
+                  <ion-input
+                    [attr.aria-label]="'COMMON.EMAIL' | appTranslate"
+                    type="email"
+                    name="emailAddress"
+                    [(ngModel)]="staff().emailAddress"
+                  ></ion-input>
+                </ion-item>
+              </div>
+
+              <div class="field">
+                <ion-item fill="outline">
+                  <ion-label position="stacked">{{
+                    'ACTIONS.ACTIVATION_DATE' | appTranslate
+                  }}</ion-label>
+                  @if (pickersReady()) {
+                    <ion-datetime-button datetime="joiningDate-picker"></ion-datetime-button>
+                  }
+                  <ion-modal [keepContentsMounted]="true">
+                    <ng-template>
+                      <ion-datetime
+                        id="joiningDate-picker"
+                        data-testid="joiningDate-picker"
+                        presentation="date"
+                        name="joiningDate"
+                        [ngModel]="joiningDate()"
+                        (ngModelChange)="joiningDate.set($event)"
+                        [disabled]="isEditMode"
+                      ></ion-datetime>
+                    </ng-template>
+                  </ion-modal>
+                </ion-item>
+              </div>
             </div>
 
             <div class="checkbox-group">
@@ -193,6 +276,15 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 {{ 'COMMON.SAVE' | appTranslate }}
               </ion-button>
             </div>
+            @if (!staffForm.form.valid) {
+              <ion-note
+                color="medium"
+                class="submit-hint"
+                data-testid="staff-submit-hint"
+                aria-live="polite"
+                >{{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}</ion-note
+              >
+            }
           </form>
         </ion-card-content>
       </ion-card>
@@ -215,6 +307,25 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
         gap: 16px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
+      .field-error {
+        display: block;
+        padding-inline-start: 4px;
+        margin-top: -4px;
+        font-size: 0.8125rem;
+      }
+      .submit-hint {
+        display: block;
+        text-align: end;
+        font-size: 0.8125rem;
       }
       .checkbox-group {
         display: flex;
