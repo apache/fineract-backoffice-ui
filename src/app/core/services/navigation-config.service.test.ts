@@ -169,6 +169,14 @@ describe('NavigationConfigService', () => {
     items.some(
       (item) => item.route === route || (item.children && findRoute(item.children, route)),
     );
+  const findItem = (items: readonly NavItemConfig[], id: string): NavItemConfig | undefined => {
+    for (const item of items) {
+      if (item.id === id) return item;
+      const nested = item.children ? findItem(item.children, id) : undefined;
+      if (nested) return nested;
+    }
+    return undefined;
+  };
 
   const COB_TOOLS_ROUTE = '/admin/cob-tools';
   const PLACE_LOCK_ROUTE = '/working-capital/loans/account-locks';
@@ -206,6 +214,42 @@ describe('NavigationConfigService', () => {
 
   it('exposes the full, unfiltered navigation tree', () => {
     expect(service.navConfig.length).toBeGreaterThan(0);
+  });
+
+  it('organizes all destinations into clear work areas without changing their routes', () => {
+    expect(service.navConfig.map((item) => item.id)).toEqual([
+      'dashboard',
+      'workspace',
+      'client-services',
+      'lending',
+      'products-and-accounts',
+      'operations',
+      'finance',
+      'administration',
+    ]);
+    expect(findRoute(service.navConfig, '/notifications')).toBe(true);
+    expect(findRoute(service.navConfig, '/clients')).toBe(true);
+    expect(findRoute(service.navConfig, '/loans')).toBe(true);
+    expect(findRoute(service.navConfig, '/working-capital/loans')).toBe(true);
+    expect(findRoute(service.navConfig, '/products/loan')).toBe(true);
+    expect(findRoute(service.navConfig, '/products/savings-accounts')).toBe(true);
+    expect(findRoute(service.navConfig, '/transfers/history')).toBe(true);
+    expect(findRoute(service.navConfig, '/accounting/journal-entries')).toBe(true);
+    expect(findRoute(service.navConfig, '/system/data-tables')).toBe(true);
+  });
+
+  it('separates account destinations from product setup while retaining stable item ids', () => {
+    const catalog = findItem(service.navConfig, 'products');
+    const accounts = findItem(service.navConfig, 'accounts');
+
+    expect(catalog?.children?.some((item) => item.id === 'products.loan')).toBe(true);
+    expect(catalog?.children?.some((item) => item.id === 'products.savings-accounts')).toBe(false);
+    expect(accounts?.children?.map((item) => item.id)).toEqual([
+      'products.savings-accounts',
+      'products.fixed-deposits',
+      'products.recurring-deposits',
+      'products.shares',
+    ]);
   });
 
   it('shows everything when rbacEnabled is false, regardless of permissions', () => {

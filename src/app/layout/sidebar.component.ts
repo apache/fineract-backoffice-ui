@@ -26,6 +26,7 @@ import {
   afterNextRender,
   effect,
   inject,
+  signal,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -46,6 +47,14 @@ function entityOf(code: string): string | null {
   const at = code.trim().indexOf('_');
   return at > 0 ? code.trim().slice(at + 1) : null;
 }
+
+const DEFAULT_EXPANDED_GROUP_IDS = new Set(['workspace', 'client-services']);
+const NAV_ROUTE_MATCH_OPTIONS = {
+  paths: 'subset',
+  queryParams: 'ignored',
+  matrixParams: 'ignored',
+  fragment: 'ignored',
+} as const;
 
 /**
  * Responsive sidebar component for primary application navigation.
@@ -104,11 +113,38 @@ function entityOf(code: string): string | null {
         } @else if (item.children) {
           <li>
             <div class="nav-group">
-              <span class="nav-group-header">{{ item.labelKey | appTranslate }}</span>
-              <ul class="nav-sub-list">
-                <ng-container
-                  *ngTemplateOutlet="itemList; context: { items: item.children, depth: depth + 1 }"
-                ></ng-container>
+              <button
+                type="button"
+                class="nav-group-button"
+                [class.active]="groupContainsActiveRoute(item)"
+                [attr.aria-expanded]="isGroupExpanded(item)"
+                [attr.aria-controls]="item.id ? groupElementId(item.id) : null"
+                (click)="toggleGroup(item)"
+              >
+                @if (item.icon) {
+                  <ion-icon class="nav-group-icon" [name]="item.icon" aria-hidden="true"></ion-icon>
+                }
+                <span class="nav-group-header">{{ item.labelKey | translate }}</span>
+                <ion-icon
+                  class="nav-group-toggle"
+                  [class.expanded]="isGroupExpanded(item)"
+                  name="caret-down-outline"
+                  aria-hidden="true"
+                ></ion-icon>
+              </button>
+              <ul
+                class="nav-sub-list"
+                [id]="item.id ? groupElementId(item.id) : null"
+                [hidden]="!isGroupExpanded(item)"
+              >
+                @if (isGroupExpanded(item)) {
+                  <ng-container
+                    *ngTemplateOutlet="
+                      itemList;
+                      context: { items: item.children, depth: depth + 1 }
+                    "
+                  ></ng-container>
+                }
               </ul>
             </div>
           </li>
@@ -126,6 +162,8 @@ function entityOf(code: string): string | null {
               rel="noopener noreferrer"
               class="nav-item"
               [class.sub-item]="depth > 0"
+              [attr.aria-label]="compactMode() ? (item.labelKey | translate) : null"
+              [attr.title]="compactMode() ? (item.labelKey | translate) : null"
             >
               @if (item.icon) {
                 <ion-icon class="nav-icon" [name]="item.icon"></ion-icon>
@@ -142,7 +180,8 @@ function entityOf(code: string): string | null {
               routerLinkActive="active"
               class="nav-item"
               [class.sub-item]="depth > 0"
-              [attr.title]="capabilities(item)"
+              [attr.aria-label]="compactMode() ? (item.labelKey | translate) : null"
+              [attr.title]="compactMode() ? (item.labelKey | translate) : capabilities(item)"
             >
               @if (item.icon) {
                 <ion-icon class="nav-icon" [name]="item.icon"></ion-icon>
@@ -305,29 +344,82 @@ function entityOf(code: string): string | null {
       .sidebar.collapsed .nav-group {
         padding: 0;
       }
+      .nav-group-button {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        width: 100%;
+        border: none;
+        background: transparent;
+        color: inherit;
+        padding: 0;
+        cursor: pointer;
+        text-align: left;
+        transition:
+          background-color 0.16s ease,
+          color 0.16s ease;
+      }
+      .nav-group-button:hover,
+      .nav-group-button.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+      .nav-group-button:focus-visible {
+        position: relative;
+        z-index: 1;
+        outline: 2px solid var(--primary-color);
+        outline-offset: -2px;
+      }
+      .nav-group-icon {
+        flex: 0 0 20px;
+        width: 20px;
+        height: 20px;
+        margin: 0 0.75rem 0 1.5rem;
+        color: #bdc3c7;
+      }
       .nav-group-header {
         display: block;
-        padding: 0.5rem 1.5rem;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        /* #7f8c8d on the #2c3e50 sidebar is 3.16:1 — these are 12px labels, so
-           they need 4.5:1, not the 3:1 large-text allowance. This is 5.1:1. */
-        color: #a3b4b5;
-        font-weight: 700;
-        letter-spacing: 1px;
+        flex: 1;
+        padding: 0.65rem 0.25rem;
+        font-size: 0.82rem;
+        color: #e3e8ec;
+        font-weight: 600;
         white-space: nowrap;
+        text-align: left;
       }
       :host-context([data-theme='dark']) .nav-group-header {
-        /* 0.4 alpha composites to roughly the same 3.2:1 as the light theme. */
-        color: rgba(255, 255, 255, 0.7);
+        color: rgba(255, 255, 255, 0.86);
       }
-      .sidebar.collapsed .nav-group-header {
+      .nav-group-toggle {
+        flex: 0 0 auto;
+        margin: 0 1rem 0 0.5rem;
+        font-size: 1rem;
+        color: #d0d8df;
+        transition: transform 0.18s ease;
+      }
+      .nav-group-toggle.expanded {
+        transform: rotate(180deg);
+      }
+      .sidebar.collapsed .nav-group-button {
         display: none;
       }
       .nav-sub-list {
         list-style: none;
         padding: 0;
         margin: 0;
+      }
+      .nav-sub-list:not([hidden]) {
+        animation: nav-group-reveal 0.16s ease-out;
+      }
+      @keyframes nav-group-reveal {
+        from {
+          opacity: 0;
+          transform: translateY(-3px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
       .sub-item {
         padding-left: 2.5rem;
@@ -344,6 +436,14 @@ function entityOf(code: string): string | null {
       .sidebar.collapsed .nav-divider {
         display: none;
       }
+      @media (prefers-reduced-motion: reduce) {
+        .nav-group-button,
+        .nav-group-toggle,
+        .nav-sub-list:not([hidden]) {
+          transition: none;
+          animation: none;
+        }
+      }
     `,
   ],
 })
@@ -356,6 +456,7 @@ export class SidebarComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
   private readonly injector = inject(Injector);
+  private readonly expandedGroups = signal<Record<string, boolean>>({});
 
   /**
    * Escape closes the drawer.
@@ -372,6 +473,63 @@ export class SidebarComponent {
     }
   }
 
+  protected compactMode(): boolean {
+    return !this.viewport.isMobile() && this.sidebarService.isCollapsed();
+  }
+
+  protected groupElementId(id: string): string {
+    return `nav-group-${id}`;
+  }
+
+  protected groupContainsActiveRoute(item: NavItemConfig): boolean {
+    return (item.children ?? []).some((child) => this.itemContainsActiveRoute(child));
+  }
+
+  private itemContainsActiveRoute(item: NavItemConfig): boolean {
+    if (item.route && this.router.isActive(item.route, NAV_ROUTE_MATCH_OPTIONS)) {
+      return true;
+    }
+    return (item.children ?? []).some((child) => this.itemContainsActiveRoute(child));
+  }
+
+  private expandActiveGroups(): void {
+    const activeGroupIds: string[] = [];
+    const visit = (items: readonly NavItemConfig[]): void => {
+      for (const item of items) {
+        if (!item.children) continue;
+        visit(item.children);
+        if (item.id && this.groupContainsActiveRoute(item)) {
+          activeGroupIds.push(item.id);
+        }
+      }
+    };
+    visit(this.navigationConfig.filteredNavItems());
+    if (activeGroupIds.length === 0) return;
+
+    this.expandedGroups.update((expanded) => {
+      const next = { ...expanded };
+      for (const id of activeGroupIds) next[id] = true;
+      return next;
+    });
+  }
+
+  protected isGroupExpanded(item: NavItemConfig): boolean {
+    if (this.compactMode()) return true;
+    return item.id
+      ? (this.expandedGroups()[item.id] ?? DEFAULT_EXPANDED_GROUP_IDS.has(item.id))
+      : true;
+  }
+
+  protected toggleGroup(item: NavItemConfig): void {
+    const id = item.id;
+    if (!id) return;
+    const nextState = !this.isGroupExpanded(item);
+    this.expandedGroups.update((expanded) => ({
+      ...expanded,
+      [id]: nextState,
+    }));
+  }
+
   constructor() {
     // Following a link has to dismiss the drawer, or the destination renders underneath it and
     // the user has to close the menu to see what they chose.
@@ -380,7 +538,12 @@ export class SidebarComponent {
         filter((event) => event instanceof NavigationEnd),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => this.sidebarService.closeDrawer());
+      .subscribe(() => {
+        this.expandActiveGroups();
+        this.sidebarService.closeDrawer();
+      });
+
+    this.expandActiveGroups();
 
     // Focus moves into the drawer when it opens, because it is a dialog: without this the next
     // Tab continues from the header button, through content the drawer is covering.

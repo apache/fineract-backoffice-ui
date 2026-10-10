@@ -149,7 +149,7 @@ export function flattenNavRoutes(
  * template. Permission and feature-flag gates match the ones already applied
  * to `sidebar.component.ts` — no new gates are introduced here.
  */
-const NAV_CONFIG: readonly NavItemConfig[] = [
+const NAV_CONFIG_BASE: readonly NavItemConfig[] = [
   { id: 'dashboard', route: '/dashboard', labelKey: 'nav.dashboard', icon: ICON_GRID_OUTLINE },
   {
     id: 'notifications',
@@ -1059,6 +1059,122 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
     ],
   },
 ];
+
+/**
+ * Regroups the original destinations into a short set of recognizable work areas.
+ * Existing destination and group ids are retained so permission/config overrides continue to
+ * address the same entries; this function only changes their presentation hierarchy.
+ */
+function organizeNavigation(base: readonly NavItemConfig[]): NavItemConfig[] {
+  const remaining = [...base];
+  const take = (id: string): NavItemConfig | undefined => {
+    const index = remaining.findIndex((item) => item.id === id);
+    return index === -1 ? undefined : remaining.splice(index, 1)[0];
+  };
+  const takeMany = (ids: readonly string[]): NavItemConfig[] =>
+    ids.map((id) => take(id)).filter((item): item is NavItemConfig => item !== undefined);
+  const section = (id: string, icon: string): NavItemConfig | undefined => {
+    const item = take(id);
+    return item ? { ...item, icon } : undefined;
+  };
+  const group = (
+    config: Pick<NavItemConfig, 'id' | 'labelKey' | 'icon'>,
+    children: NavItemConfig[],
+  ): NavItemConfig => ({ ...config, children });
+
+  const dashboard = take('dashboard');
+  const workspace = group(
+    { id: 'workspace', labelKey: 'nav.workspace', icon: ICON_GRID_OUTLINE },
+    takeMany(['notifications', 'search', 'profile']),
+  );
+  const clientServices = group(
+    { id: 'client-services', labelKey: 'nav.clientServices', icon: ICON_PEOPLE_OUTLINE },
+    takeMany(['clients', 'groups', 'centers', 'collection-sheet']),
+  );
+  const lending = group(
+    { id: 'lending', labelKey: 'nav.lending', icon: 'cash-outline' },
+    takeMany([
+      'loans',
+      'loans.bulk-reassignment',
+      'loans.point-in-time',
+      'loans.account-locks',
+      'loans.cob-catchup',
+      'loans.schedule-modify',
+    ]).concat(section('working-capital', ICON_BUSINESS_OUTLINE) ?? []),
+  );
+
+  const products = take('products');
+  const accountIds = new Set([
+    'products.savings-accounts',
+    'products.fixed-deposits',
+    'products.recurring-deposits',
+    'products.shares',
+  ]);
+  const accountItems = (products?.children ?? []).filter(
+    (item) => item.id !== undefined && accountIds.has(item.id),
+  );
+  const productItems = (products?.children ?? []).filter(
+    (item) => item.id === undefined || !accountIds.has(item.id),
+  );
+  const productSections = products
+    ? [{ ...products, icon: ICON_WALLET_OUTLINE, children: productItems }]
+    : [];
+  const accountSection = accountItems.length
+    ? [group({ id: 'accounts', labelKey: 'nav.accounts', icon: ICON_WALLET_OUTLINE }, accountItems)]
+    : [];
+  const productsAndAccounts = group(
+    {
+      id: 'products-and-accounts',
+      labelKey: 'nav.productsAndAccounts',
+      icon: ICON_WALLET_OUTLINE,
+    },
+    [...productSections, ...accountSection],
+  );
+
+  const operations = group(
+    { id: 'operations', labelKey: 'nav.operations', icon: ICON_SWAP_HORIZONTAL_OUTLINE },
+    [
+      section('transfers', ICON_SWAP_HORIZONTAL_OUTLINE),
+      section('teller-operations', 'storefront-outline'),
+      section('tasks', 'checkmark-done-outline'),
+      section('campaigns', 'megaphone-outline'),
+      section('interop', ICON_GIT_NETWORK_OUTLINE),
+      section('fintech', 'shield-checkmark-outline'),
+      section('spm', 'bar-chart-outline'),
+    ].filter((item): item is NavItemConfig => item !== undefined),
+  );
+  const finance = group(
+    { id: 'finance', labelKey: 'nav.finance', icon: ICON_CALCULATOR_OUTLINE },
+    [
+      section('accounting', ICON_CALCULATOR_OUTLINE),
+      section('reporting', 'bar-chart-outline'),
+    ].filter((item): item is NavItemConfig => item !== undefined),
+  );
+  const administration = group(
+    { id: 'administration', labelKey: 'nav.administration', icon: 'settings-outline' },
+    [
+      section('organization', ICON_BUSINESS_OUTLINE),
+      section('admin', ICON_OPTIONS_OUTLINE),
+      section('security', ICON_LOCK_CLOSED_OUTLINE),
+      section('settings', 'settings-outline'),
+      section('system', ICON_GRID_OUTLINE),
+    ].filter((item): item is NavItemConfig => item !== undefined),
+  );
+
+  return [
+    ...(dashboard ? [dashboard] : []),
+    workspace,
+    clientServices,
+    lending,
+    productsAndAccounts,
+    operations,
+    finance,
+    administration,
+    ...remaining,
+  ];
+}
+
+const NAV_CONFIG = organizeNavigation(NAV_CONFIG_BASE);
 
 /**
  * Recursively filters a navigation tree using the given visibility predicate.

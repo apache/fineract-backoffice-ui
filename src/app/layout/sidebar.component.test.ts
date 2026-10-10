@@ -17,15 +17,20 @@
  * under the License.
  */
 
-import { WritableSignal, signal } from '@angular/core';
+import { Component, WritableSignal, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SidebarComponent } from './sidebar.component';
 import { SidebarService } from '../core/services/sidebar.service';
 import { ViewportService } from '../core/services/viewport.service';
+import { AuthService } from '../core/services/auth.service';
+import { TranslateModule } from '@ngx-translate/core';
 import { Router, RouterModule } from '@angular/router';
 import { provideTranslateTesting } from '../testing/i18n-testing';
+
+@Component({ standalone: true, template: '' })
+class SidebarNavigationTestRoute {}
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;
@@ -44,7 +49,11 @@ describe('SidebarComponent', () => {
     isMobile = signal(false);
 
     await TestBed.configureTestingModule({
-      imports: [RouterModule.forRoot([]), SidebarComponent],
+      imports: [
+        TranslateModule.forRoot(),
+        RouterModule.forRoot([{ path: '**', component: SidebarNavigationTestRoute }]),
+        SidebarComponent,
+      ],
       providers: [
         ...provideTranslateTesting(),
         provideHttpClient(),
@@ -56,6 +65,16 @@ describe('SidebarComponent', () => {
     fixture = TestBed.createComponent(SidebarComponent);
     component = fixture.componentInstance;
     sidebarService = TestBed.inject(SidebarService);
+    const auth = TestBed.inject(AuthService);
+    (auth as unknown as { setSession: (session: object) => void }).setSession({
+      username: 'test-user',
+      userId: 1,
+      base64EncodedAuthenticationKey: 'dGVzdDp0ZXN0',
+      authenticated: true,
+      officeId: 1,
+      officeName: 'Head Office',
+      permissions: ['ALL_FUNCTIONS'],
+    });
     fixture.detectChanges();
   });
 
@@ -89,6 +108,64 @@ describe('SidebarComponent', () => {
 
     it('renders no close button', () => {
       expect(panel().querySelector('.drawer-close')).toBeNull();
+    });
+
+    it('keeps group expansion independent across navigation groups', () => {
+      const groupButtons = Array.from(
+        panel().querySelectorAll<HTMLButtonElement>('.nav-group-button'),
+      );
+
+      expect(groupButtons.length).toBeGreaterThan(1);
+      const [firstGroup, secondGroup] = groupButtons;
+
+      expect(firstGroup.getAttribute('aria-expanded')).toBe('true');
+      expect(secondGroup.getAttribute('aria-expanded')).toBe('true');
+      expect(firstGroup.getAttribute('aria-controls')).toBeTruthy();
+      expect(panel().querySelector(`#${firstGroup.getAttribute('aria-controls')}`)).not.toBeNull();
+      expect(firstGroup.querySelector('.nav-group-toggle')?.classList.contains('expanded')).toBe(
+        true,
+      );
+
+      firstGroup.click();
+      fixture.detectChanges();
+
+      expect(firstGroup.getAttribute('aria-expanded')).toBe('false');
+      expect(secondGroup.getAttribute('aria-expanded')).toBe('true');
+      const controlledList = panel().querySelector<HTMLElement>(
+        `#${firstGroup.getAttribute('aria-controls')}`,
+      );
+      expect(controlledList?.hidden).toBe(true);
+      expect(controlledList?.querySelector('.nav-item')).toBeNull();
+      expect(firstGroup.querySelector('.nav-group-toggle')?.classList.contains('expanded')).toBe(
+        false,
+      );
+    });
+
+    it('automatically expands all ancestor sections containing the active route', async () => {
+      await TestBed.inject(Router).navigateByUrl('/security/users');
+      fixture.detectChanges();
+
+      const administration = panel().querySelector<HTMLButtonElement>(
+        '[aria-controls="nav-group-administration"]',
+      );
+      const security = panel().querySelector<HTMLButtonElement>(
+        '[aria-controls="nav-group-security"]',
+      );
+      expect(administration?.getAttribute('aria-expanded')).toBe('true');
+      expect(security?.getAttribute('aria-expanded')).toBe('true');
+      expect(TestBed.inject(Router).url).toBe('/security/users');
+      expect(panel().querySelectorAll('.nav-group-button.active').length).toBeGreaterThan(0);
+    });
+
+    it('keeps every destination labeled and reachable in compact desktop mode', () => {
+      sidebarService.toggle();
+      fixture.detectChanges();
+
+      expect(panel().classList.contains('collapsed')).toBe(true);
+      const links = Array.from(panel().querySelectorAll<HTMLAnchorElement>('.nav-item'));
+      expect(links.length).toBeGreaterThan(10);
+      expect(links.every((link) => link.getAttribute('aria-label'))).toBe(true);
+      expect(links.every((link) => link.getAttribute('title'))).toBe(true);
     });
   });
 
@@ -151,8 +228,8 @@ describe('SidebarComponent', () => {
       fixture.detectChanges();
       expect(sidebarService.isDrawerOpen()).toBe(true);
 
-      // RouterModule.forRoot([]) has no routes configured, so only the always-matching root
-      // path can be navigated to here without the router itself rejecting it.
+      // The test wildcard route lets us exercise a completed navigation without declaring
+      // product routes in the sidebar's isolated unit-test module.
       await TestBed.inject(Router).navigateByUrl('/');
       fixture.detectChanges();
 
