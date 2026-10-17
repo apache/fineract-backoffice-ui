@@ -34,6 +34,7 @@ import {
   IonSelectOption,
   IonSpinner,
   IonTextarea,
+  IonNote,
 } from '@ionic/angular/standalone';
 import {
   RecurringDepositProductService,
@@ -50,7 +51,18 @@ import {
   mappingsForRule,
   mappingsFromResponse,
 } from '../accounting/product-accounting.model';
-import { DepositChart, chartFromResponse, defaultChart } from '../deposit-chart';
+import {
+  DepositChart,
+  DepositChartSlab,
+  chartForRequest,
+  chartFromResponse,
+  emptySlab,
+  slabsFromResponse,
+} from '../deposit-chart';
+import {
+  ChartPeriodTypeOption,
+  DepositChartEditorComponent,
+} from '../deposit-chart-editor.component';
 
 const DEFAULT_CURRENCY = 'USD';
 const DEFAULT_LOCALE = 'en';
@@ -63,6 +75,7 @@ const REDIRECT_URL = '/products/recurring';
     FormsModule,
     TranslatePipe,
     ProductAccountingSectionComponent,
+    DepositChartEditorComponent,
     IonButton,
     IonSpinner,
     IonInput,
@@ -75,6 +88,7 @@ const REDIRECT_URL = '/products/recurring';
     IonCard,
     IonSelectOption,
     IonSelect,
+    IonNote,
   ],
   template: `
     <div class="form-container">
@@ -196,6 +210,93 @@ const REDIRECT_URL = '/products/recurring';
               </ion-item>
             </div>
 
+            <!-- Compounding, posting, calculation and days-in-year. All four were hard-coded
+                 and invisible before #765, so a product's interest behaviour was whatever the
+                 form happened to default to. The options come from the product template. -->
+            <div class="form-grid">
+              <ion-item fill="outline">
+                <ion-label position="stacked"
+                  >{{ 'PRODUCTS.INTEREST_COMPOUNDING_PERIOD' | appTranslate }}
+                  <span class="required-marker" aria-hidden="true">*</span></ion-label
+                >
+                <ion-select
+                  [attr.aria-label]="'PRODUCTS.INTEREST_COMPOUNDING_PERIOD' | appTranslate"
+                  interface="popover"
+                  data-testid="interestCompoundingPeriodType"
+                  name="interestCompoundingPeriodType"
+                  [(ngModel)]="product()['interestCompoundingPeriodType']"
+                  required
+                >
+                  @for (option of compoundingOptions(); track option.id) {
+                    <ion-select-option [value]="option.id">{{ option.value }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+
+              <ion-item fill="outline">
+                <ion-label position="stacked"
+                  >{{ 'PRODUCTS.INTEREST_POSTING_PERIOD' | appTranslate }}
+                  <span class="required-marker" aria-hidden="true">*</span></ion-label
+                >
+                <ion-select
+                  [attr.aria-label]="'PRODUCTS.INTEREST_POSTING_PERIOD' | appTranslate"
+                  interface="popover"
+                  data-testid="interestPostingPeriodType"
+                  name="interestPostingPeriodType"
+                  [(ngModel)]="product()['interestPostingPeriodType']"
+                  required
+                >
+                  @for (option of postingOptions(); track option.id) {
+                    <ion-select-option [value]="option.id">{{ option.value }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+
+              <ion-item fill="outline">
+                <ion-label position="stacked"
+                  >{{ 'PRODUCTS.INTEREST_CALCULATED_USING' | appTranslate }}
+                  <span class="required-marker" aria-hidden="true">*</span></ion-label
+                >
+                <ion-select
+                  [attr.aria-label]="'PRODUCTS.INTEREST_CALCULATED_USING' | appTranslate"
+                  interface="popover"
+                  data-testid="interestCalculationType"
+                  name="interestCalculationType"
+                  [(ngModel)]="product()['interestCalculationType']"
+                  required
+                >
+                  @for (option of calculationOptions(); track option.id) {
+                    <ion-select-option [value]="option.id">{{ option.value }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+
+              <ion-item fill="outline">
+                <ion-label position="stacked"
+                  >{{ 'PRODUCTS.INTEREST_CALC_DAYS_IN_YEAR' | appTranslate }}
+                  <span class="required-marker" aria-hidden="true">*</span></ion-label
+                >
+                <ion-select
+                  [attr.aria-label]="'PRODUCTS.INTEREST_CALC_DAYS_IN_YEAR' | appTranslate"
+                  interface="popover"
+                  data-testid="interestCalculationDaysInYearType"
+                  name="interestCalculationDaysInYearType"
+                  [(ngModel)]="product()['interestCalculationDaysInYearType']"
+                  required
+                >
+                  @for (option of daysInYearOptions(); track option.id) {
+                    <ion-select-option [value]="option.id">{{ option.value }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            </div>
+
+            <app-deposit-chart-editor
+              #chartEditor
+              [periodTypes]="chartPeriodTypes()"
+              [(slabs)]="chartSlabs"
+            ></app-deposit-chart-editor>
+
             <app-product-accounting-section
               [fields]="accountingFields"
               [accountOptions]="accountingMappingOptions()"
@@ -213,7 +314,8 @@ const REDIRECT_URL = '/products/recurring';
               <ion-button
                 color="primary"
                 type="submit"
-                [disabled]="productForm.invalid || isSaving()"
+                data-testid="product-submit"
+                [disabled]="productForm.invalid || !chartEditor.complete() || isSaving()"
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
@@ -223,6 +325,15 @@ const REDIRECT_URL = '/products/recurring';
                 }
               </ion-button>
             </div>
+            @if (productForm.invalid || !chartEditor.complete()) {
+              <ion-note
+                color="medium"
+                class="submit-hint"
+                data-testid="product-submit-hint"
+                aria-live="polite"
+                >{{ 'COMMON.COMPLETE_REQUIRED_FIELDS' | appTranslate }}</ion-note
+              >
+            }
           </form>
         </ion-card-content>
       </ion-card>
@@ -267,6 +378,16 @@ export class RecurringDepositProductFormComponent implements OnInit {
   /** The product's own interest chart, kept so an update can send it back untouched. */
   readonly existingChart = signal<DepositChart | null>(null);
 
+  /** The editable rate slabs. One empty row on create, the product's own on edit. */
+  readonly chartSlabs = signal<DepositChartSlab[]>([emptySlab()]);
+
+  /** Period and interest options, all from `GET /recurringdepositproducts/template`. */
+  readonly chartPeriodTypes = signal<ChartPeriodTypeOption[]>([]);
+  readonly compoundingOptions = signal<{ id?: number; value?: string }[]>([]);
+  readonly postingOptions = signal<{ id?: number; value?: string }[]>([]);
+  readonly calculationOptions = signal<{ id?: number; value?: string }[]>([]);
+  readonly daysInYearOptions = signal<{ id?: number; value?: string }[]>([]);
+
   readonly product = signal<Record<string, unknown>>({
     currencyCode: DEFAULT_CURRENCY,
     digitsAfterDecimal: 2,
@@ -292,6 +413,15 @@ export class RecurringDepositProductFormComponent implements OnInit {
       this.accountingRuleOptions.set(
         Array.from((raw['accountingRuleOptions'] as { id?: number; value?: string }[]) ?? []),
       );
+
+      const chartTemplate = raw['chartTemplate'] as Record<string, unknown> | undefined;
+      this.chartPeriodTypes.set(
+        Array.from((chartTemplate?.['periodTypes'] as ChartPeriodTypeOption[]) ?? []),
+      );
+      this.compoundingOptions.set(this.options(raw, 'interestCompoundingPeriodTypeOptions'));
+      this.postingOptions.set(this.options(raw, 'interestPostingPeriodTypeOptions'));
+      this.calculationOptions.set(this.options(raw, 'interestCalculationTypeOptions'));
+      this.daysInYearOptions.set(this.options(raw, 'interestCalculationDaysInYearTypeOptions'));
     });
 
     this.route.paramMap.subscribe((params) => {
@@ -333,6 +463,8 @@ export class RecurringDepositProductFormComponent implements OnInit {
           accountingRule: (raw['accountingRule'] as { id?: number } | undefined)?.id ?? 1,
         });
         this.existingChart.set(chartFromResponse(raw['activeChart']));
+        const slabs = slabsFromResponse(raw['activeChart']);
+        this.chartSlabs.set(slabs.length ? slabs : [emptySlab()]);
         this.accountingMappings.set(
           mappingsFromResponse(this.accountingFields, raw['accountingMappings'] as object),
         );
@@ -355,7 +487,7 @@ export class RecurringDepositProductFormComponent implements OnInit {
         (this.product()['accountingRule'] as number) ?? ACCOUNTING_RULE.NONE,
         this.accountingMappings(),
       ),
-      charts: [this.existingChart() ?? defaultChart()],
+      charts: [chartForRequest(this.chartSlabs(), this.existingChart())],
     };
 
     if (this.isEditMode() && this.productId) {
@@ -376,6 +508,13 @@ export class RecurringDepositProductFormComponent implements OnInit {
           error: () => this.isSaving.set(false),
         });
     }
+  }
+
+  private options(
+    template: Record<string, unknown>,
+    key: string,
+  ): { id?: number; value?: string }[] {
+    return Array.from((template[key] as { id?: number; value?: string }[]) ?? []);
   }
 
   onCancel() {

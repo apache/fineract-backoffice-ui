@@ -93,26 +93,98 @@ export function chartFromResponse(activeChart: unknown): DepositChart | null {
 }
 
 /**
- * The chart a brand new product starts with.
+ * An empty slab for the editor to start from.
  *
- * Still a placeholder — these forms have no rate-chart editor yet — but only ever used on create,
- * where inventing one is the difference between a product and a validation error. On update the
- * product's own chart is sent instead.
+ * Deliberately has no rate. This replaces `defaultChart()`, which handed every new product a
+ * single slab at **5% for 1–60 months** that the form never showed — so an administrator
+ * configuring a 7% two-year product got a 5% five-year one, and nothing on screen said so. That
+ * is issue #765, and the fix is not a better default: it is that the rate is the product, so the
+ * user has to enter it. An empty rate keeps the form invalid until they do.
  */
-export function defaultChart(): DepositChart {
+export function emptySlab(): DepositChartSlab {
   return {
-    fromDate: formatDateToFineract(new Date()),
+    periodType: PERIOD_TYPE_MONTHS,
+    fromPeriod: 1,
+    locale: FINERACT_LOCALE,
+  };
+}
+
+/** The slabs of a product's active chart, ready to edit. Empty for a product without one. */
+export function slabsFromResponse(activeChart: unknown): DepositChartSlab[] {
+  return chartFromResponse(activeChart)?.chartSlabs ?? [];
+}
+
+/**
+ * Wraps edited slabs in the chart envelope a create or update sends.
+ *
+ * `existingChart` carries the chart's own id on an update. Without it the platform reads the
+ * chart as a brand new one and answers 500 rather than a validation message, which is the defect
+ * `chartFromResponse` was written for; the slab ids ride along on the slabs themselves.
+ *
+ * A slab with no rate is dropped rather than sent as zero. Zero is a rate an institution might
+ * mean, so it cannot double as "not filled in" — the form refuses to submit an empty one
+ * instead.
+ */
+export function chartForRequest(
+  slabs: readonly DepositChartSlab[],
+  existingChart: DepositChart | null = null,
+): DepositChart {
+  return {
+    id: existingChart?.id,
+    fromDate: existingChart?.fromDate ?? formatDateToFineract(new Date()),
     dateFormat: FINERACT_DATE_FORMAT,
     locale: FINERACT_LOCALE,
-    chartSlabs: [
-      {
-        periodType: PERIOD_TYPE_MONTHS,
-        fromPeriod: 1,
-        toPeriod: 60,
-        annualInterestRate: 5,
-        description: 'Interest rate',
+    chartSlabs: slabs
+      .filter((slab) => slab.annualInterestRate !== undefined && slab.annualInterestRate !== null)
+      .map((slab) => ({
+        ...slab,
+        // The platform rejects a slab with no description on the way in.
+        description: slab.description || 'Interest rate',
         locale: FINERACT_LOCALE,
-      },
-    ],
+      })),
   };
+}
+
+/** Whether these slabs can be sent: at least one, each with a period range and a rate. */
+export function slabsAreComplete(slabs: readonly DepositChartSlab[]): boolean {
+  if (slabs.length === 0) return false;
+  return slabs.every(
+    (slab) =>
+      slab.annualInterestRate !== undefined &&
+      slab.annualInterestRate !== null &&
+      slab.fromPeriod !== undefined &&
+      slab.fromPeriod !== null,
+  );
+}
+
+/**
+ * The rate a chart pays for a given term.
+ *
+ * This is what a deposit account form needs and cannot get anywhere else. The account template
+ * carries `nominalAnnualInterestRate: 0` for a product whose chart pays 7% — measured against a
+ * running Fineract — so the rate has to be read out of the chart's slabs. The previous prefill
+ * read the template field and wrote `0 || undefined`, which is one of the reasons issue #766
+ * reported that choosing a product filled nothing in.
+ *
+ * A slab matches when its period type is the unit the term is expressed in and the term falls
+ * inside its range. `toPeriod` is open-ended when absent, which is how the last band of a
+ * tiered product is usually written.
+ *
+ * @param slabs - the product's chart slabs, from `accountChart` on the account template
+ * @param term - the deposit period the user entered
+ * @param periodTypeId - the unit that period is in, matching the slab's `periodType`
+ */
+export function rateForTerm(
+  slabs: readonly DepositChartSlab[],
+  term: number | undefined,
+  periodTypeId: number | undefined,
+): number | undefined {
+  if (term === undefined || term === null) return undefined;
+  const match = slabs.find(
+    (slab) =>
+      slab.periodType === periodTypeId &&
+      (slab.fromPeriod ?? 0) <= term &&
+      (slab.toPeriod === undefined || slab.toPeriod === null || term <= slab.toPeriod),
+  );
+  return match?.annualInterestRate;
 }

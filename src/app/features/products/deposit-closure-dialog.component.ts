@@ -29,7 +29,7 @@ import {
 import { Observable } from 'rxjs';
 
 import { FixedDepositAccountService, RecurringDepositAccountService } from '../../api';
-import { OVERLAY, TranslatePipe } from '../../core/adapters';
+import { I18N, OVERLAY, TranslatePipe } from '../../core/adapters';
 
 export interface DepositClosureDialogData {
   accountId: number;
@@ -43,11 +43,21 @@ export interface DepositClosureDialogData {
 
 export interface DepositClosureResult {
   onAccountClosureId: number;
+  /** Mandatory when closing with a transfer to savings; absent otherwise. */
+  toSavingsAccountId?: number;
+  /** Sent with a transfer so the receiving account's statement says where the money came from. */
+  transferDescription?: string;
 }
 
 interface ClosureOption {
   id?: number;
   value?: string;
+}
+
+/** A savings account the proceeds can be transferred to, as the close template lists one. */
+interface TransferTarget {
+  id?: number;
+  accountNo?: string;
 }
 
 /**
@@ -58,9 +68,28 @@ interface ClosureOption {
  * are read from the account's own `?command=close` template. `withdrawBalance`, which the savings
  * screens send, is not a parameter these commands accept at all.
  *
- * Only "Withdraw Deposit" is offered for now. The other three each need a second input this
- * dialog does not collect — an account to transfer to, or the terms to re-invest on — and
- * offering a choice that then fails is worse than not offering it.
+ * ## Which options are offered
+ *
+ * All of them the platform will accept, which is not all of them the template lists. Measured
+ * against a running Fineract:
+ *
+ * ```
+ * close          (matured account) → 100, 200, 300, 400 all accepted
+ * prematureClose                   → 100 and 200 accepted
+ *                                  → 300 and 400 refused: `reinvest.not.allowed`
+ * ```
+ *
+ * The template returns the same four for both commands, so filtering the two reinvest options
+ * out of a premature closure is the UI's job — offering a choice that then fails is worse than
+ * not offering it, which is what this dialog used to do for three of the four.
+ *
+ * Transfer to savings needs an account to transfer to. The platform makes
+ * `toSavingsAccountId` mandatory for it, so the field appears with the option and defaults to
+ * the account the deposit is already linked to.
+ *
+ * Re-investing closes this deposit and opens a new one for the maturity amount, left pending
+ * approval — measured — so the dialog says so before confirming rather than leaving the user to
+ * discover a second account.
  */
 @Component({
   selector: 'app-deposit-closure-dialog',
@@ -95,6 +124,37 @@ interface ClosureOption {
             }
           </ion-select>
         </ion-item>
+
+        @if (transfersToSavings()) {
+          <ion-item fill="outline" class="full-width">
+            <ion-label position="stacked">
+              {{ 'DEPOSITS.TRANSFER_TO_SAVINGS' | appTranslate }}
+            </ion-label>
+            <ion-select
+              [attr.aria-label]="'DEPOSITS.TRANSFER_TO_SAVINGS' | appTranslate"
+              interface="popover"
+              name="toSavingsAccountId"
+              data-testid="deposit-closure-target"
+              [(ngModel)]="toSavingsAccountId"
+            >
+              @for (target of transferTargets(); track target.id) {
+                <ion-select-option [value]="target.id">{{ target.accountNo }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          @if (transferTargets().length === 0) {
+            <p class="closure-note" data-testid="deposit-closure-no-targets">
+              {{ 'DEPOSITS.NO_TRANSFER_TARGETS' | appTranslate }}
+            </p>
+          }
+        }
+
+        @if (reinvests()) {
+          <p class="closure-note" data-testid="deposit-closure-reinvest-note">
+            {{ 'DEPOSITS.REINVEST_NOTE' | appTranslate }}
+          </p>
+        }
       </div>
     </div>
     <div class="dialog-actions">
@@ -104,7 +164,7 @@ interface ClosureOption {
       <ion-button
         color="danger"
         data-testid="deposit-closure-confirm"
-        [disabled]="!onAccountClosureId"
+        [disabled]="!canConfirm()"
         (click)="onConfirm()"
       >
         {{ 'COMMON.CONFIRM' | appTranslate }}
@@ -127,19 +187,51 @@ interface ClosureOption {
         margin: 0;
         font-size: 14px;
       }
+      .closure-note {
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-muted, #7f8c8d);
+      }
     `,
   ],
 })
 export class DepositClosureDialogComponent implements OnInit {
   private readonly overlay = inject(OVERLAY);
+  private readonly i18n = inject(I18N);
   private readonly fdService = inject(FixedDepositAccountService);
   private readonly rdService = inject(RecurringDepositAccountService);
 
   readonly data = input.required<DepositClosureDialogData>();
 
   readonly options = signal<ClosureOption[]>([]);
+  readonly transferTargets = signal<TransferTarget[]>([]);
   readonly prematureAmount = signal<number | null>(null);
   onAccountClosureId?: number;
+  toSavingsAccountId?: number;
+
+  /** Whether the chosen option pays into a savings account, which needs one naming. */
+  transfersToSavings(): boolean {
+    return this.onAccountClosureId === TRANSFER_TO_SAVINGS;
+  }
+
+  /** Whether the chosen option opens a replacement deposit. */
+  reinvests(): boolean {
+    return (
+      this.onAccountClosureId === REINVEST_PRINCIPAL_AND_INTEREST ||
+      this.onAccountClosureId === REINVEST_PRINCIPAL_ONLY
+    );
+  }
+
+  /**
+   * Whether the closure can be sent.
+   *
+   * A transfer without a target is refused by the platform, so it is refused here instead of
+   * being sent and reported as a failure.
+   */
+  canConfirm(): boolean {
+    if (!this.onAccountClosureId) return false;
+    return !this.transfersToSavings() || this.toSavingsAccountId !== undefined;
+  }
 
   ngOnInit(): void {
     this.loadOptions();
@@ -156,15 +248,30 @@ export class DepositClosureDialogComponent implements OnInit {
 
     request$.subscribe({
       next: (template) => {
-        const options =
-          (template as { onAccountClosureOptions?: ClosureOption[] }).onAccountClosureOptions ?? [];
-        // Withdraw Deposit (100) is the one this dialog can complete on its own — see the note
-        // on the class.
-        const withdraw = options.filter((option) => option.id === WITHDRAW_DEPOSIT);
-        this.options.set(withdraw.length ? withdraw : options.slice(0, 1));
+        const raw = template as {
+          onAccountClosureOptions?: ClosureOption[];
+          savingsAccounts?: TransferTarget[];
+          transferToSavingsId?: number;
+        };
+        const offered = raw.onAccountClosureOptions ?? [];
+
+        // The template offers the same four options for both commands, but a premature closure
+        // cannot re-invest — the platform answers `reinvest.not.allowed`. Measured.
+        this.options.set(
+          this.data().premature
+            ? offered.filter((option) => !REINVEST_OPTIONS.has(option.id ?? 0))
+            : offered,
+        );
         this.onAccountClosureId = this.options()[0]?.id;
+
+        this.transferTargets.set(Array.from(raw.savingsAccounts ?? []));
+        // Defaults to the account this deposit already pays into, when it has one.
+        this.toSavingsAccountId = raw.transferToSavingsId;
       },
-      error: () => this.options.set([]),
+      error: () => {
+        this.options.set([]);
+        this.transferTargets.set([]);
+      },
     });
   }
 
@@ -207,12 +314,22 @@ export class DepositClosureDialogComponent implements OnInit {
   }
 
   onConfirm(): void {
-    if (!this.onAccountClosureId) return;
+    if (!this.canConfirm() || !this.onAccountClosureId) return;
     void this.overlay.dismissModal<DepositClosureResult>({
       onAccountClosureId: this.onAccountClosureId,
+      // Only for a transfer: sending a target with any other option describes a movement that
+      // is not going to happen.
+      toSavingsAccountId: this.transfersToSavings() ? this.toSavingsAccountId : undefined,
+      transferDescription: this.transfersToSavings()
+        ? this.i18n.translate('DEPOSITS.TRANSFER_DESCRIPTION')
+        : undefined,
     });
   }
 }
 
-/** `depositAccountClosureType.withdrawDeposit`. */
-const WITHDRAW_DEPOSIT = 100;
+/** `depositAccountClosureType.transferToSavings`. */
+const TRANSFER_TO_SAVINGS = 200;
+/** `reinvestPrincipalAndInterest` and `reinvestPrincipalOnly`. */
+const REINVEST_PRINCIPAL_AND_INTEREST = 300;
+const REINVEST_PRINCIPAL_ONLY = 400;
+const REINVEST_OPTIONS = new Set([REINVEST_PRINCIPAL_AND_INTEREST, REINVEST_PRINCIPAL_ONLY]);

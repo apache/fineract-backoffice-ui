@@ -497,7 +497,19 @@
     "DEPOSITS": {
       "ON_CLOSURE": "बंद होने पर",
       "PREMATURE_AMOUNT": "आज देय राशि"
-    }
+    },
+    "INTEREST_RATE_CHART": "ब्याज दर चार्ट",
+    "CHART_HINT": "प्रत्येक जमा अवधि के लिए देय दर। इस उत्पाद के अंतर्गत खोले गए खाते यही दर अपनाते हैं।",
+    "CHART_EMPTY": "अभी कोई दर स्लैब नहीं है। सहेजने से पहले कम से कम एक जोड़ें।",
+    "PERIOD_TYPE": "अवधि प्रकार",
+    "FROM_PERIOD": "अवधि से",
+    "TO_PERIOD": "अवधि तक",
+    "ANNUAL_INTEREST_RATE": "वार्षिक ब्याज दर %",
+    "ADD_SLAB": "दर स्लैब जोड़ें",
+    "INTEREST_COMPOUNDING_PERIOD": "ब्याज चक्रवृद्धि अवधि",
+    "INTEREST_POSTING_PERIOD": "ब्याज पोस्टिंग अवधि",
+    "INTEREST_CALCULATED_USING": "ब्याज गणना आधार",
+    "INTEREST_CALC_DAYS_IN_YEAR": "वर्ष में दिन"
   },
   "CHARGES": {
     "CREATE": "शुल्क बनाएं",
@@ -3035,5 +3047,18 @@
     "HINT": "लिंक पुराना हो सकता है, या पता गलत टाइप किया गया हो सकता है।",
     "BACK_TO_DASHBOARD": "डैशबोर्ड पर वापस जाएं",
     "SEARCH": "खोजें"
+  },
+  "DEPOSITS": {
+    "DEPOSIT_AMOUNT": "जमा राशि",
+    "MATURITY_DATE": "परिपक्वता तिथि",
+    "LINKED_ACCOUNT": "इस खाते से वित्तपोषित",
+    "TRANSFER_INTEREST_TO_SAVINGS": "ब्याज बचत खाते में",
+    "MATURITY_INSTRUCTION": "परिपक्वता पर",
+    "TRANSFER_TO_SAVINGS": "इस बचत खाते में अंतरित करें",
+    "FUND_FROM_SAVINGS": "इस बचत खाते से वित्तपोषित करें",
+    "FUND_FROM_SAVINGS_WARNING": "इस जमा को सक्रिय करने पर जमा राशि चुने गए बचत खाते से अंतरित हो जाएगी। यदि उस खाते में पर्याप्त शेष नहीं है तो सक्रियण अस्वीकृत हो जाएगा।",
+    "NO_TRANSFER_TARGETS": "इस ग्राहक का कोई बचत खाता नहीं है जिसमें राशि अंतरित की जा सके।",
+    "REINVEST_NOTE": "यह जमा बंद कर दी जाएगी और परिपक्वता राशि के लिए एक नई जमा खोली जाएगी, जो अनुमोदन की प्रतीक्षा में रहेगी।",
+    "TRANSFER_DESCRIPTION": "जमा परिपक्वता राशि"
   }
 }

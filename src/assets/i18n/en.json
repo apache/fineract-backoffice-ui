@@ -512,7 +512,19 @@
     "DEPOSITS": {
       "ON_CLOSURE": "On closure",
       "PREMATURE_AMOUNT": "Amount payable today"
-    }
+    },
+    "INTEREST_RATE_CHART": "Interest Rate Chart",
+    "CHART_HINT": "The rate paid for each deposit term. Accounts opened under this product inherit it.",
+    "CHART_EMPTY": "No rate slabs yet. Add at least one before saving.",
+    "PERIOD_TYPE": "Period Type",
+    "FROM_PERIOD": "From Period",
+    "TO_PERIOD": "To Period",
+    "ANNUAL_INTEREST_RATE": "Annual Interest Rate %",
+    "ADD_SLAB": "Add Rate Slab",
+    "INTEREST_COMPOUNDING_PERIOD": "Interest Compounding Period",
+    "INTEREST_POSTING_PERIOD": "Interest Posting Period",
+    "INTEREST_CALCULATED_USING": "Interest Calculated Using",
+    "INTEREST_CALC_DAYS_IN_YEAR": "Days in Year"
   },
   "CHARGES": {
     "CREATE": "Create Charge",
@@ -3035,5 +3047,18 @@
     "CONFIRM": "This applies the action to {{count}} record(s) in one request.",
     "ALL_SUCCEEDED": "{{count}} record(s) processed successfully.",
     "PARTIAL": "{{succeeded}} of {{total}} succeeded. These were refused: {{names}}"
+  },
+  "DEPOSITS": {
+    "DEPOSIT_AMOUNT": "Deposit Amount",
+    "MATURITY_DATE": "Maturity Date",
+    "LINKED_ACCOUNT": "Funded From",
+    "TRANSFER_INTEREST_TO_SAVINGS": "Interest Paid to Savings",
+    "MATURITY_INSTRUCTION": "At Maturity",
+    "TRANSFER_TO_SAVINGS": "Transfer To Savings Account",
+    "FUND_FROM_SAVINGS": "Fund From Savings Account",
+    "FUND_FROM_SAVINGS_WARNING": "Activating this deposit will transfer the deposit amount out of the chosen savings account. Activation is refused if that account does not hold enough.",
+    "NO_TRANSFER_TARGETS": "This client has no savings account to transfer the proceeds to.",
+    "REINVEST_NOTE": "This deposit will be closed and a new one opened for the maturity amount, awaiting approval.",
+    "TRANSFER_DESCRIPTION": "Deposit maturity proceeds"
   }
 }

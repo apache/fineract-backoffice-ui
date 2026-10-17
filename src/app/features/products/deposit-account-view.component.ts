@@ -57,6 +57,7 @@ import {
   toIsoDate,
 } from '../../core/utils/date-formatter';
 import { CdkTableModule } from '@angular/cdk/table';
+import { RequiresPermissionDirective } from '../../shared/directives/requires-permission.directive';
 import {
   IonButton,
   IonCard,
@@ -144,6 +145,7 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
     IonPopover,
     IonList,
     IonItem,
+    RequiresPermissionDirective,
   ],
   template: `
     @if (account()) {
@@ -307,10 +309,58 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                     <span class="label">{{ 'COMMON.INTEREST_RATE' | appTranslate }}</span>
                     <span class="value">{{ account()?.['nominalAnnualInterestRate'] }}%</span>
                   </div>
-                  <div class="detail-item">
-                    <span class="label">{{ 'SAVINGS.MIN_BALANCE_REQUIRED' | appTranslate }}</span>
-                    <span class="value">{{ account()?.['minRequiredOpeningBalance'] }}</span>
-                  </div>
+
+                  <!-- The figures that define a term deposit. Each is rendered only when the
+                       payload carries it, so the savings accounts that share this view are
+                       unaffected rather than showing a row of blanks. -->
+                  @if (getDepositAmount() !== null) {
+                    <div class="detail-item" data-testid="deposit-amount">
+                      <span class="label">{{ 'DEPOSITS.DEPOSIT_AMOUNT' | appTranslate }}</span>
+                      <span class="value"
+                        >{{ getCurrencySymbol() }} {{ getDepositAmount() | number: '1.2-2' }}</span
+                      >
+                    </div>
+                  }
+                  @if (getDepositTerm()) {
+                    <div class="detail-item" data-testid="deposit-term">
+                      <span class="label">{{ 'COMMON.TERM' | appTranslate }}</span>
+                      <span class="value">{{ getDepositTerm() }}</span>
+                    </div>
+                  }
+                  @if (getMaturityAmount() !== null) {
+                    <div class="detail-item" data-testid="deposit-maturity-amount">
+                      <span class="label">{{ 'COMMON.MATURITY_AMOUNT' | appTranslate }}</span>
+                      <span class="value"
+                        >{{ getCurrencySymbol() }} {{ getMaturityAmount() | number: '1.2-2' }}</span
+                      >
+                    </div>
+                  }
+                  @if (account()?.['maturityDate']) {
+                    <div class="detail-item" data-testid="deposit-maturity-date">
+                      <span class="label">{{ 'DEPOSITS.MATURITY_DATE' | appTranslate }}</span>
+                      <span class="value">{{ getMaturityDate() }}</span>
+                    </div>
+                  }
+                  @if (getLinkedAccountNo()) {
+                    <div class="detail-item" data-testid="deposit-linked-account">
+                      <span class="label">{{ 'DEPOSITS.LINKED_ACCOUNT' | appTranslate }}</span>
+                      <span class="value">{{ getLinkedAccountNo() }}</span>
+                    </div>
+                  }
+                  @if (account()?.['transferInterestToSavings']) {
+                    <div class="detail-item" data-testid="deposit-transfer-interest">
+                      <span class="label">{{
+                        'DEPOSITS.TRANSFER_INTEREST_TO_SAVINGS' | appTranslate
+                      }}</span>
+                      <span class="value">{{ 'COMMON.YES' | appTranslate }}</span>
+                    </div>
+                  }
+                  @if (account()?.['minRequiredOpeningBalance'] !== undefined) {
+                    <div class="detail-item">
+                      <span class="label">{{ 'SAVINGS.MIN_BALANCE_REQUIRED' | appTranslate }}</span>
+                      <span class="value">{{ account()?.['minRequiredOpeningBalance'] }}</span>
+                    </div>
+                  }
                 </ion-card-content>
               </ion-card>
 
@@ -402,6 +452,18 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
           <div class="tab-content">
             <ion-card class="table-card">
               <ion-card-content>
+                <div class="tab-actions">
+                  <ion-button
+                    size="small"
+                    data-testid="deposit-add-charge"
+                    appRequiresPermission="CREATE_SAVINGSACCOUNTCHARGE"
+                    [disabled]="chargeOptions().length === 0"
+                    (click)="onAddCharge()"
+                  >
+                    <ion-icon slot="start" name="add-outline"></ion-icon>
+                    {{ 'SAVINGS_CHARGES.CREATE' | appTranslate }}
+                  </ion-button>
+                </div>
                 @if (charges().length > 0) {
                   <table cdk-table [dataSource]="charges()" class="full-width-table">
                     <ng-container cdkColumnDef="name">
@@ -702,6 +764,16 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
   readonly account = signal<Record<string, unknown> | null>(null);
   readonly transactions = signal<Record<string, unknown>[]>([]);
   readonly charges = signal<SavingsAccountChargeData[]>([]);
+
+  /**
+   * The charges this account's product allows, from the account template.
+   *
+   * A deposit account is a savings-type account, so the charge is created through
+   * `POST /savingsaccounts/{id}/charges` — but *which* charges are valid is a property of the
+   * deposit product, and the account template is what states it. With none, the Add button is
+   * disabled rather than opening a dialog with an empty list.
+   */
+  readonly chargeOptions = signal<{ id?: number; name?: string }[]>([]);
   readonly chartSlabs = signal<ChartSlab[]>([]);
   readonly expandedSlabIndex = signal<number | null>(null);
   readonly isLoading = signal(true);
@@ -750,6 +822,7 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
         this.isLoading.set(false);
         this.loadTransactions();
         this.loadCharges();
+        this.loadChargeOptions();
       },
       error: () => {
         this.hasError.set(true);
@@ -788,6 +861,92 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
           this.charges.set([]);
           this.chartSlabs.set([]);
         },
+      });
+  }
+
+  /**
+   * The charges this product allows, from the account template.
+   *
+   * Addressed with the client and product the account itself reports, because the template's
+   * `chargeOptions` is product-specific — offering a charge the product does not allow would be
+   * a dialog whose submit can only be refused.
+   */
+  private loadChargeOptions(): void {
+    const clientId = this.account()?.['clientId'] as number | undefined;
+    // `depositProductId` on a deposit account. `savingsProductId` is what the savings response
+    // calls it, and the generated type declares that one — measured, a fixed deposit answers
+    // only `depositProductId`, so reading the declared name alone found nothing.
+    const productId = (this.account()?.['depositProductId'] ??
+      this.account()?.['savingsProductId']) as number | undefined;
+    if (clientId === undefined || productId === undefined) return;
+
+    const path = this.isRD
+      ? `${this.basePath}/v1/recurringdepositaccounts/template`
+      : `${this.basePath}/v1/fixeddepositaccounts/template`;
+
+    this.httpClient
+      .get<{ chargeOptions?: { id?: number; name?: string }[] }>(path, {
+        params: { clientId, productId },
+      })
+      .subscribe({
+        next: (template) => this.chargeOptions.set(template.chargeOptions ?? []),
+        error: () => this.chargeOptions.set([]),
+      });
+  }
+
+  /**
+   * Adds a charge to this deposit account.
+   *
+   * `POST /savingsaccounts/{id}/charges` — a deposit account is a savings-type account, and this
+   * is the endpoint the platform exposes for it; there is no deposit-specific one. `amount` and
+   * `dueDate` are both demanded, which is the same pair the savings charge screens send.
+   */
+  async onAddCharge(): Promise<void> {
+    const options = this.chargeOptions();
+    if (options.length === 0) return;
+
+    const values = await this.dialogService.prompt({
+      title: this.i18n.translate('SAVINGS_CHARGES.CREATE'),
+      message: this.i18n.translate('SAVINGS_CHARGES.CHARGE'),
+      fields: [
+        {
+          name: 'chargeId',
+          label: this.i18n.translate('SAVINGS_CHARGES.CHARGE'),
+          type: 'select',
+          value: options[0]?.id,
+          options: options
+            .filter((option): option is { id: number; name: string } => option.id !== undefined)
+            .map((option) => ({ id: option.id, name: option.name ?? String(option.id) })),
+        },
+        {
+          name: 'amount',
+          label: this.i18n.translate('COMMON.AMOUNT'),
+          type: 'number',
+        },
+        {
+          name: 'dueDate',
+          label: this.i18n.translate('SAVINGS_CHARGES.DUE_DATE'),
+          type: 'date',
+          value: toIsoDate(new Date()),
+        },
+      ],
+    });
+    if (!values) return;
+
+    this.httpClient
+      .post(`${this.basePath}/v1/savingsaccounts/${this.accountId}/charges`, {
+        chargeId: Number(values['chargeId']),
+        amount: Number(values['amount']),
+        dueDate: String(values['dueDate']),
+        dateFormat: 'yyyy-MM-dd',
+        locale: FINERACT_LOCALE,
+      })
+      .subscribe({
+        next: () => {
+          this.notifications.success(this.i18n.translate('CHARGES.SAVED'));
+          this.loadCharges();
+        },
+        error: () => this.notifications.error(this.i18n.translate('CHARGES.FAILED')),
       });
   }
 
@@ -901,18 +1060,67 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
     return (currency?.['displaySymbol'] as string) || '';
   }
 
+  /**
+   * The account's balance.
+   *
+   * `summary.accountBalance`, not the top level. A deposit account response carries no
+   * `accountBalance` of its own — measured against a running Fineract, where an active fixed
+   * deposit holding 5,000 answers `accountBalance: undefined` and
+   * `summary: { accountBalance: 5000 }`. Reading the top level rendered the balance as blank on
+   * every deposit account, which is issue #764.
+   *
+   * The top level is still read as a fallback rather than dropped: the savings screens share
+   * this component's shape, and a payload that does carry it should not be ignored.
+   */
   getAccountBalance(): number | null {
-    const balance = this.account()?.['accountBalance'];
+    const summary = this.account()?.['summary'] as Record<string, unknown> | undefined;
+    const balance = summary?.['accountBalance'] ?? this.account()?.['accountBalance'];
     return balance != null ? Number(balance) : null;
+  }
+
+  /** The figures that define a term deposit, each absent from the view before #764. */
+  getDepositAmount(): number | null {
+    return this.numberField('depositAmount');
+  }
+
+  getMaturityAmount(): number | null {
+    return this.numberField('maturityAmount');
+  }
+
+  getMaturityDate(): string {
+    return this.formatDate(this.account()?.['maturityDate']);
+  }
+
+  /**
+   * The term, as "12 Months".
+   *
+   * The unit is `depositPeriodFrequency`, which the payload sends as an enum object — a bare
+   * "12" could be days, months or years and the three are not interchangeable in a
+   * conversation with a customer.
+   */
+  getDepositTerm(): string {
+    const period = this.numberField('depositPeriod');
+    if (period === null) return '';
+    const frequency = this.account()?.['depositPeriodFrequency'] as
+      Record<string, unknown> | undefined;
+    const unit = (frequency?.['value'] as string) ?? '';
+    return unit ? `${period} ${unit}` : String(period);
+  }
+
+  /** The savings account this deposit draws from, if one was linked. See the form for why. */
+  getLinkedAccountNo(): string {
+    const linked = this.account()?.['linkedAccount'] as Record<string, unknown> | undefined;
+    return (linked?.['accountNo'] as string) ?? '';
+  }
+
+  private numberField(field: string): number | null {
+    const value = this.account()?.[field];
+    return value != null ? Number(value) : null;
   }
 
   getActivationDate(): string {
     const timeline = this.account()?.['timeline'] as Record<string, unknown>;
     return this.formatDate(timeline?.['activatedOnDate']);
-  }
-
-  getBalance(): number {
-    return (this.account()?.['accountBalance'] as number) || 0;
   }
 
   readonly clientId = computed(() => this.account()?.['clientId'] as number | undefined);
@@ -1027,9 +1235,10 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
   /**
    * Closing at maturity, and closing before it.
    *
-   * Both need to say what happens to the money. `withdrawBalance: true` pays it out, which is the
-   * only option that needs no second account — transferring to a savings account needs an account
-   * to transfer to, and choosing one is its own screen.
+   * Both need to say what happens to the money, and the dialog now collects whichever extra
+   * field the chosen option requires: an account for a transfer to savings, nothing for a
+   * withdrawal or a re-investment. A premature closure cannot re-invest at all — the platform
+   * answers `reinvest.not.allowed` — which the dialog handles by not offering it.
    */
   onClose(): void {
     void this.closeAccount(false);
@@ -1062,6 +1271,13 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
     this.runCommand(premature ? 'prematureClose' : 'close', {
       ...this.dated('closedOnDate', activatedOn),
       onAccountClosureId: result.onAccountClosureId,
+      // Both only for a transfer to savings, where the platform makes the target mandatory.
+      ...(result.toSavingsAccountId === undefined
+        ? {}
+        : {
+            toSavingsAccountId: result.toSavingsAccountId,
+            transferDescription: result.transferDescription,
+          }),
     });
   }
 

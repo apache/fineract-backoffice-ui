@@ -26,6 +26,8 @@ import {
   IonInput,
   IonItem,
   IonLabel,
+  IonSelect,
+  IonSelectOption,
   ModalController,
 } from '@ionic/angular/standalone';
 
@@ -57,10 +59,18 @@ export interface DialogField {
   readonly name: string;
   /** Already translated: the dialog does not know the caller's keys. */
   readonly label: string;
-  readonly type: 'number' | 'text' | 'date';
+  readonly type: 'number' | 'text' | 'date' | 'select';
   readonly value?: string | number;
   /** Defaults to required. A field the platform demands is the normal case here. */
   readonly optional?: boolean;
+  /** For `select` only: what there is to choose from. Labels are already translated. */
+  readonly options?: readonly DialogFieldOption[];
+}
+
+/** One choice in a `select` field. */
+export interface DialogFieldOption {
+  readonly id: string | number;
+  readonly name: string;
 }
 
 /** What a dialog with fields resolves to: the values, by field name. */
@@ -73,7 +83,17 @@ export type DialogValues = Record<string, string | number>;
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [FormsModule, TranslatePipe, IonButton, IonIcon, IonInput, IonItem, IonLabel],
+  imports: [
+    FormsModule,
+    TranslatePipe,
+    IonButton,
+    IonIcon,
+    IonInput,
+    IonItem,
+    IonLabel,
+    IonSelect,
+    IonSelectOption,
+  ],
   template: `
     <div class="dialog">
       <h2 class="dialog-title">
@@ -101,15 +121,31 @@ export type DialogValues = Record<string, string | number>;
             @for (field of fields(); track field.name) {
               <ion-item fill="outline">
                 <ion-label position="stacked">{{ field.label }}</ion-label>
-                <ion-input
-                  [attr.data-testid]="'dialog-field-' + field.name"
-                  [attr.aria-label]="field.label"
-                  [type]="field.type"
-                  [name]="field.name"
-                  [required]="!field.optional"
-                  [ngModel]="values()[field.name]"
-                  (ngModelChange)="setValue(field.name, $event)"
-                ></ion-input>
+                @if (field.type === 'select') {
+                  <ion-select
+                    [attr.data-testid]="'dialog-field-' + field.name"
+                    [attr.aria-label]="field.label"
+                    interface="popover"
+                    [name]="field.name"
+                    [required]="!field.optional"
+                    [ngModel]="values()[field.name]"
+                    (ngModelChange)="setValue(field.name, $event)"
+                  >
+                    @for (option of field.options ?? []; track option.id) {
+                      <ion-select-option [value]="option.id">{{ option.name }}</ion-select-option>
+                    }
+                  </ion-select>
+                } @else {
+                  <ion-input
+                    [attr.data-testid]="'dialog-field-' + field.name"
+                    [attr.aria-label]="field.label"
+                    [type]="field.type"
+                    [name]="field.name"
+                    [required]="!field.optional"
+                    [ngModel]="values()[field.name]"
+                    (ngModelChange)="setValue(field.name, $event)"
+                  ></ion-input>
+                }
               </ion-item>
             }
           </div>

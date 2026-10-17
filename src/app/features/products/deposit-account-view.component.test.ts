@@ -229,6 +229,106 @@ describe('DepositAccountViewComponent', () => {
    * getter has no parameter to ask with. The tab therefore read `undefined` on every account and
    * was empty by construction — these cases pin the separate read that fixes it.
    */
+  /**
+   * #764. The Overview showed "Balance $" with no amount on every deposit account, and none of
+   * the figures that define a term deposit.
+   *
+   * The fixture below is the real payload, copied from `GET /fixeddepositaccounts/{id}` on a
+   * running Fineract: there is **no** top-level `accountBalance`, and the balance is under
+   * `summary`. That is the whole bug — the component read the top level, got `undefined`, and
+   * rendered a currency symbol with nothing after it. A fixture that invented
+   * `accountBalance: 5000` would have passed against the broken code, which is why the issue
+   * asks for this shape specifically.
+   */
+  describe('the figures that define a term deposit', () => {
+    const ACTIVE_FD = {
+      id: 7,
+      accountNo: '000000007',
+      clientId: 3,
+      clientName: 'Dep Probe',
+      status: { id: 300, code: 'savingsAccountStatusType.active', value: 'Active', active: true },
+      currency: { code: 'USD', displaySymbol: '$', decimalPlaces: 2 },
+      timeline: { activatedOnDate: [2026, 10, 17] },
+      nominalAnnualInterestRate: 7,
+      depositAmount: 5000,
+      depositPeriod: 12,
+      depositPeriodFrequency: {
+        id: 2,
+        code: 'deposit.period.savingsPeriodFrequencyType.months',
+        value: 'Months',
+      },
+      maturityAmount: 5350.03,
+      maturityDate: [2027, 10, 17],
+      summary: { accountBalance: 5000, totalDeposits: 5000 },
+    };
+
+    function text(testId: string): string {
+      const element = fixture.nativeElement.querySelector(`[data-testid="${CSS.escape(testId)}"]`);
+      return (element?.textContent ?? '').replaceAll(/\s+/g, ' ').trim();
+    }
+
+    it('reads the balance from summary, where the payload actually carries it', async () => {
+      await setup(ACTIVE_FD);
+
+      expect(component.getAccountBalance()).toBe(5000);
+    });
+
+    it('still reads a top-level balance when one is sent', async () => {
+      // Not dropped: the savings screens share this component's shape, and a payload that does
+      // carry the field should not be ignored.
+      await setup({ ...ACTIVE_FD, summary: undefined, accountBalance: 1234 });
+
+      expect(component.getAccountBalance()).toBe(1234);
+    });
+
+    it('answers null when neither is present, rather than rendering a zero', async () => {
+      // A zero balance and an unknown one are different facts, and showing 0 for the second is
+      // what makes a wrong closure amount plausible.
+      await setup({ ...ACTIVE_FD, summary: undefined });
+
+      expect(component.getAccountBalance()).toBeNull();
+    });
+
+    it('shows the deposit amount, term, maturity amount and maturity date', async () => {
+      await setup(ACTIVE_FD);
+
+      expect(text('deposit-amount')).toContain('5,000.00');
+      expect(text('deposit-term')).toContain('12 Months');
+      expect(text('deposit-maturity-amount')).toContain('5,350.03');
+      expect(text('deposit-maturity-date')).not.toBe('');
+    });
+
+    it('names the term unit rather than showing a bare number', async () => {
+      // 12 days, 12 months and 12 years are not interchangeable in a conversation with a
+      // customer, and the payload sends the unit as an enum object beside the count.
+      await setup(ACTIVE_FD);
+
+      expect(component.getDepositTerm()).toBe('12 Months');
+    });
+
+    it('falls back to the bare period when the payload sends no unit', async () => {
+      await setup({ ...ACTIVE_FD, depositPeriodFrequency: undefined });
+
+      expect(component.getDepositTerm()).toBe('12');
+    });
+
+    it('omits the term-deposit rows on an account that has none', async () => {
+      // A savings account reaches this view through the same component. Blank rows there would
+      // read as missing data rather than as not applicable.
+      await setup({
+        id: 7,
+        status: { value: 'Active', active: true },
+        currency: { displaySymbol: '$' },
+        timeline: {},
+        summary: { accountBalance: 200 },
+      });
+
+      expect(text('deposit-amount')).toBe('');
+      expect(text('deposit-term')).toBe('');
+      expect(text('deposit-maturity-amount')).toBe('');
+    });
+  });
+
   describe('transactions', () => {
     const ACTIVE = { id: 300, value: 'Active', active: true };
     const deposit = { id: 11, amount: 500, reversed: false, entryType: 'CREDIT' };

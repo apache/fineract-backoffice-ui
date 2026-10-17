@@ -2072,3 +2072,125 @@ export async function loanTransactions(
   }>(api, `/loans/${loanId}?associations=all`);
   return loan.transactions ?? [];
 }
+
+/** Approves and activates a seeded fixed deposit, leaving it Active with its balance funded. */
+export async function activateFixedDepositAccount(
+  api: APIRequestContext,
+  accountId: number,
+): Promise<void> {
+  await post(api, `/fixeddepositaccounts/${accountId}?command=approve`, {
+    approvedOnDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+  await post(api, `/fixeddepositaccounts/${accountId}?command=activate`, {
+    activatedOnDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+}
+
+/** One fixed deposit account, as the platform reports it. */
+export async function fixedDepositAccount(
+  api: APIRequestContext,
+  accountId: number,
+): Promise<Record<string, unknown>> {
+  return get(api, `/fixeddepositaccounts/${accountId}?associations=all`);
+}
+
+/**
+ * An active savings account for a client, funded with `balance`.
+ *
+ * The funding matters wherever a deposit is linked to it: activation of a linked deposit debits
+ * this account, and an unfunded one makes that activation fail with "Insufficient account
+ * balance."
+ */
+export async function seedFundedSavingsAccount(
+  api: APIRequestContext,
+  clientId: number,
+  balance = 20000,
+): Promise<number> {
+  const products = await get<{ id: number }[]>(api, '/savingsproducts');
+  let productId = products[0]?.id;
+  if (productId === undefined) {
+    const suffix = seedSuffix();
+    const created = await post<{ resourceId: number }>(api, '/savingsproducts', {
+      name: `E2ESeed Savings ${suffix}`,
+      shortName: suffix.slice(-4).toUpperCase(),
+      currencyCode: 'USD',
+      digitsAfterDecimal: 2,
+      nominalAnnualInterestRate: 3,
+      interestCompoundingPeriodType: 1,
+      interestPostingPeriodType: 4,
+      interestCalculationType: 1,
+      interestCalculationDaysInYearType: 365,
+      accountingRule: 1,
+      locale: LOCALE,
+    });
+    productId = created.resourceId;
+  }
+
+  const { resourceId } = await post<{ resourceId: number }>(api, '/savingsaccounts', {
+    clientId,
+    productId,
+    submittedOnDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+  await post(api, `/savingsaccounts/${resourceId}?command=approve`, {
+    approvedOnDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+  await post(api, `/savingsaccounts/${resourceId}?command=activate`, {
+    activatedOnDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+  if (balance > 0) {
+    await post(api, `/savingsaccounts/${resourceId}/transactions?command=deposit`, {
+      transactionDate: fineractDate(),
+      transactionAmount: balance,
+      paymentTypeId: 1,
+      dateFormat: DATE_FORMAT,
+      locale: LOCALE,
+    });
+  }
+  return resourceId;
+}
+
+/** One savings account's balance, for asserting that money actually moved. */
+export async function savingsAccountBalance(
+  api: APIRequestContext,
+  savingsAccountId: number,
+): Promise<number> {
+  const account = await get<{ summary?: { accountBalance?: number } }>(
+    api,
+    `/savingsaccounts/${savingsAccountId}`,
+  );
+  return account.summary?.accountBalance ?? 0;
+}
+
+/**
+ * A fixed deposit product by name, with its active chart.
+ *
+ * For asserting what a product the UI created actually carries. The rate is the reason: issue
+ * #765 was a chart the form sent without showing it, so the only honest check is reading the
+ * saved product back from the platform.
+ */
+export async function fixedDepositProductByName(
+  api: APIRequestContext,
+  name: string,
+): Promise<Record<string, unknown> | undefined> {
+  const products = await get<{ id: number; name: string }[]>(api, '/fixeddepositproducts');
+  const match = products.find((product) => product.name === name);
+  if (!match) return undefined;
+  return get(api, `/fixeddepositproducts/${match.id}`);
+}
+
+/** The annual rates of a product's active chart, in slab order. */
+export function chartRates(product: Record<string, unknown> | undefined): number[] {
+  const chart = product?.['activeChart'] as
+    { chartSlabs?: { annualInterestRate?: number }[] } | undefined;
+  return (chart?.chartSlabs ?? []).map((slab) => slab.annualInterestRate ?? 0);
+}

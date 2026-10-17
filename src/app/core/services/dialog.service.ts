@@ -22,11 +22,12 @@ import { I18N, ModalHandle, OVERLAY } from '../adapters';
 import type {
   ConfirmDialogData,
   DialogField,
+  DialogFieldOption,
   DialogValues,
 } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 export type { ConfirmDialogData };
-export type { DialogField, DialogValues };
+export type { DialogField, DialogFieldOption, DialogValues };
 
 /** Component constructor accepted by {@link DialogService.open}. */
 type ComponentRef = new (...args: never[]) => unknown;
