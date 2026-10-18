@@ -91,7 +91,7 @@ export interface PostWorkingCapitalLoanProductsRequest {
      */
     maxAnnualEir?: number;
     /**
-     * Maximum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.
+     * Maximum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.
      */
     maxPaymentAmount?: number;
     maxPeriodPaymentRate?: number;
@@ -101,7 +101,7 @@ export interface PostWorkingCapitalLoanProductsRequest {
      */
     minAnnualEir?: number;
     /**
-     * Minimum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.
+     * Minimum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.
      */
     minPaymentAmount?: number;
     minPeriodPaymentRate?: number;
@@ -112,7 +112,7 @@ export interface PostWorkingCapitalLoanProductsRequest {
     overpaymentLiabilityAccountId?: number;
     paymentAllocation?: Array<PostPaymentAllocation>;
     /**
-     * Daily payment amount, at most the currency\'s decimal precision. Required when strategy is PAYMENT_AMOUNT.
+     * Payment amount per repayment period, at most the currency\'s decimal precision. Required when strategy is PAYMENT_AMOUNT.
      */
     paymentAmount?: number;
     /**
@@ -126,6 +126,9 @@ export interface PostWorkingCapitalLoanProductsRequest {
     receivableFeeAccountId?: number;
     receivablePenaltyAccountId?: number;
     repaymentEvery?: number;
+    /**
+     * Unit of the repayment period, which is repaymentEvery of these. DAYS, WEEKS and MONTHS are supported; YEARS is rejected.
+     */
     repaymentFrequencyType?: PostWorkingCapitalLoanProductsRequest.RepaymentFrequencyTypeEnum;
     shortName?: string;
     startDate?: string;
@@ -152,6 +155,7 @@ export namespace PostWorkingCapitalLoanProductsRequest {
     export type PaymentAmountCalculationStrategyEnum = typeof PaymentAmountCalculationStrategyEnum[keyof typeof PaymentAmountCalculationStrategyEnum];
     export const RepaymentFrequencyTypeEnum = {
         Days: 'DAYS',
+        Weeks: 'WEEKS',
         Months: 'MONTHS',
         Years: 'YEARS'
     } as const;

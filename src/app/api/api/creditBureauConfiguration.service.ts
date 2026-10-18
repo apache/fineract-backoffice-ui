@@ -32,6 +32,22 @@ import { HttpClient, HttpHeaders, HttpParams,
 import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
+// @ts-ignore
+import { CommandProcessingResult } from '../model/commandProcessingResult';
+// @ts-ignore
+import { CreditBureauConfigurationData } from '../model/creditBureauConfigurationData';
+// @ts-ignore
+import { OrganisationCreditBureauData } from '../model/organisationCreditBureauData';
+// @ts-ignore
+import { PostCreditBureauConfigurationRequest } from '../model/postCreditBureauConfigurationRequest';
+// @ts-ignore
+import { PostCreditBureauLoanProductMappingRequest } from '../model/postCreditBureauLoanProductMappingRequest';
+// @ts-ignore
+import { PostOrganisationCreditBureauRequest } from '../model/postOrganisationCreditBureauRequest';
+// @ts-ignore
+import { PutCreditBureauConfigurationRequest } from '../model/putCreditBureauConfigurationRequest';
+// @ts-ignore
+import { PutOrganisationCreditBureauRequest } from '../model/putOrganisationCreditBureauRequest';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -113,9 +129,9 @@ export class CreditBureauConfigurationService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getCreditBureauConfigurationConfigOrganisationCreditBureauId(organisationCreditBureauId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getCreditBureauConfigurationConfigOrganisationCreditBureauId(organisationCreditBureauId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getCreditBureauConfigurationConfigOrganisationCreditBureauId(organisationCreditBureauId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getCreditBureauConfigurationConfigOrganisationCreditBureauId(organisationCreditBureauId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<CreditBureauConfigurationData>>;
+    public getCreditBureauConfigurationConfigOrganisationCreditBureauId(organisationCreditBureauId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<CreditBureauConfigurationData>>>;
+    public getCreditBureauConfigurationConfigOrganisationCreditBureauId(organisationCreditBureauId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<CreditBureauConfigurationData>>>;
     public getCreditBureauConfigurationConfigOrganisationCreditBureauId(organisationCreditBureauId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (organisationCreditBureauId === null || organisationCreditBureauId === undefined) {
             throw new Error('Required parameter organisationCreditBureauId was null or undefined when calling getCreditBureauConfigurationConfigOrganisationCreditBureauId.');
@@ -154,7 +170,7 @@ export class CreditBureauConfigurationService extends BaseService {
 
         let localVarPath = `/v1/CreditBureauConfiguration/config/${this.configuration.encodeParam({name: "organisationCreditBureauId", value: organisationCreditBureauId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<CreditBureauConfigurationData>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -348,9 +364,9 @@ export class CreditBureauConfigurationService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getCreditBureauConfigurationOrganisationCreditBureau(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getCreditBureauConfigurationOrganisationCreditBureau(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getCreditBureauConfigurationOrganisationCreditBureau(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getCreditBureauConfigurationOrganisationCreditBureau(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<OrganisationCreditBureauData>>;
+    public getCreditBureauConfigurationOrganisationCreditBureau(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<OrganisationCreditBureauData>>>;
+    public getCreditBureauConfigurationOrganisationCreditBureau(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<OrganisationCreditBureauData>>>;
     public getCreditBureauConfigurationOrganisationCreditBureau(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -386,7 +402,7 @@ export class CreditBureauConfigurationService extends BaseService {
 
         let localVarPath = `/v1/CreditBureauConfiguration/organisationCreditBureau`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<OrganisationCreditBureauData>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -402,17 +418,20 @@ export class CreditBureauConfigurationService extends BaseService {
     /**
      * @endpoint post /v1/CreditBureauConfiguration/configuration/{creditBureauId}
      * @param creditBureauId 
-     * @param body 
+     * @param postCreditBureauConfigurationRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postCreditBureauConfigurationConfigurationCreditBureauId(creditBureauId: number, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public postCreditBureauConfigurationConfigurationCreditBureauId(creditBureauId: number, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public postCreditBureauConfigurationConfigurationCreditBureauId(creditBureauId: number, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public postCreditBureauConfigurationConfigurationCreditBureauId(creditBureauId: number, body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postCreditBureauConfigurationConfigurationCreditBureauId(creditBureauId: number, postCreditBureauConfigurationRequest: PostCreditBureauConfigurationRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postCreditBureauConfigurationConfigurationCreditBureauId(creditBureauId: number, postCreditBureauConfigurationRequest: PostCreditBureauConfigurationRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postCreditBureauConfigurationConfigurationCreditBureauId(creditBureauId: number, postCreditBureauConfigurationRequest: PostCreditBureauConfigurationRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public postCreditBureauConfigurationConfigurationCreditBureauId(creditBureauId: number, postCreditBureauConfigurationRequest: PostCreditBureauConfigurationRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (creditBureauId === null || creditBureauId === undefined) {
             throw new Error('Required parameter creditBureauId was null or undefined when calling postCreditBureauConfigurationConfigurationCreditBureauId.');
+        }
+        if (postCreditBureauConfigurationRequest === null || postCreditBureauConfigurationRequest === undefined) {
+            throw new Error('Required parameter postCreditBureauConfigurationRequest was null or undefined when calling postCreditBureauConfigurationConfigurationCreditBureauId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -457,10 +476,10 @@ export class CreditBureauConfigurationService extends BaseService {
 
         let localVarPath = `/v1/CreditBureauConfiguration/configuration/${this.configuration.encodeParam({name: "creditBureauId", value: creditBureauId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: postCreditBureauConfigurationRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -474,17 +493,20 @@ export class CreditBureauConfigurationService extends BaseService {
     /**
      * @endpoint post /v1/CreditBureauConfiguration/mappings/{organisationCreditBureauId}
      * @param organisationCreditBureauId 
-     * @param body 
+     * @param postCreditBureauLoanProductMappingRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postCreditBureauConfigurationMappingsOrganisationCreditBureauId(organisationCreditBureauId: number, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public postCreditBureauConfigurationMappingsOrganisationCreditBureauId(organisationCreditBureauId: number, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public postCreditBureauConfigurationMappingsOrganisationCreditBureauId(organisationCreditBureauId: number, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public postCreditBureauConfigurationMappingsOrganisationCreditBureauId(organisationCreditBureauId: number, body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postCreditBureauConfigurationMappingsOrganisationCreditBureauId(organisationCreditBureauId: number, postCreditBureauLoanProductMappingRequest: PostCreditBureauLoanProductMappingRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postCreditBureauConfigurationMappingsOrganisationCreditBureauId(organisationCreditBureauId: number, postCreditBureauLoanProductMappingRequest: PostCreditBureauLoanProductMappingRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postCreditBureauConfigurationMappingsOrganisationCreditBureauId(organisationCreditBureauId: number, postCreditBureauLoanProductMappingRequest: PostCreditBureauLoanProductMappingRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public postCreditBureauConfigurationMappingsOrganisationCreditBureauId(organisationCreditBureauId: number, postCreditBureauLoanProductMappingRequest: PostCreditBureauLoanProductMappingRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (organisationCreditBureauId === null || organisationCreditBureauId === undefined) {
             throw new Error('Required parameter organisationCreditBureauId was null or undefined when calling postCreditBureauConfigurationMappingsOrganisationCreditBureauId.');
+        }
+        if (postCreditBureauLoanProductMappingRequest === null || postCreditBureauLoanProductMappingRequest === undefined) {
+            throw new Error('Required parameter postCreditBureauLoanProductMappingRequest was null or undefined when calling postCreditBureauConfigurationMappingsOrganisationCreditBureauId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -529,10 +551,10 @@ export class CreditBureauConfigurationService extends BaseService {
 
         let localVarPath = `/v1/CreditBureauConfiguration/mappings/${this.configuration.encodeParam({name: "organisationCreditBureauId", value: organisationCreditBureauId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: postCreditBureauLoanProductMappingRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -546,17 +568,20 @@ export class CreditBureauConfigurationService extends BaseService {
     /**
      * @endpoint post /v1/CreditBureauConfiguration/organisationCreditBureau/{organisationCreditBureauId}
      * @param organisationCreditBureauId 
-     * @param body 
+     * @param postOrganisationCreditBureauRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId(organisationCreditBureauId: number, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId(organisationCreditBureauId: number, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId(organisationCreditBureauId: number, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId(organisationCreditBureauId: number, body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId(organisationCreditBureauId: number, postOrganisationCreditBureauRequest: PostOrganisationCreditBureauRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId(organisationCreditBureauId: number, postOrganisationCreditBureauRequest: PostOrganisationCreditBureauRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId(organisationCreditBureauId: number, postOrganisationCreditBureauRequest: PostOrganisationCreditBureauRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId(organisationCreditBureauId: number, postOrganisationCreditBureauRequest: PostOrganisationCreditBureauRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (organisationCreditBureauId === null || organisationCreditBureauId === undefined) {
             throw new Error('Required parameter organisationCreditBureauId was null or undefined when calling postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId.');
+        }
+        if (postOrganisationCreditBureauRequest === null || postOrganisationCreditBureauRequest === undefined) {
+            throw new Error('Required parameter postOrganisationCreditBureauRequest was null or undefined when calling postCreditBureauConfigurationOrganisationCreditBureauOrganisationCreditBureauId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -601,10 +626,10 @@ export class CreditBureauConfigurationService extends BaseService {
 
         let localVarPath = `/v1/CreditBureauConfiguration/organisationCreditBureau/${this.configuration.encodeParam({name: "organisationCreditBureauId", value: organisationCreditBureauId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: postOrganisationCreditBureauRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -618,17 +643,20 @@ export class CreditBureauConfigurationService extends BaseService {
     /**
      * @endpoint put /v1/CreditBureauConfiguration/configuration/{configurationId}
      * @param configurationId 
-     * @param body 
+     * @param putCreditBureauConfigurationRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putCreditBureauConfigurationConfigurationConfigurationId(configurationId: number, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public putCreditBureauConfigurationConfigurationConfigurationId(configurationId: number, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public putCreditBureauConfigurationConfigurationConfigurationId(configurationId: number, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public putCreditBureauConfigurationConfigurationConfigurationId(configurationId: number, body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putCreditBureauConfigurationConfigurationConfigurationId(configurationId: number, putCreditBureauConfigurationRequest: PutCreditBureauConfigurationRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public putCreditBureauConfigurationConfigurationConfigurationId(configurationId: number, putCreditBureauConfigurationRequest: PutCreditBureauConfigurationRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public putCreditBureauConfigurationConfigurationConfigurationId(configurationId: number, putCreditBureauConfigurationRequest: PutCreditBureauConfigurationRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public putCreditBureauConfigurationConfigurationConfigurationId(configurationId: number, putCreditBureauConfigurationRequest: PutCreditBureauConfigurationRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (configurationId === null || configurationId === undefined) {
             throw new Error('Required parameter configurationId was null or undefined when calling putCreditBureauConfigurationConfigurationConfigurationId.');
+        }
+        if (putCreditBureauConfigurationRequest === null || putCreditBureauConfigurationRequest === undefined) {
+            throw new Error('Required parameter putCreditBureauConfigurationRequest was null or undefined when calling putCreditBureauConfigurationConfigurationConfigurationId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -673,10 +701,10 @@ export class CreditBureauConfigurationService extends BaseService {
 
         let localVarPath = `/v1/CreditBureauConfiguration/configuration/${this.configuration.encodeParam({name: "configurationId", value: configurationId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: putCreditBureauConfigurationRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -757,15 +785,18 @@ export class CreditBureauConfigurationService extends BaseService {
 
     /**
      * @endpoint put /v1/CreditBureauConfiguration/organisationCreditBureau
-     * @param body 
+     * @param putOrganisationCreditBureauRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putCreditBureauConfigurationOrganisationCreditBureau(body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public putCreditBureauConfigurationOrganisationCreditBureau(body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public putCreditBureauConfigurationOrganisationCreditBureau(body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public putCreditBureauConfigurationOrganisationCreditBureau(body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putCreditBureauConfigurationOrganisationCreditBureau(putOrganisationCreditBureauRequest: PutOrganisationCreditBureauRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public putCreditBureauConfigurationOrganisationCreditBureau(putOrganisationCreditBureauRequest: PutOrganisationCreditBureauRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public putCreditBureauConfigurationOrganisationCreditBureau(putOrganisationCreditBureauRequest: PutOrganisationCreditBureauRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public putCreditBureauConfigurationOrganisationCreditBureau(putOrganisationCreditBureauRequest: PutOrganisationCreditBureauRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (putOrganisationCreditBureauRequest === null || putOrganisationCreditBureauRequest === undefined) {
+            throw new Error('Required parameter putOrganisationCreditBureauRequest was null or undefined when calling putCreditBureauConfigurationOrganisationCreditBureau.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -809,10 +840,10 @@ export class CreditBureauConfigurationService extends BaseService {
 
         let localVarPath = `/v1/CreditBureauConfiguration/organisationCreditBureau`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: putOrganisationCreditBureauRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

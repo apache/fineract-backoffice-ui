@@ -31,6 +31,10 @@ export interface PutDataTablesRequestChangeColumns {
      * Defaults to false
      */
     indexed?: boolean;
+    /**
+     * Only for String columns
+     */
+    length?: number;
     mandatory?: boolean;
     name?: string;
     newCode?: string;

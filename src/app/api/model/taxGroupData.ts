@@ -28,6 +28,8 @@ import { TaxGroupMappingsData } from './taxGroupMappingsData';
 
 
 export interface TaxGroupData { 
+    businessDate?: string;
+    groupEditable?: boolean;
     id?: number;
     name?: string;
     taxAssociations?: Array<TaxGroupMappingsData>;

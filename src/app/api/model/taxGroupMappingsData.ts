@@ -27,6 +27,7 @@ import { TaxComponentData } from './taxComponentData';
 
 
 export interface TaxGroupMappingsData { 
+    componentEditable?: boolean;
     endDate?: string;
     id?: number;
     startDate?: string;

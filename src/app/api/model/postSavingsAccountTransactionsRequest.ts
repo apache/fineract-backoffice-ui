@@ -30,6 +30,7 @@ import { PostSavingsAccountsGsimSavings } from './postSavingsAccountsGsimSavings
  * PostSavingsAccountTransactionsRequest
  */
 export interface PostSavingsAccountTransactionsRequest { 
+    checkNumber?: string;
     dateFormat?: string;
     externalId?: string;
     isPostInterestAsOn?: boolean;
@@ -39,6 +40,8 @@ export interface PostSavingsAccountTransactionsRequest {
     paymentTypeId?: number;
     postInterestManualOrAutomatic?: boolean;
     reasonForBlock?: string;
+    receiptNumber?: string;
+    routingCode?: string;
     /**
      * command=gsimDeposit: the child accounts of a GSIM parent to deposit into, and how much into each
      */

@@ -62,9 +62,9 @@ export class ExternalServicesService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getExternalserviceServicename(servicename: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ExternalServicesPropertiesData>;
-    public getExternalserviceServicename(servicename: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ExternalServicesPropertiesData>>;
-    public getExternalserviceServicename(servicename: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ExternalServicesPropertiesData>>;
+    public getExternalserviceServicename(servicename: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ExternalServicesPropertiesData>>;
+    public getExternalserviceServicename(servicename: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ExternalServicesPropertiesData>>>;
+    public getExternalserviceServicename(servicename: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ExternalServicesPropertiesData>>>;
     public getExternalserviceServicename(servicename: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (servicename === null || servicename === undefined) {
             throw new Error('Required parameter servicename was null or undefined when calling getExternalserviceServicename.');
@@ -103,7 +103,7 @@ export class ExternalServicesService extends BaseService {
 
         let localVarPath = `/v1/externalservice/${this.configuration.encodeParam({name: "servicename", value: servicename, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<ExternalServicesPropertiesData>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<ExternalServicesPropertiesData>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

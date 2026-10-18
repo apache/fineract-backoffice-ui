@@ -35,6 +35,9 @@ export interface WorkingCapitalLoanPeriodPaymentRateChangeData {
      * @deprecated
      */
     createdDate?: string;
+    /**
+     * Payment amount per repayment period of the segment this change opened (per day on a daily schedule), snapshotted when the change was booked
+     */
     dailyPaymentAmount?: number;
     effectiveDate?: string;
     id?: number;

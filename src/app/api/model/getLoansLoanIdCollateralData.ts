@@ -28,8 +28,11 @@
 export interface GetLoansLoanIdCollateralData { 
     clientCollateralId?: number;
     collateralId?: number;
+    name?: string;
+    pctToBase?: number;
     quantity?: number;
     total?: number;
     totalCollateral?: number;
+    unitPrice?: number;
 }
 

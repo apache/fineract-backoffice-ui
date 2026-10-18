@@ -28,6 +28,7 @@ import { GLAccountData } from './gLAccountData';
 import { TransactionProcessingStrategyData } from './transactionProcessingStrategyData';
 import { CodeValueData } from './codeValueData';
 import { LoanProductConfigurableAttributes } from './loanProductConfigurableAttributes';
+import { DatatableData } from './datatableData';
 import { AdvancedPaymentData } from './advancedPaymentData';
 import { ClassificationToGLAccountData } from './classificationToGLAccountData';
 import { FundData } from './fundData';
@@ -95,6 +96,7 @@ export interface LoanProductData {
     creditAllocationTransactionTypes?: Array<EnumOptionData>;
     currency?: CurrencyData;
     currencyOptions?: Array<CurrencyData>;
+    datatables?: Array<DatatableData>;
     daysInMonthType?: EnumOptionData;
     daysInMonthTypeOptions?: Array<EnumOptionData>;
     daysInYearCustomStrategy?: StringEnumOptionData;

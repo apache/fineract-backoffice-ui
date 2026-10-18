@@ -41,5 +41,6 @@ export interface PutUsersUserIdRequest {
     roles?: Array<number>;
     sendPasswordToEmail?: boolean;
     staffId?: number;
+    username?: string;
 }
 

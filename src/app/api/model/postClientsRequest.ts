@@ -40,6 +40,10 @@ export interface PostClientsRequest {
     address?: Array<ClientAddressRequest>;
     clientNonPersonDetails?: PostClientsNonPersonDetails;
     /**
+     * A code value of the ClientType code
+     */
+    clientTypeId?: number;
+    /**
      * List of PostClientsDatatable
      */
     datatables?: Array<PostClientsDatatable>;

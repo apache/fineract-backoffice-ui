@@ -23,15 +23,21 @@
  * Do not edit the class manually.
  */
 
+import { RepaymentTransactionRequest } from './repaymentTransactionRequest';
 import { DisbursementTransactionsRequest } from './disbursementTransactionsRequest';
+import { SavingDueTransactionRequest } from './savingDueTransactionRequest';
 
 
 export interface CollectionSheetRequest { 
     actualDisbursementDate?: string;
     bulkDisbursementTransactions?: DisbursementTransactionsRequest;
+    bulkRepaymentTransactions?: Array<RepaymentTransactionRequest>;
+    bulkSavingsDueTransactions?: Array<SavingDueTransactionRequest>;
     dateFormat?: string;
     locale?: string;
+    note?: string;
     officeId?: number;
+    staffId?: number;
     transactionDate?: string;
 }
 

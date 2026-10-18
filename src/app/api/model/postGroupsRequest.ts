@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { PostGroupsDatatable } from './postGroupsDatatable';
 
 
 /**
@@ -31,6 +32,10 @@
 export interface PostGroupsRequest { 
     activationDate?: string;
     active?: boolean;
+    /**
+     * Entries for the datatables registered against this entity
+     */
+    datatables?: Array<PostGroupsDatatable>;
     dateFormat?: string;
     externalId?: string;
     locale?: string;

@@ -67,7 +67,7 @@ export interface PostWorkingCapitalLoansRequest {
     originators?: Array<PostWorkingCapitalLoansOriginatorData>;
     paymentAllocation?: Array<PostPaymentAllocationRule>;
     /**
-     * Daily payment amount, at most the currency\'s decimal precision. Overrides the product default on PAYMENT_AMOUNT strategy products.
+     * Payment amount per repayment period, at most the currency\'s decimal precision. Overrides the product default on PAYMENT_AMOUNT strategy products.
      */
     paymentAmount?: number;
     periodPaymentRate?: number;
@@ -76,7 +76,13 @@ export interface PostWorkingCapitalLoansRequest {
      */
     principalAmount: number;
     productId: number;
+    /**
+     * Number of repaymentFrequencyType units in one repayment period. An override must send repaymentEvery and repaymentFrequencyType together.
+     */
     repaymentEvery?: number;
+    /**
+     * Unit of the repayment period, which is repaymentEvery of these. DAYS, WEEKS and MONTHS are supported; YEARS is rejected. An override must send repaymentEvery and repaymentFrequencyType together.
+     */
     repaymentFrequencyType?: PostWorkingCapitalLoansRequest.RepaymentFrequencyTypeEnum;
     submittedOnDate?: string;
     submittedOnNote?: string;
@@ -85,6 +91,7 @@ export interface PostWorkingCapitalLoansRequest {
 export namespace PostWorkingCapitalLoansRequest {
     export const RepaymentFrequencyTypeEnum = {
         Days: 'DAYS',
+        Weeks: 'WEEKS',
         Months: 'MONTHS',
         Years: 'YEARS'
     } as const;

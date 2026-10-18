@@ -29,6 +29,7 @@ export interface RepaymentTransactionRequest {
     accountNumber?: string;
     bankNumber?: string;
     checkNumber?: string;
+    externalId?: string;
     loanId?: number;
     paymentTypeId?: number;
     receiptNumber?: string;

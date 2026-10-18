@@ -112,6 +112,10 @@ export interface GetLoansLoanIdResponse {
     interestRecognitionOnDisbursementDate?: boolean;
     interestType?: GetLoansLoanIdInterestType;
     isFloatingInterestRate?: boolean;
+    /**
+     * Whether the loan is a non-performing asset
+     */
+    isNPA?: boolean;
     lastClosedBusinessDate?: string;
     loanOfficerId?: number;
     loanOfficerName?: string;

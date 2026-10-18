@@ -37,6 +37,8 @@ import { AuditData } from '../model/auditData';
 // @ts-ignore
 import { AuditSearchData } from '../model/auditSearchData';
 // @ts-ignore
+import { CommandProcessingResult } from '../model/commandProcessingResult';
+// @ts-ignore
 import { PostMakerCheckersResponse } from '../model/postMakerCheckersResponse';
 
 // @ts-ignore
@@ -387,9 +389,9 @@ export class MakerCheckerOr4EyeFunctionalityService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postMakercheckersAuditId(auditId: number, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostMakerCheckersResponse>;
-    public postMakercheckersAuditId(auditId: number, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostMakerCheckersResponse>>;
-    public postMakercheckersAuditId(auditId: number, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostMakerCheckersResponse>>;
+    public postMakercheckersAuditId(auditId: number, command?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postMakercheckersAuditId(auditId: number, command?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postMakercheckersAuditId(auditId: number, command?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
     public postMakercheckersAuditId(auditId: number, command?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (auditId === null || auditId === undefined) {
             throw new Error('Required parameter auditId was null or undefined when calling postMakercheckersAuditId.');
@@ -439,7 +441,7 @@ export class MakerCheckerOr4EyeFunctionalityService extends BaseService {
 
         let localVarPath = `/v1/makercheckers/${this.configuration.encodeParam({name: "auditId", value: auditId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PostMakerCheckersResponse>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters.toHttpParams(),

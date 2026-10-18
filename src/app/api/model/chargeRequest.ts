@@ -37,6 +37,7 @@ export interface ChargeRequest {
     feeFrequency?: string;
     feeInterval?: string;
     feeOnMonthDay?: string;
+    incomeAccountId?: number;
     locale?: string;
     maxCap?: number;
     minCap?: number;

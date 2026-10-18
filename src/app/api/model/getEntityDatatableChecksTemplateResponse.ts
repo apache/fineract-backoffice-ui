@@ -37,6 +37,7 @@ export interface GetEntityDatatableChecksTemplateResponse {
     savingsProductDatas?: Array<SavingsProductData>;
     statusClient?: Array<object>;
     statusGroup?: Array<object>;
+    statusLoanProduct?: Array<object>;
     statusLoans?: Array<object>;
     statusSavings?: Array<object>;
 }

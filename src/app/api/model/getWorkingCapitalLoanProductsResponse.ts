@@ -72,7 +72,7 @@ export interface GetWorkingCapitalLoanProductsResponse {
      */
     maxAnnualEir?: number;
     /**
-     * Maximum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.
+     * Maximum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.
      */
     maxPaymentAmount?: number;
     maxPeriodPaymentRate?: number;
@@ -82,7 +82,7 @@ export interface GetWorkingCapitalLoanProductsResponse {
      */
     minAnnualEir?: number;
     /**
-     * Minimum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.
+     * Minimum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.
      */
     minPaymentAmount?: number;
     minPeriodPaymentRate?: number;
@@ -92,7 +92,7 @@ export interface GetWorkingCapitalLoanProductsResponse {
     npvDayCount?: number;
     paymentAllocation?: Array<GetPaymentAllocation>;
     /**
-     * Configured daily payment amount. Only for PAYMENT_AMOUNT strategy.
+     * Configured payment amount per repayment period. Only for PAYMENT_AMOUNT strategy.
      */
     paymentAmount?: number;
     paymentAmountCalculationStrategy?: StringEnumOptionData;

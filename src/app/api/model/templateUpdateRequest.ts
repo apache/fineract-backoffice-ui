@@ -28,7 +28,7 @@ import { TemplateMapperData } from './templateMapperData';
 
 export interface TemplateUpdateRequest { 
     entity?: number;
-    id: number;
+    id?: number;
     mappers?: Array<TemplateMapperData>;
     name?: string;
     text?: string;

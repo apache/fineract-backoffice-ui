@@ -29,6 +29,7 @@
  * PutFundsFundIdRequest
  */
 export interface PutFundsFundIdRequest { 
+    externalId?: string;
     name?: string;
 }
 

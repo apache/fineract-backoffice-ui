@@ -31,6 +31,7 @@ import { GetGroupsGroupIdClientMembers } from './getGroupsGroupIdClientMembers';
  * GetGroupsGroupIdResponse
  */
 export interface GetGroupsGroupIdResponse { 
+    accountNo?: string;
     active?: boolean;
     /**
      * Returned when the clientMembers association is requested

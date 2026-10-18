@@ -28,6 +28,10 @@
 export interface PutTaxesGroupTaxComponents { 
     endDate?: string;
     id?: number;
+    /**
+     * Only accepted when the group is not linked and this component\'s current start date is still in the future. Must be today or later and before the component\'s end date.
+     */
+    startDate?: string;
     taxComponentId?: number;
 }
 

@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { PostSavingsAccountsDatatable } from './postSavingsAccountsDatatable';
 
 
 /**
@@ -30,6 +31,10 @@
  */
 export interface PostSavingsAccountsRequest { 
     clientId?: number;
+    /**
+     * Entries for the datatables registered against this entity
+     */
+    datatables?: Array<PostSavingsAccountsDatatable>;
     dateFormat?: string;
     externalId?: string;
     /**

@@ -28,6 +28,10 @@
 export interface AccountRuleRequest { 
     accountToCredit?: number;
     accountToDebit?: number;
+    allowMultipleCreditEntries?: boolean;
+    allowMultipleDebitEntries?: boolean;
+    creditTags?: Array<number>;
+    debitTags?: Array<number>;
     description?: string;
     name?: string;
     officeId?: number;

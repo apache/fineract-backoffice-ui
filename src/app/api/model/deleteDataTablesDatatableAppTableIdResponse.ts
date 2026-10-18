@@ -29,7 +29,11 @@
  * DeleteDataTablesDatatableAppTableIdResponse 
  */
 export interface DeleteDataTablesDatatableAppTableIdResponse { 
+    clientId?: number;
+    groupId?: number;
+    loanId?: number;
     resourceId?: number;
+    savingsId?: number;
     transactionId?: string;
 }
 

@@ -27,6 +27,7 @@
 
 export interface PutTaxesGroupModifiedComponents { 
     endDate?: string;
+    startDate?: string;
     taxComponentId?: number;
 }
 

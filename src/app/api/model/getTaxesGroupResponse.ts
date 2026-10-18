@@ -30,6 +30,11 @@ import { GetTaxesGroupTaxAssociations } from './getTaxesGroupTaxAssociations';
  * GetTaxesGroupResponse
  */
 export interface GetTaxesGroupResponse { 
+    businessDate?: string;
+    /**
+     * Only present on the template response. False if the group is linked to a charge, savings product or savings account.
+     */
+    groupEditable?: boolean;
     id?: number;
     name?: string;
     taxAssociations?: Set<GetTaxesGroupTaxAssociations>;

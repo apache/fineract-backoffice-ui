@@ -251,13 +251,13 @@ model/collateralProductUpdateResponse.ts
 model/collectionSheetRequest.ts
 model/columnFilterData.ts
 model/commandProcessingResult.ts
-model/commandWrapper.ts
 model/component.ts
 model/componentData.ts
 model/configuredJobNamesDTO.ts
 model/contentDisposition.ts
 model/creditAllocationData.ts
 model/creditAllocationOrder.ts
+model/creditBureauConfigurationData.ts
 model/creditDebit.ts
 model/currencyConfigurationData.ts
 model/currencyData.ts
@@ -325,6 +325,7 @@ model/documentCreateResponse.ts
 model/documentData.ts
 model/documentDeleteResponse.ts
 model/documentUpdateResponse.ts
+model/emailData.ts
 model/enumOptionData.ts
 model/enumOptionType.ts
 model/executeJobRequest.ts
@@ -1112,6 +1113,7 @@ model/noteUpdateResponse.ts
 model/office.ts
 model/officeData.ts
 model/oldestCOBProcessedLoanDTO.ts
+model/organisationCreditBureauData.ts
 model/pageAuditData.ts
 model/pageCashierTransactionData.ts
 model/pageCenterData.ts
@@ -1190,11 +1192,15 @@ model/postCollectionSheetResponse.ts
 model/postColumnHeaderData.ts
 model/postCreateRescheduleLoansRequest.ts
 model/postCreateRescheduleLoansResponse.ts
+model/postCreditBureauConfigurationRequest.ts
+model/postCreditBureauLoanProductMappingRequest.ts
+model/postCreditReportRequest.ts
 model/postDataTablesAppTableIdResponse.ts
 model/postDataTablesRequest.ts
 model/postDataTablesResponse.ts
 model/postDelinquencyBucketResponse.ts
 model/postDelinquencyRangeResponse.ts
+model/postEmailRequest.ts
 model/postEntityDatatableChecksTemplateRequest.ts
 model/postEntityDatatableChecksTemplateResponse.ts
 model/postExternalAssetOwnerLoanProductAttributeRequest.ts
@@ -1218,6 +1224,7 @@ model/postGLAccountsRequest.ts
 model/postGLAccountsResponse.ts
 model/postGlClosuresRequest.ts
 model/postGlClosuresResponse.ts
+model/postGroupsDatatable.ts
 model/postGroupsGroupIdChanges.ts
 model/postGroupsGroupIdClients.ts
 model/postGroupsGroupIdCommandUnassignStaffRequest.ts
@@ -1277,6 +1284,7 @@ model/postLoansResponse.ts
 model/postMakerCheckersResponse.ts
 model/postOfficesRequest.ts
 model/postOfficesResponse.ts
+model/postOrganisationCreditBureauRequest.ts
 model/postPaymentAllocation.ts
 model/postPaymentAllocationOrder.ts
 model/postPaymentAllocationRule.ts
@@ -1312,6 +1320,7 @@ model/postSavingsAccountTransactionsRequest.ts
 model/postSavingsAccountTransactionsResponse.ts
 model/postSavingsAccountsAccountIdRequest.ts
 model/postSavingsAccountsAccountIdResponse.ts
+model/postSavingsAccountsDatatable.ts
 model/postSavingsAccountsGsimClient.ts
 model/postSavingsAccountsGsimRequest.ts
 model/postSavingsAccountsGsimResponse.ts
@@ -1410,6 +1419,7 @@ model/putCodeValuesDataRequest.ts
 model/putCodesApichangesSwagger.ts
 model/putCodesRequest.ts
 model/putCodesResponse.ts
+model/putCreditBureauConfigurationRequest.ts
 model/putDataTablesAppTableIdDatatableIdResponse.ts
 model/putDataTablesAppTableIdResponse.ts
 model/putDataTablesRequest.ts
@@ -1419,6 +1429,7 @@ model/putDataTablesRequestDropColumns.ts
 model/putDataTablesResponse.ts
 model/putDelinquencyBucketResponse.ts
 model/putDelinquencyRangeResponse.ts
+model/putEmailRequest.ts
 model/putExternalAssetOwnerLoanProductAttributeRequest.ts
 model/putExternalServiceRequest.ts
 model/putFinancialActivityAccountsChanges.ts
@@ -1470,6 +1481,7 @@ model/putLoansLoanIdResponse.ts
 model/putOfficesOfficeIdRequest.ts
 model/putOfficesOfficeIdResponse.ts
 model/putOfficesOfficeIdResponseChanges.ts
+model/putOrganisationCreditBureauRequest.ts
 model/putPasswordPreferencesTemplateRequest.ts
 model/putPermissionsRequest.ts
 model/putProductsChanges.ts
@@ -1571,10 +1583,13 @@ model/scorecardData.ts
 model/scorecardValue.ts
 model/singleDebitOrCreditEntryCommand.ts
 model/smsBusinessRulesData.ts
+model/smsCampaignCreationDto.ts
 model/smsCampaignData.ts
+model/smsCampaignHandlerDto.ts
 model/smsCampaignParamReq.ts
 model/smsCampaignPreviewDto.ts
 model/smsCampaignTimeLine.ts
+model/smsCampaignUpdateDto.ts
 model/smsCreationRequest.ts
 model/smsData.ts
 model/smsProviderData.ts

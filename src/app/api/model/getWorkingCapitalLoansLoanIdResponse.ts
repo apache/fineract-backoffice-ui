@@ -77,7 +77,7 @@ export interface GetWorkingCapitalLoansLoanIdResponse {
     breachStartDate?: string;
     breachStartType?: StringEnumOptionData;
     /**
-     * Annual effective rate the loan was priced at, as a percentage: compounded over the product\'s NPV day count, not a calendar year, and rounded to six decimals. The base schedule\'s daily discounting derives from it. A rate change does not restate it - the schedule re-solves its own rate from the day the change takes effect. Comes from discount-fee pricing, not a lending interest rate. Null if schedule not yet generated or if the loan amortizes FLAT, which solves no rate
+     * Annual effective rate the loan was priced at, as a percentage: compounded over the product\'s NPV day count (twelve months for a monthly period), not a calendar year, and rounded to six decimals. The base schedule\'s per-period discounting derives from it. A rate change does not restate it - the schedule re-solves its own rate from the day the change takes effect. Comes from discount-fee pricing, not a lending interest rate. Null if schedule not yet generated or if the loan amortizes FLAT, which solves no rate
      */
     calculatedAnnualEir?: number;
     chargeOffReason?: CodeValueData;
@@ -170,7 +170,7 @@ export interface GetWorkingCapitalLoansLoanIdResponse {
     overpaidOnDate?: string;
     paymentAllocation?: Array<GetPaymentAllocation>;
     /**
-     * Configured daily payment amount for PAYMENT_AMOUNT strategy loans
+     * Configured payment amount per repayment period for PAYMENT_AMOUNT strategy loans
      */
     paymentAmount?: number;
     paymentAmountCalculationStrategy?: StringEnumOptionData;
@@ -179,11 +179,11 @@ export interface GetWorkingCapitalLoansLoanIdResponse {
      */
     paymentRate?: number;
     /**
-     * Daily payment amount the loan was priced at, following paymentAmountCalculationStrategy: totalPaymentVolume x paymentRate / 100 / npvDayCount rounded to the currency under TPV, solved from annualEir under ANNUAL_EIR, and paymentAmount itself under PAYMENT_AMOUNT. A rate change does not restate it, no more than it restates paymentRate or calculatedAnnualEir - what is billed from the day a change takes effect follows the rate then in force, and is read off the amortization schedule rows. Null if schedule not yet generated
+     * Payment amount per repayment period the loan was priced at, following paymentAmountCalculationStrategy: totalPaymentVolume x paymentRate / 100 x the period\'s length in days / npvDayCount (in months / 12 for a monthly period) rounded to the currency under TPV, solved from annualEir under ANNUAL_EIR, and paymentAmount itself under PAYMENT_AMOUNT. A rate change does not restate it, no more than it restates paymentRate or calculatedAnnualEir - what is billed from the day a change takes effect follows the rate then in force, and is read off the amortization schedule rows. Null if schedule not yet generated
      */
     periodPaymentAmount?: number;
     /**
-     * Period payment rate change history, most recently booked first - which for a backdated change is not the same as effective-date order. Each entry carries the annual EIR (as a percentage, e.g. 43.756245, the unit the top-level calculatedAnnualEir is expressed in as well), daily payment amount and segment term the amortization schedule computed when that change was booked; those are null for changes booked before the snapshot was introduced, and the EIR is null on a FLAT loan
+     * Period payment rate change history, most recently booked first - which for a backdated change is not the same as effective-date order. Each entry carries the annual EIR (as a percentage, e.g. 43.756245, the unit the top-level calculatedAnnualEir is expressed in as well), payment amount per repayment period and segment term the amortization schedule computed when that change was booked; those are null for changes booked before the snapshot was introduced, and the EIR is null on a FLAT loan
      */
     periodPaymentRateHistory?: Array<WorkingCapitalLoanPeriodPaymentRateChangeData>;
     /**

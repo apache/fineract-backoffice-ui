@@ -23,10 +23,12 @@
  * Do not edit the class manually.
  */
 
+import { MeetingAttendanceData } from './meetingAttendanceData';
 
 
 export interface MeetingAttendanceUpdateRequest { 
     attendanceType?: number;
     id?: number;
+    meetingAttendance?: Array<MeetingAttendanceData>;
 }
 

@@ -30,5 +30,9 @@
  */
 export interface DeleteCodeValueDataResponse { 
     resourceId?: number;
+    /**
+     * The id of the deleted code value
+     */
+    subResourceId?: number;
 }
 

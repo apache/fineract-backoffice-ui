@@ -27,6 +27,11 @@ import { GetTaxesGroupTaxComponent } from './getTaxesGroupTaxComponent';
 
 
 export interface GetTaxesGroupTaxAssociations { 
+    /**
+     * Only present on the template response. True if the group is editable and this component\'s start date is still in the future, so it can be moved.
+     */
+    componentEditable?: boolean;
+    endDate?: string;
     id?: number;
     startDate?: string;
     taxComponent?: GetTaxesGroupTaxComponent;

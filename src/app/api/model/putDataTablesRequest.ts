@@ -36,5 +36,9 @@ export interface PutDataTablesRequest {
     apptableName?: string;
     changeColumns?: Array<PutDataTablesRequestChangeColumns>;
     dropColumns?: Array<PutDataTablesRequestDropColumns>;
+    /**
+     * Mandatory when apptableName is m_client
+     */
+    entitySubType?: string;
 }
 

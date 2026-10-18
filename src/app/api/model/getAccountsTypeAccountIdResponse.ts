@@ -36,7 +36,7 @@ import { GetAccountsCurrency } from './getAccountsCurrency';
  * GetAccountsTypeAccountIdResponse
  */
 export interface GetAccountsTypeAccountIdResponse { 
-    accountNo?: number;
+    accountNo?: string;
     allowDividendCalculationForInactiveClients?: boolean;
     charges?: Set<GetAccountsCharges>;
     clientId?: number;

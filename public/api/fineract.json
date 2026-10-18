@@ -456,9 +456,16 @@
           }
         ],
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CreditBureauConfigurationData" }
+                }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Credit Bureau Configuration"]
@@ -475,11 +482,22 @@
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PutCreditBureauConfigurationRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Credit Bureau Configuration"]
@@ -496,11 +514,22 @@
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostCreditBureauConfigurationRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Credit Bureau Configuration"]
@@ -572,11 +601,22 @@
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostCreditBureauLoanProductMappingRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Credit Bureau Configuration"]
@@ -586,20 +626,38 @@
       "get": {
         "operationId": "getOrganisationCreditBureau",
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/OrganisationCreditBureauData" }
+                }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Credit Bureau Configuration"]
       },
       "put": {
         "operationId": "updateCreditBureau",
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PutOrganisationCreditBureauRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Credit Bureau Configuration"]
@@ -616,11 +674,22 @@
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostOrganisationCreditBureauRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Credit Bureau Configuration"]
@@ -5270,13 +5339,21 @@
       "post": {
         "operationId": "fetchCreditReport",
         "requestBody": {
-          "content": { "application/json": { "schema": { "type": "object" } } },
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostCreditReportRequest" }
+            }
+          },
           "description": "Fetch credit report"
         },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Credit Bureau Integration"]
@@ -6220,11 +6297,20 @@
       },
       "post": {
         "operationId": "createEmail",
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/PostEmailRequest" } }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "summary": "Create an email message",
@@ -6507,9 +6593,13 @@
           }
         ],
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "summary": "Delete an email message",
@@ -6526,9 +6616,11 @@
           }
         ],
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/EmailData" } }
+            },
+            "description": "OK"
           }
         },
         "summary": "Retrieve an email message",
@@ -6544,11 +6636,20 @@
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/PutEmailRequest" } }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "summary": "Update an email message",
@@ -7412,7 +7513,10 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ExternalServicesPropertiesData" }
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ExternalServicesPropertiesData" }
+                }
               }
             },
             "description": "OK"
@@ -17867,7 +17971,7 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PostMakerCheckersResponse" }
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
               }
             },
             "description": "OK"
@@ -22943,7 +23047,9 @@
         "operationId": "createSmsCampaign",
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/CommandWrapper" } }
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SmsCampaignCreationDto" }
+            }
           },
           "required": true
         },
@@ -23034,6 +23140,14 @@
           },
           { "in": "query", "name": "command", "schema": { "type": "string" } }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SmsCampaignHandlerDto" }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -23059,7 +23173,9 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/CommandWrapper" } }
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SmsCampaignUpdateDto" }
+            }
           },
           "required": true
         },
@@ -26991,7 +27107,7 @@
     },
     "/v1/working-capital-loans/external-id/{loanExternalId}/transactions/external-id/{transactionExternalId}": {
       "post": {
-        "description": "Supported command query parameter: undo, discountFee, discountFeeAdjustment",
+        "description": "Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanExternalIdTransactionExternalId",
         "parameters": [
           {
@@ -27131,7 +27247,7 @@
         "tags": ["Working Capital Loan Transactions"]
       },
       "post": {
-        "description": "Supported command query parameter: undo, discountFee, discountFeeAdjustment",
+        "description": "Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanExternalIdTransactionId",
         "parameters": [
           {
@@ -28417,7 +28533,7 @@
     },
     "/v1/working-capital-loans/{loanId}/transactions/external-id/{transactionExternalId}": {
       "post": {
-        "description": "Supported command query parameter: undo, discountFee, discountFeeAdjustment",
+        "description": "Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanIdTransactionExternalId",
         "parameters": [
           {
@@ -28557,7 +28673,7 @@
         "tags": ["Working Capital Loan Transactions"]
       },
       "post": {
-        "description": "Supported command query parameter: undo, discountFee, discountFeeAdjustment",
+        "description": "Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanIdTransactionId",
         "parameters": [
           {
@@ -30207,6 +30323,10 @@
         "properties": {
           "accountToCredit": { "type": "integer", "format": "int64" },
           "accountToDebit": { "type": "integer", "format": "int64" },
+          "allowMultipleCreditEntries": { "type": "boolean" },
+          "allowMultipleDebitEntries": { "type": "boolean" },
+          "creditTags": { "type": "array", "items": { "type": "integer", "format": "int64" } },
+          "debitTags": { "type": "array", "items": { "type": "integer", "format": "int64" } },
           "description": { "type": "string" },
           "name": { "type": "string" },
           "officeId": { "type": "integer", "format": "int64" }
@@ -31161,6 +31281,7 @@
           "feeFrequency": { "type": "string" },
           "feeInterval": { "type": "string" },
           "feeOnMonthDay": { "type": "string" },
+          "incomeAccountId": { "type": "integer", "format": "int64" },
           "locale": { "type": "string" },
           "maxCap": { "type": "number" },
           "minCap": { "type": "number" },
@@ -31713,9 +31834,19 @@
           "bulkDisbursementTransactions": {
             "$ref": "#/components/schemas/DisbursementTransactionsRequest"
           },
+          "bulkRepaymentTransactions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RepaymentTransactionRequest" }
+          },
+          "bulkSavingsDueTransactions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SavingDueTransactionRequest" }
+          },
           "dateFormat": { "type": "string" },
           "locale": { "type": "string" },
+          "note": { "type": "string" },
           "officeId": { "type": "integer", "format": "int64" },
+          "staffId": { "type": "integer", "format": "int64" },
           "transactionDate": { "type": "string" }
         }
       },
@@ -31752,68 +31883,6 @@
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
           "transactionId": { "type": "string" }
-        }
-      },
-      "CommandWrapper": {
-        "type": "object",
-        "properties": {
-          "actionName": { "type": "string" },
-          "cacheResource": { "type": "boolean" },
-          "changePasswordOperation": { "type": "boolean" },
-          "clientId": { "type": "integer", "format": "int64" },
-          "commandId": { "type": "integer", "format": "int64" },
-          "create": { "type": "boolean" },
-          "createDatatable": { "type": "boolean" },
-          "creditBureauId": { "type": "integer", "format": "int64" },
-          "currencyResource": { "type": "boolean" },
-          "datatableResource": { "type": "boolean" },
-          "delete": { "type": "boolean" },
-          "deleteDatatable": { "type": "boolean" },
-          "deleteMultiple": { "type": "boolean" },
-          "deleteOneToOne": { "type": "boolean" },
-          "deleteOperation": { "type": "boolean" },
-          "entityId": { "type": "integer", "format": "int64" },
-          "entityName": { "type": "string" },
-          "fullFilSurvey": { "type": "boolean" },
-          "groupId": { "type": "integer", "format": "int64" },
-          "href": { "type": "string" },
-          "idempotencyKey": { "type": "string" },
-          "interestPauseCreateResource": { "type": "boolean" },
-          "interestPauseDeleteResource": { "type": "boolean" },
-          "interestPauseResource": { "type": "boolean" },
-          "interestPauseUpdateResource": { "type": "boolean" },
-          "jobName": { "type": "string" },
-          "json": { "type": "string" },
-          "loanDisburseDetailResource": { "type": "boolean" },
-          "loanExternalId": { "$ref": "#/components/schemas/ExternalId" },
-          "loanId": { "type": "integer", "format": "int64" },
-          "noteResource": { "type": "boolean" },
-          "officeId": { "type": "integer", "format": "int64" },
-          "organisationCreditBureauId": { "type": "integer", "format": "int64" },
-          "passwordPreferencesResource": { "type": "boolean" },
-          "permissionResource": { "type": "boolean" },
-          "productId": { "type": "integer", "format": "int64" },
-          "registerDatatable": { "type": "boolean" },
-          "registerSurvey": { "type": "boolean" },
-          "sanitizeJsonKeys": {
-            "type": "array",
-            "items": { "type": "string" },
-            "uniqueItems": true
-          },
-          "savingsId": { "type": "integer", "format": "int64" },
-          "subentityId": { "type": "integer", "format": "int64" },
-          "surveyResource": { "type": "boolean" },
-          "taskPermissionName": { "type": "string" },
-          "templateId": { "type": "integer", "format": "int64" },
-          "transactionId": { "type": "string" },
-          "update": { "type": "boolean" },
-          "updateDatatable": { "type": "boolean" },
-          "updateDisbursementDate": { "type": "boolean" },
-          "updateMultiple": { "type": "boolean" },
-          "updateOneToOne": { "type": "boolean" },
-          "updateOperation": { "type": "boolean" },
-          "userResource": { "type": "boolean" },
-          "workingDaysResource": { "type": "boolean" }
         }
       },
       "Component": {
@@ -31869,6 +31938,16 @@
         "properties": {
           "creditAllocationRule": { "type": "string" },
           "order": { "type": "integer", "format": "int32" }
+        }
+      },
+      "CreditBureauConfigurationData": {
+        "type": "object",
+        "properties": {
+          "configurationKey": { "type": "string" },
+          "creditBureauConfigurationId": { "type": "integer", "format": "int64" },
+          "description": { "type": "string" },
+          "organizationCreditBureauId": { "type": "integer", "format": "int64" },
+          "value": { "type": "string" }
         }
       },
       "CreditDebit": {
@@ -31998,7 +32077,15 @@
       "DeleteCodeValueDataResponse": {
         "type": "object",
         "description": "DeleteCodeValueDataResponse",
-        "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 4 } }
+        "properties": {
+          "resourceId": { "type": "integer", "format": "int64", "example": 4 },
+          "subResourceId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The id of the deleted code value",
+            "example": 12
+          }
+        }
       },
       "DeleteCodesResponse": {
         "type": "object",
@@ -32014,7 +32101,11 @@
         "type": "object",
         "description": "DeleteDataTablesDatatableAppTableIdResponse ",
         "properties": {
+          "clientId": { "type": "integer", "format": "int64", "example": 1 },
+          "groupId": { "type": "integer", "format": "int64", "example": 1 },
+          "loanId": { "type": "integer", "format": "int64", "example": 1 },
           "resourceId": { "type": "integer", "format": "int64", "example": 1 },
+          "savingsId": { "type": "integer", "format": "int64", "example": 1 },
           "transactionId": { "type": "string", "example": "1" }
         }
       },
@@ -32533,6 +32624,33 @@
           "resourceIdentifier": { "type": "string" }
         }
       },
+      "EmailData": {
+        "type": "object",
+        "properties": {
+          "campaignName": { "type": "string" },
+          "clientId": { "type": "integer", "format": "int64" },
+          "emailAddress": { "type": "string" },
+          "emailAttachmentFileFormat": { "$ref": "#/components/schemas/EnumOptionData" },
+          "emailAttachmentFileFormatOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EnumOptionData" }
+          },
+          "emailMessage": { "type": "string" },
+          "emailSubject": { "type": "string" },
+          "errorMessage": { "type": "string" },
+          "groupId": { "type": "integer", "format": "int64" },
+          "id": { "type": "integer", "format": "int64" },
+          "sentDate": { "type": "string", "format": "date" },
+          "staffId": { "type": "integer", "format": "int64" },
+          "status": { "$ref": "#/components/schemas/EnumOptionData" },
+          "stretchyReport": { "$ref": "#/components/schemas/ReportData" },
+          "stretchyReportParamDateOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EnumOptionData" }
+          },
+          "stretchyReportParamMap": { "type": "string" }
+        }
+      },
       "EnumOptionData": {
         "type": "object",
         "properties": {
@@ -32562,19 +32680,19 @@
       },
       "ExecuteWorkingCapitalLoanTransactionCommandRequest": {
         "type": "object",
-        "description": "Request for transaction command executed on a transaction named in the path: undo, discountFee or discountFeeAdjustment",
+        "description": "Request for transaction command executed on a transaction named in the path: undo, adjust, discountFee or discountFeeAdjustment. For command=undo use only note and reversalExternalId. For command=adjust dateFormat / locale / transactionDate / transactionAmount / classificationId / externalId / paymentDetails are accepted.",
         "properties": {
           "classificationId": {
             "type": "integer",
             "format": "int64",
-            "description": "Optional code value id for transaction classification (command=discountFee, discountFeeAdjustment)",
+            "description": "Optional code value id for transaction classification (command=discountFee, discountFeeAdjustment, adjust)",
             "example": 12
           },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "externalId": {
             "type": "string",
-            "description": "Optional external id for the created transaction (command=discountFee, discountFeeAdjustment)",
-            "example": "discount-fee-ext-001"
+            "description": "Optional external id for the created transaction. For command=adjust this is the id of the replacement when transactionAmount > 0 (same as term-loan adjust). The reversed transaction keeps its original external id. If omitted and auto-generation is enabled, a new id is generated for the replacement.",
+            "example": "replacement-ext-001"
           },
           "locale": { "type": "string", "example": "en_GB" },
           "note": { "type": "string", "example": "Discount applied" },
@@ -32588,12 +32706,12 @@
           },
           "transactionAmount": {
             "type": "number",
-            "description": "Transaction amount (command=discountFee, discountFeeAdjustment)",
+            "description": "Transaction amount (command=discountFee, discountFeeAdjustment); command=adjust zero reverses the existing transaction (same as undo). A positive amount reverses it and creates a replacement",
             "example": 100.0
           },
           "transactionDate": {
             "type": "string",
-            "description": "Transaction date (command=discountFeeAdjustment); for command=discountFee it defaults to the date of the related disbursement and, when sent, must be equal to it",
+            "description": "Transaction date (command=discountFeeAdjustment); for command=discountFee it defaults to the date of the related disbursement and, when sent, must be equal to it; command=adjust required when transactionAmount > 0: date of the replacement transaction. Optional when transactionAmount is 0 (undo).",
             "example": "28 June 2024"
           }
         }
@@ -33757,7 +33875,7 @@
         "type": "object",
         "description": "GetAccountsTypeAccountIdResponse",
         "properties": {
-          "accountNo": { "type": "integer", "format": "int64", "example": 2 },
+          "accountNo": { "type": "string", "example": "000000002" },
           "allowDividendCalculationForInactiveClients": { "type": "boolean", "example": true },
           "charges": {
             "type": "array",
@@ -34996,6 +35114,10 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/DatatableCheckStatusData" }
           },
+          "statusLoanProduct": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DatatableCheckStatusData" }
+          },
           "statusLoans": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/DatatableCheckStatusData" }
@@ -36093,6 +36215,7 @@
         "type": "object",
         "description": "GetGroupsGroupIdResponse",
         "properties": {
+          "accountNo": { "type": "string", "example": "000000001" },
           "active": { "type": "boolean", "example": true },
           "clientMembers": {
             "type": "array",
@@ -37721,9 +37844,12 @@
         "properties": {
           "clientCollateralId": { "type": "integer", "format": "int64", "example": 1 },
           "collateralId": { "type": "integer", "format": "int64", "example": 1 },
+          "name": { "type": "string", "example": "Gold" },
+          "pctToBase": { "type": "number", "example": 40 },
           "quantity": { "type": "number", "example": 1 },
           "total": { "type": "number", "example": 10000.0 },
-          "totalCollateral": { "type": "number", "example": 10000.0 }
+          "totalCollateral": { "type": "number", "example": 10000.0 },
+          "unitPrice": { "type": "number", "example": 10000.0 }
         }
       },
       "GetLoansLoanIdCollateralsResponse": {
@@ -38257,6 +38383,11 @@
           "interestRecognitionOnDisbursementDate": { "type": "boolean", "example": false },
           "interestType": { "$ref": "#/components/schemas/GetLoansLoanIdInterestType" },
           "isFloatingInterestRate": { "type": "boolean", "example": false },
+          "isNPA": {
+            "type": "boolean",
+            "description": "Whether the loan is a non-performing asset",
+            "example": false
+          },
           "lastClosedBusinessDate": { "type": "string", "format": "date" },
           "loanOfficerId": { "type": "integer", "format": "int64", "example": 2 },
           "loanOfficerName": { "type": "string", "example": "LoanOfficer, Kampala" },
@@ -41375,6 +41506,12 @@
         "type": "object",
         "description": "GetTaxesGroupResponse",
         "properties": {
+          "businessDate": { "type": "string", "format": "date" },
+          "groupEditable": {
+            "type": "boolean",
+            "description": "Only present on the template response. False if the group is linked to a charge, savings product or savings account.",
+            "example": true
+          },
           "id": { "type": "integer", "format": "int64", "example": 7 },
           "name": { "type": "string", "example": "tax group 1" },
           "taxAssociations": {
@@ -41387,6 +41524,12 @@
       "GetTaxesGroupTaxAssociations": {
         "type": "object",
         "properties": {
+          "componentEditable": {
+            "type": "boolean",
+            "description": "Only present on the template response. True if the group is editable and this component's start date is still in the future, so it can be moved.",
+            "example": true
+          },
+          "endDate": { "type": "string", "format": "date" },
           "id": { "type": "integer", "format": "int64", "example": 7 },
           "startDate": { "type": "string", "format": "date" },
           "taxComponent": { "$ref": "#/components/schemas/GetTaxesGroupTaxComponent" }
@@ -41835,7 +41978,7 @@
           },
           "maxPaymentAmount": {
             "type": "number",
-            "description": "Maximum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.",
+            "description": "Maximum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.",
             "example": 100.0
           },
           "maxPeriodPaymentRate": { "type": "number", "example": 2.0 },
@@ -41847,7 +41990,7 @@
           },
           "minPaymentAmount": {
             "type": "number",
-            "description": "Minimum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.",
+            "description": "Minimum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.",
             "example": 10.0
           },
           "minPeriodPaymentRate": { "type": "number", "example": 0.5 },
@@ -41861,7 +42004,7 @@
           },
           "paymentAmount": {
             "type": "number",
-            "description": "Configured daily payment amount. Only for PAYMENT_AMOUNT strategy.",
+            "description": "Configured payment amount per repayment period. Only for PAYMENT_AMOUNT strategy.",
             "example": 47.22
           },
           "paymentAmountCalculationStrategy": {
@@ -41941,7 +42084,7 @@
           },
           "maxPaymentAmount": {
             "type": "number",
-            "description": "Maximum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.",
+            "description": "Maximum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.",
             "example": 100.0
           },
           "maxPeriodPaymentRate": { "type": "number", "example": 2.0 },
@@ -41953,7 +42096,7 @@
           },
           "minPaymentAmount": {
             "type": "number",
-            "description": "Minimum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.",
+            "description": "Minimum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.",
             "example": 10.0
           },
           "minPeriodPaymentRate": { "type": "number", "example": 0.5 },
@@ -41967,7 +42110,7 @@
           },
           "paymentAmount": {
             "type": "number",
-            "description": "Configured daily payment amount. Only for PAYMENT_AMOUNT strategy.",
+            "description": "Configured payment amount per repayment period. Only for PAYMENT_AMOUNT strategy.",
             "example": 47.22
           },
           "paymentAmountCalculationStrategy": {
@@ -42245,7 +42388,7 @@
           "breachStartType": { "$ref": "#/components/schemas/StringEnumOptionData" },
           "calculatedAnnualEir": {
             "type": "number",
-            "description": "Annual effective rate the loan was priced at, as a percentage: compounded over the product's NPV day count, not a calendar year, and rounded to six decimals. The base schedule's daily discounting derives from it. A rate change does not restate it - the schedule re-solves its own rate from the day the change takes effect. Comes from discount-fee pricing, not a lending interest rate. Null if schedule not yet generated or if the loan amortizes FLAT, which solves no rate",
+            "description": "Annual effective rate the loan was priced at, as a percentage: compounded over the product's NPV day count (twelve months for a monthly period), not a calendar year, and rounded to six decimals. The base schedule's per-period discounting derives from it. A rate change does not restate it - the schedule re-solves its own rate from the day the change takes effect. Comes from discount-fee pricing, not a lending interest rate. Null if schedule not yet generated or if the loan amortizes FLAT, which solves no rate",
             "example": 46.845102
           },
           "chargeOffReason": { "$ref": "#/components/schemas/CodeValueData" },
@@ -42370,7 +42513,7 @@
           },
           "paymentAmount": {
             "type": "number",
-            "description": "Configured daily payment amount for PAYMENT_AMOUNT strategy loans",
+            "description": "Configured payment amount per repayment period for PAYMENT_AMOUNT strategy loans",
             "example": 47.22
           },
           "paymentAmountCalculationStrategy": {
@@ -42383,12 +42526,12 @@
           },
           "periodPaymentAmount": {
             "type": "number",
-            "description": "Daily payment amount the loan was priced at, following paymentAmountCalculationStrategy: totalPaymentVolume x paymentRate / 100 / npvDayCount rounded to the currency under TPV, solved from annualEir under ANNUAL_EIR, and paymentAmount itself under PAYMENT_AMOUNT. A rate change does not restate it, no more than it restates paymentRate or calculatedAnnualEir - what is billed from the day a change takes effect follows the rate then in force, and is read off the amortization schedule rows. Null if schedule not yet generated",
+            "description": "Payment amount per repayment period the loan was priced at, following paymentAmountCalculationStrategy: totalPaymentVolume x paymentRate / 100 x the period's length in days / npvDayCount (in months / 12 for a monthly period) rounded to the currency under TPV, solved from annualEir under ANNUAL_EIR, and paymentAmount itself under PAYMENT_AMOUNT. A rate change does not restate it, no more than it restates paymentRate or calculatedAnnualEir - what is billed from the day a change takes effect follows the rate then in force, and is read off the amortization schedule rows. Null if schedule not yet generated",
             "example": 0.29
           },
           "periodPaymentRateHistory": {
             "type": "array",
-            "description": "Period payment rate change history, most recently booked first - which for a backdated change is not the same as effective-date order. Each entry carries the annual EIR (as a percentage, e.g. 43.756245, the unit the top-level calculatedAnnualEir is expressed in as well), daily payment amount and segment term the amortization schedule computed when that change was booked; those are null for changes booked before the snapshot was introduced, and the EIR is null on a FLAT loan",
+            "description": "Period payment rate change history, most recently booked first - which for a backdated change is not the same as effective-date order. Each entry carries the annual EIR (as a percentage, e.g. 43.756245, the unit the top-level calculatedAnnualEir is expressed in as well), payment amount per repayment period and segment term the amortization schedule computed when that change was booked; those are null for changes booked before the snapshot was introduced, and the EIR is null on a FLAT loan",
             "items": {
               "$ref": "#/components/schemas/WorkingCapitalLoanPeriodPaymentRateChangeData"
             }
@@ -44011,9 +44154,12 @@
         "properties": {
           "clientCollateralId": { "type": "integer", "format": "int64" },
           "collateralId": { "type": "integer", "format": "int64" },
+          "name": { "type": "string" },
+          "pctToBase": { "type": "number" },
           "quantity": { "type": "number" },
           "total": { "type": "number" },
-          "totalCollateral": { "type": "number" }
+          "totalCollateral": { "type": "number" },
+          "unitPrice": { "type": "number" }
         }
       },
       "LoanCollateralTemplateData": {
@@ -44457,6 +44603,10 @@
           "currencyOptions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/CurrencyData" }
+          },
+          "datatables": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DatatableData" }
           },
           "daysInMonthType": { "$ref": "#/components/schemas/EnumOptionData" },
           "daysInMonthTypeOptions": {
@@ -45359,7 +45509,11 @@
         "type": "object",
         "properties": {
           "attendanceType": { "type": "integer", "format": "int32" },
-          "id": { "type": "integer", "format": "int64" }
+          "id": { "type": "integer", "format": "int64" },
+          "meetingAttendance": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MeetingAttendanceData" }
+          }
         }
       },
       "MeetingAttendanceUpdateResponse": {
@@ -45604,6 +45758,19 @@
           "cobBusinessDate": { "type": "string", "format": "date" },
           "cobProcessedDate": { "type": "string", "format": "date" },
           "loanIds": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+        }
+      },
+      "OrganisationCreditBureauData": {
+        "type": "object",
+        "properties": {
+          "active": { "type": "boolean" },
+          "alias": { "type": "string" },
+          "creditBureauCountry": { "type": "string" },
+          "creditBureauId": { "type": "integer", "format": "int64" },
+          "creditBureauName": { "type": "string" },
+          "creditBureauProduct": { "type": "string" },
+          "creditBureauSummary": { "type": "string" },
+          "organisationCreditBureauId": { "type": "integer", "format": "int64" }
         }
       },
       "PageAuditData": {
@@ -46381,6 +46548,12 @@
             "items": { "$ref": "#/components/schemas/ClientAddressRequest" }
           },
           "clientNonPersonDetails": { "$ref": "#/components/schemas/PostClientsNonPersonDetails" },
+          "clientTypeId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "A code value of the ClientType code",
+            "example": 1
+          },
           "datatables": {
             "type": "array",
             "description": "List of PostClientsDatatable",
@@ -46524,6 +46697,47 @@
           "resourceId": { "type": "integer", "format": "int64", "example": 12 }
         }
       },
+      "PostCreditBureauConfigurationRequest": {
+        "type": "object",
+        "description": "PostCreditBureauConfigurationRequest",
+        "properties": {
+          "configkey": { "type": "string", "example": "USERNAME" },
+          "description": { "type": "string", "example": "The user name for the credit bureau" },
+          "value": { "type": "string", "example": "testUser" }
+        }
+      },
+      "PostCreditBureauLoanProductMappingRequest": {
+        "type": "object",
+        "description": "PostCreditBureauLoanProductMappingRequest",
+        "properties": {
+          "isActive": { "type": "boolean", "example": true },
+          "isCreditcheckMandatory": { "type": "boolean", "example": true },
+          "loanProductId": { "type": "integer", "format": "int64", "example": 1 },
+          "locale": {
+            "type": "string",
+            "description": "Required together with stalePeriod",
+            "example": "en"
+          },
+          "skipCreditcheckInFailure": { "type": "boolean", "example": false },
+          "stalePeriod": { "type": "integer", "format": "int32", "example": 30 }
+        }
+      },
+      "PostCreditReportRequest": {
+        "type": "object",
+        "description": "PostCreditReportRequest",
+        "properties": {
+          "NRC": {
+            "type": "string",
+            "description": "The national registration card number of the borrower",
+            "example": "NRC213"
+          },
+          "creditBureauID": {
+            "type": "string",
+            "description": "The organisation credit bureau to query",
+            "example": "1"
+          }
+        }
+      },
       "PostDataTablesAppTableIdResponse": {
         "type": "object",
         "description": "PostDataTablesAppTableIdResponse ",
@@ -46568,6 +46782,27 @@
         "type": "object",
         "description": "PostDelinquencyRangeResponse",
         "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 1 } }
+      },
+      "PostEmailRequest": {
+        "type": "object",
+        "description": "PostEmailRequest",
+        "properties": {
+          "clientId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The client the message is for; either clientId or staffId must be given",
+            "example": 1
+          },
+          "emailMessage": { "type": "string", "example": "Your next repayment is due on 1 March." },
+          "emailSubject": { "type": "string", "example": "Loan repayment reminder" },
+          "locale": { "type": "string", "example": "en" },
+          "staffId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The staff member the message is for; either clientId or staffId must be given",
+            "example": 1
+          }
+        }
       },
       "PostEntityDatatableChecksTemplateRequest": {
         "type": "object",
@@ -46910,6 +47145,21 @@
           "resourceId": { "type": "integer", "format": "int64", "example": 9 }
         }
       },
+      "PostGroupsDatatable": {
+        "type": "object",
+        "description": "Entries for the datatables registered against this entity",
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "description": "The datatable columns and their values"
+            },
+            "description": "The datatable columns and their values"
+          },
+          "registeredTableName": { "type": "string", "example": "dt_registered_table" }
+        }
+      },
       "PostGroupsGroupIdChanges": {
         "type": "object",
         "properties": {
@@ -46988,6 +47238,11 @@
         "properties": {
           "activationDate": { "type": "string", "example": "04 March 2011" },
           "active": { "type": "boolean", "example": false },
+          "datatables": {
+            "type": "array",
+            "description": "Entries for the datatables registered against this entity",
+            "items": { "$ref": "#/components/schemas/PostGroupsDatatable" }
+          },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "externalId": { "type": "string", "example": "externalId1" },
           "locale": { "type": "string", "example": "en" },
@@ -48203,6 +48458,14 @@
           "resourceId": { "type": "integer", "format": "int64", "example": 3 }
         }
       },
+      "PostOrganisationCreditBureauRequest": {
+        "type": "object",
+        "description": "PostOrganisationCreditBureauRequest",
+        "properties": {
+          "alias": { "type": "string", "example": "ThitsaWorks Myanmar" },
+          "isActive": { "type": "boolean", "example": true }
+        }
+      },
       "PostPaymentAllocation": {
         "type": "object",
         "description": "PostPaymentAllocation",
@@ -48694,6 +48957,7 @@
         "type": "object",
         "description": "PostSavingsAccountTransactionsRequest",
         "properties": {
+          "checkNumber": { "type": "string", "example": "CHQ-001" },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "externalId": { "type": "string", "example": "5dd80a7c-ccba-4446-b378-01eb6f53e871" },
           "isPostInterestAsOn": { "type": "boolean", "example": true },
@@ -48703,6 +48967,8 @@
           "paymentTypeId": { "type": "integer", "format": "int32", "example": 1 },
           "postInterestManualOrAutomatic": { "type": "boolean", "example": true },
           "reasonForBlock": { "type": "string", "example": "String" },
+          "receiptNumber": { "type": "string", "example": "RCPT-001" },
+          "routingCode": { "type": "string", "example": "ROUTE-001" },
           "savingsArray": {
             "type": "array",
             "description": "command=gsimDeposit: the child accounts of a GSIM parent to deposit into, and how much into each",
@@ -48756,6 +49022,21 @@
           "clientId": { "type": "integer", "format": "int64", "example": 8 },
           "officeId": { "type": "integer", "format": "int64", "example": 2 },
           "resourceId": { "type": "integer", "format": "int64", "example": 8 }
+        }
+      },
+      "PostSavingsAccountsDatatable": {
+        "type": "object",
+        "description": "Entries for the datatables registered against this entity",
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "description": "The datatable columns and their values"
+            },
+            "description": "The datatable columns and their values"
+          },
+          "registeredTableName": { "type": "string", "example": "dt_registered_table" }
         }
       },
       "PostSavingsAccountsGsimClient": {
@@ -48816,6 +49097,11 @@
         "description": "PostSavingsAccountsRequest",
         "properties": {
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
+          "datatables": {
+            "type": "array",
+            "description": "Entries for the datatables registered against this entity",
+            "items": { "$ref": "#/components/schemas/PostSavingsAccountsDatatable" }
+          },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "externalId": { "type": "string", "example": "123" },
           "groupId": {
@@ -49328,7 +49614,7 @@
           },
           "maxPaymentAmount": {
             "type": "number",
-            "description": "Maximum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.",
+            "description": "Maximum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.",
             "example": 100.0
           },
           "maxPeriodPaymentRate": { "type": "number", "example": 2.0 },
@@ -49340,7 +49626,7 @@
           },
           "minPaymentAmount": {
             "type": "number",
-            "description": "Minimum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.",
+            "description": "Minimum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.",
             "example": 10.0
           },
           "minPeriodPaymentRate": { "type": "number", "example": 0.5 },
@@ -49355,7 +49641,7 @@
           },
           "paymentAmount": {
             "type": "number",
-            "description": "Daily payment amount, at most the currency's decimal precision. Required when strategy is PAYMENT_AMOUNT.",
+            "description": "Payment amount per repayment period, at most the currency's decimal precision. Required when strategy is PAYMENT_AMOUNT.",
             "example": 47.22
           },
           "paymentAmountCalculationStrategy": {
@@ -49383,7 +49669,8 @@
           "repaymentEvery": { "type": "integer", "format": "int32", "example": 30 },
           "repaymentFrequencyType": {
             "type": "string",
-            "enum": ["DAYS", "MONTHS", "YEARS"],
+            "description": "Unit of the repayment period, which is repaymentEvery of these. DAYS, WEEKS and MONTHS are supported; YEARS is rejected.",
+            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS"],
             "example": "DAYS"
           },
           "shortName": { "type": "string", "example": "WCP1" },
@@ -49867,7 +50154,7 @@
           },
           "paymentAmount": {
             "type": "number",
-            "description": "Daily payment amount, at most the currency's decimal precision. Overrides the product default on PAYMENT_AMOUNT strategy products.",
+            "description": "Payment amount per repayment period, at most the currency's decimal precision. Overrides the product default on PAYMENT_AMOUNT strategy products.",
             "example": 47.22
           },
           "periodPaymentRate": { "type": "number", "example": 1.0 },
@@ -49877,10 +50164,16 @@
             "example": 10000.0
           },
           "productId": { "type": "integer", "format": "int64", "example": 1 },
-          "repaymentEvery": { "type": "integer", "format": "int32", "example": 30 },
+          "repaymentEvery": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of repaymentFrequencyType units in one repayment period. An override must send repaymentEvery and repaymentFrequencyType together.",
+            "example": 1
+          },
           "repaymentFrequencyType": {
             "type": "string",
-            "enum": ["DAYS", "MONTHS", "YEARS"],
+            "description": "Unit of the repayment period, which is repaymentEvery of these. DAYS, WEEKS and MONTHS are supported; YEARS is rejected. An override must send repaymentEvery and repaymentFrequencyType together.",
+            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS"],
             "example": "DAYS"
           },
           "submittedOnDate": { "type": "string", "example": "15 January 2024" },
@@ -50400,6 +50693,14 @@
           "resourceId": { "type": "integer", "format": "int64", "example": 4 }
         }
       },
+      "PutCreditBureauConfigurationRequest": {
+        "type": "object",
+        "description": "PutCreditBureauConfigurationRequest",
+        "properties": {
+          "configkey": { "type": "string", "example": "USERNAME" },
+          "value": { "type": "string", "example": "testUser" }
+        }
+      },
       "PutDataTablesAppTableIdDatatableIdResponse": {
         "type": "object",
         "description": "PutDataTablesAppTableIdDatatableIdResponse ",
@@ -50439,6 +50740,11 @@
           "dropColumns": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/PutDataTablesRequestDropColumns" }
+          },
+          "entitySubType": {
+            "type": "string",
+            "description": "Mandatory when apptableName is m_client",
+            "example": "PERSON"
           }
         }
       },
@@ -50458,6 +50764,12 @@
         "properties": {
           "code": { "type": "string", "example": "Gender" },
           "indexed": { "type": "boolean", "description": "Defaults to false", "example": true },
+          "length": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Only for String columns",
+            "example": 100
+          },
           "mandatory": { "type": "boolean", "example": true },
           "name": { "type": "string", "example": "Question" },
           "newCode": { "type": "string", "example": "Gender2" },
@@ -50487,6 +50799,17 @@
         "properties": {
           "changes": { "$ref": "#/components/schemas/DelinquencyRangeRequest" },
           "resourceId": { "type": "integer", "format": "int64", "example": 1 }
+        }
+      },
+      "PutEmailRequest": {
+        "type": "object",
+        "description": "PutEmailRequest",
+        "properties": {
+          "emailMessage": {
+            "type": "string",
+            "description": "The only field an update accepts",
+            "example": "Your next repayment is due on 1 April."
+          }
         }
       },
       "PutExternalAssetOwnerLoanProductAttributeRequest": {
@@ -50609,7 +50932,10 @@
       "PutFundsFundIdRequest": {
         "type": "object",
         "description": "PutFundsFundIdRequest",
-        "properties": { "name": { "type": "string", "example": "EU Agri Fund (2010-2020)" } }
+        "properties": {
+          "externalId": { "type": "string", "example": "eu-agri-fund-2010" },
+          "name": { "type": "string", "example": "EU Agri Fund (2010-2020)" }
+        }
       },
       "PutFundsFundIdResponse": {
         "type": "object",
@@ -51330,6 +51656,19 @@
         "type": "object",
         "properties": { "name": { "type": "string", "example": "Name is updated" } }
       },
+      "PutOrganisationCreditBureauRequest": {
+        "type": "object",
+        "description": "PutOrganisationCreditBureauRequest",
+        "properties": {
+          "creditBureauId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The organisation credit bureau to update",
+            "example": 1
+          },
+          "isActive": { "type": "boolean", "example": true }
+        }
+      },
       "PutPasswordPreferencesTemplateRequest": {
         "type": "object",
         "description": "PutPasswordPreferencesTemplateRequest",
@@ -51794,7 +52133,8 @@
       "PutTaxesGroupModifiedComponents": {
         "type": "object",
         "properties": {
-          "endDate": { "type": "string", "example": "Apr 22, 2016 12:00:00 AM" },
+          "endDate": { "type": "string", "format": "date" },
+          "startDate": { "type": "string", "format": "date" },
           "taxComponentId": { "type": "integer", "format": "int64", "example": 7 }
         }
       },
@@ -51803,6 +52143,11 @@
         "properties": {
           "endDate": { "type": "string", "example": "22 April 2016" },
           "id": { "type": "integer", "format": "int64", "example": 7 },
+          "startDate": {
+            "type": "string",
+            "description": "Only accepted when the group is not linked and this component's current start date is still in the future. Must be today or later and before the component's end date.",
+            "example": "22 April 2016"
+          },
           "taxComponentId": { "type": "integer", "format": "int64", "example": 7 }
         }
       },
@@ -51928,7 +52273,8 @@
             "items": { "type": "integer", "format": "int64" }
           },
           "sendPasswordToEmail": { "type": "boolean", "example": true },
-          "staffId": { "type": "integer", "format": "int64", "example": 1 }
+          "staffId": { "type": "integer", "format": "int64", "example": 1 },
+          "username": { "type": "string", "example": "newusername" }
         }
       },
       "PutUsersUserIdResponse": {
@@ -52053,7 +52399,7 @@
           },
           "maxPaymentAmount": {
             "type": "number",
-            "description": "Maximum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.",
+            "description": "Maximum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.",
             "example": 100.0
           },
           "maxPeriodPaymentRate": { "type": "number", "example": 2.0 },
@@ -52065,7 +52411,7 @@
           },
           "minPaymentAmount": {
             "type": "number",
-            "description": "Minimum daily payment amount. Optional; only for PAYMENT_AMOUNT strategy.",
+            "description": "Minimum payment amount per repayment period. Optional; only for PAYMENT_AMOUNT strategy.",
             "example": 10.0
           },
           "minPeriodPaymentRate": { "type": "number", "example": 0.5 },
@@ -52080,7 +52426,7 @@
           },
           "paymentAmount": {
             "type": "number",
-            "description": "Daily payment amount, at most the currency's decimal precision. Required when strategy is PAYMENT_AMOUNT.",
+            "description": "Payment amount per repayment period, at most the currency's decimal precision. Required when strategy is PAYMENT_AMOUNT.",
             "example": 47.22
           },
           "paymentAmountCalculationStrategy": {
@@ -52108,7 +52454,8 @@
           "repaymentEvery": { "type": "integer", "format": "int32", "example": 30 },
           "repaymentFrequencyType": {
             "type": "string",
-            "enum": ["DAYS", "MONTHS", "YEARS"],
+            "description": "Unit of the repayment period, which is repaymentEvery of these. DAYS, WEEKS and MONTHS are supported; YEARS is rejected.",
+            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS"],
             "example": "DAYS"
           },
           "shortName": { "type": "string", "example": "WCP1" },
@@ -52199,7 +52546,7 @@
           },
           "paymentAmount": {
             "type": "number",
-            "description": "Daily payment amount, at most the currency's decimal precision. Overrides the product default on PAYMENT_AMOUNT strategy products.",
+            "description": "Payment amount per repayment period, at most the currency's decimal precision. Overrides the product default on PAYMENT_AMOUNT strategy products.",
             "example": 47.22
           },
           "periodPaymentRate": { "type": "number", "example": 1.0 },
@@ -52209,10 +52556,16 @@
             "example": 10000.0
           },
           "productId": { "type": "integer", "format": "int64", "example": 1 },
-          "repaymentEvery": { "type": "integer", "format": "int32", "example": 30 },
+          "repaymentEvery": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of repaymentFrequencyType units in one repayment period. An override must send repaymentEvery and repaymentFrequencyType together.",
+            "example": 1
+          },
           "repaymentFrequencyType": {
             "type": "string",
-            "enum": ["DAYS", "MONTHS", "YEARS"],
+            "description": "Unit of the repayment period, which is repaymentEvery of these. DAYS, WEEKS and MONTHS are supported; YEARS is rejected. An override must send repaymentEvery and repaymentFrequencyType together.",
+            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS"],
             "example": "DAYS"
           },
           "submittedOnDate": { "type": "string", "example": "15 January 2024" },
@@ -52377,6 +52730,7 @@
           "accountNumber": { "type": "string" },
           "bankNumber": { "type": "string" },
           "checkNumber": { "type": "string" },
+          "externalId": { "type": "string" },
           "loanId": { "type": "integer", "format": "int64" },
           "paymentTypeId": { "type": "integer", "format": "int64" },
           "receiptNumber": { "type": "string" },
@@ -53178,6 +53532,27 @@
           "reportType": { "type": "string" }
         }
       },
+      "SmsCampaignCreationDto": {
+        "type": "object",
+        "properties": {
+          "campaignName": { "type": "string" },
+          "campaignType": { "type": "integer", "format": "int64" },
+          "dateFormat": { "type": "string" },
+          "dateTimeFormat": { "type": "string" },
+          "frequency": { "type": "string" },
+          "interval": { "type": "string" },
+          "isNotification": { "type": "boolean" },
+          "locale": { "type": "string" },
+          "message": { "type": "string" },
+          "paramValue": { "$ref": "#/components/schemas/SmsCampaignParamReq" },
+          "providerId": { "type": "integer", "format": "int64" },
+          "recurrenceStartDate": { "type": "string" },
+          "repeatsOnDay": { "type": "string" },
+          "runReportId": { "type": "integer", "format": "int64" },
+          "submittedOnDate": { "type": "string" },
+          "triggerType": { "type": "integer", "format": "int64" }
+        }
+      },
       "SmsCampaignData": {
         "type": "object",
         "properties": {
@@ -53228,6 +53603,15 @@
           }
         }
       },
+      "SmsCampaignHandlerDto": {
+        "type": "object",
+        "properties": {
+          "activationDate": { "type": "string" },
+          "closureDate": { "type": "string" },
+          "dateFormat": { "type": "string" },
+          "locale": { "type": "string" }
+        }
+      },
       "SmsCampaignParamReq": {
         "type": "object",
         "properties": {
@@ -53253,6 +53637,24 @@
           "closedOnDate": { "type": "string", "format": "date" },
           "submittedByUsername": { "type": "string" },
           "submittedOnDate": { "type": "string", "format": "date" }
+        }
+      },
+      "SmsCampaignUpdateDto": {
+        "type": "object",
+        "properties": {
+          "campaignName": { "type": "string" },
+          "campaignType": { "type": "integer", "format": "int64" },
+          "dateFormat": { "type": "string" },
+          "dateTimeFormat": { "type": "string" },
+          "isNotification": { "type": "boolean" },
+          "locale": { "type": "string" },
+          "message": { "type": "string" },
+          "paramValue": { "$ref": "#/components/schemas/SmsCampaignParamReq" },
+          "recurrence": { "type": "string" },
+          "recurrenceStartDate": { "type": "string" },
+          "runReportId": { "type": "integer", "format": "int64" },
+          "submittedOnDate": { "type": "string" },
+          "triggerType": { "type": "integer", "format": "int64" }
         }
       },
       "SmsCreationRequest": {
@@ -53631,6 +54033,8 @@
       "TaxGroupData": {
         "type": "object",
         "properties": {
+          "businessDate": { "type": "string", "format": "date" },
+          "groupEditable": { "type": "boolean" },
           "id": { "type": "integer", "format": "int64" },
           "name": { "type": "string" },
           "taxAssociations": {
@@ -53661,6 +54065,7 @@
       "TaxGroupMappingsData": {
         "type": "object",
         "properties": {
+          "componentEditable": { "type": "boolean" },
           "endDate": { "type": "string", "format": "date" },
           "id": { "type": "integer", "format": "int64" },
           "startDate": { "type": "string", "format": "date" },
@@ -53718,8 +54123,7 @@
           "name": { "type": "string" },
           "text": { "type": "string" },
           "type": { "type": "integer", "format": "int32" }
-        },
-        "required": ["id"]
+        }
       },
       "TemplateUpdateResponse": {
         "type": "object",
@@ -54141,7 +54545,10 @@
             "deprecated": true,
             "description": "Audit/system timestamp. Prefer submittedOnDate for the booking business/tenant date."
           },
-          "dailyPaymentAmount": { "type": "number" },
+          "dailyPaymentAmount": {
+            "type": "number",
+            "description": "Payment amount per repayment period of the segment this change opened (per day on a daily schedule), snapshotted when the change was booked"
+          },
           "effectiveDate": { "type": "string", "format": "date" },
           "id": { "type": "integer", "format": "int64" },
           "loanId": { "type": "integer", "format": "int64" },

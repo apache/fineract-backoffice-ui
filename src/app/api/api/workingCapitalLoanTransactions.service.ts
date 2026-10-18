@@ -842,7 +842,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction command by loan external id and transaction external id
-     * Supported command query parameter: undo, discountFee, discountFeeAdjustment
+     * Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo
      * @endpoint post /v1/working-capital-loans/external-id/{loanExternalId}/transactions/external-id/{transactionExternalId}
      * @param loanExternalId loanExternalId
      * @param transactionExternalId transactionExternalId
@@ -939,7 +939,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction command by loan external id and transaction id
-     * Supported command query parameter: undo, discountFee, discountFeeAdjustment
+     * Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo
      * @endpoint post /v1/working-capital-loans/external-id/{loanExternalId}/transactions/{transactionId}
      * @param loanExternalId loanExternalId
      * @param transactionId transactionId
@@ -1129,7 +1129,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction command by loan id and transaction external id
-     * Supported command query parameter: undo, discountFee, discountFeeAdjustment
+     * Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo
      * @endpoint post /v1/working-capital-loans/{loanId}/transactions/external-id/{transactionExternalId}
      * @param loanId loanId
      * @param transactionExternalId transactionExternalId
@@ -1226,7 +1226,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction command by loan id and transaction id
-     * Supported command query parameter: undo, discountFee, discountFeeAdjustment
+     * Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo
      * @endpoint post /v1/working-capital-loans/{loanId}/transactions/{transactionId}
      * @param loanId loanId
      * @param transactionId transactionId
