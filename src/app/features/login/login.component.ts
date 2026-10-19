@@ -28,7 +28,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ConfigService } from '../../core/services/config.service';
 import { BrandingService } from '../../core/services/branding.service';
 import { ThemeService } from '../../core/services/theme.service';
-import { NotificationService } from '../../core/services/notification.service';
+import { OidcService } from '../../core/services/oidc.service';
 import { LOGOUT_REASON_MESSAGE, toLogoutReason } from '../../core/router/session-reasons';
 import { TwoFactorStepComponent } from './two-factor/two-factor-step.component';
 import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.component';
@@ -89,107 +89,118 @@ import { HelpIconComponent } from '../../shared/components/help-icon/help-icon.c
           />
         } @else {
           @if (configService.oidcLoginEnabled()) {
-            <!-- The round trip to an identity provider is not implemented yet — see issue #370.
-                 Username and password stay in place below rather than being replaced, so this
-                 button can never be the only way in. -->
             <button
               type="button"
               class="sso-btn"
               data-testid="login-sso-button"
+              [disabled]="ssoBusy()"
               (click)="onOidcLogin()"
             >
               {{ 'login.sso.button' | appTranslate }}
             </button>
-            <div class="sso-divider" role="separator">
-              <span>{{ 'login.sso.divider' | appTranslate }}</span>
-            </div>
+            @if (ssoError(); as ssoMessage) {
+              <div class="error-message" role="alert" data-testid="login-sso-error">
+                {{ ssoMessage }}
+              </div>
+            }
+            @if (configService.passwordLoginEnabled()) {
+              <div class="sso-divider" role="separator">
+                <span>{{ 'login.sso.divider' | appTranslate }}</span>
+              </div>
+            }
           }
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-            <div class="form-field">
-              <label for="serverUrl">
-                {{ 'login.serverUrl' | appTranslate }}
-                <app-help-icon helpTextKey="login.tooltips.serverUrl"></app-help-icon>
-              </label>
-              <select id="serverUrl" formControlName="serverUrl">
-                <option [value]="configService.apiUrl">
-                  {{ 'login.defaultOption' | appTranslate }} ({{ configService.apiUrl }})
-                </option>
-                <!-- Endpoints this deployment permits, from config.json. Third-party hosts used
+          @if (configService.passwordLoginEnabled()) {
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+              <div class="form-field">
+                <label for="serverUrl">
+                  {{ 'login.serverUrl' | appTranslate }}
+                  <app-help-icon helpTextKey="login.tooltips.serverUrl"></app-help-icon>
+                </label>
+                <select id="serverUrl" formControlName="serverUrl">
+                  <option [value]="configService.apiUrl">
+                    {{ 'login.defaultOption' | appTranslate }} ({{ configService.apiUrl }})
+                  </option>
+                  <!-- Endpoints this deployment permits, from config.json. Third-party hosts used
                    to be hard-coded here, which offered a teller a one-click path to type real
                    credentials into someone else's server. What is offered is now the operator's
                    decision, and anything typed is checked against the same allow-list. -->
-                <option value="/fineract-provider/api/v1">
-                  {{ 'login.proxyOption' | appTranslate }}
-                </option>
-                @for (origin of allowedOrigins(); track origin) {
-                  <option [value]="origin">{{ origin }}</option>
-                }
-                <option value="custom">{{ 'login.customOption' | appTranslate }}</option>
-              </select>
-            </div>
+                  <option value="/fineract-provider/api/v1">
+                    {{ 'login.proxyOption' | appTranslate }}
+                  </option>
+                  @for (origin of allowedOrigins(); track origin) {
+                    <option [value]="origin">{{ origin }}</option>
+                  }
+                  <option value="custom">{{ 'login.customOption' | appTranslate }}</option>
+                </select>
+              </div>
 
-            @if (loginForm.get('serverUrl')?.value === 'custom') {
+              @if (loginForm.get('serverUrl')?.value === 'custom') {
+                <div class="form-field">
+                  <label for="customUrl">{{ 'login.customUrl' | appTranslate }}</label>
+                  <input
+                    id="customUrl"
+                    type="text"
+                    formControlName="customUrl"
+                    placeholder="https://..."
+                  />
+                </div>
+              }
+
               <div class="form-field">
-                <label for="customUrl">{{ 'login.customUrl' | appTranslate }}</label>
+                <label for="tenantId">
+                  {{ 'login.tenantId' | appTranslate }}
+                  <app-help-icon helpTextKey="login.tooltips.tenantId"></app-help-icon>
+                </label>
                 <input
-                  id="customUrl"
+                  id="tenantId"
                   type="text"
-                  formControlName="customUrl"
-                  placeholder="https://..."
+                  formControlName="tenantId"
+                  [attr.aria-invalid]="showInvalid('tenantId')"
                 />
               </div>
-            }
 
-            <div class="form-field">
-              <label for="tenantId">
-                {{ 'login.tenantId' | appTranslate }}
-                <app-help-icon helpTextKey="login.tooltips.tenantId"></app-help-icon>
-              </label>
-              <input
-                id="tenantId"
-                type="text"
-                formControlName="tenantId"
-                [attr.aria-invalid]="showInvalid('tenantId')"
-              />
-            </div>
-
-            <div class="form-field">
-              <label for="username">{{ 'login.username' | appTranslate }}</label>
-              <input
-                id="username"
-                type="text"
-                formControlName="username"
-                autocomplete="username"
-                [attr.aria-invalid]="showInvalid('username')"
-              />
-            </div>
-
-            <div class="form-field">
-              <label for="password">{{ 'login.password' | appTranslate }}</label>
-              <input
-                id="password"
-                type="password"
-                formControlName="password"
-                autocomplete="current-password"
-                [attr.aria-invalid]="showInvalid('password')"
-              />
-            </div>
-
-            @if (error()) {
-              <div class="error-message" role="alert">
-                {{ error() }}
+              <div class="form-field">
+                <label for="username">{{ 'login.username' | appTranslate }}</label>
+                <input
+                  id="username"
+                  type="text"
+                  formControlName="username"
+                  autocomplete="username"
+                  [attr.aria-invalid]="showInvalid('username')"
+                />
               </div>
-            }
 
-            <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading()">
-              @if (isLoading()) {
-                <span class="spinner"></span>
-                {{ 'login.loggingIn' | appTranslate }}
-              } @else {
-                {{ 'login.submit' | appTranslate }}
+              <div class="form-field">
+                <label for="password">{{ 'login.password' | appTranslate }}</label>
+                <input
+                  id="password"
+                  type="password"
+                  formControlName="password"
+                  autocomplete="current-password"
+                  [attr.aria-invalid]="showInvalid('password')"
+                />
+              </div>
+
+              @if (error()) {
+                <div class="error-message" role="alert">
+                  {{ error() }}
+                </div>
               }
-            </button>
-          </form>
+
+              <button
+                type="submit"
+                class="submit-btn"
+                [disabled]="loginForm.invalid || isLoading()"
+              >
+                @if (isLoading()) {
+                  <span class="spinner"></span>
+                  {{ 'login.loggingIn' | appTranslate }}
+                } @else {
+                  {{ 'login.submit' | appTranslate }}
+                }
+              </button>
+            </form>
+          }
         }
 
         <div class="login-footer">
@@ -384,7 +395,7 @@ export class LoginComponent {
   protected readonly configService = inject(ConfigService);
   private readonly branding = inject(BrandingService);
   private readonly themeService = inject(ThemeService);
-  private readonly notification = inject(NotificationService);
+  private readonly oidc = inject(OidcService);
 
   /**
    * The deployment's product name, or `null` when it sets none.
@@ -462,16 +473,25 @@ export class LoginComponent {
     this.i18n.use(lang);
   }
 
+  /** True from the click until the browser leaves for the identity provider. */
+  protected readonly ssoBusy = signal(false);
+  /** Why the redirect to the identity provider could not start, or `null`. */
+  protected readonly ssoError = signal<string | null>(null);
+
   /**
-   * The identity-provider button is visible (see {@link ConfigService.oidcLoginEnabled}), but
-   * the authorization-code round trip behind it — redirect, PKCE, token exchange, refresh — is
-   * not built yet; see issue #370. Rather than a silent no-op, or a redirect this application
-   * cannot yet complete, clicking it says so plainly and leaves the person at the form below.
-   * This is deliberately the opposite of the bug being fixed: the config that turns this button
-   * on is real, and so is what happens when it is pressed.
+   * Sends the browser to the identity provider (authorization code flow with PKCE). The way back
+   * is `OidcCallbackComponent`. A provider that cannot be reached is reported here, and the
+   * password form, where offered, stays usable.
    */
-  protected onOidcLogin(): void {
-    void this.notification.show(this.i18n.translate('login.sso.notImplemented'));
+  protected async onOidcLogin(): Promise<void> {
+    this.ssoBusy.set(true);
+    this.ssoError.set(null);
+    try {
+      await this.oidc.startLogin();
+    } catch {
+      this.ssoError.set(this.i18n.translate('login.sso.unreachable'));
+      this.ssoBusy.set(false);
+    }
   }
 
   /**

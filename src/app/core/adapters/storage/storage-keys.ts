@@ -51,6 +51,10 @@ export type StorageScope = 'session' | 'device';
 export const STORAGE_KEYS = {
   /** The authenticated session, including the Basic auth key. Tab-scoped, never persisted. */
   session: { key: 'fineract_session', scope: 'session' },
+  /** The OIDC tokens of the signed-in user. Tab-scoped, never persisted. */
+  oidcTokens: { key: 'fineract_oidc_tokens', scope: 'session' },
+  /** The state, nonce and PKCE verifier of a sign-in in progress. Tab-scoped. */
+  oidcFlow: { key: 'fineract_oidc_flow', scope: 'session' },
   /** The active Fineract tenant. */
   tenant: { key: 'fineract_tenant', scope: 'device' },
   /** The user's API-endpoint override. See `ConfigService`. */

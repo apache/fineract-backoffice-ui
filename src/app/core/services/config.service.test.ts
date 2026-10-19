@@ -177,14 +177,52 @@ describe('ConfigService', () => {
       expect(service.oidcLoginEnabled()).toBe(false);
     });
 
-    it('turns on when the deployment sets it', async () => {
+    it('turns on when the deployment sets it and names an identity provider', async () => {
       await load({
         fineractApiUrl: '/api/v1',
         defaultTenant: TEST_TENANT,
         oidcLoginEnabled: true,
+        oidc: { issuer: 'https://sso.example/realms/bank', clientId: 'backoffice-ui' },
       });
 
       expect(service.oidcLoginEnabled()).toBe(true);
+      expect(service.oidcConfig()?.clientId).toBe('backoffice-ui');
+    });
+
+    it('needs an issuer and a client id as well: the flag alone offers nothing', async () => {
+      await load({ fineractApiUrl: '/api/v1', defaultTenant: TEST_TENANT, oidcLoginEnabled: true });
+
+      expect(service.oidcLoginEnabled()).toBe(false);
+      expect(service.oidcConfig()).toBeNull();
+    });
+  });
+
+  describe('passwordLoginEnabled', () => {
+    const oidc = { issuer: 'https://sso.example/realms/bank', clientId: 'backoffice-ui' };
+
+    it('is on by default', async () => {
+      await load({ fineractApiUrl: '/api/v1', defaultTenant: TEST_TENANT });
+      expect(service.passwordLoginEnabled()).toBe(true);
+    });
+
+    it('can be switched off when identity-provider sign-in is available', async () => {
+      await load({
+        fineractApiUrl: '/api/v1',
+        defaultTenant: TEST_TENANT,
+        oidcLoginEnabled: true,
+        oidc,
+        passwordLoginEnabled: false,
+      });
+      expect(service.passwordLoginEnabled()).toBe(false);
+    });
+
+    it('stays on when identity-provider sign-in is not available, so nobody is locked out', async () => {
+      await load({
+        fineractApiUrl: '/api/v1',
+        defaultTenant: TEST_TENANT,
+        passwordLoginEnabled: false,
+      });
+      expect(service.passwordLoginEnabled()).toBe(true);
     });
   });
 
