@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import { Injectable } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { FakeStorageAdapter, provideFakeAdapters } from '../../testing/adapters';
@@ -34,6 +35,7 @@ const DISCOVERY = {
 const DEFAULT_OIDC = { issuer: ISSUER, clientId: 'backoffice-ui' };
 
 /** A service whose redirects are recorded instead of followed. */
+@Injectable()
 class TestOidcService extends OidcService {
   readonly navigations: string[] = [];
   protected override navigate(url: string): void {
