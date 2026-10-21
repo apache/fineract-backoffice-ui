@@ -91,7 +91,7 @@
     "@angular-architects/native-federation": "^22.2.1",
     "@angular-devkit/build-angular": "^22.2.0",
     "@angular/build": "22.2.0",
-    "@angular/cli": "^22.2.0",
+    "@angular/cli": "^22.2.3",
     "@angular/compiler-cli": "22.2.0",
     "@axe-core/playwright": "^4.12.1",
     "@emnapi/core": "1.11.3",
