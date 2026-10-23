@@ -125,3 +125,101 @@ Using Keycloak, which is the dialect upstream documents most fully:
 Permissions are unaffected: they continue to come from Fineract's own role model, whichever way the
 user authenticated, and are evaluated by `AuthService.hasPermission()` as described in
 [DOCS/RBAC.md](RBAC.md).
+
+## Signing in through the identity provider
+
+The login page can offer **Sign in with your identity provider**, which signs a user in with the
+authorization-code flow and PKCE (S256) as a **public client**. No client secret exists or is
+needed. Fineract still only validates the Bearer token, as described above; this is the client half.
+
+The feature is **opt-in**. Without the keys below the login page is unchanged: a username and
+password, and nothing else.
+
+### Configuration
+
+Turn it on in `config.json` (or the deployment's `branding/config.json`):
+
+```json
+{
+  "oidcLoginEnabled": true,
+  "oidc": {
+    "issuer": "https://keycloak.example/realms/fineract",
+    "clientId": "fineract-backoffice-ui",
+    "scopes": "openid profile"
+  },
+  "passwordLoginEnabled": false
+}
+```
+
+| Key                    | Default          | Meaning                                                                         |
+| ---------------------- | ---------------- | ------------------------------------------------------------------------------- |
+| `oidcLoginEnabled`     | `false`          | Offers the identity-provider button. Must be exactly `true`.                    |
+| `oidc.issuer`          | _(required)_     | Issuer URL; discovery is read from `<issuer>/.well-known/openid-configuration`. |
+| `oidc.clientId`        | _(required)_     | The public client registered with the provider.                                 |
+| `oidc.scopes`          | `openid profile` | Space-separated. `offline_access` is dropped even if listed.                    |
+| `oidc.redirectPath`    | `/auth/callback` | Path on this application's origin that receives the authorization code.         |
+| `oidc.postLogoutPath`  | `/login`         | Path on this application's origin to return to after sign-out.                  |
+| `passwordLoginEnabled` | `true`           | `false` removes the username and password form (see below).                     |
+
+- `oidcLoginEnabled` is ignored unless `oidc.issuer` and `oidc.clientId` are both set.
+- `passwordLoginEnabled: false` is ignored unless OIDC sign-in is enabled and complete, so a mistaken
+  config cannot lock everyone out. It hides the form only; it does not stop Fineract from accepting
+  Basic credentials, which is a server setting.
+- The Content-Security-Policy must allow the provider: add its origin to `connect-src`. The
+  provider's CORS settings must allow this application's origin.
+
+### Keycloak client settings
+
+Create one client in the realm for this application with:
+
+| Setting                         | Value                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| Client authentication           | **Off** (a public client; there is no secret)                                              |
+| Standard flow                   | **On**. Direct access grants, implicit flow and service accounts: off.                     |
+| Proof Key for Code Exchange     | **S256** (`pkce.code.challenge.method`)                                                    |
+| Valid redirect URIs             | Exactly `<origin>/auth/callback`, with no wildcard                                         |
+| Valid post logout redirect URIs | Exactly `<origin>/login`, with no wildcard                                                 |
+| Web origins                     | `<origin>`, so the browser may call the token endpoint                                     |
+| Optional client scopes          | Do not add `offline_access`; a staff session must end with the provider's session.         |
+| Audience mapper                 | An **Audience** mapper so the access token's `aud` contains the audience Fineract expects. |
+
+Use the paths from `oidc.redirectPath` and `oidc.postLogoutPath` if you changed them. Other
+providers need the equivalent: a public client, PKCE S256, exact redirect URIs.
+
+### What happens
+
+In `OidcService`, `OidcCallbackComponent` and `AuthService`:
+
+1. The button fetches the provider's discovery document (endpoints must share the issuer's origin),
+   stores `state`, `nonce` and the PKCE verifier for the tab, and redirects.
+2. `/auth/callback` checks `state`, exchanges the code with the verifier, and checks the ID token's
+   `nonce`, issuer and audience. The signature is not verified: the token comes straight from the
+   token endpoint (OpenID Connect Core 3.1.3.7). Fineract validates the access token on each call.
+3. The user context is loaded from **`GET /v1/userdetails`** with the Bearer token. It returns the
+   user's username, id, office, staff, roles and permissions, and `sessionFromUserDetails` maps that
+   to the same `UserSession` a Basic login produces, so menus, guards and `rbacEnabled` work
+   unchanged. It is the only endpoint that returns a user's own permissions: the users and roles
+   endpoints require `READ_USER` / `READ_PERMISSION`, which staff roles do not hold.
+4. Every API call carries `Authorization: Bearer`. The token is refreshed (refresh-token grant) when
+   less than a minute is left, and by a timer. A refusal by the provider signs the user out; a
+   network failure does not.
+5. Sign-out is RP-initiated: the local session is cleared, then the browser goes to the provider's
+   `end_session_endpoint` with `id_token_hint` and returns to `postLogoutPath`.
+
+Tokens are kept in `sessionStorage` (tab-scoped, like the Basic session), listed in
+`STORAGE_KEYS`. The implementation is in-house rather than `angular-oauth2-oidc`: it is about 300
+lines, adds no dependency, needs no iframe session check, and talks to the provider with `fetch`,
+outside the HTTP interceptors that add tenant headers a provider's CORS policy refuses.
+
+### Platform requirement: `/v1/userdetails`
+
+In Fineract 1.15.0 `GET /v1/userdetails` is loaded only when `fineract.security.oauth2.enabled` is
+set. With OIDC federation (`fineract.security.oidc-federation.enabled`) alone the endpoint answers
+**404**, and a user who authenticated at the provider cannot be given a session. Until the platform
+also loads the endpoint under `fineract.security.oidc-federation.enabled`, a deployment needs that
+change itself. The upstream Fineract change is tracked separately (a Jira issue is to be filed).
+
+The UI does not fail open. When `/v1/userdetails` answers 404 it drops the tokens, stays on the
+callback page and shows a message saying the server cannot identify users who sign in through an
+identity provider. Any other refusal shows a message that the account was not accepted. Neither
+opens a session.

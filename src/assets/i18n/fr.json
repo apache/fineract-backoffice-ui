@@ -1848,7 +1848,12 @@
     "sso": {
       "button": "Se connecter avec votre fournisseur d'identité",
       "divider": "ou",
-      "notImplemented": "La connexion via votre fournisseur d'identité n'est pas encore disponible. Utilisez votre nom d'utilisateur et votre mot de passe ci-dessous."
+      "unreachable": "Le fournisseur d'identité est injoignable. Réessayez ou contactez un administrateur.",
+      "completing": "Connexion en cours…",
+      "failed": "La connexion par votre fournisseur d'identité a échoué. Veuillez réessayer.",
+      "userDetailsNotFound": "Vous êtes authentifié(e), mais le serveur ne peut pas identifier les utilisateurs connectés par un fournisseur d'identité. Demandez à un administrateur d'activer les informations utilisateur OpenID Connect sur le serveur Fineract.",
+      "userDetailsFailed": "Vous êtes authentifié(e), mais le serveur n'a pas accepté votre compte. Demandez à un administrateur de vérifier que votre utilisateur existe et dispose d'un rôle.",
+      "backToLogin": "Retour à la connexion"
     }
   },
   "idle": {
