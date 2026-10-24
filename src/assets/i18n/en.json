@@ -352,6 +352,7 @@
     "PREMATURE_CLOSE": "Close before maturity",
     "REACTIVATE_CLIENT": "Reactivate Client",
     "RECURRING_DEPOSIT": "Recurring Deposit",
+    "SHARE_ACCOUNT": "Share Account",
     "REJECT": "Reject",
     "REJECTION_DATE": "Rejection Date",
     "REJECTION_REASON": "Rejection Reason",

@@ -230,6 +230,7 @@
     "SAVINGS_ACCOUNT": "예금 계좌",
     "FIXED_DEPOSIT": "정기 예금",
     "RECURRING_DEPOSIT": "적금",
+    "SHARE_ACCOUNT": "출자금 계좌",
     "APPROVE_ACCOUNT": "계좌 승인",
     "ACTIVATE_ACCOUNT": "계좌 활성화",
     "CLOSE_ACCOUNT": "계좌 종료",

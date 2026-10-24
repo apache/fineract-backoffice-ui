@@ -157,3 +157,25 @@ test('empty account tabs offer the matching creation action', async ({ page }, t
   await loanAction.click();
   await expect(page).toHaveURL('/loans/create?clientId=2001');
 });
+
+test('the client page links to its charges, its collateral and a new share account', async ({
+  page,
+}) => {
+  await signIn(page);
+  await mockClient(page);
+
+  await page.goto(CLIENT_URL);
+  await page.locator('#clientActionsMenu-trigger').click();
+  await page.getByTestId('client-charges-action').click();
+  await expect(page).toHaveURL(`/clients/${CLIENT_ID}/charges`);
+
+  await page.goto(CLIENT_URL);
+  await page.locator('#clientActionsMenu-trigger').click();
+  await page.getByTestId('client-collateral-action').click();
+  await expect(page).toHaveURL(`/clients/${CLIENT_ID}/collaterals`);
+
+  await page.goto(CLIENT_URL);
+  await page.locator('#createMenu-trigger').click();
+  await page.getByTestId('client-create-share-account').click();
+  await expect(page).toHaveURL(`/products/shares/create?clientId=${CLIENT_ID}`);
+});

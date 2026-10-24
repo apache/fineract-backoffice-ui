@@ -403,6 +403,28 @@ describe('ClientViewComponent', () => {
     });
   });
 
+  describe('client screens reachable from the page', () => {
+    it('opens the client charges', () => {
+      component.onViewCharges();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/clients', 123, 'charges']);
+    });
+
+    it('opens the client collateral', () => {
+      component.onViewCollateral();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/clients', 123, 'collaterals']);
+    });
+
+    it('opens a new share account pre-filled with the client', () => {
+      component.onCreateShare();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/products/shares/create'], {
+        queryParams: { clientId: 123 },
+      });
+    });
+  });
+
   describe('teardown', () => {
     it('dismisses popovers when destroyed', () => {
       const withPopovers = component as unknown as {
