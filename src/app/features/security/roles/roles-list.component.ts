@@ -73,8 +73,10 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           emphasis="quiet"
           [label]="'COMMON.EDIT' | appTranslate"
           icon="create-outline"
+          [attr.data-testid]="'role-edit-' + role.id"
           [appTooltip]="'COMMON.EDIT' | appTranslate"
           (click)="onEditRole(role)"
+          *appHasPermission="'UPDATE_ROLE'"
         />
         @if (role.disabled) {
           <app-button

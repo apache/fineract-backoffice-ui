@@ -64,7 +64,9 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           intent="primary"
           icon="create-outline"
           [label]="'COMMON.EDIT' | appTranslate"
+          [attr.data-testid]="'user-edit-' + user.id"
           (click)="onEditUser(user)"
+          *appHasPermission="'UPDATE_USER'"
         />
         <!--
           Not offered on your own account. The platform does allow it, and an administrator who

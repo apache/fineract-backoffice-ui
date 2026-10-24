@@ -205,8 +205,19 @@ describe('RolesListComponent', () => {
       const html = fixture.nativeElement as HTMLElement;
       expect(html.querySelector('[data-testid="role-disable-1"]')).toBeNull();
       expect(html.querySelector('[data-testid="role-delete-1"]')).toBeNull();
-      // Edit is not gated here and stays, so this is not an empty screen.
+      expect(html.querySelector('[data-testid="role-edit-1"]')).toBeNull();
       expect(html.querySelector('[data-testid="role-status-1"]')).not.toBeNull();
+    });
+
+    it('offers Edit to a session with UPDATE_ROLE', () => {
+      roleApiSpy.list.mockReturnValue(of([role()]));
+
+      fixture.detectChanges();
+
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('[data-testid="role-edit-1"]'),
+      ).not.toBeNull();
+      expect(authService.hasPermission).toHaveBeenCalledWith('UPDATE_ROLE', false);
     });
 
     /**

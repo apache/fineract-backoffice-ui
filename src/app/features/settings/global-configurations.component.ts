@@ -31,6 +31,7 @@ import { IonButton, IonIcon, IonToggle } from '@ionic/angular/standalone';
 import { NotificationService } from '../../core/services/notification.service';
 import { DialogService } from '../../core/services/dialog.service';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
+import { RequiresPermissionDirective } from '../../shared/directives/requires-permission.directive';
 
 /**
  * Component for managing global system configurations.
@@ -46,6 +47,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
     IonButton,
     IonToggle,
     TooltipDirective,
+    RequiresPermissionDirective,
   ],
   template: `
     <app-data-table
@@ -62,6 +64,8 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
           [checked]="!!config['enabled']"
           (ionChange)="onToggleConfig(config)"
           [attr.aria-label]="'Toggle ' + config['name']"
+          [attr.data-testid]="'config-toggle-' + config['id']"
+          appRequiresPermission="UPDATE_CONFIGURATION"
         >
         </ion-toggle>
       </ng-template>
@@ -72,7 +76,9 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
           color="primary"
           [attr.aria-label]="'COMMON.EDIT' | appTranslate"
           [appTooltip]="'COMMON.EDIT' | appTranslate"
+          [attr.data-testid]="'config-edit-' + config['id']"
           (click)="onEditConfig(config)"
+          appRequiresPermission="UPDATE_CONFIGURATION"
         >
           <ion-icon name="create-outline"></ion-icon>
         </ion-button>

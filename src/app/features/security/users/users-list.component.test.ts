@@ -140,6 +140,23 @@ describe('UsersListComponent', () => {
     expect(userApi['delete']).not.toHaveBeenCalled();
   });
 
+  it('offers Edit to a session with UPDATE_USER', async () => {
+    await setup();
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="user-edit-4"]'),
+    ).not.toBeNull();
+    expect(authService.hasPermission).toHaveBeenCalledWith('UPDATE_USER', false);
+  });
+
+  it('hides Edit from a session without UPDATE_USER', async () => {
+    await setup([user()], 1, false);
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="user-edit-4"]'),
+    ).toBeNull();
+  });
+
   it('hides Delete from a session without DELETE_USER', async () => {
     await setup([user()], 1, false);
 
