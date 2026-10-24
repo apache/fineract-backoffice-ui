@@ -74,6 +74,7 @@ export const CAMPAIGNS_ROUTES: Routes = [
   },
   {
     path: 'email-messages',
+    title: 'EMAIL_MESSAGES.TITLE',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_EMAIL_CAMPAIGN' },
     loadComponent: () =>

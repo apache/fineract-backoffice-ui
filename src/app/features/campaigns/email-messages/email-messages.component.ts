@@ -160,133 +160,154 @@ export type EmailTab = (typeof EMAIL_TAB)[keyof typeof EMAIL_TAB];
                 </div>
               }
 
-              <cdk-table [dataSource]="messages()" class="full-width">
+              <table cdk-table [dataSource]="messages()" class="full-width">
                 <ng-container cdkColumnDef="id">
-                  <cdk-header-cell *cdkHeaderCellDef>ID</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.id }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ID' | appTranslate }}</th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.id }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="to">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.TO' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.to }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.TO' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.to }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="subject">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.SUBJECT' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.subject }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.SUBJECT' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.subject }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="status">
-                  <cdk-header-cell *cdkHeaderCellDef>Status</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.status }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.STATUS' | appTranslate }}</th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.status }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="actions">
-                  <cdk-header-cell *cdkHeaderCellDef>Actions</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ACTIONS' | appTranslate }}</th>
+                  <td cdk-cell *cdkCellDef="let row">
                     <ion-button
                       fill="clear"
                       color="danger"
                       (click)="deleteMessage(row.id)"
                       [title]="'EMAIL_MESSAGES.DELETE' | appTranslate"
+                      [attr.aria-label]="'EMAIL_MESSAGES.DELETE' | appTranslate"
                     >
                       &#x1F5D1;
                     </ion-button>
-                  </cdk-cell>
+                  </td>
                 </ng-container>
-                <cdk-header-row *cdkHeaderRowDef="msgColumns"></cdk-header-row>
-                <cdk-row *cdkRowDef="let row; columns: msgColumns"></cdk-row>
-              </cdk-table>
+                <tr cdk-header-row *cdkHeaderRowDef="msgColumns"></tr>
+                <tr cdk-row *cdkRowDef="let row; columns: msgColumns"></tr>
+                <tr class="no-data-row" *cdkNoDataRow>
+                  <td [attr.colspan]="msgColumns.length">
+                    {{ 'COMMON.NO_DATA' | appTranslate }}
+                  </td>
+                </tr>
+              </table>
             </div>
           }
           @if (activeTab() === TAB.pending) {
             <div class="tab-content">
-              <cdk-table [dataSource]="pending()" class="full-width">
+              <table cdk-table [dataSource]="pending()" class="full-width">
                 <ng-container cdkColumnDef="id">
-                  <cdk-header-cell *cdkHeaderCellDef>ID</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.id }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ID' | appTranslate }}</th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.id }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="to">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.TO' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.to }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.TO' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.to }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="subject">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.SUBJECT' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.subject }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.SUBJECT' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.subject }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="sentDate">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.SENT_DATE' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.sentDate }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.SENT_DATE' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.sentDate }}</td>
                 </ng-container>
-                <cdk-header-row *cdkHeaderRowDef="queueColumns"></cdk-header-row>
-                <cdk-row *cdkRowDef="let row; columns: queueColumns"></cdk-row>
-              </cdk-table>
+                <tr cdk-header-row *cdkHeaderRowDef="queueColumns"></tr>
+                <tr cdk-row *cdkRowDef="let row; columns: queueColumns"></tr>
+                <tr class="no-data-row" *cdkNoDataRow>
+                  <td [attr.colspan]="queueColumns.length">
+                    {{ 'COMMON.NO_DATA' | appTranslate }}
+                  </td>
+                </tr>
+              </table>
             </div>
           }
           @if (activeTab() === TAB.sent) {
             <div class="tab-content">
-              <cdk-table [dataSource]="sent()" class="full-width">
+              <table cdk-table [dataSource]="sent()" class="full-width">
                 <ng-container cdkColumnDef="id">
-                  <cdk-header-cell *cdkHeaderCellDef>ID</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.id }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ID' | appTranslate }}</th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.id }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="to">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.TO' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.to }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.TO' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.to }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="subject">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.SUBJECT' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.subject }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.SUBJECT' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.subject }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="sentDate">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.SENT_DATE' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.sentDate }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.SENT_DATE' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.sentDate }}</td>
                 </ng-container>
-                <cdk-header-row *cdkHeaderRowDef="queueColumns"></cdk-header-row>
-                <cdk-row *cdkRowDef="let row; columns: queueColumns"></cdk-row>
-              </cdk-table>
+                <tr cdk-header-row *cdkHeaderRowDef="queueColumns"></tr>
+                <tr cdk-row *cdkRowDef="let row; columns: queueColumns"></tr>
+                <tr class="no-data-row" *cdkNoDataRow>
+                  <td [attr.colspan]="queueColumns.length">
+                    {{ 'COMMON.NO_DATA' | appTranslate }}
+                  </td>
+                </tr>
+              </table>
             </div>
           }
           @if (activeTab() === TAB.failed) {
             <div class="tab-content">
-              <cdk-table [dataSource]="failed()" class="full-width">
+              <table cdk-table [dataSource]="failed()" class="full-width">
                 <ng-container cdkColumnDef="id">
-                  <cdk-header-cell *cdkHeaderCellDef>ID</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.id }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>{{ 'COMMON.ID' | appTranslate }}</th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.id }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="to">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.TO' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.to }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.TO' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.to }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="subject">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.SUBJECT' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.subject }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.SUBJECT' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.subject }}</td>
                 </ng-container>
                 <ng-container cdkColumnDef="sentDate">
-                  <cdk-header-cell *cdkHeaderCellDef>{{
-                    'EMAIL_MESSAGES.SENT_DATE' | appTranslate
-                  }}</cdk-header-cell>
-                  <cdk-cell *cdkCellDef="let row">{{ row.sentDate }}</cdk-cell>
+                  <th cdk-header-cell *cdkHeaderCellDef>
+                    {{ 'EMAIL_MESSAGES.SENT_DATE' | appTranslate }}
+                  </th>
+                  <td cdk-cell *cdkCellDef="let row">{{ row.sentDate }}</td>
                 </ng-container>
-                <cdk-header-row *cdkHeaderRowDef="queueColumns"></cdk-header-row>
-                <cdk-row *cdkRowDef="let row; columns: queueColumns"></cdk-row>
-              </cdk-table>
+                <tr cdk-header-row *cdkHeaderRowDef="queueColumns"></tr>
+                <tr cdk-row *cdkRowDef="let row; columns: queueColumns"></tr>
+                <tr class="no-data-row" *cdkNoDataRow>
+                  <td [attr.colspan]="queueColumns.length">
+                    {{ 'COMMON.NO_DATA' | appTranslate }}
+                  </td>
+                </tr>
+              </table>
             </div>
           }
           @if (activeTab() === TAB.configuration) {
@@ -321,6 +342,10 @@ export type EmailTab = (typeof EMAIL_TAB)[keyof typeof EMAIL_TAB];
         display: flex;
         flex-direction: column;
         gap: 16px;
+      }
+      .no-data-row td {
+        text-align: center;
+        color: var(--text-muted);
       }
       .full-width {
         width: 100%;
