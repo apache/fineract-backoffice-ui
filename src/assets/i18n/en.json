@@ -204,6 +204,7 @@
     "ENABLED": "Enabled",
     "ENTITY": "Entity",
     "ERROR": "Operation failed.",
+    "ERROR_LOG": "Error Log",
     "ERRORS": {
       "FORBIDDEN": "You do not have permission to perform this action. Contact an administrator if you believe this is a mistake.",
       "NETWORK": "Unable to connect to the server. Please check your network or CORS settings.",

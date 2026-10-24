@@ -204,6 +204,7 @@
     "ENABLED": "Activé",
     "ENTITY": "Entité",
     "ERROR": "Échec de l'opération.",
+    "ERROR_LOG": "Journal des erreurs",
     "ERRORS": {
       "FORBIDDEN": "Vous n'avez pas l'autorisation d'effectuer cette action. Contactez un administrateur si vous pensez qu'il s'agit d'une erreur.",
       "NETWORK": "Impossible de se connecter au serveur. Vérifiez votre réseau ou vos paramètres CORS.",
