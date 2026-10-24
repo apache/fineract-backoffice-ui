@@ -865,6 +865,8 @@
     "NET_CASH": "Net Cash"
   },
   "CLIENTS": {
+    "DATE_OF_BIRTH_NOT_SET": "Not set",
+    "CLEAR_DATE_OF_BIRTH": "Clear date of birth",
     "CREATE_CLIENT": "Create Client",
     "CREATE_SUCCESS": "Client created.",
     "UPDATE_SUCCESS": "Client updated.",
@@ -1242,6 +1244,7 @@
     "CONFIRM_DELETE": "Delete the role \"{{name}}\"? This cannot be undone, and the platform refuses while any user still holds it."
   },
   "HELP": {
+    "CREATE_CLIENT_DESC": "Create a client by choosing a type and office, then entering their details.",
     "SEARCH_DESC": "Use this field to search or filter the table records.",
     "CLIENTS_CONTRACTS_DESC": "View and manage all registered clients and their contracts.",
     "LOANS_PORTFOLIO_DESC": "Monitor the active loan portfolio and applications.",

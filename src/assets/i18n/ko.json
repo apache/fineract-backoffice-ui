@@ -312,6 +312,7 @@
     "PERMISSIONS": "상세 권한"
   },
   "HELP": {
+    "CREATE_CLIENT_DESC": "고객 유형과 사무소를 선택한 후 정보를 입력하여 고객을 생성하세요.",
     "SEARCH_DESC": "테이블 레코드를 검색하거나 필터링하려면 이 필드를 사용하십시오.",
     "ROLES_DESC": "기능적 역할을 정의하고 액세스 제어를 위해 세부 권한을 할당합니다.",
     "CLIENTS_CONTRACTS_DESC": "등록된 모든 고객과 그들의 계약을 조회하고 관리합니다.",
@@ -510,6 +511,8 @@
     "NO_SAVINGS_ACCOUNTS": "이 그룹에는 저축 계좌가 없습니다."
   },
   "CLIENTS": {
+    "DATE_OF_BIRTH_NOT_SET": "설정되지 않음",
+    "CLEAR_DATE_OF_BIRTH": "생년월일 지우기",
     "DEPOSIT_ACCOUNTS": "예금",
     "SHARE_ACCOUNTS": "출자금",
     "FIXED_DEPOSITS": "정기 예금",

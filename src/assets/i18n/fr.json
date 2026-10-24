@@ -865,6 +865,8 @@
     "NET_CASH": "Espèces nettes"
   },
   "CLIENTS": {
+    "DATE_OF_BIRTH_NOT_SET": "Non renseignée",
+    "CLEAR_DATE_OF_BIRTH": "Effacer la date de naissance",
     "CREATE_CLIENT": "Créer un client",
     "CREATE_SUCCESS": "Client créé.",
     "UPDATE_SUCCESS": "Client mis à jour.",
@@ -1242,6 +1244,7 @@
     "CONFIRM_DELETE": "Supprimer le rôle « {{name}} » ? Cette action est irréversible, et la plateforme la refuse tant qu’un utilisateur le détient."
   },
   "HELP": {
+    "CREATE_CLIENT_DESC": "Créez un client en choisissant son type et son agence, puis en saisissant ses informations.",
     "SEARCH_DESC": "Utilisez ce champ pour rechercher ou filtrer les enregistrements du tableau.",
     "CLIENTS_CONTRACTS_DESC": "Consultez et gérez tous les clients enregistrés et leurs contrats.",
     "LOANS_PORTFOLIO_DESC": "Suivez le portefeuille de prêts actifs et les demandes.",

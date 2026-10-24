@@ -23,6 +23,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PlatformDateService } from '../../core/services/platform-date.service';
 import { FormsModule } from '@angular/forms';
 import { HelpIconComponent, StepperComponent } from '../../shared';
+import { ButtonComponent } from '../../ui/button/button.component';
 import { TranslatePipe } from '../../core/adapters';
 import { CreateOfficeDialogComponent } from '../../shared/components/create-office-dialog/create-office-dialog.component';
 import { DialogService } from '../../core/services/dialog.service';
@@ -70,6 +71,7 @@ import {
     TranslatePipe,
     HelpIconComponent,
     StepperComponent,
+    ButtonComponent,
     IonIcon,
     IonButton,
     IonSpinner,
@@ -99,7 +101,11 @@ import {
                 ? ('CLIENTS.EDIT_CLIENT' | appTranslate)
                 : ('CLIENTS.CREATE_CLIENT' | appTranslate)
             }}
-            <app-help-icon helpTextKey="HELP.CLIENTS_CONTRACTS_DESC"></app-help-icon>
+            <app-help-icon
+              [helpTextKey]="
+                isEditMode() ? 'HELP.CLIENTS_CONTRACTS_DESC' : 'HELP.CREATE_CLIENT_DESC'
+              "
+            ></app-help-icon>
           </ion-card-title>
         </ion-card-header>
 
@@ -407,7 +413,13 @@ import {
                       'CLIENTS.DATE_OF_BIRTH' | appTranslate
                     }}</ion-label>
                     @if (pickersReady()) {
-                      <ion-datetime-button datetime="dateOfBirth-picker"></ion-datetime-button>
+                      <ion-datetime-button datetime="dateOfBirth-picker">
+                        @if (!dateOfBirth()) {
+                          <span slot="date-target">{{
+                            'CLIENTS.DATE_OF_BIRTH_NOT_SET' | appTranslate
+                          }}</span>
+                        }
+                      </ion-datetime-button>
                     }
                     <ion-modal [keepContentsMounted]="true">
                       <ng-template>
@@ -421,6 +433,18 @@ import {
                         ></ion-datetime>
                       </ng-template>
                     </ion-modal>
+                    @if (!isEditMode() && dateOfBirth()) {
+                      <app-button
+                        type="button"
+                        intent="neutral"
+                        emphasis="quiet"
+                        size="small"
+                        data-testid="clear-date-of-birth"
+                        (click)="dateOfBirth.set(null)"
+                      >
+                        {{ 'CLIENTS.CLEAR_DATE_OF_BIRTH' | appTranslate }}
+                      </app-button>
+                    }
                   </ion-item>
                 </div>
               }
@@ -814,6 +838,9 @@ export class ClientFormComponent implements OnInit {
 
       if (this.dateOfBirth()) {
         this.client().dateOfBirth = formatDateToFineract(this.dateOfBirth());
+      } else {
+        // A failed save may have left the previously selected DOB in this request object.
+        delete this.client().dateOfBirth;
       }
 
       if (this.client().legalFormId === 2) {
