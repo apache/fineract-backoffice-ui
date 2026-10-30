@@ -17,10 +17,13 @@
  * under the License.
  */
 
-import { Injectable, signal, inject, computed } from '@angular/core';
+import { Injectable, signal, inject, computed, Injector } from '@angular/core';
+import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { ConfigService } from './config.service';
+import { OidcService } from './oidc.service';
+import { SESSION_EXPIRED_REASON } from '../router/session-reasons';
 import { STORAGE } from '../adapters';
 import { skipErrorToast } from '../http/http-context';
 import { permissionsSatisfy } from '../utils/permission-matcher';
@@ -68,6 +71,57 @@ export interface UserSession {
    * `/authentication`. Travels on every later request as `Fineract-Platform-TFA-Token`.
    */
   tfaToken?: string;
+  /**
+   * How the user signed in. Absent means username and password (Basic). `oidc` means the identity
+   * provider: requests carry `Authorization: Bearer`, and `base64EncodedAuthenticationKey` is empty.
+   */
+  authType?: 'oidc';
+  /** The staff record linked to the user, when there is one. */
+  staffId?: number;
+  staffDisplayName?: string;
+}
+
+/**
+ * The answer of `GET /v1/userdetails` (Fineract's `AuthenticatedOauthUserData`), the Bearer-token
+ * counterpart of the answer to `POST /v1/authentication`. Every field but `username` may be absent.
+ */
+export interface UserDetailsResponse {
+  username?: string;
+  userId?: number;
+  officeId?: number;
+  officeName?: string;
+  staffId?: number;
+  staffDisplayName?: string;
+  roles?: UserRole[];
+  permissions?: string[];
+  authenticated?: boolean;
+  /** Set instead of the fields above when the user's password has expired. */
+  shouldRenewPassword?: boolean;
+}
+
+/**
+ * Maps the `/v1/userdetails` answer to the session shape the application uses after a Basic
+ * login, so menus, guards and the profile page do not care how the user signed in.
+ *
+ * @throws when the answer names no user, which means the call did not authenticate
+ */
+export function sessionFromUserDetails(details: UserDetailsResponse | null): UserSession {
+  if (!details?.username) {
+    throw new Error('userdetails: the answer names no user');
+  }
+  return {
+    username: details.username,
+    base64EncodedAuthenticationKey: '',
+    authenticated: details.authenticated !== false,
+    officeId: details.officeId ?? 0,
+    officeName: details.officeName ?? '',
+    userId: details.userId ?? 0,
+    staffId: details.staffId,
+    staffDisplayName: details.staffDisplayName,
+    permissions: details.permissions ?? [],
+    roles: details.roles ?? [],
+    authType: 'oidc',
+  };
 }
 
 /**
@@ -83,6 +137,8 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly configService = inject(ConfigService);
   private readonly storage = inject(STORAGE);
+  private readonly oidc = inject(OidcService);
+  private readonly injector = inject(Injector);
 
   /** Signal containing the current user session or null if not authenticated */
   readonly currentUser = signal<UserSession | null>(this.getStoredSession());
@@ -118,6 +174,9 @@ export class AuthService {
   );
 
   /** Computed signal for the current username */
+  /** Whether this session was opened through the identity provider. */
+  readonly isOidcSession = computed(() => this.currentUser()?.authType === 'oidc');
+
   readonly username = computed(() => this.currentUser()?.username || '');
 
   /** Computed signal for the current user's office name */
@@ -153,10 +212,59 @@ export class AuthService {
       );
   }
 
+  constructor() {
+    // The provider refused a token refresh: the session is over. Local sign-out only, the
+    // provider has already ended its side.
+    this.oidc.sessionEnded.subscribe(() => {
+      if (!this.isAuthenticated()) return;
+      this.clearSession();
+      void this.injector
+        .get(Router)
+        .navigate(['/login'], { queryParams: { reason: SESSION_EXPIRED_REASON } });
+    });
+  }
+
   /**
-   * Logs out the current user and clears the session state.
+   * Completes an identity-provider sign-in: asks Fineract who the Bearer token belongs to
+   * (`GET /v1/userdetails`) and opens the session from the answer. The tokens must already be
+   * stored (`OidcService.completeLogin`).
+   *
+   * @returns the resulting session. On failure the tokens are dropped, so nobody is left half signed in.
+   */
+  completeOidcLogin(): Observable<UserSession> {
+    const tenantId = this.currentTenantId();
+    return this.http
+      .get<UserDetailsResponse>(`${this.configService.apiUrl}/userdetails`, {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${this.oidc.getAccessToken() ?? ''}`,
+          'Fineract-Platform-TenantId': tenantId,
+          'X-Mifos-Platform-TenantId': tenantId,
+        }),
+        context: skipErrorToast(),
+      })
+      .pipe(
+        map((details) => sessionFromUserDetails(details)),
+        tap({
+          next: (session) => this.setSession(session),
+          error: () => this.oidc.clear(),
+        }),
+      );
+  }
+
+  /**
+   * Logs out the current user and clears the session state. An identity-provider session is
+   * also ended at the provider (the browser is redirected there and back to the login page).
    */
   logout(): void {
+    const viaProvider = this.isOidcSession() || this.oidc.hasSession();
+    // Read before clearing: clearSession() wipes the tokens, and the provider needs the ID token
+    // as id_token_hint to end its session without asking the user to confirm.
+    const idToken = this.oidc.getIdToken();
+    this.clearSession();
+    if (viaProvider) void this.oidc.endSession(idToken);
+  }
+
+  private clearSession(): void {
     // Every tab-scoped key, not just the session object. The endpoint override in
     // `fineract_runtime_config` is deliberately left alone: it is device-scoped operator
     // intent (see `ConfigService`), and clearing it would silently move the next sign-in
@@ -175,6 +283,8 @@ export class AuthService {
         .subscribe({ error: () => undefined });
     }
 
+    // Also stops the refresh timer and invalidates a refresh in flight.
+    this.oidc.clear();
     this.storage.clearScope('session');
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
@@ -219,6 +329,8 @@ export class AuthService {
    */
   private isSessionComplete(session: UserSession | null): boolean {
     if (!session) return false;
+    // The identity provider is the authentication; the Fineract second factor is a Basic-login step.
+    if (session.authType === 'oidc') return true;
     return !session.isTwoFactorAuthenticationRequired || !!session.tfaToken;
   }
 
@@ -255,6 +367,10 @@ export class AuthService {
   private getStoredSession(): UserSession | null {
     const session = this.storage.read<UserSession | null>('session', null);
     if (!session) {
+      return null;
+    }
+    // An identity-provider session is only as good as its tokens, which a new tab does not have.
+    if (session.authType === 'oidc' && !this.oidc.hasSession()) {
       return null;
     }
     return { ...session, permissions: this.normalizePermissions(session.permissions ?? []) };

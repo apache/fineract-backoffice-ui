@@ -1857,7 +1857,12 @@
     "sso": {
       "button": "Sign in with your identity provider",
       "divider": "or",
-      "notImplemented": "Sign-in through your identity provider is not available yet. Use your username and password below."
+      "unreachable": "The identity provider could not be reached. Try again, or contact an administrator.",
+      "completing": "Signing you in…",
+      "failed": "Sign-in through your identity provider failed. Please try again.",
+      "userDetailsNotFound": "You were authenticated, but the server cannot identify users who sign in through an identity provider. Ask an administrator to enable OpenID Connect user details on the Fineract server.",
+      "userDetailsFailed": "You were authenticated, but the server did not accept your account. Ask an administrator to check that your user exists and has a role.",
+      "backToLogin": "Back to sign in"
     }
   },
   "idle": {
