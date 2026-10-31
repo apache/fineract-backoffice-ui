@@ -62,7 +62,7 @@ export class StandingInstructionHistoryComponent implements OnInit {
     { key: 'amount', label: 'COMMON.AMOUNT' },
     { key: 'executionTime', label: 'CLIENTS.EXECUTION_TIME' },
     { key: 'status', label: 'COMMON.STATUS' },
-    { key: 'errorLog', label: 'COMMON.ERROR' },
+    { key: 'errorLog', label: 'COMMON.ERROR_LOG' },
   ];
 
   ngOnInit(): void {
