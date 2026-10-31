@@ -19,6 +19,8 @@
 
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { PlatformDateService } from '../../../core/services/platform-date.service';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 import { FormsModule } from '@angular/forms';
 import { I18N, TranslatePipe } from '../../../core/adapters';
 import {
@@ -97,6 +99,7 @@ const CREATE_CHECK_STATUS = 100;
   imports: [
     FormsModule,
     TranslatePipe,
+    DateFieldComponent,
     IonButton,
     IonSpinner,
     IonIcon,
@@ -167,47 +170,21 @@ const CREATE_CHECK_STATUS = 100;
                 ></ion-input>
               </ion-item>
 
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'WC_LOANS.SUBMITTED_ON_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="submittedOnDate-picker"
-                      data-testid="submittedOnDate-picker"
-                      presentation="date"
-                      name="submittedOnDate"
-                      [(ngModel)]="submittedOnDate"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
+              <app-date-field
+                label="WC_LOANS.SUBMITTED_ON_DATE"
+                pickerId="submittedOnDate-picker"
+                [clearable]="true"
+                name="submittedOnDate"
+                [(ngModel)]="submittedOnDate"
+              ></app-date-field>
 
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'WC_LOANS.EXPECTED_DISBURSEMENT_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button
-                    datetime="expectedDisbursementDate-picker"
-                  ></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="expectedDisbursementDate-picker"
-                      data-testid="expectedDisbursementDate-picker"
-                      presentation="date"
-                      name="expectedDisbursementDate"
-                      [(ngModel)]="expectedDisbursementDate"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
+              <app-date-field
+                label="WC_LOANS.EXPECTED_DISBURSEMENT_DATE"
+                [required]="true"
+                pickerId="expectedDisbursementDate-picker"
+                name="expectedDisbursementDate"
+                [(ngModel)]="expectedDisbursementDate"
+              ></app-date-field>
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
@@ -446,6 +423,7 @@ export class WcLoanFormComponent implements OnInit {
   /** See `createPickersReady` — the date buttons must not outrun their pickers. */
   readonly pickersReady = createPickersReady();
 
+  private readonly platformDate = inject(PlatformDateService);
   private readonly loansService = inject(WorkingCapitalLoansService);
   private readonly nearBreachService = inject(WorkingCapitalNearBreachService);
   private readonly entityChecksService = inject(EntityDataTableService);
@@ -482,7 +460,17 @@ export class WcLoanFormComponent implements OnInit {
 
   loan: Partial<PostWorkingCapitalLoansRequest> = {};
   submittedOnDate: string | null = null;
-  expectedDisbursementDate: string | null = null;
+  /**
+   * Seeded, not left blank: `WorkingCapitalLoanApplicationDataValidator` marks this one
+   * mandatory, so an empty field would let the operator submit and collect a refusal. The
+   * platform's own today, through `PlatformDateService` — the browser's is a different day for
+   * part of every day where the tenant is east of the operator (#758).
+   *
+   * `submittedOnDate` above is the opposite case. The same validator documents it as optional
+   * and substitutes the platform's current date when it is absent, so leaving it unset is a
+   * real choice and the field says so rather than showing today.
+   */
+  expectedDisbursementDate: string | null = this.platformDate.today();
 
   readonly productOptions = signal<GetWorkingCapitalLoanProductsResponse[]>([]);
   readonly breachOptions = signal<GetWorkingCapitalLoanBreach[]>([]);
@@ -498,6 +486,19 @@ export class WcLoanFormComponent implements OnInit {
     this.requiredDatatables().some((entry) => entry.data === undefined),
   );
 
+  /**
+   * Refines the seeded disbursement date once the platform has answered.
+   *
+   * Called after the edit-mode decision below, not before: the resolution can answer
+   * immediately from cache, and seeding then would write today over a loan's own date.
+   */
+  private resolveDisbursementDate(): void {
+    this.platformDate.resolveToday().subscribe((today) => {
+      if (this.isEdit()) return;
+      this.expectedDisbursementDate = today;
+    });
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -509,6 +510,7 @@ export class WcLoanFormComponent implements OnInit {
     if (!this.isEdit()) {
       this.loadCreateChecks();
     }
+    this.resolveDisbursementDate();
     this.nearBreachService.getWorkingCapitalNearBreach().subscribe((data) => {
       this.nearBreachOptions.set(data);
     });

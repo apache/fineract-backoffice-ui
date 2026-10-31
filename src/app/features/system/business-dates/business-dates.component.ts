@@ -34,6 +34,7 @@ import {
   IonModal,
   IonSpinner,
 } from '@ionic/angular/standalone';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 import {
   BusinessDateManagementService,
@@ -52,6 +53,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   selector: 'app-business-dates',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     TranslatePipe,
     IonButton,
@@ -94,26 +96,14 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               <strong>{{ 'BUSINESS_DATES.CURRENT_DATE' | appTranslate }}:</strong>
               {{ businessDateEntry()?.date }}
             </p>
-            <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{
-                'BUSINESS_DATES.NEW_DATE' | appTranslate
-              }}</ion-label>
-              @if (pickersReady()) {
-                <ion-datetime-button datetime="businessDate-picker"></ion-datetime-button>
-              }
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime
-                    id="businessDate-picker"
-                    data-testid="businessDate-picker"
-                    presentation="date"
-                    name="businessDate"
-                    [ngModel]="businessDate()"
-                    (ngModelChange)="businessDate.set($event)"
-                  ></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </ion-item>
+            <app-date-field
+              class="full-width"
+              label="BUSINESS_DATES.NEW_DATE"
+              pickerId="businessDate-picker"
+              name="businessDate"
+              [ngModel]="businessDate()"
+              (ngModelChange)="businessDate.set($event)"
+            ></app-date-field>
           </ion-card-content>
           <div class="card-actions">
             <ion-button
@@ -139,26 +129,14 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               <strong>{{ 'BUSINESS_DATES.CURRENT_DATE' | appTranslate }}:</strong>
               {{ cobDateEntry()?.date }}
             </p>
-            <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{
-                'BUSINESS_DATES.NEW_DATE' | appTranslate
-              }}</ion-label>
-              @if (pickersReady()) {
-                <ion-datetime-button datetime="cobDate-picker"></ion-datetime-button>
-              }
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime
-                    id="cobDate-picker"
-                    data-testid="cobDate-picker"
-                    presentation="date"
-                    name="cobDate"
-                    [ngModel]="cobDate()"
-                    (ngModelChange)="cobDate.set($event)"
-                  ></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </ion-item>
+            <app-date-field
+              class="full-width"
+              label="BUSINESS_DATES.NEW_DATE"
+              pickerId="cobDate-picker"
+              name="cobDate"
+              [ngModel]="cobDate()"
+              (ngModelChange)="cobDate.set($event)"
+            ></app-date-field>
           </ion-card-content>
           <div class="card-actions">
             <ion-button color="primary" (click)="updateDate('COB_DATE')" [disabled]="!cobDate()">
