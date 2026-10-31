@@ -48,12 +48,14 @@ import {
   formatDateToFineract,
 } from '../../../core/utils/date-formatter';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 /** Adds a charge to a single Working Capital loan, from the options offered by its template. */
 @Component({
   selector: 'app-wc-loan-charge-form',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     TranslatePipe,
     IonButton,
@@ -107,25 +109,13 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               ></ion-input>
             </ion-item>
 
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{
-                'WC_LOANS.CHARGE.DUE_DATE' | appTranslate
-              }}</ion-label>
-              @if (pickersReady()) {
-                <ion-datetime-button datetime="dueDate-picker"></ion-datetime-button>
-              }
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime
-                    id="dueDate-picker"
-                    data-testid="dueDate-picker"
-                    presentation="date"
-                    name="dueDate"
-                    [(ngModel)]="dueDate"
-                  ></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </ion-item>
+            <app-date-field
+              label="WC_LOANS.CHARGE.DUE_DATE"
+              pickerId="dueDate-picker"
+              [clearable]="true"
+              name="dueDate"
+              [(ngModel)]="dueDate"
+            ></app-date-field>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">

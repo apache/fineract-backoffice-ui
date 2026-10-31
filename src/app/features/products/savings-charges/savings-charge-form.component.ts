@@ -48,6 +48,7 @@ import {
   FINERACT_LOCALE,
 } from '../../../core/utils/date-formatter';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 /**
  * Create form for a savings account charge. The available charge options come from the
@@ -58,6 +59,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   selector: 'app-savings-charge-form',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     TranslatePipe,
     IonButton,
@@ -114,25 +116,13 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               ></ion-input>
             </ion-item>
 
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{
-                'SAVINGS_CHARGES.DUE_DATE' | appTranslate
-              }}</ion-label>
-              @if (pickersReady()) {
-                <ion-datetime-button datetime="dueDate-picker"></ion-datetime-button>
-              }
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime
-                    id="dueDate-picker"
-                    data-testid="dueDate-picker"
-                    presentation="date"
-                    name="dueDate"
-                    [(ngModel)]="dueDate"
-                  ></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </ion-item>
+            <app-date-field
+              label="SAVINGS_CHARGES.DUE_DATE"
+              pickerId="dueDate-picker"
+              [clearable]="true"
+              name="dueDate"
+              [(ngModel)]="dueDate"
+            ></app-date-field>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
