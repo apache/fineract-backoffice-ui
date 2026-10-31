@@ -261,6 +261,8 @@
     "PRODUCT": "Product",
     "RENDER_TIME": "Render Time",
     "REQUIRED": "This field is required",
+    "NOT_SET": "Not set",
+    "CLEAR": "Clear",
     "COMPLETE_REQUIRED_FIELDS": "Complete the required fields to continue",
     "COMPLETE_FIELDS": "Complete: {{fields}}",
     "RESET": "Reset",

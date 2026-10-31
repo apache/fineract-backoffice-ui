@@ -246,6 +246,8 @@
     "PRODUCT": "उत्पाद",
     "RENDER_TIME": "रेंडर समय",
     "REQUIRED": "यह फ़ील्ड आवश्यक है",
+    "NOT_SET": "निर्धारित नहीं",
+    "CLEAR": "साफ़ करें",
     "COMPLETE_REQUIRED_FIELDS": "जारी रखने के लिए आवश्यक फ़ील्ड भरें",
     "COMPLETE_FIELDS": "पूरा करें: {{fields}}",
     "RESET": "रीसेट करें",

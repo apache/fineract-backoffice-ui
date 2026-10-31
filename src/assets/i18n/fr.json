@@ -261,6 +261,8 @@
     "PRODUCT": "Produit",
     "RENDER_TIME": "Temps d'affichage",
     "REQUIRED": "Ce champ est obligatoire",
+    "NOT_SET": "Non défini",
+    "CLEAR": "Effacer",
     "COMPLETE_REQUIRED_FIELDS": "Renseignez les champs obligatoires pour continuer",
     "COMPLETE_FIELDS": "À compléter : {{fields}}",
     "RESET": "Réinitialiser",

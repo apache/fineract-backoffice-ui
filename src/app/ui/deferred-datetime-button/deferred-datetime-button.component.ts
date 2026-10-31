@@ -66,7 +66,11 @@ export class StampDatetimeDirective {
   ],
   template: `
     @if (pickersReady()) {
-      <ion-datetime-button appStampDatetime></ion-datetime-button>
+      <ion-datetime-button appStampDatetime [attr.aria-labelledby]="ariaLabelledby() || null">
+        @if (placeholder()) {
+          <span slot="date-target">{{ placeholder() }}</span>
+        }
+      </ion-datetime-button>
     }
   `,
   styles: [
@@ -80,6 +84,26 @@ export class StampDatetimeDirective {
 export class DeferredDatetimeButtonComponent {
   /** Id of the `ion-datetime` this button should open. Must be unique per instance. */
   readonly datetimeId = input.required<string>();
+
+  /**
+   * Id of the element naming this button, for `aria-labelledby`.
+   *
+   * A date triad has nothing with a `label` property to slot into: the focusable control is the
+   * button this renders, and its accessible name would otherwise be whatever date it happens to
+   * show. `app-date-field` passes the id of the label it renders.
+   */
+  readonly ariaLabelledby = input('');
+
+  /**
+   * Text to show on the button instead of a date, already translated.
+   *
+   * An `ion-datetime` with no value still renders *today* on its button, which reads as a value
+   * the operator chose. Rendered here rather than projected in by the caller: a selected
+   * `ng-content` does not match a node declared inside an `@if`, so a conditional placeholder
+   * passed from outside never reaches the slot — measured, with the button still showing
+   * today's date.
+   */
+  readonly placeholder = input('');
 
   /** See `createPickersReady` — deferred relative to this instance, not the page. */
   readonly pickersReady = createPickersReady();

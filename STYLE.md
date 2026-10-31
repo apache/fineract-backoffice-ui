@@ -92,7 +92,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
 
 | Material (removed)                    | Ionic equivalent                                                       |
 | ------------------------------------- | ---------------------------------------------------------------------- |
-| `mat-card`                            | `ion-card` / `ion-card-header` / `ion-card-title` / `ion-card-content` |
+| `mat-card`                            | the shared `app-card` (see below)                                      |
 | `mat-form-field` + `matInput`         | the shared `app-form-field` + `ion-input` (see below)                  |
 | `mat-select` / `mat-option`           | `ion-select` / `ion-select-option`                                     |
 | `button mat-button`                   | `ion-button`                                                           |
@@ -100,7 +100,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
 | `mat-checkbox` / `mat-slide-toggle`   | `ion-checkbox` / `ion-toggle`                                          |
 | `mat-spinner`                         | `ion-spinner`                                                          |
 | `mat-progress-bar`                    | `ion-progress-bar`                                                     |
-| `mat-datepicker`                      | `ion-datetime-button` + `ion-modal` + `ion-datetime` (see below)       |
+| `mat-datepicker`                      | the shared `app-date-field` (see below)                                |
 | `matTooltip`                          | `[attr.title]`, or `[attr.aria-label]` on icon-only controls           |
 | `MatSnackBar`                         | `NotificationService` (see below)                                      |
 | `MatDialog`                           | `DialogService` (see below)                                            |
@@ -155,8 +155,43 @@ the value. Page containers use the shared `.app-form-container` class from
 `src/styles/_common.scss`, overriding `--app-form-max-width` where a form needs a different one,
 rather than re-declaring padding and centring.
 
-Dates are not covered yet: the `ion-datetime-button` + `ion-modal` + `ion-datetime` triad below
-is still written by hand, and an `app-date-field` is the next step (#287).
+### Date fields
+
+Use `app-date-field` (`src/app/ui/date-field/`). It owns the whole
+`ion-datetime-button` + `ion-modal` + `ion-datetime` triad, and unlike `app-form-field` it owns
+the value too — three elements that must know each other's ids cannot be projected — so it is a
+`ControlValueAccessor` and `name` plus `[(ngModel)]` work on it directly:
+
+```html
+<app-date-field
+  label="OFFICES.OPENING_DATE"
+  [required]="true"
+  pickerId="openingDate-picker"
+  name="openingDate"
+  [ngModel]="openingDate()"
+  (ngModelChange)="openingDate.set($event)"
+></app-date-field>
+```
+
+`pickerId` must be unique on the page: the button resolves its picker through `getElementById`.
+Pass `[clearable]="true"` for an optional date, and `notSetLabel` to override the placeholder
+shown while there is no value — an unset `ion-datetime` otherwise renders _today_ on its button,
+which reads as a value the operator chose.
+
+The label is referenced with `aria-labelledby` rather than slotted: the focusable control here is
+a button, whose accessible name would otherwise be whatever date it shows.
+
+### Cards
+
+Use `app-card` (`src/app/ui/card/`) rather than the four Ionic card elements. The heading is a
+translation key, and is `heading` rather than `title` because a `title` input also lands on the
+host as the HTML `title` attribute and browsers render that as a hover tooltip:
+
+```html
+<app-card heading="WC_PORTFOLIO.BY_STATUS">
+  <!-- content -->
+</app-card>
+```
 
 ### Date pickers
 

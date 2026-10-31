@@ -30,21 +30,15 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonDatetime,
-  IonDatetimeButton,
   IonInput,
-  IonItem,
-  IonLabel,
-  IonModal,
   IonNote,
   IonSelect,
   IonSelectOption,
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { toIsoDate } from '../../../core/utils/date-formatter';
-import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { createPickersReady } from '../../../shared/utils/pickers-ready';
 import { FormFieldComponent } from '../../../ui/form-field/form-field.component';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 @Component({
   selector: 'app-office-form',
@@ -53,11 +47,10 @@ import { FormFieldComponent } from '../../../ui/form-field/form-field.component'
     FormsModule,
     TranslatePipe,
     FormFieldComponent,
+    DateFieldComponent,
     IonButton,
     IonSpinner,
     IonInput,
-    IonItem,
-    IonLabel,
     IonNote,
     IonCardContent,
     IonCardHeader,
@@ -65,10 +58,6 @@ import { FormFieldComponent } from '../../../ui/form-field/form-field.component'
     IonCard,
     IonSelectOption,
     IonSelect,
-    IonDatetime,
-    IonDatetimeButton,
-    IonModal,
-    TooltipDirective,
   ],
   template: `
     <div class="app-form-container">
@@ -132,30 +121,14 @@ import { FormFieldComponent } from '../../../ui/form-field/form-field.component'
                 <ion-input name="externalId" [(ngModel)]="office().externalId"></ion-input>
               </app-form-field>
 
-              <div class="field">
-                <ion-item fill="outline" [appTooltip]="'HELP.OPENING_DATE_DESC' | appTranslate">
-                  <ion-label position="stacked">
-                    <span>{{ 'OFFICES.OPENING_DATE' | appTranslate }}</span
-                    ><span class="required-marker" aria-hidden="true">*</span></ion-label
-                  >
-                  @if (pickersReady()) {
-                    <ion-datetime-button datetime="openingDate-picker"></ion-datetime-button>
-                  }
-                  <ion-modal [keepContentsMounted]="true">
-                    <ng-template>
-                      <ion-datetime
-                        id="openingDate-picker"
-                        data-testid="openingDate-picker"
-                        presentation="date"
-                        name="openingDate"
-                        [ngModel]="openingDate()"
-                        (ngModelChange)="openingDate.set($event)"
-                        required
-                      ></ion-datetime>
-                    </ng-template>
-                  </ion-modal>
-                </ion-item>
-              </div>
+              <app-date-field
+                label="OFFICES.OPENING_DATE"
+                [required]="true"
+                pickerId="openingDate-picker"
+                name="openingDate"
+                [ngModel]="openingDate()"
+                (ngModelChange)="openingDate.set($event)"
+              ></app-date-field>
             </div>
 
             <div class="form-actions">
@@ -229,7 +202,6 @@ import { FormFieldComponent } from '../../../ui/form-field/form-field.component'
 })
 export class OfficeFormComponent implements OnInit {
   /** See `createPickersReady` — the date buttons must not outrun their pickers. */
-  readonly pickersReady = createPickersReady();
 
   private readonly officeApi = inject(OFFICE_API);
   private readonly route = inject(ActivatedRoute);

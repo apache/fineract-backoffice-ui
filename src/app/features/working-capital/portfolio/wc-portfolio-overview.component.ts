@@ -29,6 +29,7 @@ import {
   type WorkingCapitalLoanSnapshot,
 } from '../../../core/adapters';
 import { LoadErrorComponent } from '../../../shared';
+import { CardComponent } from '../../../ui/card/card.component';
 import { BarChartComponent } from '../../../shared/components/charts/bar-chart.component';
 import {
   DonutChartComponent,
@@ -86,6 +87,7 @@ const OTHER_DARK = '#c3c2b7';
     SpinnerComponent,
     BarChartComponent,
     DonutChartComponent,
+    CardComponent,
   ],
   template: `
     <div class="overview-container">
@@ -101,11 +103,9 @@ const OTHER_DARK = '#c3c2b7';
       } @else if (isLoading()) {
         <app-spinner data-testid="wc-portfolio-loading" />
       } @else if (summary().loans === 0) {
-        <section class="panel">
-          <p class="panel-body" data-testid="wc-portfolio-empty">
-            {{ 'WC_PORTFOLIO.EMPTY' | appTranslate }}
-          </p>
-        </section>
+        <app-card>
+          <p data-testid="wc-portfolio-empty">{{ 'WC_PORTFOLIO.EMPTY' | appTranslate }}</p>
+        </app-card>
       } @else {
         <div class="tiles">
           <section class="tile" data-testid="wc-tile-loans">
@@ -154,78 +154,72 @@ const OTHER_DARK = '#c3c2b7';
           </section>
         </div>
 
-        <section class="panel">
-          <h2 class="panel-title">{{ 'WC_PORTFOLIO.AGING_TITLE' | appTranslate }}</h2>
-          <div class="panel-body">
-            <app-bar-chart [data]="agingChart()" data-testid="wc-aging-chart"></app-bar-chart>
-            <table class="overview-table" data-testid="wc-portfolio-aging">
-              <caption class="sr-only">
-                {{
-                  'WC_PORTFOLIO.AGING_TITLE' | appTranslate
-                }}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">{{ 'WC_PORTFOLIO.AGING_BAND' | appTranslate }}</th>
-                  <th scope="col" class="numeric">{{ 'WC_PORTFOLIO.LOANS' | appTranslate }}</th>
-                  <th scope="col" class="numeric">
-                    {{ 'WC_PORTFOLIO.OUTSTANDING' | appTranslate }}
-                  </th>
-                  <th scope="col" class="numeric">
-                    {{ 'WC_PORTFOLIO.DELINQUENT' | appTranslate }}
-                  </th>
+        <app-card heading="WC_PORTFOLIO.AGING_TITLE">
+          <app-bar-chart [data]="agingChart()" data-testid="wc-aging-chart"></app-bar-chart>
+          <table class="overview-table" data-testid="wc-portfolio-aging">
+            <caption class="sr-only">
+              {{
+                'WC_PORTFOLIO.AGING_TITLE' | appTranslate
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'WC_PORTFOLIO.AGING_BAND' | appTranslate }}</th>
+                <th scope="col" class="numeric">{{ 'WC_PORTFOLIO.LOANS' | appTranslate }}</th>
+                <th scope="col" class="numeric">
+                  {{ 'WC_PORTFOLIO.OUTSTANDING' | appTranslate }}
+                </th>
+                <th scope="col" class="numeric">
+                  {{ 'WC_PORTFOLIO.DELINQUENT' | appTranslate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of summary().aging; track row.key) {
+                <tr [attr.data-testid]="'wc-aging-' + row.key">
+                  <th scope="row">{{ row.labelKey | appTranslate }}</th>
+                  <td class="numeric">{{ row.loans | number }}</td>
+                  <td class="numeric">{{ row.outstanding | number: '1.2-2' }}</td>
+                  <td class="numeric">{{ row.delinquentAmount | number: '1.2-2' }}</td>
                 </tr>
-              </thead>
-              <tbody>
-                @for (row of summary().aging; track row.key) {
-                  <tr [attr.data-testid]="'wc-aging-' + row.key">
-                    <th scope="row">{{ row.labelKey | appTranslate }}</th>
-                    <td class="numeric">{{ row.loans | number }}</td>
-                    <td class="numeric">{{ row.outstanding | number: '1.2-2' }}</td>
-                    <td class="numeric">{{ row.delinquentAmount | number: '1.2-2' }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </section>
+              }
+            </tbody>
+          </table>
+        </app-card>
 
-        <section class="panel">
-          <h2 class="panel-title">{{ 'WC_PORTFOLIO.BY_STATUS' | appTranslate }}</h2>
-          <div class="panel-body">
-            <app-donut-chart [data]="statusChart()" data-testid="wc-status-chart"></app-donut-chart>
-            <table class="overview-table" data-testid="wc-portfolio-status">
-              <caption class="sr-only">
-                {{
-                  'WC_PORTFOLIO.BY_STATUS' | appTranslate
-                }}
-              </caption>
-              <thead>
+        <app-card heading="WC_PORTFOLIO.BY_STATUS">
+          <app-donut-chart [data]="statusChart()" data-testid="wc-status-chart"></app-donut-chart>
+          <table class="overview-table" data-testid="wc-portfolio-status">
+            <caption class="sr-only">
+              {{
+                'WC_PORTFOLIO.BY_STATUS' | appTranslate
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'WC_LOANS.STATUS' | appTranslate }}</th>
+                <th scope="col" class="numeric">{{ 'WC_PORTFOLIO.LOANS' | appTranslate }}</th>
+                <th scope="col" class="numeric">
+                  {{ 'WC_PORTFOLIO.OUTSTANDING' | appTranslate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of summary().byStatus; track row.status) {
                 <tr>
-                  <th scope="col">{{ 'WC_LOANS.STATUS' | appTranslate }}</th>
-                  <th scope="col" class="numeric">{{ 'WC_PORTFOLIO.LOANS' | appTranslate }}</th>
-                  <th scope="col" class="numeric">
-                    {{ 'WC_PORTFOLIO.OUTSTANDING' | appTranslate }}
+                  <th scope="row">
+                    {{ row.status || ('WC_PORTFOLIO.STATUS_UNKNOWN' | appTranslate) }}
                   </th>
+                  <td class="numeric">{{ row.loans | number }}</td>
+                  <td class="numeric">{{ row.outstanding | number: '1.2-2' }}</td>
                 </tr>
-              </thead>
-              <tbody>
-                @for (row of summary().byStatus; track row.status) {
-                  <tr>
-                    <th scope="row">
-                      {{ row.status || ('WC_PORTFOLIO.STATUS_UNKNOWN' | appTranslate) }}
-                    </th>
-                    <td class="numeric">{{ row.loans | number }}</td>
-                    <td class="numeric">{{ row.outstanding | number: '1.2-2' }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-            <a class="all-loans" routerLink="/working-capital/loans" data-testid="wc-all-loans">
-              {{ 'WC_PORTFOLIO.VIEW_ALL_LOANS' | appTranslate }}
-            </a>
-          </div>
-        </section>
+              }
+            </tbody>
+          </table>
+          <a class="all-loans" routerLink="/working-capital/loans" data-testid="wc-all-loans">
+            {{ 'WC_PORTFOLIO.VIEW_ALL_LOANS' | appTranslate }}
+          </a>
+        </app-card>
       }
     </div>
   `,
@@ -246,8 +240,7 @@ const OTHER_DARK = '#c3c2b7';
         gap: 12px;
         margin-bottom: 16px;
       }
-      .tile,
-      .panel {
+      .tile {
         background: var(--ion-card-background, #fff);
         border: 1px solid var(--ion-color-light-shade, #d7d8da);
         border-radius: 8px;
@@ -255,16 +248,6 @@ const OTHER_DARK = '#c3c2b7';
         margin-bottom: 16px;
       }
       .tile-label,
-      .panel-title {
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin: 0 0 8px;
-        color: var(--ion-color-medium-shade, #808289);
-      }
-      .panel-title {
-        font-size: 1rem;
-        color: inherit;
-      }
       .figure {
         display: block;
         font-size: 1.5rem;

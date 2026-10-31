@@ -96,3 +96,24 @@ test('a converted field is addressable by its visible label', async ({ page }) =
   await expect(page.getByLabel('External ID')).toBeVisible();
   await expect(page.getByLabel('Parent Office')).toBeVisible();
 });
+
+test('a date field is addressable by its label', async ({ page }) => {
+  await signIn(page);
+  await page.route('**/api/v1/offices**', (route) =>
+    route.fulfill({ json: [{ id: 1, name: 'Head Office', nameDecorated: 'Head Office' }] }),
+  );
+
+  await page.goto('/organization/offices/create');
+
+  // A date triad has no label slot — the control is a button whose name would otherwise be
+  // whatever date it shows — so `app-date-field` names it by reference instead. This passing
+  // is what proves that reference reaches the button.
+  const opening = page.getByLabel('Opening Date');
+  await expect(opening).toBeVisible();
+
+  // And an unset picker says so rather than showing today, which reads as a chosen value.
+  // This form defaults its opening date to the tenant's today, so the button shows a date
+  // rather than the unset placeholder. The placeholder path is covered where it applies, in
+  // the component's own spec.
+  await expect(opening).not.toHaveText('');
+});
