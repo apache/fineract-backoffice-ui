@@ -108,25 +108,25 @@ interface SurveyResponse {
         <!-- Step 2: Responses table -->
         @if (responses().length > 0) {
           <h3>{{ 'SURVEY_RESPONSES.RESPONSES' | appTranslate }}</h3>
-          <cdk-table [dataSource]="responses()" class="full-width">
+          <table cdk-table [dataSource]="responses()" class="full-width">
             <ng-container cdkColumnDef="id">
-              <cdk-header-cell *cdkHeaderCellDef>ID</cdk-header-cell>
-              <cdk-cell *cdkCellDef="let row">{{ row.id ?? row.entryId }}</cdk-cell>
+              <th cdk-header-cell *cdkHeaderCellDef>ID</th>
+              <td cdk-cell *cdkCellDef="let row">{{ row.id ?? row.entryId }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="score">
-              <cdk-header-cell *cdkHeaderCellDef>Score</cdk-header-cell>
-              <cdk-cell *cdkCellDef="let row">{{ row.score }}</cdk-cell>
+              <th cdk-header-cell *cdkHeaderCellDef>Score</th>
+              <td cdk-cell *cdkCellDef="let row">{{ row.score }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="date">
-              <cdk-header-cell *cdkHeaderCellDef>Date</cdk-header-cell>
-              <cdk-cell *cdkCellDef="let row">{{ row.date }}</cdk-cell>
+              <th cdk-header-cell *cdkHeaderCellDef>Date</th>
+              <td cdk-cell *cdkCellDef="let row">{{ row.date }}</td>
             </ng-container>
 
             <ng-container cdkColumnDef="actions">
-              <cdk-header-cell *cdkHeaderCellDef>Actions</cdk-header-cell>
-              <cdk-cell *cdkCellDef="let row">
+              <th cdk-header-cell *cdkHeaderCellDef>Actions</th>
+              <td cdk-cell *cdkCellDef="let row">
                 <ion-button
                   fill="clear"
                   color="danger"
@@ -135,12 +135,12 @@ interface SurveyResponse {
                 >
                   &#x1F5D1;
                 </ion-button>
-              </cdk-cell>
+              </td>
             </ng-container>
 
-            <cdk-header-row *cdkHeaderRowDef="displayedColumns"></cdk-header-row>
-            <cdk-row *cdkRowDef="let row; columns: displayedColumns"></cdk-row>
-          </cdk-table>
+            <tr cdk-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+            <tr cdk-row *cdkRowDef="let row; columns: displayedColumns"></tr>
+          </table>
         }
 
         <hr class="divider" />
