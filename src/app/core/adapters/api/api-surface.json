@@ -648,6 +648,7 @@
   "SelfDividendService": [
     "deleteShareproductProductIdDividendDividendId",
     "getShareproductProductIdDividend",
+    "getShareproductProductIdDividendDividendId",
     "postShareproductProductIdDividend",
     "putShareproductProductIdDividendDividendId"
   ],

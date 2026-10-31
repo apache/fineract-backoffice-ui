@@ -509,6 +509,16 @@ export const PRODUCTS_ROUTES: Routes = [
       ),
   },
   {
+    path: 'shares/:productId/dividends/:dividendId',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_DIVIDEND_SHAREPRODUCT' },
+    title: 'SHARE_DIVIDENDS.DETAIL_TITLE',
+    loadComponent: () =>
+      import('./share-dividends/share-dividend-view.component').then(
+        (m) => m.ShareDividendViewComponent,
+      ),
+  },
+  {
     path: 'fixed-deposits/:accountId/transactions',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_FIXEDDEPOSITACCOUNT' },
