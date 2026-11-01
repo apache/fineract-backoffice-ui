@@ -66,7 +66,11 @@ export class StampDatetimeDirective {
   ],
   template: `
     @if (pickersReady()) {
-      <ion-datetime-button appStampDatetime [attr.aria-labelledby]="ariaLabelledby() || null">
+      <ion-datetime-button
+        appStampDatetime
+        [disabled]="disabled()"
+        [attr.aria-labelledby]="ariaLabelledby() || null"
+      >
         @if (placeholder()) {
           <span slot="date-target">{{ placeholder() }}</span>
         }
@@ -84,6 +88,7 @@ export class StampDatetimeDirective {
 export class DeferredDatetimeButtonComponent {
   /** Id of the `ion-datetime` this button should open. Must be unique per instance. */
   readonly datetimeId = input.required<string>();
+  readonly disabled = input(false);
 
   /**
    * Id of the element naming this button, for `aria-labelledby`.

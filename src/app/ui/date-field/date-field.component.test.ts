@@ -142,4 +142,58 @@ describe('DateFieldComponent', () => {
     expect(form.controls['openingDate']).toBeDefined();
     expect(form.controls['openingDate'].invalid).toBe(true);
   });
+
+  it('disables both the picker and its clear action with the form control', async () => {
+    await pick('2026-06-15');
+    const form = fixture.debugElement.query(By.css('form')).injector.get<NgForm>(NgForm);
+    form.controls['openingDate'].disable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(query('#host-picker').disabled).toBe(true);
+    expect(query('ion-datetime-button').disabled).toBe(true);
+    expect(query('[data-testid="clear-host-picker"] ion-button').disabled).toBe(true);
+  });
+
+  it('ignores a pending picker event while the form control is disabled', async () => {
+    await pick('2026-06-15');
+    const form = fixture.debugElement.query(By.css('form')).injector.get<NgForm>(NgForm);
+    form.controls['openingDate'].disable();
+    fixture.detectChanges();
+    await pick('2026-07-01');
+    expect(host.value()).toBe('2026-06-15');
+  });
+
+  it('ignores a queued clear click while disabled, then restores editing on enable', async () => {
+    await pick('2026-06-15');
+    const form = fixture.debugElement.query(By.css('form')).injector.get<NgForm>(NgForm);
+    const control = form.controls['openingDate'];
+    control.disable();
+    fixture.detectChanges();
+    query('[data-testid="clear-host-picker"]').dispatchEvent(new MouseEvent('click'));
+    await fixture.whenStable();
+    expect(host.value()).toBe('2026-06-15');
+    control.enable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(query('#host-picker').disabled).toBe(false);
+    expect(query('ion-datetime-button').disabled).toBe(false);
+    expect(query('[data-testid="clear-host-picker"] ion-button').disabled).toBe(false);
+    await pick('2026-07-01');
+    expect(host.value()).toBe('2026-07-01');
+    query('[data-testid="clear-host-picker"]').click();
+    await fixture.whenStable();
+    expect(host.value()).toBeNull();
+  });
+
+  it('still accepts a programmatic value while disabled', async () => {
+    const form = fixture.debugElement.query(By.css('form')).injector.get<NgForm>(NgForm);
+    form.controls['openingDate'].disable();
+    host.value.set('2026-08-01');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(query('#host-picker').value).toBe('2026-08-01');
+    expect(query('#host-picker').disabled).toBe(true);
+    expect(host.value()).toBe('2026-08-01');
+  });
 });
