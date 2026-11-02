@@ -39,6 +39,7 @@ import { GetRecurringDepositProductsInterestCalculationDaysInYearType } from './
  */
 export interface GetRecurringDepositProductsResponse { 
     accountingRule?: GetRecurringDepositProductsAccountingRule;
+    closeDate?: string;
     currency?: GetRecurringDepositProductsCurrency;
     description?: string;
     id?: number;
@@ -56,5 +57,7 @@ export interface GetRecurringDepositProductsResponse {
     recurringDepositFrequency?: number;
     recurringDepositFrequencyType?: GetRecurringDepositProductsRecurringDepositFrequencyType;
     shortName?: string;
+    startDate?: string;
+    status?: string;
 }
 

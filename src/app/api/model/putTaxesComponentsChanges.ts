@@ -26,6 +26,10 @@
 
 
 export interface PutTaxesComponentsChanges { 
+    creditAccountId?: number;
+    creditAccountType?: number;
+    debitAccountId?: number;
+    debitAccountType?: number;
     name?: string;
     percentage?: number;
     startDate?: string;

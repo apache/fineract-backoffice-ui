@@ -27,7 +27,7 @@
 
 export interface GetLoanProductsInterestTemplateType { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 

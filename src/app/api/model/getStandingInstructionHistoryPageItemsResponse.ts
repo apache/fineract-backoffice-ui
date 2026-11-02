@@ -43,6 +43,9 @@ export interface GetStandingInstructionHistoryPageItemsResponse {
     fromOffice?: GetFromOfficeStandingInstructionSwagger;
     name?: string;
     standingInstructionId?: number;
+    /**
+     * success, partial (only the part of the amount the savings account could cover was transferred, see allowPartialTransfer) or failed
+     */
     status?: string;
     toAccount?: GetStandingInstructionHistoryToAccount;
     toAccountType?: GetToAccountTypeStandingInstructionSwagger;

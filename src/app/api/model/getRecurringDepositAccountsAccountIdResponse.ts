@@ -58,6 +58,10 @@ export interface GetRecurringDepositAccountsAccountIdResponse {
     interestCalculationType?: GetRecurringDepositAccountsInterestCalculationType;
     interestCompoundingPeriodType?: GetRecurringDepositAccountsInterestCompoundingPeriodType;
     interestPostingPeriodType?: GetRecurringDepositAccountsInterestPostingPeriodType;
+    /**
+     * Determines whether product level interest rate chart is overridden by custom nominal annual interest rate
+     */
+    isRateChartOverridden?: boolean;
     mandatoryRecommendedDepositAmount?: number;
     maturityAmount?: number;
     maxDepositTerm?: number;

@@ -29,9 +29,12 @@
  * PutRecurringDepositProductsRequest
  */
 export interface PutRecurringDepositProductsRequest { 
+    closeDate?: string;
+    dateFormat?: string;
     description?: string;
     locale?: string;
     minDepositTerm?: number;
     minDepositTermTypeId?: number;
+    startDate?: string;
 }
 

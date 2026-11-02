@@ -32,7 +32,9 @@ import { PostFixedDepositProductsCharts } from './postFixedDepositProductsCharts
 export interface PostFixedDepositProductsRequest { 
     accountingRule?: number;
     charts?: Set<PostFixedDepositProductsCharts>;
+    closeDate?: string;
     currencyCode?: string;
+    dateFormat?: string;
     depositAmount?: number;
     description?: string;
     digitsAfterDecimal?: number;
@@ -63,6 +65,7 @@ export interface PostFixedDepositProductsRequest {
     savingsControlAccountId?: number;
     savingsReferenceAccountId?: number;
     shortName?: string;
+    startDate?: string;
     taxGroupId?: number;
     transfersInSuspenseAccountId?: number;
     withHoldTax?: boolean;

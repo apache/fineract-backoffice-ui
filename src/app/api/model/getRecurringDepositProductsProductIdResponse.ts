@@ -44,6 +44,7 @@ import { GetRecurringDepositProductsInterestCalculationDaysInYearType } from './
 export interface GetRecurringDepositProductsProductIdResponse { 
     accountingMappings?: GetRecurringDepositProductsProductIdAccountingMappings;
     activeChart?: GetRecurringDepositProductsProductIdActiveChart;
+    closeDate?: string;
     currency?: GetRecurringDepositProductsProductIdCurrency;
     description?: string;
     feeToIncomeAccountMappings?: Set<GetRecurringDepositProductsProductIdFeeToIncomeAccountMappings>;
@@ -64,5 +65,7 @@ export interface GetRecurringDepositProductsProductIdResponse {
     recurringDepositFrequency?: number;
     recurringDepositFrequencyType?: GetRecurringDepositProductsRecurringDepositFrequencyType;
     shortName?: string;
+    startDate?: string;
+    status?: string;
 }
 
