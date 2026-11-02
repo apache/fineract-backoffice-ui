@@ -65,6 +65,18 @@ describe('GuarantorFormComponent', () => {
     fixture.detectChanges();
   });
 
+  it('does not claim the guarantor was born today', async () => {
+    // The date of birth is optional and starts unset, and an unset `ion-datetime` renders
+    // *today* on its button — so this field used to show the current date for a value nobody
+    // had entered, and an operator reading it saw a guarantor born this morning.
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.dobDate()).toBeNull();
+    const button = fixture.nativeElement.querySelector('ion-datetime-button');
+    expect(button?.textContent ?? '').toContain('COMMON.NOT_SET');
+  });
+
   it('should load template options on init', () => {
     expect(component).toBeTruthy();
     expect(serviceSpy.getLoansLoanIdGuarantorsTemplate).toHaveBeenCalledWith(1);

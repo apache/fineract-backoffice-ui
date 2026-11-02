@@ -19,6 +19,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { PlatformDateService } from '../../../core/services/platform-date.service';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -61,6 +62,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   selector: 'app-reschedule-form',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     TranslatePipe,
     IonButton,
@@ -184,25 +186,13 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               </ion-item>
 
               <!-- Adjusted Due Date (Optional) -->
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'LOANS.RESCHEDULE_FORM.ADJUSTED_DUE_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="adjustedDueDate-picker"></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="adjustedDueDate-picker"
-                      data-testid="adjustedDueDate-picker"
-                      presentation="date"
-                      name="adjustedDueDate"
-                      [(ngModel)]="adjustedDueDate"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
+              <app-date-field
+                label="LOANS.RESCHEDULE_FORM.ADJUSTED_DUE_DATE"
+                pickerId="adjustedDueDate-picker"
+                [clearable]="true"
+                name="adjustedDueDate"
+                [(ngModel)]="adjustedDueDate"
+              ></app-date-field>
 
               <!-- Comment -->
               <ion-item fill="outline" class="full-width">
