@@ -37,7 +37,6 @@ import {
   IonToggle,
   IonButton,
   IonDatetime,
-  IonDatetimeButton,
   IonModal,
   IonNote,
 } from '@ionic/angular/standalone';
@@ -50,7 +49,7 @@ import {
 import { ButtonComponent } from '../../../ui/button/button.component';
 import { MutationOutcomeService } from '../../../core/services/mutation-outcome.service';
 import { PlatformDateService } from '../../../core/services/platform-date.service';
-import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { DeferredDatetimeButtonComponent } from '../../../ui/deferred-datetime-button/deferred-datetime-button.component';
 import { toIsoFineractDate } from '../../../core/adapters/api/fineract-date';
 
 /**
@@ -93,7 +92,7 @@ function fromIsoDate(isoDate: string): Date {
     IonToggle,
     IonButton,
     IonDatetime,
-    IonDatetimeButton,
+    DeferredDatetimeButtonComponent,
     IonModal,
     IonNote,
   ],
@@ -327,27 +326,29 @@ function fromIsoDate(isoDate: string): Date {
                     <ion-label position="stacked">{{
                       'CLIENTS.DATE_OF_BIRTH' | appTranslate
                     }}</ion-label>
-                    @if (pickersReady()) {
-                      <ion-datetime-button datetime="family-dob-picker">
-                        @if (!pickerDateOfBirth()) {
-                          <span slot="date-target">{{
-                            'CLIENTS.DATE_OF_BIRTH_NOT_SET' | appTranslate
-                          }}</span>
-                        }
-                      </ion-datetime-button>
+                    <!-- See maxDateOfBirth. -->
+                    @if (maxDateOfBirth(); as max) {
+                      <app-deferred-datetime-button
+                        datetimeId="family-dob-picker"
+                        [placeholder]="
+                          pickerDateOfBirth()
+                            ? ''
+                            : ('CLIENTS.DATE_OF_BIRTH_NOT_SET' | appTranslate)
+                        "
+                      ></app-deferred-datetime-button>
+                      <ion-modal [keepContentsMounted]="true">
+                        <ng-template>
+                          <ion-datetime
+                            id="family-dob-picker"
+                            data-testid="family-dob-picker"
+                            presentation="date"
+                            [value]="pickerDateOfBirth()"
+                            [max]="max"
+                            (ionChange)="onDobChange($event)"
+                          ></ion-datetime>
+                        </ng-template>
+                      </ion-modal>
                     }
-                    <ion-modal [keepContentsMounted]="true">
-                      <ng-template>
-                        <ion-datetime
-                          id="family-dob-picker"
-                          data-testid="family-dob-picker"
-                          presentation="date"
-                          [value]="pickerDateOfBirth()"
-                          [max]="maxDateOfBirth()"
-                          (ionChange)="onDobChange($event)"
-                        ></ion-datetime>
-                      </ng-template>
-                    </ion-modal>
                     @if (!isEditMode && pickerDateOfBirth()) {
                       <app-button
                         type="button"
@@ -449,9 +450,6 @@ function fromIsoDate(isoDate: string): Date {
   ],
 })
 export class ClientFamilyMemberFormComponent implements OnInit {
-  /** See `createPickersReady` — the date buttons must not outrun their pickers. */
-  readonly pickersReady = createPickersReady();
-
   private readonly familyService = inject(ClientFamilyMemberService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -472,6 +470,15 @@ export class ClientFamilyMemberFormComponent implements OnInit {
 
   dateOfBirth?: Date;
   readonly pickerDateOfBirth = signal<string | null>(null);
+  /**
+   * The platform's today, once it is known; the picker is not rendered before then.
+   *
+   * `ion-datetime` settles the month it opens on in `componentWillLoad`, by clamping the
+   * browser's today to `max`, and `maxChanged` never revisits it. A picker created before this
+   * resolved would open on the browser's month, and where that is later than the platform's
+   * every day on screen would be disabled and the days the operator may pick would be in an
+   * earlier month.
+   */
   readonly maxDateOfBirth = signal<string | undefined>(undefined);
   readonly isSaving = signal(false);
 

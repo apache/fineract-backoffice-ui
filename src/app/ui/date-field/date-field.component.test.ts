@@ -37,6 +37,7 @@ import { DateFieldComponent } from './date-field.component';
         [required]="true"
         pickerId="host-picker"
         [clearable]="clearable()"
+        [max]="max()"
         name="openingDate"
         [ngModel]="value()"
         (ngModelChange)="value.set($event)"
@@ -47,6 +48,7 @@ import { DateFieldComponent } from './date-field.component';
 class HostComponent {
   readonly value = signal<string | null>(null);
   readonly clearable = signal(true);
+  readonly max = signal('');
 }
 
 describe('DateFieldComponent', () => {
@@ -133,6 +135,32 @@ describe('DateFieldComponent', () => {
     await pick('2026-06-15');
 
     expect(query('[data-testid="clear-host-picker"]')).toBeNull();
+  });
+
+  it('builds a new picker when a bound arrives after it was created', async () => {
+    // Without the rebuild the old picker keeps the month it opened on; see `bounds`.
+    const before = query('#host-picker');
+    expect(before.max).toBeUndefined();
+
+    host.max.set('2026-10-15');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const after = query('#host-picker');
+    expect(after).not.toBe(before);
+    expect(after.max).toBe('2026-10-15');
+    expect(fixture.nativeElement.querySelectorAll('ion-datetime').length).toBe(1);
+    // The button is deferred per instance, so it still finds the picker it was rebuilt with.
+    expect(query('ion-datetime-button').getAttribute('datetime')).toBe('host-picker');
+  });
+
+  it('keeps the picker it has while the bounds stay the same', async () => {
+    const before = query('#host-picker');
+
+    await pick('2026-06-15');
+
+    expect(query('#host-picker')).toBe(before);
   });
 
   it('registers in the form under its name, so required still counts', () => {

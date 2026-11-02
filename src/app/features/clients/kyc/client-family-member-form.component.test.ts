@@ -21,6 +21,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { provideFakeAdapters } from '../../../testing/adapters';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
@@ -233,10 +234,17 @@ describe('Family member form guidance', () => {
   let fakes: ReturnType<typeof provideFakeAdapters>;
   let navigate: ReturnType<typeof vi.fn>;
 
-  /** @param businessDate - the day the tenant is on, or `null` for a tenant without one. */
-  async function setup(businessDate: string | null = null): Promise<void> {
+  /**
+   * @param businessDate - the day the tenant is on, or `null` for a tenant without one.
+   * @param arrange - runs against the fakes before the component is created.
+   */
+  async function setup(
+    businessDate: string | null = null,
+    arrange?: (adapters: typeof fakes) => void,
+  ): Promise<void> {
     fakes = provideFakeAdapters();
     fakes.businessDate.businessDate = businessDate;
+    arrange?.(fakes);
     navigate = vi.fn();
     await TestBed.configureTestingModule({
       imports: [ClientFamilyMemberFormComponent],
@@ -322,6 +330,27 @@ describe('Family member form guidance', () => {
     expect(component.maxDateOfBirth()).toBe('2020-06-15');
     // A property binding, not an attribute: `ion-datetime` declares `max`.
     expect(query('#family-dob-picker').max).toBe('2020-06-15');
+  });
+
+  it('does not create the picker until the platform has answered with its bound', async () => {
+    // Created before the bound, the picker opened on the browser's month; see maxDateOfBirth.
+    const enabled = new Subject<boolean>();
+    await setup('2026-10-15', (adapters) =>
+      vi.spyOn(adapters.businessDate, 'isBusinessDateEnabled').mockReturnValue(enabled),
+    );
+
+    expect(query('#family-dob-picker')).toBeNull();
+    expect(query('ion-datetime-button')).toBeNull();
+
+    enabled.next(true);
+    enabled.complete();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(query('#family-dob-picker').max).toBe('2026-10-15');
+    expect(query('ion-datetime-button[datetime="family-dob-picker"]')).not.toBeNull();
   });
 
   it('falls back to the platform clock when no business date governs', async () => {

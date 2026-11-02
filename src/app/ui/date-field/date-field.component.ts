@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { Component, forwardRef, input, signal } from '@angular/core';
+import { Component, computed, forwardRef, input, signal } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { IonDatetime, IonItem, IonModal, IonNote } from '@ionic/angular/standalone';
 
@@ -80,27 +80,30 @@ let nextId = 0;
           }
         </span>
 
-        <app-deferred-datetime-button
-          [datetimeId]="pickerId()"
-          [disabled]="disabled()"
-          [ariaLabelledby]="labelId"
-          [placeholder]="value() ? '' : (notSetLabel() | appTranslate)"
-        ></app-deferred-datetime-button>
+        <!-- Rebuilt whenever min or max changes; see bounds. -->
+        @for (key of [bounds()]; track key) {
+          <app-deferred-datetime-button
+            [datetimeId]="pickerId()"
+            [disabled]="disabled()"
+            [ariaLabelledby]="labelId"
+            [placeholder]="value() ? '' : (notSetLabel() | appTranslate)"
+          ></app-deferred-datetime-button>
 
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime
-              [id]="pickerId()"
-              [attr.data-testid]="testId() || pickerId()"
-              presentation="date"
-              [value]="value()"
-              [disabled]="disabled()"
-              [max]="max() || undefined"
-              [min]="min() || undefined"
-              (ionChange)="onPicked($event)"
-            ></ion-datetime>
-          </ng-template>
-        </ion-modal>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                [id]="pickerId()"
+                [attr.data-testid]="testId() || pickerId()"
+                presentation="date"
+                [value]="value()"
+                [disabled]="disabled()"
+                [max]="max() || undefined"
+                [min]="min() || undefined"
+                (ionChange)="onPicked($event)"
+              ></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        }
 
         @if (clearable() && value()) {
           <app-button
@@ -170,6 +173,19 @@ export class DateFieldComponent implements ControlValueAccessor {
   readonly showError = input<boolean | null>(false);
   readonly errorKey = input('COMMON.REQUIRED');
   readonly errorTestId = input<string | null>(null);
+
+  /**
+   * `min` and `max` together, as the key the picker is rebuilt on.
+   *
+   * `ion-datetime` settles the month it opens on once, in `componentWillLoad`, by clamping
+   * the browser's today to its bounds; `minChanged` and `maxChanged` never revisit it. A
+   * bound that arrives later, such as a business date read from the platform, would leave an
+   * empty picker opening on the browser's month, with every day on screen disabled when that
+   * month lies past `max`. A new picker is clamped against the bounds it is created with.
+   * Meant for bounds that settle while the field is closed; a change while the modal is open
+   * replaces it without a dismiss.
+   */
+  protected readonly bounds = computed(() => `${this.min()}|${this.max()}`);
 
   /** Stable per instance, so the label can be referenced by id. */
   protected readonly labelId = `app-date-field-label-${nextId++}`;
