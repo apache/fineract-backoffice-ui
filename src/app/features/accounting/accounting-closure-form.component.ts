@@ -177,6 +177,11 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
                   Saving...
+                } @else if (isEdit()) {
+                  <!-- Not "Close Period": editing corrects a comment and closes nothing. The
+                       create label is left as it was, untranslated like the rest of this form's
+                       static text. -->
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 } @else {
                   Close Period
                 }
