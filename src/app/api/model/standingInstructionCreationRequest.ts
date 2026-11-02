@@ -26,6 +26,7 @@
 
 
 export interface StandingInstructionCreationRequest { 
+    allowPartialTransfer?: boolean;
     amount?: string;
     dateFormat?: string;
     fromAccountId?: string;

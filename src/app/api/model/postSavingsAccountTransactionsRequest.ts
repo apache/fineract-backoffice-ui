@@ -48,5 +48,6 @@ export interface PostSavingsAccountTransactionsRequest {
     savingsArray?: Array<PostSavingsAccountsGsimSavings>;
     transactionAmount?: number;
     transactionDate?: string;
+    transactionTime?: string;
 }
 

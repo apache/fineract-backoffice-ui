@@ -37,6 +37,10 @@ export interface GetTaxesComponentsResponse {
     creditAccountType?: GetTaxesComponentsCreditAccountType;
     debitAccount?: GetTaxesComponentsDebitAccount;
     debitAccountType?: GetTaxesComponentsDebitAccountType;
+    /**
+     * false once the component is linked to a charge, savings product or savings account, or used in a tax transaction; then only name can be changed
+     */
+    editable?: boolean;
     id?: number;
     name?: string;
     percentage?: number;

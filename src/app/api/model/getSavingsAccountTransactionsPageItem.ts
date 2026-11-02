@@ -50,6 +50,7 @@ export interface GetSavingsAccountTransactionsPageItem {
     runningBalance?: number;
     submittedByUsername?: string;
     submittedOnDate?: string;
+    transactionTime?: string;
     transactionType?: GetTranscationEnumData;
 }
 export namespace GetSavingsAccountTransactionsPageItem {

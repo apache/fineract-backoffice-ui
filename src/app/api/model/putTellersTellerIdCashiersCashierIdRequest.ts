@@ -32,8 +32,24 @@ export interface PutTellersTellerIdCashiersCashierIdRequest {
     dateFormat?: string;
     description?: string;
     endDate?: string;
+    /**
+     * End hour of a part-day assignment; only used when isFullDay is false
+     */
+    hourEndTime?: number;
+    /**
+     * Start hour of a part-day assignment; only used when isFullDay is false
+     */
+    hourStartTime?: number;
     isFullDay?: boolean;
     locale?: string;
+    /**
+     * End minute of a part-day assignment; only used when isFullDay is false
+     */
+    minEndTime?: number;
+    /**
+     * Start minute of a part-day assignment; only used when isFullDay is false
+     */
+    minStartTime?: number;
     staffId?: number;
     startDate?: string;
 }

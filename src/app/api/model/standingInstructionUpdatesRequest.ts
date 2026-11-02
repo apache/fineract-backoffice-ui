@@ -26,6 +26,7 @@
 
 
 export interface StandingInstructionUpdatesRequest { 
+    allowPartialTransfer?: boolean;
     amount?: string;
     dateFormat?: string;
     instructionType?: string;

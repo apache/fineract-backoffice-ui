@@ -36,5 +36,6 @@ export interface PostSavingsAccountBulkReversalTransactionsRequest {
     paymentTypeId?: number;
     transactionAmount?: number;
     transactionDate?: string;
+    transactionTime?: string;
 }
 

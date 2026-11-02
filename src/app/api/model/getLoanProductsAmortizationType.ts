@@ -27,7 +27,7 @@
 
 export interface GetLoanProductsAmortizationType { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 

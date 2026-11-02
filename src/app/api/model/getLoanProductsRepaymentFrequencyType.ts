@@ -27,7 +27,7 @@
 
 export interface GetLoanProductsRepaymentFrequencyType { 
     code?: string;
-    description?: string;
     id?: number;
+    value?: string;
 }
 
