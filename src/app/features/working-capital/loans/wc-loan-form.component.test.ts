@@ -235,6 +235,16 @@ describe('WcLoanFormComponent', () => {
     expect(arg.locale).toBe('en');
   });
 
+  it('seeds the mandatory disbursement date and leaves the optional submitted date unset', () => {
+    // `WorkingCapitalLoanApplicationDataValidator` documents `expectedDisbursementDate` as
+    // mandatory and `submittedOnDate` as optional, substituting the platform's own current date
+    // for the latter when it is absent. So one is seeded and the other is deliberately not:
+    // leaving a mandatory date blank only buys a server-side refusal, and seeding an optional
+    // one claims a choice the operator never made.
+    expect(component.expectedDisbursementDate).not.toBeNull();
+    expect(component.submittedOnDate).toBeNull();
+  });
+
   /**
    * Issue #770: the loan screen offered Edit and navigated to a route that did not exist, and no
    * screen could modify a submitted application although Fineract supports it. The same form

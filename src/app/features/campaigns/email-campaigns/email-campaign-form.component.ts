@@ -41,11 +41,13 @@ import {
   IonTextarea,
 } from '@ionic/angular/standalone';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 @Component({
   selector: 'app-email-campaign-form',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     RouterModule,
     TranslatePipe,
@@ -130,26 +132,15 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               ></ion-textarea>
             </ion-item>
 
-            <ion-item fill="outline" class="full-width">
-              <ion-label position="stacked">{{
-                'EMAIL_CAMPAIGNS.SCHEDULE' | appTranslate
-              }}</ion-label>
-              @if (pickersReady()) {
-                <ion-datetime-button datetime="scheduledStartDate-picker"></ion-datetime-button>
-              }
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime
-                    id="scheduledStartDate-picker"
-                    data-testid="scheduledStartDate-picker"
-                    presentation="date"
-                    name="scheduledStartDate"
-                    [ngModel]="scheduledStartDate()"
-                    (ngModelChange)="scheduledStartDate.set($event)"
-                  ></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </ion-item>
+            <app-date-field
+              class="full-width"
+              label="EMAIL_CAMPAIGNS.SCHEDULE"
+              pickerId="scheduledStartDate-picker"
+              [clearable]="true"
+              name="scheduledStartDate"
+              [ngModel]="scheduledStartDate()"
+              (ngModelChange)="scheduledStartDate.set($event)"
+            ></app-date-field>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">

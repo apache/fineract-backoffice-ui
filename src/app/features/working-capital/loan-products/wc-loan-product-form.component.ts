@@ -89,6 +89,7 @@ import {
   toIsoDate,
 } from '../../../core/utils/date-formatter';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 /**
  * Create / edit form for a working-capital loan product. Covers the core mandatory
@@ -99,6 +100,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   selector: 'app-wc-loan-product-form',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     TranslatePipe,
     IonCard,
@@ -519,48 +521,26 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
                 </ion-col>
 
                 <ion-col size="12" size-md="6">
-                  <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.START_DATE' | appTranslate
-                    }}</ion-label>
-                    @if (pickersReady()) {
-                      <ion-datetime-button datetime="wc-product-start-date"></ion-datetime-button>
-                    }
-                    <ion-modal [keepContentsMounted]="true">
-                      <ng-template>
-                        <ion-datetime
-                          id="wc-product-start-date"
-                          data-testid="wc-product-start-date"
-                          presentation="date"
-                          name="startDate"
-                          [(ngModel)]="startDate"
-                        ></ion-datetime>
-                      </ng-template>
-                    </ion-modal>
-                  </ion-item>
+                  <app-date-field
+                    class="form-item"
+                    label="WC_LOAN_PRODUCTS.START_DATE"
+                    pickerId="wc-product-start-date"
+                    [clearable]="true"
+                    name="startDate"
+                    [(ngModel)]="startDate"
+                  ></app-date-field>
                 </ion-col>
 
                 <ion-col size="12" size-md="6">
-                  <ion-item fill="outline" class="form-item">
-                    <ion-label position="stacked">{{
-                      'WC_LOAN_PRODUCTS.CLOSE_DATE' | appTranslate
-                    }}</ion-label>
-                    @if (pickersReady()) {
-                      <ion-datetime-button datetime="wc-product-close-date"></ion-datetime-button>
-                    }
-                    <ion-modal [keepContentsMounted]="true">
-                      <ng-template>
-                        <ion-datetime
-                          id="wc-product-close-date"
-                          data-testid="wc-product-close-date"
-                          presentation="date"
-                          name="closeDate"
-                          [ngModel]="closeDate()"
-                          (ngModelChange)="closeDate.set($event)"
-                        ></ion-datetime>
-                      </ng-template>
-                    </ion-modal>
-                  </ion-item>
+                  <app-date-field
+                    class="form-item"
+                    label="WC_LOAN_PRODUCTS.CLOSE_DATE"
+                    pickerId="wc-product-close-date"
+                    [clearable]="true"
+                    name="closeDate"
+                    [ngModel]="closeDate()"
+                    (ngModelChange)="closeDate.set($event)"
+                  ></app-date-field>
                 </ion-col>
 
                 <ion-col size="12">
