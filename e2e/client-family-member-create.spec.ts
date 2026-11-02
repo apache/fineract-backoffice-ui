@@ -150,6 +150,18 @@ test.describe('Add family member', () => {
   });
 
   test("offers no birth date after the platform's day, and confirms the save", async ({ page }) => {
+    // The calendar renders the *browser's* month, while `max` comes from the platform. Pinned,
+    // because this test names cells in October: unpinned it passed every day of October 2026
+    // and then failed on 1 November, when the picker began opening on November and the cells
+    // below stopped existing. `setFixedTime` for the reason given in
+    // `tenant-date-defaults-backend.spec.ts` — it changes what `new Date()` answers without
+    // replacing the timer queue Angular and Ionic run on.
+    //
+    // Deliberately a different day from BUSINESS_DATE, and after it: if the form ever took its
+    // ceiling from the browser instead of the platform, `max` would read 2026-10-20 and the
+    // assertion below would catch it.
+    await page.clock.setFixedTime(new Date('2026-10-20T10:00:00'));
+
     await signIn(page);
     const created = await mockClient(page);
     await page.goto('/clients/7/family-members/create');
