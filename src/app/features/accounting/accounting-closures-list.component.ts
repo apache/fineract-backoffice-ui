@@ -20,8 +20,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe, NgClass } from '@angular/common';
-import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../shared';
-import { ACCOUNTING_CLOSURE_API, TranslatePipe } from '../../core/adapters';
+import {
+  DataTableComponent,
+  ColumnDef,
+  CellTemplateDirective,
+  RequiresPermissionDirective,
+} from '../../shared';
+import { ACCOUNTING_CLOSURE_API, I18N, TranslatePipe } from '../../core/adapters';
+import { DialogService } from '../../core/services/dialog.service';
 import type { AccountingClosure } from '../../core/adapters';
 import { ButtonComponent } from '../../ui/button/button.component';
 
@@ -36,6 +42,7 @@ import { ButtonComponent } from '../../ui/button/button.component';
   imports: [
     DataTableComponent,
     CellTemplateDirective,
+    RequiresPermissionDirective,
     TranslatePipe,
     DatePipe,
     NgClass,
@@ -69,8 +76,17 @@ import { ButtonComponent } from '../../ui/button/button.component';
         <app-button
           type="button"
           emphasis="quiet"
+          icon="create-outline"
+          appRequiresPermission="UPDATE_GLCLOSURE"
+          (click)="onEditClosure(closure)"
+          [label]="'ACCOUNTING_CLOSURES.EDIT_COMMENTS' | appTranslate"
+        />
+        <app-button
+          type="button"
+          emphasis="quiet"
           intent="danger"
           icon="lock-open-outline"
+          appRequiresPermission="DELETE_GLCLOSURE"
           (click)="onDeleteClosure(closure)"
           [label]="'ACCOUNTING_CLOSURES.REOPEN' | appTranslate"
         />
@@ -99,6 +115,8 @@ import { ButtonComponent } from '../../ui/button/button.component';
 export class AccountingClosuresListComponent implements OnInit {
   private readonly closureApi = inject(ACCOUNTING_CLOSURE_API);
   private readonly router = inject(Router);
+  private readonly dialog = inject(DialogService);
+  private readonly i18n = inject(I18N);
 
   readonly columns: ColumnDef[] = [
     { key: 'officeName', label: 'COMMON.OFFICE', sortable: true },
@@ -136,9 +154,34 @@ export class AccountingClosuresListComponent implements OnInit {
     this.router.navigate(['/accounting/closures/create']);
   }
 
-  onDeleteClosure(closure: AccountingClosure) {
-    if (confirm('Are you sure you want to re-open this period?')) {
-      this.closureApi.remove(closure.id).subscribe(() => this.loadClosures());
+  onEditClosure(closure: AccountingClosure) {
+    this.router.navigate(['/accounting/closures/edit', closure.id]);
+  }
+
+  /**
+   * Re-opens a period by deleting its closure.
+   *
+   * On `DialogService.confirm` rather than the browser's `confirm()`, which this used before: the
+   * native dialog carries an untranslated string and cannot be asserted on. Correcting a
+   * closure's comments no longer needs this at all — that is what the Edit action is for (#789).
+   */
+  async onDeleteClosure(closure: AccountingClosure) {
+    const confirmed = await this.dialog.confirm({
+      title: this.i18n.translate('ACCOUNTING_CLOSURES.REOPEN'),
+      message: this.i18n.translate('ACCOUNTING_CLOSURES.REOPEN_CONFIRM'),
+      details: [
+        { label: this.i18n.translate('COMMON.OFFICE'), value: closure.officeName },
+        {
+          label: this.i18n.translate('ACCOUNTING_CLOSURES.CLOSING_DATE'),
+          value: closure.closingDate ?? '',
+        },
+      ],
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
     }
+
+    this.closureApi.remove(closure.id).subscribe(() => this.loadClosures());
   }
 }

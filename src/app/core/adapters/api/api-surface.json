@@ -8,7 +8,13 @@
     "putAccountnumberformatsAccountNumberFormatId"
   ],
   "AccountTransfersService": ["getAccounttransfers", "postAccounttransfers"],
-  "AccountingClosureService": ["deleteGlclosuresGlClosureId", "getGlclosures", "postGlclosures"],
+  "AccountingClosureService": [
+    "deleteGlclosuresGlClosureId",
+    "getGlclosures",
+    "getGlclosuresGlClosureId",
+    "postGlclosures",
+    "putGlclosuresGlClosureId"
+  ],
   "AccountingRulesService": [
     "deleteAccountingrulesAccountingRuleId",
     "getAccountingrules",
@@ -55,6 +61,7 @@
     "putCentersCenterId"
   ],
   "ChargesService": [
+    "deleteChargesChargeId",
     "getCharges",
     "getChargesChargeId",
     "getChargesTemplate",

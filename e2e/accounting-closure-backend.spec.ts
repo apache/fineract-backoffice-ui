@@ -40,6 +40,7 @@
 import { test, expect } from './fixtures';
 import { login } from './utils/fineract-login';
 import { selectOption } from './utils/select-option';
+import { confirmDialog } from './utils/ionic-locators';
 import {
   attemptJournalEntry,
   createApiContext,
@@ -117,11 +118,20 @@ test.describe('Accounting closures against Fineract', () => {
     ]);
     // The adapter owns the date format and locale the platform parses. A 400 here means it sent
     // something Fineract does not accept, which is exactly the coupling this spec exists to catch.
+    //
+    // Read the body once, and tolerate its absence. This is a page response, and an accepted
+    // POST navigates the form to the list, which discards the body — so the eager assertion
+    // message below, which Playwright builds whether the assertion passes or fails, could throw
+    // "No data found for resource with given identifier" for a closure that was created
+    // perfectly well. That is a race on the navigation, not a failure of what this test asserts.
+    const createdBody = await created.text().catch(() => '');
     expect(
       created.ok(),
-      `closure POST rejected: ${created.status()} ${(await created.text()).slice(0, 300)}`,
+      `closure POST rejected: ${created.status()} ${createdBody.slice(0, 300)}`,
     ).toBe(true);
-    const { resourceId: closureId } = (await created.json()) as { resourceId: number };
+    const closureId = createdBody
+      ? (JSON.parse(createdBody) as { resourceId: number }).resourceId
+      : undefined;
 
     try {
       await expect(page).toHaveURL('/accounting/closures');
@@ -145,14 +155,20 @@ test.describe('Accounting closures against Fineract', () => {
       expect(refused.ok()).toBe(false);
       expect(await refused.text()).toContain(CLOSURE_RULE);
 
-      // Re-open through the UI. The list guards this with a native confirm().
-      page.once('dialog', (dialog) => dialog.accept());
+      // Re-open through the UI. The list guards this with the shared confirm dialog, not the
+      // browser's confirm() it used before (#789): correcting a closure's comments is its own
+      // action now, and both confirmations go through `app-confirm-dialog`. The click that opens
+      // the dialog has to settle before the one that accepts it, so only the second is raced
+      // against the response.
+      await row.getByRole('button', { name: 'Re-open Period' }).click();
+      const dialog = confirmDialog(page);
+      await expect(dialog).toBeVisible();
       const [removed] = await Promise.all([
         page.waitForResponse(
           (response) =>
             response.url().includes('/glclosures') && response.request().method() === 'DELETE',
         ),
-        row.getByRole('button', { name: 'Re-open Period' }).click(),
+        dialog.locator('[data-testid="confirm-dialog-confirm"]').click(),
       ]);
       expect(removed.ok()).toBe(true);
       await expect(row).toHaveCount(0, { timeout: 20000 });
@@ -168,7 +184,12 @@ test.describe('Accounting closures against Fineract', () => {
         `a posting should be accepted once the period is re-opened, got ${afterReopening.status()}`,
       ).toBe(true);
     } finally {
-      await deleteAccountingClosure(api, closureId);
+      // Unknown only when the response body lost its race with the navigation above, in which
+      // case the re-open through the UI has already removed the closure. `deleteAccountingClosure`
+      // tolerates a closure that is already gone, so the common path still cleans up.
+      if (closureId !== undefined) {
+        await deleteAccountingClosure(api, closureId);
+      }
       await api.dispose();
     }
   });
