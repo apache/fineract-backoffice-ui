@@ -103,7 +103,7 @@ System admins handle security, audit, and infrastructure. The UI supports:
 
 ## Prerequisites
 
-- **Node.js** `>=22.22.3` and npm. The repository includes the Angular CLI, so a global install is not needed.
+- **Node.js** `>=26.0.0` and npm. The repository includes the Angular CLI, so a global install is not needed.
 - For local HTTPS development, [`mkcert`](https://github.com/FiloSottile/mkcert) to generate the ignored
   `ssl/localhost.*` files once.
 - A Fineract instance for manual work or real-backend E2E tests. Mocked unit and Playwright tests do

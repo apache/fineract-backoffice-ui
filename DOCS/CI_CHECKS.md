@@ -338,8 +338,8 @@ past the limit fails the build in a way that looks unrelated to your change.
 ### `offline-build`
 
 ```bash
-docker run --rm -v "$PWD":/workspace -w /workspace node:24-alpine@<digest> npm ci
-docker run --rm --network none -v "$PWD":/workspace -w /workspace node:24-alpine@<digest> \
+docker run --rm -v "$PWD":/workspace -w /workspace node:26-alpine@<digest> npm ci
+docker run --rm --network none -v "$PWD":/workspace -w /workspace node:26-alpine@<digest> \
   npm run build -- --configuration production
 ```
 
@@ -356,7 +356,7 @@ anything more — a compromised or unreachable registry already fails `npm ci`
 loudly on its own — and would only make the job flaky against registry hiccups
 that have nothing to do with what this job exists to catch.
 
-Both steps run inside the exact `node:24-alpine` image `deploy/Dockerfile`
+Both steps run inside the exact `node:26-alpine` image `deploy/Dockerfile`
 builds from, rather than installing on the runner's own Node and mounting the
 result into a container. `npm ci` resolves platform-specific native optional
 dependencies — `lightningcss` ships separate glibc and musl builds — so
