@@ -21,10 +21,11 @@
  * What the add-family-member form tells the operator before the platform is involved.
  *
  * Three things that used to be left to guesswork: which fields are holding Save, which birth
- * dates Fineract will entertain, and whether the save landed. The business date is mocked to a
- * day no runner will be on, so the picker's bound can only have come from the platform — a
- * bound read off the browser's clock fails here at every hour of the day, which is the point:
- * for a tenant east of the operator the two are different days every evening (#758).
+ * dates Fineract will entertain, and whether the save landed. The birth-date test pins the
+ * browser's clock to a later month than the mocked business date, so the picker's bound and the
+ * month it opens on can only have come from the platform. For a tenant east of the operator the
+ * two clocks disagree every evening (#758); an operator whose clock has moved into the next
+ * month while the tenant's business date has not sees the same split.
  */
 
 import { expect, test, type Page } from './fixtures';
@@ -150,17 +151,18 @@ test.describe('Add family member', () => {
   });
 
   test("offers no birth date after the platform's day, and confirms the save", async ({ page }) => {
-    // The calendar renders the *browser's* month, while `max` comes from the platform. Pinned,
-    // because this test names cells in October: unpinned it passed every day of October 2026
-    // and then failed on 1 November, when the picker began opening on November and the cells
-    // below stopped existing. `setFixedTime` for the reason given in
-    // `tenant-date-defaults-backend.spec.ts` — it changes what `new Date()` answers without
-    // replacing the timer queue Angular and Ionic run on.
+    // The browser is a month ahead of the platform. `ion-datetime` picks the month it opens on
+    // once, when it loads, by clamping the browser's today to `max`, and does not revisit it
+    // when `max` changes. The form therefore creates the picker only after the platform's day
+    // is known; a picker created earlier opened on November here, with every day disabled and
+    // the October cells below not on screen. An earlier pin to 2026-10-20 hid this, because it
+    // put the browser and the platform in the same month.
     //
-    // Deliberately a different day from BUSINESS_DATE, and after it: if the form ever took its
-    // ceiling from the browser instead of the platform, `max` would read 2026-10-20 and the
+    // `setFixedTime` for the reason given in `tenant-date-defaults-backend.spec.ts`: it changes
+    // what `new Date()` answers without replacing the timer queue Angular and Ionic run on. If
+    // the form ever took its ceiling from the browser, `max` would read 2026-11-20 and the
     // assertion below would catch it.
-    await page.clock.setFixedTime(new Date('2026-10-20T10:00:00'));
+    await page.clock.setFixedTime(new Date('2026-11-20T10:00:00'));
 
     await signIn(page);
     const created = await mockClient(page);

@@ -225,8 +225,9 @@ for (const viewport of [
           new Date(),
         ),
       );
-      await familyButton(page)
-        .locator('..')
+      await page
+        .locator('ion-item')
+        .filter({ has: familyButton(page) })
         .screenshot({ path: testInfo.outputPath('selected-family-dob.png') });
       await page.locator('#family-first-name-input input').fill('Synthetic');
       await page.locator('#family-last-name-input input').fill('Sibling');
@@ -241,8 +242,9 @@ for (const viewport of [
       await page.getByRole('button', { name: 'Clear date of birth', exact: true }).click();
       await expect(unset()).toBeVisible();
       expect(attempts).toBe(1);
-      await familyButton(page)
-        .locator('..')
+      await page
+        .locator('ion-item')
+        .filter({ has: familyButton(page) })
         .screenshot({ path: testInfo.outputPath('unset-family-dob.png') });
       const size = await page.evaluate(() => ({
         width: innerWidth,
