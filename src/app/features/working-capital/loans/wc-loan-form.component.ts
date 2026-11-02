@@ -180,7 +180,7 @@ const CREATE_CHECK_STATUS = 100;
 
               <app-date-field
                 label="WC_LOANS.EXPECTED_DISBURSEMENT_DATE"
-                [required]="true"
+                [required]="!isEdit()"
                 pickerId="expectedDisbursementDate-picker"
                 name="expectedDisbursementDate"
                 [(ngModel)]="expectedDisbursementDate"
@@ -469,6 +469,13 @@ export class WcLoanFormComponent implements OnInit {
    * `submittedOnDate` above is the opposite case. The same validator documents it as optional
    * and substitutes the platform's current date when it is absent, so leaving it unset is a
    * real choice and the field says so rather than showing today.
+   *
+   * Mandatory on create only, hence `[required]="!isEdit()"` on the field. `validateForCreate`
+   * calls `notNull()` on it unconditionally, but the modify path validates it only when the
+   * request carries the parameter and otherwise resolves it from the loan's existing
+   * disbursement detail, so a modification that leaves it alone is legitimate. Requiring it
+   * in edit mode disables Save on a loan whose timeline carries no expected disbursement
+   * date, with nothing on screen to say why.
    */
   expectedDisbursementDate: string | null = this.platformDate.today();
 
