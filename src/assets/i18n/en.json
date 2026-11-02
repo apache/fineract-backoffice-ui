@@ -869,7 +869,12 @@
     "CASHIER_TRANSACTIONS": "Cashier Transactions",
     "TOTAL_ALLOCATED": "Total Allocated",
     "TOTAL_SETTLED": "Total Settled",
-    "NET_CASH": "Net Cash"
+    "NET_CASH": "Net Cash",
+    "DELETE_TELLER": "Delete Teller",
+    "DELETE_TELLER_CONFIRM": "Delete this teller? Fineract refuses while it still holds cashiers or recorded cash transactions, so remove its cashiers first.",
+    "EDIT_CASHIER": "Edit Cashier Allocation",
+    "REMOVE_CASHIER": "Remove Cashier Allocation",
+    "REMOVE_CASHIER_CONFIRM": "Remove this cashier's allocation? The cash transactions already recorded against it stay on the teller's ledger. To change its period, hours or note, edit the allocation instead."
   },
   "CLIENTS": {
     "DATE_OF_BIRTH_NOT_SET": "Not set",

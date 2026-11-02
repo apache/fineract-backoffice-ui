@@ -22,6 +22,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { TellerCashManagementService } from '../../../api';
+import type { Cashier } from './teller.api';
 import {
   FineractTellerApi,
   mapCashier,
@@ -98,9 +99,18 @@ describe('mapCashier', () => {
       staffId: 2,
       staffName: 'Officer, Field',
       isFullDay: true,
+      // Absent from the cashiers inside a teller, which is what this fixture is. Only the
+      // single-cashier response carries it, and the edit form reads it from there.
+      description: null,
       startDate: '2026-10-02',
       endDate: '2026-12-31',
     });
+  });
+
+  it('keeps the description when the payload carries one', () => {
+    expect(mapCashier({ ...CASHIER, description: 'Window 2, mornings' }).description).toBe(
+      'Window 2, mornings',
+    );
   });
 
   it('reads array dates as well, and reports an absent end date as null', () => {
@@ -197,8 +207,11 @@ describe('FineractTellerApi', () => {
     getTellersTellerId: ReturnType<typeof vi.fn>;
     postTellers: ReturnType<typeof vi.fn>;
     putTellersTellerId: ReturnType<typeof vi.fn>;
+    deleteTellersTellerId: ReturnType<typeof vi.fn>;
     getTellersTellerIdCashiers: ReturnType<typeof vi.fn>;
+    getTellersTellerIdCashiersCashierId: ReturnType<typeof vi.fn>;
     postTellersTellerIdCashiers: ReturnType<typeof vi.fn>;
+    putTellersTellerIdCashiersCashierId: ReturnType<typeof vi.fn>;
     deleteTellersTellerIdCashiersCashierId: ReturnType<typeof vi.fn>;
     getTellersTellerIdCashiersCashierIdTransactionsTemplate: ReturnType<typeof vi.fn>;
     getTellersTellerIdCashiersCashierIdSummaryandtransactions: ReturnType<typeof vi.fn>;
@@ -213,6 +226,11 @@ describe('FineractTellerApi', () => {
       getTellersTellerId: vi.fn().mockReturnValue(of(MAIN_TELLER)),
       postTellers: vi.fn().mockReturnValue(of({})),
       putTellersTellerId: vi.fn().mockReturnValue(of({})),
+      deleteTellersTellerId: vi.fn().mockReturnValue(of({})),
+      getTellersTellerIdCashiersCashierId: vi
+        .fn()
+        .mockReturnValue(of({ ...CASHIER, description: 'Window 2, mornings' })),
+      putTellersTellerIdCashiersCashierId: vi.fn().mockReturnValue(of({})),
       getTellersTellerIdCashiers: vi
         .fn()
         .mockReturnValue(
@@ -317,6 +335,56 @@ describe('FineractTellerApi', () => {
   it('removes a cashier allocation by both ids', () => {
     api.removeCashier(1, 3).subscribe();
     expect(generated.deleteTellersTellerIdCashiersCashierId).toHaveBeenCalledWith(1, 3);
+  });
+
+  it('deletes a teller by id', () => {
+    api.delete(7).subscribe();
+    expect(generated.deleteTellersTellerId).toHaveBeenCalledWith(7);
+  });
+
+  it('reads one cashier allocation, description included', () => {
+    let loaded: Cashier | undefined;
+    api.getCashier(1, 3).subscribe((cashier) => (loaded = cashier));
+
+    expect(generated.getTellersTellerIdCashiersCashierId).toHaveBeenCalledWith(1, 3);
+    expect(loaded?.description).toBe('Window 2, mornings');
+    expect(loaded?.startDate).toBe('2026-10-02');
+  });
+
+  it('updates a cashier allocation with the dates and format the platform expects', () => {
+    api
+      .updateCashier(1, 3, {
+        staffId: 2,
+        isFullDay: false,
+        description: 'Window 2, mornings',
+        startDate: '2026-11-01',
+        endDate: '2027-01-31',
+      })
+      .subscribe();
+
+    expect(generated.putTellersTellerIdCashiersCashierId).toHaveBeenCalledWith(1, 3, {
+      staffId: 2,
+      isFullDay: false,
+      description: 'Window 2, mornings',
+      startDate: '2026-11-01',
+      endDate: '2027-01-31',
+      dateFormat: 'yyyy-MM-dd',
+      locale: 'en',
+    });
+  });
+
+  it('omits a description nobody set, rather than sending an empty one', () => {
+    api
+      .updateCashier(1, 3, {
+        staffId: 2,
+        isFullDay: true,
+        startDate: '2026-11-01',
+        endDate: '2027-01-31',
+      })
+      .subscribe();
+
+    const body = generated.putTellersTellerIdCashiersCashierId.mock.lastCall![2];
+    expect(body).not.toHaveProperty('description');
   });
 
   it('asks for the summary in the currency it was given', () => {

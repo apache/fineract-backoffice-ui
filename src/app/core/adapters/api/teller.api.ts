@@ -83,10 +83,36 @@ export interface Cashier {
   readonly staffId: number | null;
   readonly staffName: string;
   readonly isFullDay: boolean;
+  /**
+   * Sent by Fineract on a single cashier, and absent from the collection inside the teller.
+   * `null` either way when there is none.
+   */
+  readonly description: string | null;
   /** ISO-8601 `YYYY-MM-DD`. */
   readonly startDate: string | null;
   /** ISO-8601 `YYYY-MM-DD`. */
   readonly endDate: string | null;
+}
+
+/**
+ * What editing a cashier's allocation collects.
+ *
+ * The same fields as `CashierDraft`, named apart because they are not the same operation:
+ * `PUT /tellers/{id}/cashiers/{cashierId}` is a modification, and Fineract keeps the cash
+ * transactions already recorded against the allocation. Deleting and recreating the cashier,
+ * which is what the UI forced before, does not (issue #786).
+ *
+ * `hourStartTime` and `hourEndTime` are accepted by the platform and absent here, because the
+ * create form does not collect them either; the two stay at parity.
+ */
+export interface CashierUpdate {
+  readonly staffId: number;
+  readonly isFullDay: boolean;
+  readonly description?: string | null;
+  /** ISO-8601 `YYYY-MM-DD`. */
+  readonly startDate: string;
+  /** ISO-8601 `YYYY-MM-DD`. */
+  readonly endDate: string;
 }
 
 /** What allocating a cashier to a teller collects. */
@@ -167,6 +193,14 @@ export interface TellerApi {
   update(tellerId: number, update: TellerUpdate): Observable<void>;
 
   /**
+   * Deletes a teller.
+   *
+   * Fineract refuses this while the teller still holds cashiers or transactions, and the refusal
+   * carries the reason — so callers show the platform's own message rather than a generic one.
+   */
+  delete(tellerId: number): Observable<void>;
+
+  /**
    * The cashiers allocated to a teller.
    *
    * Read from `/tellers/{id}/cashiers` rather than the top-level `/cashiers` collection, which
@@ -176,6 +210,17 @@ export interface TellerApi {
 
   /** Allocates a cashier to a teller. */
   createCashier(tellerId: number, draft: CashierDraft): Observable<void>;
+
+  /**
+   * One cashier allocation by id, which is what the edit form loads.
+   *
+   * Read on its own rather than filtered out of `listCashiers`, because only this response
+   * carries the allocation's `description`.
+   */
+  getCashier(tellerId: number, cashierId: number): Observable<Cashier>;
+
+  /** Updates a cashier's allocation, keeping the transactions recorded against it. */
+  updateCashier(tellerId: number, cashierId: number, update: CashierUpdate): Observable<void>;
 
   /** Removes a cashier's allocation. */
   removeCashier(tellerId: number, cashierId: number): Observable<void>;

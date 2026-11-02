@@ -50,6 +50,13 @@ export const TELLERS_ROUTES: Routes = [
     loadComponent: () =>
       import('./cashiers/cashier-form.component').then((m) => m.CashierFormComponent),
   },
+  {
+    path: ':tellerId/cashiers/:cashierId/edit',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATECASHIERALLOCATION_TELLER' },
+    loadComponent: () =>
+      import('./cashiers/cashier-form.component').then((m) => m.CashierFormComponent),
+  },
   // Declared after `:tellerId/cashiers/create` so the literal segment is matched before
   // `:cashierId` is allowed to capture it.
   {

@@ -696,17 +696,20 @@
     "putTaxesGroupTaxGroupId"
   ],
   "TellerCashManagementService": [
+    "deleteTellersTellerId",
     "deleteTellersTellerIdCashiersCashierId",
     "getTellers",
     "getTellersTellerId",
     "getTellersTellerIdCashiers",
+    "getTellersTellerIdCashiersCashierId",
     "getTellersTellerIdCashiersCashierIdSummaryandtransactions",
     "getTellersTellerIdCashiersCashierIdTransactionsTemplate",
     "postTellers",
     "postTellersTellerIdCashiers",
     "postTellersTellerIdCashiersCashierIdAllocate",
     "postTellersTellerIdCashiersCashierIdSettle",
-    "putTellersTellerId"
+    "putTellersTellerId",
+    "putTellersTellerIdCashiersCashierId"
   ],
   "TemplatesService": [
     "deleteTemplatesTemplateId",
