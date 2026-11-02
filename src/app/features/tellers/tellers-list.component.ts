@@ -20,9 +20,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { TELLER_API, Teller, TranslatePipe } from '../../core/adapters';
+import { I18N, TELLER_API, Teller, TranslatePipe } from '../../core/adapters';
+import { DialogService } from '../../core/services/dialog.service';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
-import { ColumnDef, CellTemplateDirective } from '../../shared';
+import { ColumnDef, CellTemplateDirective, RequiresPermissionDirective } from '../../shared';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 
@@ -45,6 +46,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
     IonIcon,
     DataTableComponent,
     CellTemplateDirective,
+    RequiresPermissionDirective,
     TooltipDirective,
   ],
   template: `
@@ -87,6 +89,18 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
         >
           <ion-icon name="people-outline" slot="icon-only"></ion-icon>
         </ion-button>
+        <ion-button
+          fill="clear"
+          color="danger"
+          appRequiresPermission="DELETE_TELLER"
+          [attr.aria-label]="'TELLERS.DELETE_TELLER' | appTranslate"
+          [appTooltip]="'TELLERS.DELETE_TELLER' | appTranslate"
+          (click)="onDeleteTeller(teller)"
+          [id]="'delete-teller-btn-' + teller.id"
+          [attr.data-testid]="'delete-teller-btn-' + teller.id"
+        >
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-button>
       </ng-template>
     </app-data-table>
   `,
@@ -96,6 +110,8 @@ export class TellersListComponent implements OnInit {
   private readonly tellerApi = inject(TELLER_API);
   /** Router for navigating to creation and edit forms */
   private readonly router = inject(Router);
+  private readonly dialog = inject(DialogService);
+  private readonly i18n = inject(I18N);
 
   /** Column definitions for the tellers data table */
   readonly columns: ColumnDef[] = [
@@ -153,5 +169,32 @@ export class TellersListComponent implements OnInit {
    */
   onManageCashiers(teller: Teller): void {
     this.router.navigate(['/tellers', teller.id, 'cashiers']);
+  }
+
+  /**
+   * Deletes a teller, which Fineract refuses while it still holds cashiers or transactions.
+   *
+   * The confirmation says so up front, because the alternative is offering an action that looks
+   * available and then explaining a refusal. The refusal itself is the platform's own message,
+   * already shown by the error interceptor, so it is not restated here. The list is reloaded
+   * only on success: a row that is still there is the truthful outcome of a refused delete.
+   */
+  async onDeleteTeller(teller: Teller): Promise<void> {
+    const confirmed = await this.dialog.confirm({
+      title: this.i18n.translate('TELLERS.DELETE_TELLER'),
+      message: this.i18n.translate('TELLERS.DELETE_TELLER_CONFIRM'),
+      details: [{ label: this.i18n.translate('TELLERS.NAME'), value: teller.name }],
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    this.tellerApi.delete(teller.id).subscribe({
+      next: () => this.loadTellers(),
+      error: (err: unknown) => {
+        console.error('Failed to delete teller', err);
+      },
+    });
   }
 }

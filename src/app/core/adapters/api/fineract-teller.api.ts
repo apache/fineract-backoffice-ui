@@ -26,12 +26,14 @@ import {
   PostTellersTellerIdCashiersCashierIdAllocateRequest,
   PostTellersTellerIdCashiersRequest,
   PutTellersRequest,
+  PutTellersTellerIdCashiersCashierIdRequest,
   TellerCashManagementService,
 } from '../../../api';
 import type {
   CashierData,
   CashierTransactionData,
   GetTellersResponse,
+  GetTellersTellerIdCashiersCashierIdResponse,
   GetTellersTellerIdCashiersCashiersIdTransactionsTemplateResponse,
   GetTellersTellerIdCashiersCashiersIdSummaryAndTransactionsResponse,
 } from '../../../api';
@@ -44,6 +46,7 @@ import { toIsoFineractDate } from './fineract-date';
 import type {
   Cashier,
   CashierDraft,
+  CashierUpdate,
   CashierSummary,
   CashierTransaction,
   CashierTransactionTemplate,
@@ -75,9 +78,10 @@ type TellerPayload = Omit<GetTellersResponse, 'startDate'> & {
  * platform has been seen sending `[y, m, d]` for teller-area dates elsewhere, so both encodings
  * are accepted here as they are for `TellerPayload`.
  */
-type CashierPayload = Omit<CashierData, 'startDate' | 'endDate'> & {
+type CashierPayload = Omit<CashierData, 'startDate' | 'endDate' | 'description'> & {
   readonly startDate?: string | number[];
   readonly endDate?: string | number[];
+  readonly description?: string;
 };
 
 /**
@@ -113,6 +117,7 @@ export function mapCashier(payload: CashierPayload): Cashier {
     staffId: payload.staffId ?? null,
     staffName: payload.staffName ?? '',
     isFullDay: payload.isFullDay === true,
+    description: payload.description ?? null,
     startDate: toIsoFineractDate(payload.startDate),
     endDate: toIsoFineractDate(payload.endDate),
   };
@@ -244,6 +249,10 @@ export class FineractTellerApi implements TellerApi {
       .pipe(map(() => undefined));
   }
 
+  delete(tellerId: number): Observable<void> {
+    return this.tellers.deleteTellersTellerId(tellerId).pipe(map(() => undefined));
+  }
+
   listCashiers(tellerId: number): Observable<Cashier[]> {
     return this.tellers.getTellersTellerIdCashiers(tellerId).pipe(
       // The response describes the teller and carries its cashiers inside it. The teller fields
@@ -263,6 +272,27 @@ export class FineractTellerApi implements TellerApi {
       locale: FINERACT_LOCALE,
     };
     return this.tellers.postTellersTellerIdCashiers(tellerId, body).pipe(map(() => undefined));
+  }
+
+  getCashier(tellerId: number, cashierId: number): Observable<Cashier> {
+    return this.tellers
+      .getTellersTellerIdCashiersCashierId(tellerId, cashierId)
+      .pipe(map((payload: GetTellersTellerIdCashiersCashierIdResponse) => mapCashier(payload)));
+  }
+
+  updateCashier(tellerId: number, cashierId: number, update: CashierUpdate): Observable<void> {
+    const body: PutTellersTellerIdCashiersCashierIdRequest = {
+      staffId: update.staffId,
+      isFullDay: update.isFullDay,
+      ...ifDefined('description', update.description),
+      startDate: update.startDate,
+      endDate: update.endDate,
+      dateFormat: ISO_DATE_FORMAT,
+      locale: FINERACT_LOCALE,
+    };
+    return this.tellers
+      .putTellersTellerIdCashiersCashierId(tellerId, cashierId, body)
+      .pipe(map(() => undefined));
   }
 
   removeCashier(tellerId: number, cashierId: number): Observable<void> {
