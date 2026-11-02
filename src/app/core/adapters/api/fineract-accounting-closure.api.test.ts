@@ -125,6 +125,8 @@ describe('FineractAccountingClosureApi', () => {
     getGlclosures: ReturnType<typeof vi.fn>;
     postGlclosures: ReturnType<typeof vi.fn>;
     deleteGlclosuresGlClosureId: ReturnType<typeof vi.fn>;
+    getGlclosuresGlClosureId: ReturnType<typeof vi.fn>;
+    putGlclosuresGlClosureId: ReturnType<typeof vi.fn>;
   };
   let api: FineractAccountingClosureApi;
 
@@ -133,6 +135,8 @@ describe('FineractAccountingClosureApi', () => {
       getGlclosures: vi.fn().mockReturnValue(of([LIVE_RESPONSE])),
       postGlclosures: vi.fn().mockReturnValue(of({ officeId: 1, resourceId: 1 })),
       deleteGlclosuresGlClosureId: vi.fn().mockReturnValue(of({ officeId: 1, resourceId: 1 })),
+      getGlclosuresGlClosureId: vi.fn().mockReturnValue(of(LIVE_RESPONSE)),
+      putGlclosuresGlClosureId: vi.fn().mockReturnValue(of({ officeId: 1, resourceId: 1 })),
     };
 
     TestBed.configureTestingModule({
@@ -164,6 +168,26 @@ describe('FineractAccountingClosureApi', () => {
       comments: 'Q3',
       dateFormat: 'yyyy-MM-dd',
       locale: 'en',
+    });
+  });
+
+  it('reads one closure by id, mapped the same way as the list', async () => {
+    const closure = await new Promise<unknown>((resolve) => api.get(7).subscribe(resolve));
+
+    expect(generated.getGlclosuresGlClosureId).toHaveBeenCalledWith(7);
+    expect(closure).toMatchObject({ id: LIVE_RESPONSE.id });
+  });
+
+  /**
+   * `PUT /glclosures/{id}` carries comments and nothing else — the generated request model has a
+   * single optional `comments` — so the closing date is immutable at the API, not merely by
+   * convention in the form. No `dateFormat` or `locale` either: there is no date to parse.
+   */
+  it('updates only the comments, with no date, format or locale', () => {
+    api.update(7, 'Corrected: year-end close').subscribe();
+
+    expect(generated.putGlclosuresGlClosureId).toHaveBeenCalledWith(7, {
+      comments: 'Corrected: year-end close',
     });
   });
 

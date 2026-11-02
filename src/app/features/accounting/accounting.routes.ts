@@ -108,6 +108,14 @@ export const ACCOUNTING_ROUTES: Routes = [
       import('./accounting-closure-form.component').then((m) => m.AccountingClosureFormComponent),
   },
   {
+    path: 'closures/edit/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'UPDATE_GLCLOSURE' },
+    title: 'ACCOUNTING_CLOSURES.EDIT_COMMENTS',
+    loadComponent: () =>
+      import('./accounting-closure-form.component').then((m) => m.AccountingClosureFormComponent),
+  },
+  {
     path: 'rules',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_ACCOUNTINGRULE' },

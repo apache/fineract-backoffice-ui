@@ -550,7 +550,9 @@
     "CONFIRM_PAY": "Pay {{amount}} against {{name}}?",
     "CONFIRM_WAIVE": "Waive {{amount}} of {{name}}? The charge is written off and will no longer be collected.",
     "CONFIRM_ADJUST": "Adjust {{name}} to a different amount?",
-    "CONFIRM_INACTIVATE": "Inactivate {{name}}? The charge stops being applied to this account."
+    "CONFIRM_INACTIVATE": "Inactivate {{name}}? The charge stops being applied to this account.",
+    "DELETE": "Delete Charge",
+    "DELETE_CONFIRM": "Delete this charge definition? Fineract refuses one that is still attached to a product or an account."
   },
   "LOANS": {
     "REPAYMENT_START_DATE_NOT_SET": "Not set",
@@ -1500,7 +1502,9 @@
     "CLOSING_DATE": "Closing Date",
     "IS_CLOSED": "Is Closed",
     "COMMENTS": "Comments",
-    "CLOSE_ACCOUNTING_PERIOD": "Close Accounting Period"
+    "CLOSE_ACCOUNTING_PERIOD": "Close Accounting Period",
+    "EDIT_COMMENTS": "Edit Comments",
+    "REOPEN_CONFIRM": "Re-open this period? Entries can be posted into it again, and the closure is removed. To correct only the comments, edit them instead."
   },
   "JOURNAL_ENTRIES": {
     "CREATE": "Add Journal Entry",

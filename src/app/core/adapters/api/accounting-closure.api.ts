@@ -79,6 +79,19 @@ export interface AccountingClosureApi {
   /** Closes a period. */
   create(closure: NewAccountingClosure): Observable<void>;
 
+  /** One closure by id, which is what the edit form loads. */
+  get(id: number): Observable<AccountingClosure>;
+
+  /**
+   * Corrects a closure's comments.
+   *
+   * Comments and nothing else: `PUT /glclosures/{id}` takes a single optional `comments`, so the
+   * closing date is immutable at the API and the form shows it read-only rather than offering a
+   * field the platform would ignore. Correcting a comment otherwise meant deleting the closure —
+   * which re-opens the period — and closing it again (#789).
+   */
+  update(id: number, comments: string): Observable<void>;
+
   /** Re-opens a period by removing its closure. */
   remove(id: number): Observable<void>;
 }
