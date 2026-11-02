@@ -298,7 +298,8 @@
     "CHECKED_DATE": "जांच की तारीख",
     "REASON": "कारण",
     "DONE": "पूर्ण",
-    "NONE": "कोई नहीं"
+    "NONE": "कोई नहीं",
+    "MUTATION_SUBMITTED_FOR_APPROVAL": "अनुमोदन के लिए भेजा गया।"
   },
   "ACTIONS": {
     "ACCOUNT_TRANSFER": "खाता स्थानांतरण",
@@ -2800,7 +2801,28 @@
     "PERIOD_START_DATE": "अवधि प्रारंभ दिनांक",
     "PERIOD_END_DATE": "अवधि समाप्ति दिनांक",
     "DELETE": "लाभांश हटाएं",
-    "CONFIRM_DELETE": "क्या {{startDate}} से {{endDate}} के लिए घोषित {{amount}} का लाभांश हटाना चाहते हैं?"
+    "CONFIRM_DELETE": "क्या {{startDate}} से {{endDate}} के लिए घोषित {{amount}} का लाभांश हटाना चाहते हैं?",
+    "STATUS_PENDING": "लंबित",
+    "STATUS_APPROVED": "स्वीकृत",
+    "STATUS_POSTED": "जमा किया गया",
+    "STATUS_UNKNOWN": "अज्ञात",
+    "DETAIL_TITLE": "लाभांश",
+    "PERIOD": "अवधि",
+    "TOTAL_AMOUNT": "कुल राशि",
+    "ACCOUNTS": "खाते",
+    "PAYOUTS_TITLE": "प्रति खाता भुगतान",
+    "ACCOUNT_NO": "खाता संख्या",
+    "CLIENT": "ग्राहक",
+    "SEARCH_ACCOUNT_NO": "खाता संख्या (सटीक मिलान)",
+    "APPROVE": "स्वीकृत करें",
+    "APPROVE_TITLE": "लाभांश स्वीकृत करें",
+    "CONFIRM_APPROVE": "{{startDate}} से {{endDate}} की अवधि के लिए {{count}} खातों को {{amount}} का भुगतान स्वीकृत करें? इसके बाद लाभांश पोस्टिंग जॉब प्रत्येक खाते से जुड़े बचत खाते में राशि जमा करता है।",
+    "APPROVED": "लाभांश स्वीकृत हुआ।",
+    "DELETED": "लाभांश हटाया गया।",
+    "NOT_FOUND": "यह लाभांश इस शेयर उत्पाद पर मौजूद नहीं है।",
+    "NO_ACCESS": "आपको यह लाभांश देखने की अनुमति नहीं है।",
+    "LOAD_FAILED": "लाभांश लोड नहीं हो सका।",
+    "APPROVAL_SUBMITTED": "आपकी स्वीकृति चेकर की प्रतीक्षा में है। स्वीकृत होने तक लाभांश लंबित रहेगा।"
   },
   "FIXED_DEPOSIT_TRANSACTIONS": {
     "AMOUNT": "राशि",
