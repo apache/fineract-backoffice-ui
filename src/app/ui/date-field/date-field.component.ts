@@ -82,6 +82,7 @@ let nextId = 0;
 
         <app-deferred-datetime-button
           [datetimeId]="pickerId()"
+          [disabled]="disabled()"
           [ariaLabelledby]="labelId"
           [placeholder]="value() ? '' : (notSetLabel() | appTranslate)"
         ></app-deferred-datetime-button>
@@ -93,6 +94,7 @@ let nextId = 0;
               [attr.data-testid]="testId() || pickerId()"
               presentation="date"
               [value]="value()"
+              [disabled]="disabled()"
               [max]="max() || undefined"
               [min]="min() || undefined"
               (ionChange)="onPicked($event)"
@@ -107,6 +109,7 @@ let nextId = 0;
             emphasis="quiet"
             size="small"
             [attr.data-testid]="'clear-' + pickerId()"
+            [disabled]="disabled()"
             (click)="onClear()"
             >{{ clearLabel() | appTranslate }}</app-button
           >
@@ -172,6 +175,7 @@ export class DateFieldComponent implements ControlValueAccessor {
   protected readonly labelId = `app-date-field-label-${nextId++}`;
 
   protected readonly value = signal<string | null>(null);
+  protected readonly disabled = signal(false);
 
   private onChangeFn: (value: string | null) => void = () => undefined;
   private onTouchedFn: () => void = () => undefined;
@@ -188,7 +192,12 @@ export class DateFieldComponent implements ControlValueAccessor {
     this.onTouchedFn = fn;
   }
 
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled.set(isDisabled);
+  }
+
   protected onPicked(event: CustomEvent): void {
+    if (this.disabled()) return;
     const picked = (event.detail as { value?: string | string[] | null }).value;
     // `ion-datetime` can answer an array for multi-date presentations; this one is a single day.
     const next = Array.isArray(picked) ? (picked[0] ?? null) : (picked ?? null);
@@ -198,6 +207,7 @@ export class DateFieldComponent implements ControlValueAccessor {
   }
 
   protected onClear(): void {
+    if (this.disabled()) return;
     this.value.set(null);
     this.onChangeFn(null);
     this.onTouchedFn();
