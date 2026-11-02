@@ -32,7 +32,9 @@ import { PostRecurringDepositProductsCharts } from './postRecurringDepositProduc
 export interface PostRecurringDepositProductsRequest { 
     accountingRule?: number;
     charts?: Set<PostRecurringDepositProductsCharts>;
+    closeDate?: string;
     currencyCode?: string;
+    dateFormat?: string;
     depositAmount?: number;
     description?: string;
     digitsAfterDecimal?: number;
@@ -65,6 +67,7 @@ export interface PostRecurringDepositProductsRequest {
     savingsControlAccountId?: number;
     savingsReferenceAccountId?: number;
     shortName?: string;
+    startDate?: string;
     taxGroupId?: number;
     transfersInSuspenseAccountId?: number;
     withHoldTax?: boolean;

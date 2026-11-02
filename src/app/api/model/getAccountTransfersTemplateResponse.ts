@@ -45,5 +45,6 @@ export interface GetAccountTransfersTemplateResponse {
     toOfficeOptions?: Set<GetAccountTransfersToOfficeOptions>;
     transferAmount?: number;
     transferDate?: string;
+    transferTime?: string;
 }
 

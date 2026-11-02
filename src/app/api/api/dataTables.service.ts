@@ -142,7 +142,7 @@ export class DataTablesService extends BaseService {
 
     /**
      * Delete Entry in Datatable (One to Many)
-     * Deletes the entry (if it exists) for data tables that are one to many with the application table.
+     * Deletes the entry for data tables that are one to many with the application table. An entry that does not belong to apptableId is not found. A data table that is one-to-one with the application table refuses an entry id.
      * @endpoint delete /v1/datatables/{datatable}/{apptableId}/{datatableId}
      * @param datatable datatable
      * @param apptableId apptableId
@@ -1131,7 +1131,7 @@ export class DataTablesService extends BaseService {
 
     /**
      * Update Entry in Data Table (One to Many)
-     * Updates the row (if it exists) of the data table.
+     * Updates the row (if it exists) of the data table. A data table that is one-to-one with the application table refuses an entry id.
      * @endpoint put /v1/datatables/{datatable}/{apptableId}/{datatableId}
      * @param datatable datatable
      * @param apptableId apptableId

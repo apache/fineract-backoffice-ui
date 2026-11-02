@@ -316,7 +316,7 @@ export class TaxComponentsService extends BaseService {
 
     /**
      * Update Tax Component
-     * Updates Tax component. Debit and credit account details cannot be modified. All the future tax components would be replaced with the new percentage.
+     * Updates Tax component. Once the component is linked to a charge, savings product or savings account, or used in a tax transaction, only the name can be modified. All the future tax components would be replaced with the new percentage.
      * @endpoint put /v1/taxes/component/{taxComponentId}
      * @param taxComponentId taxComponentId
      * @param putTaxesComponentsTaxComponentIdRequest 

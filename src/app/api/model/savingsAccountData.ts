@@ -68,6 +68,7 @@ export interface SavingsAccountData {
     fieldOfficerId?: number;
     fieldOfficerName?: string;
     fieldOfficerOptions?: Array<StaffData>;
+    glAccountIdForIncomeFromInterest?: number;
     glAccountIdForInterestOnSavings?: number;
     glAccountIdForInterestPayable?: number;
     glAccountIdForInterestReceivable?: number;

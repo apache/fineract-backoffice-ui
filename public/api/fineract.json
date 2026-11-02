@@ -5896,7 +5896,7 @@
     },
     "/v1/datatables/{datatable}/{apptableId}/{datatableId}": {
       "delete": {
-        "description": "Deletes the entry (if it exists) for data tables that are one to many with the application table.",
+        "description": "Deletes the entry for data tables that are one to many with the application table. An entry that does not belong to apptableId is not found. A data table that is one-to-one with the application table refuses an entry id.",
         "operationId": "deleteDatatableEntry",
         "parameters": [
           {
@@ -5972,7 +5972,7 @@
         "tags": ["Data Tables"]
       },
       "put": {
-        "description": "Updates the row (if it exists) of the data table.",
+        "description": "Updates the row (if it exists) of the data table. A data table that is one-to-one with the application table refuses an entry id.",
         "operationId": "updateDatatableEntryOneToMany",
         "parameters": [
           {
@@ -8324,7 +8324,7 @@
         "x-alternative-operation-id": "retrieveAll_30"
       },
       "post": {
-        "description": "Creates a Fixed Deposit Product\n\nMandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal,inMultiplesOf, interestCompoundingPeriodType, interestCalculationType, interestCalculationDaysInYearType, minDepositTerm, minDepositTermTypeId, accountingRule\n\nOptional Fields: lockinPeriodFrequency, lockinPeriodFrequencyType, maxDepositTerm, maxDepositTermTypeId, inMultiplesOfDepositTerm, inMultiplesOfDepositTermTypeId, preClosurePenalApplicable, preClosurePenalInterest, preClosurePenalInterestOnTypeId, feeToIncomeAccountMappings, penaltyToIncomeAccountMappings, charges, charts, , withHoldTax, taxGroupId\n\n\nMandatory Fields for Cash based accounting (accountingRule = 2): savingsReferenceAccountId, savingsControlAccountId, interestOnSavingsAccountId, incomeFromFeeAccountId, transfersInSuspenseAccountId, incomeFromPenaltyAccountId",
+        "description": "Creates a Fixed Deposit Product\n\nMandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal,inMultiplesOf, interestCompoundingPeriodType, interestCalculationType, interestCalculationDaysInYearType, minDepositTerm, minDepositTermTypeId, accountingRule\n\nOptional Fields: startDate, closeDate, lockinPeriodFrequency, lockinPeriodFrequencyType, maxDepositTerm, maxDepositTermTypeId, inMultiplesOfDepositTerm, inMultiplesOfDepositTermTypeId, preClosurePenalApplicable, preClosurePenalInterest, preClosurePenalInterestOnTypeId, feeToIncomeAccountMappings, penaltyToIncomeAccountMappings, charges, charts, , withHoldTax, taxGroupId\n\n\nMandatory Fields for Cash based accounting (accountingRule = 2): savingsReferenceAccountId, savingsControlAccountId, interestOnSavingsAccountId, incomeFromFeeAccountId, transfersInSuspenseAccountId, incomeFromPenaltyAccountId",
         "operationId": "createFixedDepositProduct",
         "requestBody": {
           "content": {
@@ -19895,7 +19895,7 @@
         "x-alternative-operation-id": "retrieveAll_32"
       },
       "post": {
-        "description": "Creates a Recurring Deposit Product\n\nMandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal,inMultiplesOf, interestCompoundingPeriodType, interestPostingPeriodType, interestCalculationType, interestCalculationDaysInYearType, minDepositTerm, minDepositTermTypeId, accountingRule, depositAmount, charts\n\nMandatory Fields for Cash based accounting (accountingRule = 2): savingsReferenceAccountId, savingsControlAccountId, interestOnSavingsAccountId, incomeFromFeeAccountId, transfersInSuspenseAccountId, incomeFromPenaltyAccountId\n\nOptional Fields: lockinPeriodFrequency, lockinPeriodFrequencyType, maxDepositTerm, maxDepositTermTypeId, inMultiplesOfDepositTerm, inMultiplesOfDepositTermTypeId, preClosurePenalApplicable, preClosurePenalInterest, preClosurePenalInterestOnTypeId, feeToIncomeAccountMappings, penaltyToIncomeAccountMappings, charges, minDepositAmount, maxDepositAmount, withHoldTax, taxGroupId",
+        "description": "Creates a Recurring Deposit Product\n\nMandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal,inMultiplesOf, interestCompoundingPeriodType, interestPostingPeriodType, interestCalculationType, interestCalculationDaysInYearType, minDepositTerm, minDepositTermTypeId, accountingRule, depositAmount, charts\n\nMandatory Fields for Cash based accounting (accountingRule = 2): savingsReferenceAccountId, savingsControlAccountId, interestOnSavingsAccountId, incomeFromFeeAccountId, transfersInSuspenseAccountId, incomeFromPenaltyAccountId\n\nOptional Fields: startDate, closeDate, lockinPeriodFrequency, lockinPeriodFrequencyType, maxDepositTerm, maxDepositTermTypeId, inMultiplesOfDepositTerm, inMultiplesOfDepositTermTypeId, preClosurePenalApplicable, preClosurePenalInterest, preClosurePenalInterestOnTypeId, feeToIncomeAccountMappings, penaltyToIncomeAccountMappings, charges, minDepositAmount, maxDepositAmount, withHoldTax, taxGroupId",
         "operationId": "createRecurringDepositProduct",
         "requestBody": {
           "content": {
@@ -24372,7 +24372,7 @@
         "x-alternative-operation-id": "retrieveTaxComponent"
       },
       "put": {
-        "description": "Updates Tax component. Debit and credit account details cannot be modified. All the future tax components would be replaced with the new percentage.",
+        "description": "Updates Tax component. Once the component is linked to a charge, savings product or savings account, or used in a tax transaction, only the name can be modified. All the future tax components would be replaced with the new percentage.",
         "operationId": "updateTaxComponent",
         "parameters": [
           {
@@ -30417,7 +30417,8 @@
           },
           "transferAmount": { "type": "number" },
           "transferDate": { "type": "string", "format": "date" },
-          "transferDescription": { "type": "string" }
+          "transferDescription": { "type": "string" },
+          "transferTime": { "type": "string", "example": "09:00:00Z" }
         }
       },
       "AccountTransferRequest": {
@@ -30441,7 +30442,8 @@
           "toOfficeId": { "type": "string" },
           "transferAmount": { "type": "string" },
           "transferDate": { "type": "string" },
-          "transferDescription": { "type": "string" }
+          "transferDescription": { "type": "string" },
+          "transferTime": { "type": "string" }
         }
       },
       "AccountingRuleData": {
@@ -33409,7 +33411,8 @@
           "toOffice": { "$ref": "#/components/schemas/GetAccountTransfersPageItemsFromOffice" },
           "transferAmount": { "type": "number", "format": "float", "example": 200 },
           "transferDate": { "type": "string", "format": "date" },
-          "transferDescription": { "type": "string", "example": "pay off loan from savings." }
+          "transferDescription": { "type": "string", "example": "pay off loan from savings." },
+          "transferTime": { "type": "string", "example": "09:00:00Z" }
         }
       },
       "GetAccountTransfersPageItemsCurrency": {
@@ -33718,7 +33721,8 @@
             "uniqueItems": true
           },
           "transferAmount": { "type": "integer", "format": "int64", "example": 0 },
-          "transferDate": { "type": "string", "format": "date" }
+          "transferDate": { "type": "string", "format": "date" },
+          "transferTime": { "type": "string", "example": "09:00:00Z" }
         }
       },
       "GetAccountTransfersTimeline": {
@@ -35259,6 +35263,11 @@
           "interestPostingPeriodType": {
             "$ref": "#/components/schemas/GetFixedDepositAccountsInterestPostingPeriodType"
           },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "maturityAmount": { "type": "number", "example": 5140.25 },
           "maturityDate": { "type": "string", "format": "date" },
           "maxDepositTerm": { "type": "integer", "format": "int32", "example": 4 },
@@ -35789,6 +35798,7 @@
           "activeChart": {
             "$ref": "#/components/schemas/GetFixedDepositProductsProductIdActiveChart"
           },
+          "closeDate": { "type": "string", "format": "date" },
           "currency": { "$ref": "#/components/schemas/GetFixedDepositProductsProductIdCurrency" },
           "description": {
             "type": "string",
@@ -35835,7 +35845,9 @@
           "preClosurePenalInterestOnType": {
             "$ref": "#/components/schemas/GetFixedDepositProductsProductIdPreClosurePenalInterestOnType"
           },
-          "shortName": { "type": "string", "example": "FD01" }
+          "shortName": { "type": "string", "example": "FD01" },
+          "startDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "savingsProduct.active" }
         }
       },
       "GetFixedDepositProductsResponse": {
@@ -35845,6 +35857,7 @@
           "accountingRule": {
             "$ref": "#/components/schemas/GetFixedDepositProductsAccountingRule"
           },
+          "closeDate": { "type": "string", "format": "date" },
           "currency": { "$ref": "#/components/schemas/GetFixedDepositProductsCurrency" },
           "description": { "type": "string", "example": "FD01" },
           "id": { "type": "integer", "format": "int64", "example": 3 },
@@ -35871,7 +35884,9 @@
           "name": { "type": "string", "example": "FD01" },
           "nominalAnnualInterestRate": { "type": "number", "format": "double", "example": 0 },
           "preClosurePenalApplicable": { "type": "boolean", "example": false },
-          "shortName": { "type": "string", "example": "FD01" }
+          "shortName": { "type": "string", "example": "FD01" },
+          "startDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "savingsProduct.active" }
         }
       },
       "GetFromAccountStandingInstructionSwagger": {
@@ -36748,8 +36763,8 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "amortizationType.equal.installments" },
-          "description": { "type": "string", "example": "Equal installments" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "value": { "type": "string", "example": "Equal installments" }
         }
       },
       "GetLoanProductsAssetAccountOptions": {
@@ -36902,8 +36917,8 @@
             "type": "string",
             "example": "interestRateFrequency.periodFrequencyType.months"
           },
-          "description": { "type": "string", "example": "Per month" },
-          "id": { "type": "integer", "format": "int64", "example": 2 }
+          "id": { "type": "integer", "format": "int64", "example": 2 },
+          "value": { "type": "string", "example": "Per month" }
         }
       },
       "GetLoanProductsInterestRateTemplateFrequencyType": {
@@ -36995,16 +37010,16 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "interestType.declining.balance" },
-          "description": { "type": "string", "example": "Declining Balance" },
-          "id": { "type": "integer", "format": "int64", "example": 0 }
+          "id": { "type": "integer", "format": "int64", "example": 0 },
+          "value": { "type": "string", "example": "Declining Balance" }
         }
       },
       "GetLoanProductsInterestType": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "interestType.flat" },
-          "description": { "type": "string", "example": "Flat" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "value": { "type": "string", "example": "Flat" }
         }
       },
       "GetLoanProductsLiabilityAccountOptions": {
@@ -37301,8 +37316,8 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "repaymentFrequency.periodFrequencyType.days" },
-          "description": { "type": "string", "example": "Days" },
-          "id": { "type": "integer", "format": "int64", "example": 0 }
+          "id": { "type": "integer", "format": "int64", "example": 0 },
+          "value": { "type": "string", "example": "Days" }
         }
       },
       "GetLoanProductsRepaymentStartDateType": {
@@ -38818,8 +38833,8 @@
             "type": "string",
             "example": "interestCalculationPeriodType.same.as.repayment.period"
           },
-          "description": { "type": "string", "example": "Same as repayment period" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "value": { "type": "string", "example": "Same as repayment period" }
         }
       },
       "GetLoansResponse": {
@@ -38990,6 +39005,7 @@
         "type": "object",
         "properties": {
           "accountDetailId": { "type": "integer", "format": "int64", "example": 6 },
+          "allowPartialTransfer": { "type": "boolean", "example": false },
           "amount": { "type": "number", "format": "float", "example": 150.0 },
           "fromAccount": {
             "$ref": "#/components/schemas/GetFromAccountStandingInstructionSwagger"
@@ -39488,6 +39504,11 @@
           },
           "interestPostingPeriodType": {
             "$ref": "#/components/schemas/GetRecurringDepositAccountsInterestPostingPeriodType"
+          },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
           },
           "mandatoryRecommendedDepositAmount": { "type": "number", "example": 100 },
           "maturityAmount": { "type": "number", "example": 252.59 },
@@ -40036,6 +40057,7 @@
           "activeChart": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsProductIdActiveChart"
           },
+          "closeDate": { "type": "string", "format": "date" },
           "currency": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsProductIdCurrency"
           },
@@ -40088,7 +40110,9 @@
           "recurringDepositFrequencyType": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsRecurringDepositFrequencyType"
           },
-          "shortName": { "type": "string", "example": "RD01" }
+          "shortName": { "type": "string", "example": "RD01" },
+          "startDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "savingsProduct.active" }
         }
       },
       "GetRecurringDepositProductsRecurringDepositFrequencyType": {
@@ -40109,6 +40133,7 @@
           "accountingRule": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsAccountingRule"
           },
+          "closeDate": { "type": "string", "format": "date" },
           "currency": { "$ref": "#/components/schemas/GetRecurringDepositProductsCurrency" },
           "description": { "type": "string", "example": "RD01" },
           "id": { "type": "integer", "format": "int64", "example": 3 },
@@ -40139,7 +40164,9 @@
           "recurringDepositFrequencyType": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsRecurringDepositFrequencyType"
           },
-          "shortName": { "type": "string", "example": "RD01" }
+          "shortName": { "type": "string", "example": "RD01" },
+          "startDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "savingsProduct.active" }
         }
       },
       "GetRecurringPaymentDetailData": {
@@ -40396,6 +40423,7 @@
           "runningBalance": { "type": "number", "example": 500 },
           "submittedByUsername": { "type": "string", "example": "mifos" },
           "submittedOnDate": { "type": "string", "format": "date" },
+          "transactionTime": { "type": "string", "example": "09:00:00Z" },
           "transactionType": { "$ref": "#/components/schemas/GetTranscationEnumData" }
         }
       },
@@ -41317,7 +41345,11 @@
           "fromOffice": { "$ref": "#/components/schemas/GetFromOfficeStandingInstructionSwagger" },
           "name": { "type": "string", "example": "ACC Transfer" },
           "standingInstructionId": { "type": "integer", "format": "int64", "example": 1 },
-          "status": { "type": "string", "example": "success" },
+          "status": {
+            "type": "string",
+            "description": "success, partial (only the part of the amount the savings account could cover was transferred, see allowPartialTransfer) or failed",
+            "example": "success"
+          },
           "toAccount": { "$ref": "#/components/schemas/GetStandingInstructionHistoryToAccount" },
           "toAccountType": {
             "$ref": "#/components/schemas/GetToAccountTypeStandingInstructionSwagger"
@@ -41578,6 +41610,11 @@
           },
           "debitAccount": { "$ref": "#/components/schemas/GetTaxesComponentsDebitAccount" },
           "debitAccountType": { "$ref": "#/components/schemas/GetTaxesComponentsDebitAccountType" },
+          "editable": {
+            "type": "boolean",
+            "description": "false once the component is linked to a charge, savings product or savings account, or used in a tax transaction; then only name can be changed",
+            "example": true
+          },
           "id": { "type": "integer", "format": "int64", "example": 1 },
           "name": { "type": "string", "example": "tax component 1" },
           "percentage": { "type": "number", "format": "float", "example": 10.0 },
@@ -42502,6 +42539,11 @@
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "clientName": { "type": "string", "example": "bharath gowda" },
           "clientOfficeId": { "type": "integer", "format": "int64", "example": 1 },
+          "clientOfficeName": {
+            "type": "string",
+            "description": "Client office name",
+            "example": "Head Office"
+          },
           "currency": { "$ref": "#/components/schemas/CurrencyData" },
           "delinquencyBucket": { "$ref": "#/components/schemas/GetDelinquencyBucket" },
           "delinquencyEffectiveStartDate": {
@@ -47103,6 +47145,11 @@
           "interestCalculationType": { "type": "integer", "format": "int32", "example": 1 },
           "interestCompoundingPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestPostingPeriodType": { "type": "integer", "format": "int32", "example": 4 },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "linkAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "locale": { "type": "string", "example": "en" },
           "lockinPeriodFrequency": { "type": "integer", "format": "int32", "example": 1 },
@@ -47113,6 +47160,11 @@
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 1 },
           "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 2 },
           "monthDayFormat": { "type": "string", "example": "dd MMMM" },
+          "nominalAnnualInterestRate": {
+            "type": "number",
+            "description": "Custom nominal annual interest rate to override product chart slabs",
+            "example": 5.0
+          },
           "preClosurePenalApplicable": { "type": "boolean", "example": true },
           "preClosurePenalInterest": { "type": "number", "example": 1.75 },
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
@@ -47169,7 +47221,9 @@
             "items": { "$ref": "#/components/schemas/PostFixedDepositProductsCharts" },
             "uniqueItems": true
           },
+          "closeDate": { "type": "string", "example": "10 July 2022" },
           "currencyCode": { "type": "string", "example": "USD" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "depositAmount": { "type": "number", "example": 100000 },
           "description": {
             "type": "string",
@@ -47207,6 +47261,7 @@
           "savingsControlAccountId": { "type": "integer", "format": "int64", "example": 2 },
           "savingsReferenceAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "shortName": { "type": "string", "example": "FD01" },
+          "startDate": { "type": "string", "example": "10 July 2022" },
           "taxGroupId": { "type": "integer", "format": "int64", "example": 1 },
           "transfersInSuspenseAccountId": { "type": "integer", "format": "int64", "example": 3 },
           "withHoldTax": { "type": "boolean", "example": false }
@@ -48982,6 +49037,11 @@
           "interestCompoundingPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestPostingPeriodType": { "type": "integer", "format": "int32", "example": 4 },
           "isCalendarInherited": { "type": "boolean", "example": false },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "locale": { "type": "string", "example": "en" },
           "lockinPeriodFrequency": { "type": "integer", "format": "int32", "example": 1 },
           "lockinPeriodFrequencyType": { "type": "integer", "format": "int32", "example": 2 },
@@ -48991,6 +49051,11 @@
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 1 },
           "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 2 },
           "monthDayFormat": { "type": "string", "example": "dd MMMM" },
+          "nominalAnnualInterestRate": {
+            "type": "number",
+            "description": "Custom nominal annual interest rate to override product chart slabs",
+            "example": 5.0
+          },
           "preClosurePenalApplicable": { "type": "boolean", "example": true },
           "preClosurePenalInterest": { "type": "number", "example": 1.75 },
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
@@ -49048,7 +49113,9 @@
             "items": { "$ref": "#/components/schemas/PostRecurringDepositProductsCharts" },
             "uniqueItems": true
           },
+          "closeDate": { "type": "string", "example": "10 July 2022" },
           "currencyCode": { "type": "string", "example": "USD" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "depositAmount": { "type": "number", "example": 10000 },
           "description": {
             "type": "string",
@@ -49088,6 +49155,7 @@
           "savingsControlAccountId": { "type": "integer", "format": "int64", "example": 2 },
           "savingsReferenceAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "shortName": { "type": "string", "example": "RD01" },
+          "startDate": { "type": "string", "example": "10 July 2022" },
           "taxGroupId": { "type": "integer", "format": "int64", "example": 1 },
           "transfersInSuspenseAccountId": { "type": "integer", "format": "int64", "example": 3 },
           "withHoldTax": { "type": "boolean", "example": false }
@@ -49190,7 +49258,8 @@
           "locale": { "type": "string", "example": "en" },
           "paymentTypeId": { "type": "integer", "format": "int64", "example": 1 },
           "transactionAmount": { "type": "number", "example": 500 },
-          "transactionDate": { "type": "string", "example": "01 March 2013" }
+          "transactionDate": { "type": "string", "example": "01 March 2013" },
+          "transactionTime": { "type": "string", "example": "02:00:00+05:30" }
         }
       },
       "PostSavingsAccountTransactionsRequest": {
@@ -49215,7 +49284,8 @@
             "items": { "$ref": "#/components/schemas/PostSavingsAccountsGsimSavings" }
           },
           "transactionAmount": { "type": "number", "example": 1000 },
-          "transactionDate": { "type": "string", "example": "27 March 2022" }
+          "transactionDate": { "type": "string", "example": "27 March 2022" },
+          "transactionTime": { "type": "string", "example": "14:30:00+05:30" }
         }
       },
       "PostSavingsAccountTransactionsResponse": {
@@ -49672,8 +49742,32 @@
           "dateFormat": { "type": "string", "example": "dd-MM-yyyy" },
           "description": { "type": "string", "example": "teller cash handling" },
           "endDate": { "type": "string", "format": "date" },
+          "hourEndTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "End hour of a part-day assignment; only used when isFullDay is false",
+            "example": 13
+          },
+          "hourStartTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start hour of a part-day assignment; only used when isFullDay is false",
+            "example": 9
+          },
           "isFullDay": { "type": "boolean", "example": true },
           "locale": { "type": "string", "example": "en" },
+          "minEndTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "End minute of a part-day assignment; only used when isFullDay is false",
+            "example": 30
+          },
+          "minStartTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start minute of a part-day assignment; only used when isFullDay is false",
+            "example": 0
+          },
           "staffId": { "type": "integer", "format": "int64", "example": 3 },
           "startDate": { "type": "string", "format": "date" }
         }
@@ -51107,6 +51201,11 @@
           "interestCalculationType": { "type": "integer", "format": "int32", "example": 1 },
           "interestCompoundingPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestPostingPeriodType": { "type": "integer", "format": "int32", "example": 4 },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "linkAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "locale": { "type": "string", "example": "en" },
           "lockinPeriodFrequency": { "type": "integer", "format": "int32", "example": 1 },
@@ -51117,6 +51216,11 @@
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 1 },
           "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 2 },
           "monthDayFormat": { "type": "string", "example": "dd MMMM" },
+          "nominalAnnualInterestRate": {
+            "type": "number",
+            "description": "Custom nominal annual interest rate to override product chart slabs",
+            "example": 5.0
+          },
           "preClosurePenalApplicable": { "type": "boolean", "example": true },
           "preClosurePenalInterest": { "type": "number", "example": 1.75 },
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
@@ -51147,18 +51251,23 @@
       "PutFixedDepositProductsChanges": {
         "type": "object",
         "properties": {
+          "closeDate": { "type": "string", "example": "10 July 2022" },
           "description": { "type": "string", "example": "Fixed deposit product new offerings" },
-          "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 }
+          "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 },
+          "startDate": { "type": "string", "example": "10 July 2022" }
         }
       },
       "PutFixedDepositProductsProductIdRequest": {
         "type": "object",
         "description": "PutFixedDepositProductsProductIdRequest",
         "properties": {
+          "closeDate": { "type": "string", "example": "10 July 2022" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "description": { "type": "string", "example": "Fixed deposit product new offerings" },
           "locale": { "type": "string", "example": "en" },
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 },
-          "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 1 }
+          "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 1 },
+          "startDate": { "type": "string", "example": "10 July 2022" }
         }
       },
       "PutFixedDepositProductsProductIdResponse": {
@@ -52027,6 +52136,11 @@
           "interestCompoundingPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestPostingPeriodType": { "type": "integer", "format": "int32", "example": 4 },
           "isCalendarInherited": { "type": "boolean", "example": false },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "locale": { "type": "string", "example": "en" },
           "lockinPeriodFrequency": { "type": "integer", "format": "int32", "example": 1 },
           "lockinPeriodFrequencyType": { "type": "integer", "format": "int32", "example": 2 },
@@ -52036,6 +52150,11 @@
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 1 },
           "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 2 },
           "monthDayFormat": { "type": "string", "example": "dd MMMM" },
+          "nominalAnnualInterestRate": {
+            "type": "number",
+            "description": "Custom nominal annual interest rate to override product chart slabs",
+            "example": 5.0
+          },
           "preClosurePenalApplicable": { "type": "boolean", "example": true },
           "preClosurePenalInterest": { "type": "number", "example": 1.75 },
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
@@ -52067,18 +52186,23 @@
       "PutRecurringDepositProductsChanges": {
         "type": "object",
         "properties": {
+          "closeDate": { "type": "string", "example": "10 July 2022" },
           "description": { "type": "string", "example": "Recurring deposit product new offerings" },
-          "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 }
+          "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 },
+          "startDate": { "type": "string", "example": "10 July 2022" }
         }
       },
       "PutRecurringDepositProductsRequest": {
         "type": "object",
         "description": "PutRecurringDepositProductsRequest",
         "properties": {
+          "closeDate": { "type": "string", "example": "10 July 2022" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "description": { "type": "string", "example": "Recurring deposit product new offerings" },
           "locale": { "type": "string", "example": "en" },
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 },
-          "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 1 }
+          "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 1 },
+          "startDate": { "type": "string", "example": "10 July 2022" }
         }
       },
       "PutRecurringDepositProductsResponse": {
@@ -52345,6 +52469,10 @@
       "PutTaxesComponentsChanges": {
         "type": "object",
         "properties": {
+          "creditAccountId": { "type": "integer", "format": "int64", "example": 4 },
+          "creditAccountType": { "type": "integer", "format": "int32", "example": 2 },
+          "debitAccountId": { "type": "integer", "format": "int64", "example": 4 },
+          "debitAccountType": { "type": "integer", "format": "int32", "example": 2 },
           "name": { "type": "string", "example": "tax component 2" },
           "percentage": { "type": "number", "format": "float", "example": 15 },
           "startDate": { "type": "string", "format": "date" }
@@ -52354,7 +52482,11 @@
         "type": "object",
         "description": "PutTaxesComponentsTaxComponentIdRequest",
         "properties": {
+          "creditAccountId": { "type": "integer", "format": "int64", "example": 4 },
+          "creditAccountType": { "type": "integer", "format": "int32", "example": 2 },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "debitAccountId": { "type": "integer", "format": "int64", "example": 4 },
+          "debitAccountType": { "type": "integer", "format": "int32", "example": 2 },
           "locale": { "type": "string", "example": "en" },
           "name": { "type": "string", "example": "tax component 2" },
           "percentage": { "type": "number", "format": "float", "example": 15 },
@@ -52473,8 +52605,32 @@
           "dateFormat": { "type": "string", "example": "dd-MM-yyyy" },
           "description": { "type": "string", "example": "Cashier updated." },
           "endDate": { "type": "string", "format": "date" },
+          "hourEndTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "End hour of a part-day assignment; only used when isFullDay is false",
+            "example": 13
+          },
+          "hourStartTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start hour of a part-day assignment; only used when isFullDay is false",
+            "example": 9
+          },
           "isFullDay": { "type": "boolean", "example": true },
           "locale": { "type": "string", "example": "en" },
+          "minEndTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "End minute of a part-day assignment; only used when isFullDay is false",
+            "example": 30
+          },
+          "minStartTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start minute of a part-day assignment; only used when isFullDay is false",
+            "example": 0
+          },
           "staffId": { "type": "integer", "format": "int64", "example": 1 },
           "startDate": { "type": "string", "format": "date" }
         }
@@ -53355,6 +53511,7 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/StaffData" }
           },
+          "glAccountIdForIncomeFromInterest": { "type": "integer", "format": "int64" },
           "glAccountIdForInterestOnSavings": { "type": "integer", "format": "int64" },
           "glAccountIdForInterestPayable": { "type": "integer", "format": "int64" },
           "glAccountIdForInterestReceivable": { "type": "integer", "format": "int64" },
@@ -53615,6 +53772,7 @@
           },
           "transactionAmount": { "type": "number" },
           "transactionDate": { "type": "string", "format": "date" },
+          "transactionTime": { "type": "string", "example": "09:00:00Z" },
           "transactionType": { "$ref": "#/components/schemas/SavingsAccountTransactionEnumData" },
           "transfer": { "$ref": "#/components/schemas/AccountTransferData" },
           "waiveCharge": { "type": "boolean" },
@@ -54099,6 +54257,7 @@
       "StandingInstructionCreationRequest": {
         "type": "object",
         "properties": {
+          "allowPartialTransfer": { "type": "boolean" },
           "amount": { "type": "string" },
           "dateFormat": { "type": "string" },
           "fromAccountId": { "type": "string" },
@@ -54127,6 +54286,7 @@
       "StandingInstructionUpdatesRequest": {
         "type": "object",
         "properties": {
+          "allowPartialTransfer": { "type": "boolean" },
           "amount": { "type": "string" },
           "dateFormat": { "type": "string" },
           "instructionType": { "type": "string" },
@@ -54237,6 +54397,7 @@
           "creditAccountType": { "$ref": "#/components/schemas/EnumOptionData" },
           "debitAccount": { "$ref": "#/components/schemas/GLAccountData" },
           "debitAccountType": { "$ref": "#/components/schemas/EnumOptionData" },
+          "editable": { "type": "boolean" },
           "glAccountOptions": {
             "type": "object",
             "additionalProperties": {

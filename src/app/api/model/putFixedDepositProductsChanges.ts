@@ -26,7 +26,9 @@
 
 
 export interface PutFixedDepositProductsChanges { 
+    closeDate?: string;
     description?: string;
     minDepositTerm?: number;
+    startDate?: string;
 }
 
