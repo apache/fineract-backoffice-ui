@@ -30,6 +30,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    // Where the identity provider sends the browser back after sign-in.
+    path: 'auth/callback',
+    title: 'login.title',
+    loadComponent: () =>
+      import('./features/login/oidc-callback.component').then((m) => m.OidcCallbackComponent),
+  },
+  {
     path: '',
     component: MainLayoutComponent,
     canActivate: [authGuard],

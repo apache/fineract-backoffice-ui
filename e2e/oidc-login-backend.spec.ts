@@ -21,13 +21,13 @@
  * The identity-provider route on the login page, in front of a real Fineract.
  *
  * The one thing this alters is the deployment's own `config.json`, which gets `oidcLoginEnabled`
- * added to whatever it already says. That is what a deployment does by hand — the flag is not
- * read from Fineract (issue #370) — so it is the honest way to switch the route on. Everything
- * after it is real: the credentials, the platform's answer and the session that results.
+ * and an `oidc` block added to whatever it already says. That is what a deployment does by hand —
+ * the settings are not read from Fineract — so it is the honest way to switch the route on.
+ * Everything after it is real: the credentials, the platform's answer and the session that results.
  *
- * `oidc-login.spec.ts` covers the matrix against mocks, including the configurations that must
- * show nothing. This covers what mocks cannot: that offering the route leaves a real sign-in
- * working, and that pressing it does not reach Fineract at all.
+ * `oidc-login.spec.ts` covers the matrix and the provider round trip against mocks. This covers
+ * what mocks cannot: that offering the route leaves a real sign-in working, and that pressing it
+ * with a provider that cannot be reached does not reach Fineract at all.
  */
 
 import { test, expect, Page } from './fixtures';
@@ -35,6 +35,7 @@ import { assertLocalBackend } from './utils/backend-env';
 import { SERVER_URL, TENANT_ID, USERNAME, PASSWORD } from './utils/fineract-login';
 
 const SSO_BUTTON = 'login-sso-button';
+const ISSUER = 'https://idp.example.test/realms/bank';
 
 /**
  * Signs in through the password form, which the route sits above.
@@ -71,7 +72,14 @@ async function offerIdentityProviderRoute(page: Page): Promise<void> {
   await page.route('**/config.json*', async (route) => {
     const response = await route.fetch();
     const config = (await response.json()) as Record<string, unknown>;
-    await route.fulfill({ response, json: { ...config, oidcLoginEnabled: true } });
+    await route.fulfill({
+      response,
+      json: {
+        ...config,
+        oidcLoginEnabled: true,
+        oidc: { issuer: ISSUER, clientId: 'backoffice-ui' },
+      },
+    });
   });
 }
 
@@ -80,9 +88,10 @@ test.describe('identity-provider route against a real Fineract', () => {
     await offerIdentityProviderRoute(page);
   });
 
-  test('is offered beside the password form, and pressing it sends nothing to Fineract', async ({
+  test('is offered beside the password form, and an unreachable provider sends nothing to Fineract', async ({
     page,
   }) => {
+    await page.route(`${ISSUER}/**`, (route) => route.abort());
     const authenticationRequests: string[] = [];
     page.on('request', (request) => {
       if (request.url().includes('/authentication')) {
@@ -96,7 +105,7 @@ test.describe('identity-provider route against a real Fineract', () => {
 
     await page.getByTestId(SSO_BUTTON).click();
 
-    await expect(page.getByText(/not available yet/i)).toBeVisible();
+    await expect(page.getByTestId('login-sso-error')).toBeVisible();
     await expect(page).toHaveURL(/\/login/);
     expect(authenticationRequests).toEqual([]);
   });

@@ -177,6 +177,39 @@ export interface AppConfig {
    * this flag must never be the only way in, the way #369 made 2FA.
    */
   oidcLoginEnabled?: boolean;
+  /**
+   * The identity provider the "Sign in with your identity provider" button talks to. Read only
+   * when {@link oidcLoginEnabled} is on. See `OidcService` and `DOCS/OIDC.md`.
+   */
+  oidc?: OidcConfig;
+  /**
+   * Whether the username-and-password form is offered. Defaults to `true`.
+   *
+   * Setting it to `false` removes the form from the login page; it does not stop Fineract
+   * from accepting Basic credentials, which is the server's decision. It is ignored when OIDC
+   * sign-in is not configured, so a mistaken config can never leave nobody able to sign in.
+   */
+  passwordLoginEnabled?: boolean;
+}
+
+/**
+ * A public OpenID Connect client, signed in with the authorization-code flow and PKCE.
+ * No secret exists for such a client, so none belongs here.
+ */
+export interface OidcConfig {
+  /** The issuer URL, e.g. `https://sso.example/realms/bank`. Discovery is read from it. */
+  issuer: string;
+  /** The client id registered with the provider. */
+  clientId: string;
+  /**
+   * Space-separated scopes. Defaults to `openid profile`. `offline_access` is refused: staff
+   * sessions must end with the identity provider session.
+   */
+  scopes?: string;
+  /** Path of the redirect URI on this origin. Defaults to `/auth/callback`. */
+  redirectPath?: string;
+  /** Path to return to after the provider signs the user out. Defaults to `/login`. */
+  postLogoutPath?: string;
 }
 
 /**
@@ -354,7 +387,23 @@ export class ConfigService {
    * {@link AppConfig.oidcLoginEnabled}. Defaults to `false`, so an existing `config.json` that
    * predates this flag keeps today's username-and-password-only screen.
    */
-  readonly oidcLoginEnabled = computed(() => this._config().oidcLoginEnabled === true);
+  readonly oidcLoginEnabled = computed(
+    () => this._config().oidcLoginEnabled === true && !!this.oidcConfig(),
+  );
+
+  /** The identity-provider settings, or `null` when absent or incomplete. */
+  readonly oidcConfig = computed<OidcConfig | null>(() => {
+    const oidc = this._config().oidc;
+    return oidc?.issuer && oidc.clientId ? oidc : null;
+  });
+
+  /**
+   * Whether the username-and-password form is shown. Never false while OIDC sign-in is not
+   * available, so a half-written config cannot lock everyone out.
+   */
+  readonly passwordLoginEnabled = computed(
+    () => this._config().passwordLoginEnabled !== false || !this.oidcLoginEnabled(),
+  );
 
   /** Navigation entries this deployment hides, as a set of `labelKey`s. */
   readonly hiddenNavKeys = computed(() => new Set(this._config().nav?.hidden));
