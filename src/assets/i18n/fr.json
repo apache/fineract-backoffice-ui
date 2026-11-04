@@ -1149,6 +1149,24 @@
     "MAKER_DATE_TO": "Date d'initiation au",
     "PROCESSING_RESULT": "Résultat du traitement"
   },
+  "AUDIT": {
+    "ANY": "Tous",
+    "ENTRY_DETAIL": "Entrée d'audit",
+    "ENTRY_TITLE": "Entrée d'audit n° {{id}}",
+    "SUBRESOURCE_ID": "ID de la sous-ressource",
+    "MADE_ON": "Initié le",
+    "LINKED_RECORDS": "Enregistrements concernés",
+    "GROUP": "Groupe",
+    "LOAN": "Prêt",
+    "SAVINGS_ACCOUNT": "Compte d'épargne",
+    "PAYLOAD": "Contenu de la commande",
+    "NO_PAYLOAD": "Cette entrée n'a pas de contenu.",
+    "CLIENT_ID": "ID du client",
+    "LOAN_ID": "ID du prêt",
+    "NO_ACCESS": "Vous n'avez pas l'autorisation de consulter cette entrée d'audit.",
+    "NOT_FOUND": "Cette entrée d'audit n'existe pas ou n'appartient pas à votre agence.",
+    "LOAD_FAILED": "Impossible de charger l'entrée d'audit."
+  },
   "SYSTEM": {
     "DATA_TABLES": "Tables de données",
     "CREATE_DATA_TABLE": "Créer une table de données",

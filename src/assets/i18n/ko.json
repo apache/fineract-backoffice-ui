@@ -542,6 +542,24 @@
   "SECURITY": {
     "AUDIT_LOGS": "감사 로그"
   },
+  "AUDIT": {
+    "ANY": "전체",
+    "ENTRY_DETAIL": "감사 항목",
+    "ENTRY_TITLE": "감사 항목 #{{id}}",
+    "SUBRESOURCE_ID": "하위 리소스 ID",
+    "MADE_ON": "생성 일시",
+    "LINKED_RECORDS": "관련 레코드",
+    "GROUP": "그룹",
+    "LOAN": "대출",
+    "SAVINGS_ACCOUNT": "저축 계좌",
+    "PAYLOAD": "명령 페이로드",
+    "NO_PAYLOAD": "이 항목에는 페이로드가 없습니다.",
+    "CLIENT_ID": "고객 ID",
+    "LOAN_ID": "대출 ID",
+    "NO_ACCESS": "이 감사 항목을 볼 권한이 없습니다.",
+    "NOT_FOUND": "이 감사 항목이 없거나 사용자의 지점 범위 밖에 있습니다.",
+    "LOAD_FAILED": "감사 항목을 불러오지 못했습니다."
+  },
   "USERS": {
     "CREATE_USER": "사용자 생성",
     "EDIT_USER": "사용자 편집"
