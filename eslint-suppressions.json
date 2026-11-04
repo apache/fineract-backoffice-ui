@@ -1761,15 +1761,7 @@
       "count": 1
     }
   },
-  "src/app/features/security/audit-logs/audit-logs-list.component.test.ts": {
-    "local/no-generated-api-import": {
-      "count": 1
-    }
-  },
   "src/app/features/security/audit-logs/audit-logs-list.component.ts": {
-    "local/no-generated-api-import": {
-      "count": 1
-    },
     "local/no-vendor-ui-import": {
       "count": 1
     }

@@ -1156,6 +1156,24 @@
     "MAKER_DATE_TO": "Maker Date To",
     "PROCESSING_RESULT": "Processing Result"
   },
+  "AUDIT": {
+    "ANY": "Any",
+    "ENTRY_DETAIL": "Audit entry",
+    "ENTRY_TITLE": "Audit entry #{{id}}",
+    "SUBRESOURCE_ID": "Sub-resource ID",
+    "MADE_ON": "Made on",
+    "LINKED_RECORDS": "Affected records",
+    "GROUP": "Group",
+    "LOAN": "Loan",
+    "SAVINGS_ACCOUNT": "Savings account",
+    "PAYLOAD": "Command payload",
+    "NO_PAYLOAD": "This entry has no payload.",
+    "CLIENT_ID": "Client ID",
+    "LOAN_ID": "Loan ID",
+    "NO_ACCESS": "You do not have permission to view this audit entry.",
+    "NOT_FOUND": "This audit entry does not exist or is outside your office.",
+    "LOAD_FAILED": "The audit entry could not be loaded."
+  },
   "SYSTEM": {
     "DATA_TABLES": "Data Tables",
     "CREATE_DATA_TABLE": "Create Data Table",
