@@ -295,7 +295,16 @@ export function toEditableDate(value: unknown): string {
                 <div class="subtitle-row">
                   <span class="account-no">#{{ loan()?.accountNo }}</span>
                   <span class="divider">|</span>
-                  <span class="client-name">Client: {{ loan()?.clientName }}</span>
+                  @if (loan()?.clientId) {
+                    <a
+                      class="client-name clickable-link"
+                      [routerLink]="['/clients/view', loan()!.clientId]"
+                      data-testid="loan-client-link"
+                      >Client: {{ loan()?.clientName }}</a
+                    >
+                  } @else {
+                    <span class="client-name">Client: {{ loan()?.clientName }}</span>
+                  }
                   <app-status-badge
                     [status]="loan()?.status"
                     class="status-badge"
@@ -2761,7 +2770,20 @@ export class LoanViewComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Returns to the record this account belongs to, not to the global list.
+   *
+   * Servicing work moves between a client and their accounts — post a repayment, check savings,
+   * go back — and landing on the global loan list meant a fresh search every round trip (#797).
+   * The owner is the useful destination; the list is the fallback for a loan whose owner this
+   * screen does not know.
+   */
   onBack() {
+    const clientId = this.loan()?.clientId;
+    if (clientId) {
+      this.router.navigate(['/clients/view', clientId]);
+      return;
+    }
     this.router.navigate(['/loans']);
   }
 }

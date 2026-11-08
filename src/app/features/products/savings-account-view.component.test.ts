@@ -91,6 +91,7 @@ describe('SavingsAccountViewComponent', () => {
         id: 789,
         accountNo: 'SA000789',
         savingsProductName: 'Regular Savings',
+        clientId: 42,
         clientName: 'Jane Smith',
         nominalAnnualInterestRate: 4,
         status: { value: 'Active' },
@@ -405,5 +406,14 @@ describe('SavingsAccountViewComponent', () => {
         expect(spy).toHaveBeenCalled();
       }
     });
+  });
+
+  /** Issue #797: the account list was never where the user came from. */
+  it('goes back to the client who owns the account', () => {
+    routerSpy.navigate.mockClear();
+
+    component.onBack();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/clients/view', 42]);
   });
 });

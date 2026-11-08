@@ -62,6 +62,7 @@ describe('LoanViewComponent', () => {
     id: 456,
     accountNo: 'L000456',
     loanProductName: PRODUCT_NAME,
+    clientId: 42,
     clientName: 'Jane Smith',
     principal: 5000,
     annualInterestRate: 12,
@@ -1083,6 +1084,29 @@ describe('LoanViewComponent', () => {
       for (const spy of dismissSpies) {
         expect(spy).toHaveBeenCalled();
       }
+    });
+  });
+
+  /**
+   * Issue #797. Back went to the global loan list, which is never where the user came from:
+   * loans are opened from the client's own page, and servicing moves between the two constantly.
+   */
+  describe('returning to the owner', () => {
+    it('goes back to the client who holds the loan', () => {
+      routerSpy.navigate.mockClear();
+
+      component.onBack();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/clients/view', 42]);
+    });
+
+    it('links the client name rather than printing it', () => {
+      const link = (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-testid="loan-client-link"]',
+      );
+
+      expect(link).not.toBeNull();
+      expect(link?.textContent).toContain('Jane Smith');
     });
   });
 });
