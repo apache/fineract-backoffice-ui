@@ -285,6 +285,7 @@
   ],
   "FundsService": ["getFunds", "getFundsFundId", "postFunds", "putFundsFundId"],
   "GeneralLedgerAccountService": [
+    "deleteGlaccountsGlAccountId",
     "getGlaccounts",
     "getGlaccountsDownloadtemplate",
     "getGlaccountsGlAccountId",
