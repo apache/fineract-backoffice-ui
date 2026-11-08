@@ -1231,7 +1231,16 @@
     "CONFIRM_DELETE_DATA_TABLE": "Delete the data table “{{name}}”? The table and everything recorded in it are removed.",
     "EDIT_ENTRY": "Edit entry",
     "CONFIRM_DELETE_ENTRY": "This row is deleted outright; there is no undo.",
-    "REQUIRED_CUSTOM_DATA": "Required custom data"
+    "REQUIRED_CUSTOM_DATA": "Required custom data",
+    "ADD_ACCOUNT_NUMBER_FORMAT": "Add Format",
+    "ADD_ACCOUNT_NUMBER_FORMAT_PROMPT": "Choose the account type to number. Fineract keeps one format per type, so only the types without one are offered; the prefix is set on the row afterwards.",
+    "ACCOUNT_TYPE": "Account Type",
+    "NUMBER_PREFIX": "Prefix",
+    "NO_PREFIX": "No prefix",
+    "SET_PREFIX": "Set Prefix",
+    "SET_PREFIX_PROMPT": "The prefix goes in front of the generated sequence. Only the prefixes this account type allows are offered.",
+    "DELETE_ACCOUNT_NUMBER_FORMAT": "Delete Format",
+    "DELETE_ACCOUNT_NUMBER_FORMAT_CONFIRM": "Delete this format? The account numbers already issued keep theirs — this only changes how the next one is generated, which returns to the platform default."
   },
   "ACCOUNTING_RULES": {
     "CREATE": "Create Accounting Rule",
@@ -1468,7 +1477,8 @@
     "OPENING_BALANCES_DESC": "Carry the balances from your previous ledger into this one. Only available before the first journal entry is posted for the office.",
     "FREQUENT_POSTINGS_DESC": "Post a journal entry from a saved accounting rule, so recurring postings need only an amount and a date.",
     "REPORT_DEFINITIONS_DESC": "The catalogue behind the Reporting section: the SQL each report runs, the parameters it takes, and whether it is offered to users.",
-    "WORK_QUEUES_DESC": "The approvals a branch works through together: pending loans, loans awaiting disbursal, pending clients and reschedule requests. Each action is sent as one batch, and any record the platform refuses is named."
+    "WORK_QUEUES_DESC": "The approvals a branch works through together: pending loans, loans awaiting disbursal, pending clients and reschedule requests. Each action is sent as one batch, and any record the platform refuses is named.",
+    "ACCOUNT_NUMBER_FORMATS_DESC": "How Fineract numbers each kind of account: one format per account type, with an optional prefix such as the office or product short name in front of the sequence."
   },
   "REPORTS": {
     "NAME": "Report Name",

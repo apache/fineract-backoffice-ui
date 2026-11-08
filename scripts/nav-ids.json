@@ -91,6 +91,7 @@
     "spm.survey-responses",
     "spm.surveys",
     "system",
+    "system.accountNumberFormats",
     "system.adhoc-query",
     "system.bulk-import",
     "system.business-dates",

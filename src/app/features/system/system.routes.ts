@@ -28,6 +28,16 @@ export const SYSTEM_ROUTES: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'account-number-formats',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_ACCOUNTNUMBERFORMAT' },
+    title: 'nav.accountNumberFormats',
+    loadComponent: () =>
+      import('./account-number-formats/account-number-formats.component').then(
+        (m) => m.AccountNumberFormatsComponent,
+      ),
+  },
+  {
     path: 'data-tables',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_DATATABLE' },

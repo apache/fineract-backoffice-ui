@@ -114,6 +114,7 @@ const BACKEND_SPECS = [
   'savings-transaction-correction.spec.ts',
   'share-product-accounting.spec.ts',
   'teller-cash-management.spec.ts',
+  'account-number-formats-backend.spec.ts',
 ];
 
 export default defineConfig({
