@@ -1693,7 +1693,9 @@
     "DETAIL": "Detail",
     "ACCOUNT_NAME": "Account Name",
     "FINANCIAL_ACTIVITY": "Financial Activity",
-    "GL_ACCOUNT": "GL Account"
+    "GL_ACCOUNT": "GL Account",
+    "DELETE_ACCOUNT": "Delete Account",
+    "DELETE_ACCOUNT_CONFIRM": "Delete this ledger account? Fineract refuses an account that has child accounts, journal entries or product mappings — disable it through Edit instead if it has been used."
   },
   "MODULES": {
     "CLIENTS_CONTRACTS": "Clients & Contracts",
