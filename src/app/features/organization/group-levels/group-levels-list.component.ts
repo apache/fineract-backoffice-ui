@@ -35,6 +35,9 @@ import { IconComponent } from '../../../ui/icon/icon.component';
     <app-data-table
       title="nav.groupLevels"
       helpTextKey="HELP.GROUP_LEVELS_DESC"
+      [hasError]="hasError()"
+      [errorStatus]="errorStatus()"
+      (retry)="load()"
       [columns]="columns"
       [data]="groupLevels()"
       [totalRecords]="groupLevels().length"
@@ -59,13 +62,32 @@ export class GroupLevelsListComponent implements OnInit {
   ];
 
   readonly groupLevels = signal<GroupLevelData[]>([]);
+  readonly hasError = signal(false);
+  /**
+   * The status the read failed with.
+   *
+   * Fineract refuses `GET /grouplevels` with a 403 for a role that may not read them, and the
+   * error was swallowed into an empty list — so a user who is not allowed to see group levels
+   * was told the institution has none (#751). `app-data-table` reports a 403 as a permission
+   * problem and withholds the retry, which is the difference this carries.
+   */
+  readonly errorStatus = signal<number | null>(null);
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
     this.groupsLevelService.getGrouplevels().subscribe({
       next: (data: GroupLevelData[]) => {
+        this.hasError.set(false);
+        this.errorStatus.set(null);
         this.groupLevels.set(data || []);
       },
       error: (err: unknown) => {
+        this.hasError.set(true);
+        this.errorStatus.set((err as { status?: number })?.status ?? null);
+        this.groupLevels.set([]);
         console.error('Failed to load group levels', err);
       },
     });

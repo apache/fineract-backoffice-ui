@@ -68,6 +68,7 @@ import { catchError, map, switchMap } from 'rxjs/operators';
       [localLogic]="true"
       [isLoading]="isLoading()"
       [hasError]="loadFailed()"
+      [errorStatus]="errorStatus()"
       (create)="onCreate()"
       (retry)="load()"
     >
@@ -121,6 +122,15 @@ export class InterestRateChartsListComponent implements OnInit {
   readonly charts = signal<GetInterestRateChartsResponse[]>([]);
   readonly isLoading = signal(false);
   readonly loadFailed = signal(false);
+  /**
+   * The status the read failed with.
+   *
+   * The chart list reads its products first, and Fineract refuses that with a 403 for a role
+   * that may not read deposit products. Reported as a plain failure the screen offered "Try
+   * again", which can only be refused again (#751). A 403 is reported as a permission problem
+   * instead, and `app-data-table` withholds the retry.
+   */
+  readonly errorStatus = signal<number | null>(null);
 
   ngOnInit(): void {
     this.load();
@@ -129,6 +139,7 @@ export class InterestRateChartsListComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.loadFailed.set(false);
+    this.errorStatus.set(null);
     this.depositProductIds()
       .pipe(
         switchMap((productIds) =>
@@ -149,10 +160,11 @@ export class InterestRateChartsListComponent implements OnInit {
           this.charts.set(data);
           this.isLoading.set(false);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.charts.set([]);
           this.isLoading.set(false);
           this.loadFailed.set(true);
+          this.errorStatus.set((err as { status?: number })?.status ?? null);
         },
       });
   }

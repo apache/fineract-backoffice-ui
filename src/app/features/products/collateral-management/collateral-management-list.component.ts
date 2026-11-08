@@ -45,6 +45,9 @@ import { ButtonComponent } from '../../../ui/button/button.component';
     <app-data-table
       title="nav.collateralManagement"
       helpTextKey="HELP.COLLATERAL_MANAGEMENT_DESC"
+      [hasError]="hasError()"
+      [errorStatus]="errorStatus()"
+      (retry)="load()"
       createButtonLabel="COLLATERAL_MANAGEMENT.CREATE"
       createPermission="CREATE_COLLATERAL_PRODUCT"
       [columns]="columns"
@@ -93,6 +96,17 @@ export class CollateralManagementListComponent implements OnInit {
   ];
 
   readonly collaterals = signal<CollateralManagementData[]>([]);
+  readonly hasError = signal(false);
+  /**
+   * The status the read failed with.
+   *
+   * `GET /collateral-management` answers 403 for a role that may not read collateral products,
+   * and the error was swallowed into an empty list — so the screen told the user the
+   * institution has no collateral types configured (#751). A 403 is reported as a permission
+   * problem by `app-data-table`, which also withholds the retry, because the same request would
+   * only be refused again.
+   */
+  readonly errorStatus = signal<number | null>(null);
 
   ngOnInit(): void {
     this.load();
@@ -101,9 +115,14 @@ export class CollateralManagementListComponent implements OnInit {
   load(): void {
     this.collateralService.getCollateralManagement().subscribe({
       next: (data: CollateralManagementData[]) => {
+        this.hasError.set(false);
+        this.errorStatus.set(null);
         this.collaterals.set(data || []);
       },
       error: (err: unknown) => {
+        this.hasError.set(true);
+        this.errorStatus.set((err as { status?: number })?.status ?? null);
+        this.collaterals.set([]);
         console.error('Failed to load collateral products', err);
       },
     });
