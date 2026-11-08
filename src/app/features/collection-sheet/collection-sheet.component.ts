@@ -20,17 +20,14 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { PlatformDateService } from '../../core/services/platform-date.service';
 import { FormsModule } from '@angular/forms';
-import { JsonPipe } from '@angular/common';
-import { TranslatePipe } from '../../core/adapters';
+import { DecimalPipe } from '@angular/common';
 import {
-  CollectionSheetService,
-  OfficesService,
-  StaffService,
-  StaffData,
-  CollectionSheetRequest,
-  PostCollectionSheetResponse,
-} from '../../api';
-import { formatDateToFineract, FINERACT_DATE_FORMAT } from '../../core/utils/date-formatter';
+  COLLECTION_SHEET_API,
+  TranslatePipe,
+  type CollectionSheet,
+  type CollectionSheetGroup,
+} from '../../core/adapters';
+import { OfficesService, StaffService, StaffData } from '../../api';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   IonButton,
@@ -54,7 +51,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    JsonPipe,
+    DecimalPipe,
     TranslatePipe,
     IonButton,
     IonSpinner,
@@ -162,9 +159,80 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
             offer Save, so the operator was invited to save nothing.
           -->
           @if (hasSheet()) {
-            <pre class="json-output" data-testid="collection-sheet-results">{{
-              collectionData() | json
-            }}</pre>
+            <div data-testid="collection-sheet-results">
+              @for (group of sheet()!.groups; track group.groupId) {
+                <section class="sheet-group">
+                  <h4 class="group-heading">
+                    {{ group.groupName }}
+                    @if (group.staffName) {
+                      <span class="group-meta">{{ group.staffName }}</span>
+                    }
+                  </h4>
+
+                  <table class="sheet-table">
+                    <caption class="sr-only">
+                      {{
+                        group.groupName
+                      }}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">{{ 'COLLECTION_SHEET.CLIENT' | appTranslate }}</th>
+                        <th scope="col">{{ 'COLLECTION_SHEET.ACCOUNT' | appTranslate }}</th>
+                        <th scope="col">{{ 'COLLECTION_SHEET.PRODUCT' | appTranslate }}</th>
+                        <th scope="col" class="numeric">
+                          {{ 'COLLECTION_SHEET.DUE' | appTranslate }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (client of group.clients; track client.clientId) {
+                        @for (loan of client.loans; track loan.loanId) {
+                          <tr>
+                            <td>{{ client.clientName }}</td>
+                            <td>{{ loan.accountId }}</td>
+                            <td>{{ loan.productShortName }}</td>
+                            <td class="numeric">{{ loan.totalDue | number: '1.2-2' }}</td>
+                          </tr>
+                        }
+                        @for (account of client.savings; track account.savingsId) {
+                          <tr>
+                            <td>{{ client.clientName }}</td>
+                            <td>{{ account.accountId }}</td>
+                            <td>{{ account.productName }}</td>
+                            <td class="numeric">{{ account.dueAmount | number: '1.2-2' }}</td>
+                          </tr>
+                        }
+                        @if (client.loans.length === 0 && client.savings.length === 0) {
+                          <!-- Present at the meeting with nothing due. The row still belongs on
+                               the sheet: the officer has to see who was expected. -->
+                          <tr>
+                            <td>{{ client.clientName }}</td>
+                            <td colspan="2">{{ 'COLLECTION_SHEET.NOTHING_DUE' | appTranslate }}</td>
+                            <td class="numeric">{{ 0 | number: '1.2-2' }}</td>
+                          </tr>
+                        }
+                      }
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th scope="row" colspan="3">
+                          {{ 'COLLECTION_SHEET.GROUP_TOTAL' | appTranslate }}
+                        </th>
+                        <td class="numeric" [attr.data-testid]="'group-total-' + group.groupId">
+                          {{ group.totalDue | number: '1.2-2' }}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </section>
+              }
+
+              <p class="sheet-total" data-testid="collection-sheet-total">
+                {{ 'COLLECTION_SHEET.SHEET_TOTAL' | appTranslate }}:
+                <strong>{{ sheet()!.totalDue | number: '1.2-2' }}</strong>
+              </p>
+            </div>
           } @else {
             <p class="empty-state" role="status" data-testid="collection-sheet-empty">
               {{ 'COLLECTION_SHEET.NOTHING_DUE' | appTranslate }}
@@ -205,6 +273,44 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
         justify-content: center;
         padding: 32px;
       }
+      .sheet-group {
+        margin-bottom: var(--space-5, 24px);
+      }
+      .group-heading {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-3, 12px);
+        margin: 0 0 var(--space-2, 8px);
+      }
+      .group-meta {
+        font-size: 0.85rem;
+        color: var(--ion-color-medium);
+      }
+      .sheet-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .sheet-table th,
+      .sheet-table td {
+        padding: var(--space-2, 8px);
+        border-bottom: 1px solid var(--ion-color-step-150, #e0e0e0);
+        text-align: left;
+      }
+      .sheet-table .numeric {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .sheet-total {
+        text-align: right;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
       .json-output {
         background: var(--surface-sunken);
         color: var(--text-color);
@@ -221,7 +327,7 @@ export class CollectionSheetComponent implements OnInit {
   /** See `createPickersReady` — the date buttons must not outrun their pickers. */
   readonly pickersReady = createPickersReady();
 
-  private collectionSheetService = inject(CollectionSheetService);
+  private readonly sheets = inject(COLLECTION_SHEET_API);
   /**
    * Today, as the platform reckons it: the business date when one governs, and the platform's
    * own clock otherwise. Fineract judges "the future" by that reckoning, so a date seeded from
@@ -234,10 +340,11 @@ export class CollectionSheetComponent implements OnInit {
 
   readonly generated = signal(false);
   readonly isLoading = signal(false);
-  readonly collectionData = signal<PostCollectionSheetResponse | null>(null);
+  readonly sheet = signal<CollectionSheet | null>(null);
   transactionDate = this.platformDate.today();
   staffId: number | null = null;
-  request: CollectionSheetRequest = { locale: 'en' };
+  /** The filters the form collects. The adapter owns the date format and locale. */
+  request: { officeId?: number } = {};
 
   readonly offices = signal<{ id?: number; name?: string }[]>([]);
   readonly staff = signal<StaffData[]>([]);
@@ -248,10 +355,7 @@ export class CollectionSheetComponent implements OnInit {
    * `command=generate` answers 200 with an empty body when nothing is due in the period, which
    * `HttpClient` delivers as `null`.
    */
-  readonly hasSheet = computed(() => {
-    const data = this.collectionData();
-    return data !== null && data !== undefined && Object.keys(data).length > 0;
-  });
+  readonly hasSheet = computed(() => this.sheet() !== null);
 
   ngOnInit(): void {
     this.officesService.getOffices().subscribe({
@@ -279,23 +383,21 @@ export class CollectionSheetComponent implements OnInit {
     });
   }
 
-  private buildBody(): CollectionSheetRequest {
+  private buildRequest() {
     return {
-      ...this.request,
+      officeId: this.request.officeId!,
       // Was collected by the form and then dropped on the floor: `staffId` is a field of its own
-      // rather than part of `request`, and this method spread `request` alone.
+      // rather than part of `request`, and the old body spread `request` alone.
       ...(this.staffId === null ? {} : { staffId: this.staffId }),
-      transactionDate: formatDateToFineract(this.transactionDate),
-      dateFormat: FINERACT_DATE_FORMAT,
+      transactionDate: this.transactionDate,
     };
   }
 
   generate(): void {
     this.isLoading.set(true);
-    const body = this.buildBody();
-    this.collectionSheetService.postCollectionsheet(body, 'generate').subscribe({
-      next: (res: PostCollectionSheetResponse) => {
-        this.collectionData.set(res);
+    this.sheets.generate(this.buildRequest()).subscribe({
+      next: (sheet) => {
+        this.sheet.set(sheet);
         this.generated.set(true);
         this.isLoading.set(false);
       },
@@ -306,10 +408,14 @@ export class CollectionSheetComponent implements OnInit {
     });
   }
 
+  /** Flattened for the table: every client row, with the group it belongs to. */
+  rowsFor(group: CollectionSheetGroup) {
+    return group.clients;
+  }
+
   save(): void {
     this.isLoading.set(true);
-    const body = this.buildBody();
-    this.collectionSheetService.postCollectionsheet(body, 'save').subscribe({
+    this.sheets.save(this.buildRequest()).subscribe({
       next: () => {
         this.notifications.success('Collection sheet saved successfully');
         this.isLoading.set(false);
@@ -324,6 +430,6 @@ export class CollectionSheetComponent implements OnInit {
 
   back(): void {
     this.generated.set(false);
-    this.collectionData.set(null);
+    this.sheet.set(null);
   }
 }
