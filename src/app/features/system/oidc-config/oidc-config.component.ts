@@ -24,6 +24,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TenantOIDCConfigurationService } from '../../../api';
 import { DialogService } from '../../../core/services/dialog.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { LoadErrorComponent } from '../../../shared/components/load-error/load-error.component';
 import {
   IonButton,
   IonCard,
@@ -102,6 +103,7 @@ const DEFAULTS: OidcConfig = {
   selector: 'app-oidc-config',
   standalone: true,
   imports: [
+    LoadErrorComponent,
     FormsModule,
     TranslatePipe,
     IonButton,
@@ -122,118 +124,146 @@ const DEFAULTS: OidcConfig = {
           <ion-card-title>{{ 'OIDC_CONFIG.TITLE' | appTranslate }}</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <form class="oidc-form">
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.TENANT_ID' | appTranslate }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.TENANT_ID' | appTranslate"
-                name="tenantId"
-                [(ngModel)]="tenantId"
-              ></ion-input>
-            </ion-item>
-            <div class="load-action">
-              <ion-button fill="clear" type="button" (click)="load()">
-                {{ 'OIDC_CONFIG.LOAD' | appTranslate }}
-              </ion-button>
-            </div>
+          @if (loadFailed()) {
+            <!-- A read that failed for any reason other than 404 leaves the screen with no idea
+                 what the tenant has configured. Presenting the defaults in an editable form
+                 would invite a Save that overwrites a configuration this screen never saw. -->
+            <app-load-error
+              testId="oidc-config-load-error"
+              [message]="'OIDC_CONFIG.LOAD_FAILED' | appTranslate"
+              [actionLabel]="'COMMON.RETRY' | appTranslate"
+              (action)="load()"
+            ></app-load-error>
+          } @else {
+            <form class="oidc-form">
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'OIDC_CONFIG.TENANT_ID' | appTranslate
+                }}</ion-label>
+                <ion-input
+                  [attr.aria-label]="'OIDC_CONFIG.TENANT_ID' | appTranslate"
+                  name="tenantId"
+                  [(ngModel)]="tenantId"
+                ></ion-input>
+              </ion-item>
+              <div class="load-action">
+                <ion-button fill="clear" type="button" (click)="load()">
+                  {{ 'OIDC_CONFIG.LOAD' | appTranslate }}
+                </ion-button>
+              </div>
 
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{
-                'OIDC_CONFIG.PROVIDER_TYPE' | appTranslate
-              }}</ion-label>
-              <ion-select
-                [attr.aria-label]="'OIDC_CONFIG.PROVIDER_TYPE' | appTranslate"
-                name="providerType"
-                interface="popover"
-                [(ngModel)]="config().providerType"
-              >
-                @for (type of providerTypes; track type) {
-                  <ion-select-option [value]="type">{{ type }}</ion-select-option>
-                }
-              </ion-select>
-            </ion-item>
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.ISSUER' | appTranslate }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.ISSUER' | appTranslate"
-                name="issuerUri"
-                [(ngModel)]="config().issuerUri"
-              ></ion-input>
-            </ion-item>
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.CLIENT_ID' | appTranslate }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.CLIENT_ID' | appTranslate"
-                name="clientId"
-                [(ngModel)]="config().clientId"
-              ></ion-input>
-            </ion-item>
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{
-                'OIDC_CONFIG.CLIENT_SECRET' | appTranslate
-              }}</ion-label>
-              <ion-input
-                type="password"
-                [attr.aria-label]="'OIDC_CONFIG.CLIENT_SECRET' | appTranslate"
-                name="clientSecret"
-                [placeholder]="exists ? ('OIDC_CONFIG.SECRET_UNCHANGED' | appTranslate) : ''"
-                [(ngModel)]="config().clientSecret"
-              ></ion-input>
-            </ion-item>
-            <p class="field-hint">{{ 'OIDC_CONFIG.SECRET_HINT' | appTranslate }}</p>
-            <!--
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'OIDC_CONFIG.PROVIDER_TYPE' | appTranslate
+                }}</ion-label>
+                <ion-select
+                  [attr.aria-label]="'OIDC_CONFIG.PROVIDER_TYPE' | appTranslate"
+                  name="providerType"
+                  interface="popover"
+                  [(ngModel)]="config().providerType"
+                >
+                  @for (type of providerTypes; track type) {
+                    <ion-select-option [value]="type">{{ type }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{ 'OIDC_CONFIG.ISSUER' | appTranslate }}</ion-label>
+                <ion-input
+                  [attr.aria-label]="'OIDC_CONFIG.ISSUER' | appTranslate"
+                  name="issuerUri"
+                  [(ngModel)]="config().issuerUri"
+                ></ion-input>
+              </ion-item>
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'OIDC_CONFIG.CLIENT_ID' | appTranslate
+                }}</ion-label>
+                <ion-input
+                  [attr.aria-label]="'OIDC_CONFIG.CLIENT_ID' | appTranslate"
+                  name="clientId"
+                  [(ngModel)]="config().clientId"
+                ></ion-input>
+              </ion-item>
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'OIDC_CONFIG.CLIENT_SECRET' | appTranslate
+                }}</ion-label>
+                <ion-input
+                  type="password"
+                  [attr.aria-label]="'OIDC_CONFIG.CLIENT_SECRET' | appTranslate"
+                  name="clientSecret"
+                  [placeholder]="exists ? ('OIDC_CONFIG.SECRET_UNCHANGED' | appTranslate) : ''"
+                  [(ngModel)]="config().clientSecret"
+                ></ion-input>
+              </ion-item>
+              <p class="field-hint">{{ 'OIDC_CONFIG.SECRET_HINT' | appTranslate }}</p>
+              <!--
               No authorization or token endpoint: the platform does not store them, because a
               provider publishes both in its discovery document at
               {issuerUri}/.well-known/openid-configuration. Fields for them were previously
               offered here and silently discarded.
             -->
-            <p class="field-hint">{{ 'OIDC_CONFIG.JWKS_HINT' | appTranslate }}</p>
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.JWKS_URI' | appTranslate }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.JWKS_URI' | appTranslate"
-                name="jwksUri"
-                [(ngModel)]="config().jwksUri"
-              ></ion-input>
-            </ion-item>
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{
-                'OIDC_CONFIG.USERNAME_CLAIM' | appTranslate
-              }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.USERNAME_CLAIM' | appTranslate"
-                name="usernameClaim"
-                [(ngModel)]="config().usernameClaim"
-              ></ion-input>
-            </ion-item>
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'OIDC_CONFIG.SCOPES' | appTranslate }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.SCOPES' | appTranslate"
-                name="scopes"
-                [(ngModel)]="config().scopes"
-              ></ion-input>
-            </ion-item>
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{
-                'OIDC_CONFIG.POST_LOGOUT_URI' | appTranslate
-              }}</ion-label>
-              <ion-input
-                [attr.aria-label]="'OIDC_CONFIG.POST_LOGOUT_URI' | appTranslate"
-                name="postLogoutRedirectUri"
-                [(ngModel)]="config().postLogoutRedirectUri"
-              ></ion-input>
-            </ion-item>
+              <p class="field-hint">{{ 'OIDC_CONFIG.JWKS_HINT' | appTranslate }}</p>
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'OIDC_CONFIG.JWKS_URI' | appTranslate
+                }}</ion-label>
+                <ion-input
+                  [attr.aria-label]="'OIDC_CONFIG.JWKS_URI' | appTranslate"
+                  name="jwksUri"
+                  [(ngModel)]="config().jwksUri"
+                ></ion-input>
+              </ion-item>
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'OIDC_CONFIG.USERNAME_CLAIM' | appTranslate
+                }}</ion-label>
+                <ion-input
+                  [attr.aria-label]="'OIDC_CONFIG.USERNAME_CLAIM' | appTranslate"
+                  name="usernameClaim"
+                  [(ngModel)]="config().usernameClaim"
+                ></ion-input>
+              </ion-item>
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{ 'OIDC_CONFIG.SCOPES' | appTranslate }}</ion-label>
+                <ion-input
+                  [attr.aria-label]="'OIDC_CONFIG.SCOPES' | appTranslate"
+                  name="scopes"
+                  [(ngModel)]="config().scopes"
+                ></ion-input>
+              </ion-item>
+              <ion-item fill="outline">
+                <ion-label position="stacked">{{
+                  'OIDC_CONFIG.POST_LOGOUT_URI' | appTranslate
+                }}</ion-label>
+                <ion-input
+                  [attr.aria-label]="'OIDC_CONFIG.POST_LOGOUT_URI' | appTranslate"
+                  name="postLogoutRedirectUri"
+                  [(ngModel)]="config().postLogoutRedirectUri"
+                ></ion-input>
+              </ion-item>
 
-            <div class="actions">
-              <ion-button fill="clear" type="button" color="danger" (click)="onDelete()">
-                {{ 'COMMON.DELETE' | appTranslate }}
-              </ion-button>
-              <ion-button color="primary" type="button" [disabled]="isSaving()" (click)="onSave()">
-                {{ 'COMMON.SAVE' | appTranslate }}
-              </ion-button>
-            </div>
-          </form>
+              <div class="actions">
+                <!-- Offered only when there is something to delete. On a 404 the form opens on
+                   defaults to create a configuration, and Delete would ask the platform to
+                   remove one that does not exist. -->
+                @if (exists) {
+                  <ion-button fill="clear" type="button" color="danger" (click)="onDelete()">
+                    {{ 'COMMON.DELETE' | appTranslate }}
+                  </ion-button>
+                }
+                <ion-button
+                  color="primary"
+                  type="button"
+                  [disabled]="isSaving()"
+                  (click)="onSave()"
+                >
+                  {{ 'COMMON.SAVE' | appTranslate }}
+                </ion-button>
+              </div>
+            </form>
+          }
         </ion-card-content>
       </ion-card>
     </div>
@@ -267,6 +297,14 @@ export class OidcConfigComponent implements OnInit {
 
   tenantId = 'default';
   exists = false;
+  /**
+   * True when the read failed for a reason other than 404.
+   *
+   * A 404 is an answer — this tenant has no configuration, so the form opens on the defaults to
+   * create one. Anything else means the screen does not know what is configured, which is the
+   * one state where an editable form is actively harmful (#749).
+   */
+  readonly loadFailed = signal(false);
   readonly isSaving = signal(false);
   readonly config = signal<OidcConfig>({});
   protected readonly providerTypes = PROVIDER_TYPES;
@@ -276,6 +314,7 @@ export class OidcConfigComponent implements OnInit {
   }
 
   load(): void {
+    this.loadFailed.set(false);
     this.oidcService.getTenantsTenantIdOidcConfig(this.tenantId).subscribe({
       next: (body: string) => {
         const parsed = this.parse(body);
@@ -288,6 +327,7 @@ export class OidcConfigComponent implements OnInit {
         this.exists = false;
         this.config.set({ ...DEFAULTS });
         if ((error as HttpErrorResponse)?.status !== 404) {
+          this.loadFailed.set(true);
           this.notifications.error(this.i18n.translate('OIDC_CONFIG.LOAD_FAILED'));
         }
       },
