@@ -910,6 +910,13 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
         icon: 'cloud-upload-outline',
       },
       {
+        id: 'system.accountNumberFormats',
+        route: '/system/account-number-formats',
+        requiredPermissions: 'READ_ACCOUNTNUMBERFORMAT',
+        labelKey: 'nav.accountNumberFormats',
+        icon: 'barcode-outline',
+      },
+      {
         id: 'system.delinquency',
         route: '/system/delinquency',
         requiredPermissions: 'READ_DELINQUENCY_BUCKET',

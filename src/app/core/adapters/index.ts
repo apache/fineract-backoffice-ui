@@ -36,6 +36,7 @@ export * from './storage/storage.adapter';
 // does not isolate a library the application might swap — the generated client stays. It
 // isolates a *shape* the application does not control, regenerated on Fineract's cadence.
 export * from './api/accounting-closure.api';
+export * from './api/account-number-format.api';
 export * from './api/gl-account.api';
 export * from './api/office.api';
 export * from './api/entity-notes.api';
@@ -64,6 +65,7 @@ export { IonicOverlayAdapter } from './overlay/ionic-overlay.adapter';
 export { WebStorageAdapter } from './storage/web-storage.adapter';
 export { BrowserDownloadAdapter } from './download/browser-download.adapter';
 export { FineractAccountingClosureApi } from './api/fineract-accounting-closure.api';
+export { FineractAccountNumberFormatApi } from './api/fineract-account-number-format.api';
 export { FineractGlAccountApi } from './api/fineract-gl-account.api';
 export { FineractOfficeApi } from './api/fineract-office.api';
 export { FineractEntityNotesApi } from './api/fineract-entity-notes.api';
