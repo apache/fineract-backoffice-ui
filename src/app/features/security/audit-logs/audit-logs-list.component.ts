@@ -27,40 +27,39 @@ import {
   CellTemplateDirective,
   StatusBadgeComponent,
 } from '../../../shared';
-import { AuditsService } from '../../../api';
 import { DateTimePipe } from '../../../shared/pipes/date-time.pipe';
-import { ViewPayloadDialogComponent } from '../../tasks/checker-inbox/view-payload-dialog.component';
 import { PageEvent, SortEvent } from '../../../shared/models/table.model';
-import { DialogService } from '../../../core/services/dialog.service';
-import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
-import { DOWNLOAD, TranslatePipe } from '../../../core/adapters';
+import {
+  AUDIT_API,
+  DOWNLOAD,
+  I18N,
+  TranslatePipe,
+  type AuditEntry,
+  type AuditSearchTemplate,
+} from '../../../core/adapters';
 import { toCsv } from '../../../core/utils/csv';
-import { toIsoDate } from '../../../core/utils/date-formatter';
 import {
   IonAccordion,
   IonAccordionGroup,
-  IonButton,
-  IonDatetime,
-  IonDatetimeButton,
   IonIcon,
   IonInput,
   IonItem,
   IonLabel,
-  IonModal,
-  IonSelect,
-  IonSelectOption,
 } from '@ionic/angular/standalone';
-import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { ButtonComponent } from '../../../ui/button/button.component';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
+import {
+  SearchableSelectComponent,
+  type SearchableSelectOption,
+} from '../../../ui/searchable-select/searchable-select.component';
+import { emptyAuditFilters, toAuditQuery, type AuditFilters } from './audit-query';
 
-export interface AuditFilters {
-  actionName: string;
-  entityName: string;
-  resourceId?: number;
-  makerId?: number;
-  makerDateTimeFrom: Date | null;
-  makerDateTimeTo: Date | null;
-  processingResult: string;
-}
+const EMPTY_TEMPLATE: AuditSearchTemplate = {
+  users: [],
+  actionNames: [],
+  entityNames: [],
+  statuses: [],
+};
 
 @Component({
   selector: 'app-audit-logs-list',
@@ -72,19 +71,15 @@ export interface AuditFilters {
     CellTemplateDirective,
     DateTimePipe,
     StatusBadgeComponent,
+    ButtonComponent,
+    DateFieldComponent,
+    SearchableSelectComponent,
     IonIcon,
-    IonButton,
     IonInput,
     IonItem,
     IonLabel,
-    IonSelectOption,
-    IonSelect,
-    IonDatetime,
-    IonDatetimeButton,
-    IonModal,
     IonAccordion,
     IonAccordionGroup,
-    TooltipDirective,
   ],
   template: `
     <div class="audit-logs-container">
@@ -96,27 +91,76 @@ export interface AuditFilters {
           </ion-item>
           <div slot="content">
             <div class="filter-grid">
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'SECURITY.ACTION_NAME' | appTranslate
-                }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'SECURITY.ACTION_NAME' | appTranslate"
-                  [(ngModel)]="activeFilters.actionName"
-                  (keyup.enter)="onApplyFilters()"
-                ></ion-input>
-              </ion-item>
+              <div class="select-field">
+                <span class="select-label">{{ 'COMMON.MAKER' | appTranslate }}</span>
+                <app-searchable-select
+                  name="makerId"
+                  testId="audit-filter-maker"
+                  [ariaLabel]="'COMMON.MAKER' | appTranslate"
+                  [options]="userOptions()"
+                  [(ngModel)]="activeFilters.makerId"
+                />
+              </div>
 
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'SECURITY.ENTITY_NAME' | appTranslate
-                }}</ion-label>
-                <ion-input
-                  [attr.aria-label]="'SECURITY.ENTITY_NAME' | appTranslate"
+              <div class="select-field">
+                <span class="select-label">{{ 'COMMON.CHECKER' | appTranslate }}</span>
+                <app-searchable-select
+                  name="checkerId"
+                  testId="audit-filter-checker"
+                  [ariaLabel]="'COMMON.CHECKER' | appTranslate"
+                  [options]="userOptions()"
+                  [(ngModel)]="activeFilters.checkerId"
+                />
+              </div>
+
+              <div class="select-field">
+                <span class="select-label">{{ 'SECURITY.ACTION_NAME' | appTranslate }}</span>
+                <app-searchable-select
+                  name="actionName"
+                  testId="audit-filter-action"
+                  [ariaLabel]="'SECURITY.ACTION_NAME' | appTranslate"
+                  [options]="actionOptions()"
+                  [(ngModel)]="activeFilters.actionName"
+                />
+              </div>
+
+              <div class="select-field">
+                <span class="select-label">{{ 'SECURITY.ENTITY_NAME' | appTranslate }}</span>
+                <app-searchable-select
+                  name="entityName"
+                  testId="audit-filter-entity"
+                  [ariaLabel]="'SECURITY.ENTITY_NAME' | appTranslate"
+                  [options]="entityOptions()"
                   [(ngModel)]="activeFilters.entityName"
-                  (keyup.enter)="onApplyFilters()"
-                ></ion-input>
-              </ion-item>
+                />
+              </div>
+
+              <div class="select-field">
+                <span class="select-label">{{ 'SECURITY.PROCESSING_RESULT' | appTranslate }}</span>
+                <app-searchable-select
+                  name="statusId"
+                  testId="audit-filter-status"
+                  [ariaLabel]="'SECURITY.PROCESSING_RESULT' | appTranslate"
+                  [options]="statusOptions()"
+                  [(ngModel)]="activeFilters.statusId"
+                />
+              </div>
+
+              <app-date-field
+                name="madeFrom"
+                label="SECURITY.MAKER_DATE_FROM"
+                pickerId="audit-made-from-picker"
+                [clearable]="true"
+                [(ngModel)]="activeFilters.madeFrom"
+              ></app-date-field>
+
+              <app-date-field
+                name="madeTo"
+                label="SECURITY.MAKER_DATE_TO"
+                pickerId="audit-made-to-picker"
+                [clearable]="true"
+                [(ngModel)]="activeFilters.madeTo"
+              ></app-date-field>
 
               <ion-item fill="outline">
                 <ion-label position="stacked">{{
@@ -124,6 +168,7 @@ export interface AuditFilters {
                 }}</ion-label>
                 <ion-input
                   [attr.aria-label]="'SECURITY.RESOURCE_ID' | appTranslate"
+                  data-testid="audit-filter-resource-id"
                   type="number"
                   [(ngModel)]="activeFilters.resourceId"
                   (keyup.enter)="onApplyFilters()"
@@ -131,82 +176,43 @@ export interface AuditFilters {
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{ 'SECURITY.MAKER_ID' | appTranslate }}</ion-label>
+                <ion-label position="stacked">{{ 'AUDIT.CLIENT_ID' | appTranslate }}</ion-label>
                 <ion-input
-                  [attr.aria-label]="'SECURITY.MAKER_ID' | appTranslate"
+                  [attr.aria-label]="'AUDIT.CLIENT_ID' | appTranslate"
+                  data-testid="audit-filter-client-id"
                   type="number"
-                  [(ngModel)]="activeFilters.makerId"
+                  [(ngModel)]="activeFilters.clientId"
                   (keyup.enter)="onApplyFilters()"
                 ></ion-input>
               </ion-item>
 
               <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'SECURITY.MAKER_DATE_FROM' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button
-                    datetime="activeFiltersmakerDateTimeFrom-picker"
-                  ></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="activeFiltersmakerDateTimeFrom-picker"
-                      data-testid="activeFiltersmakerDateTimeFrom-picker"
-                      presentation="date"
-                      name="activeFiltersmakerDateTimeFrom"
-                      [(ngModel)]="activeFilters.makerDateTimeFrom"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
-
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'SECURITY.MAKER_DATE_TO' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button
-                    datetime="activeFiltersmakerDateTimeTo-picker"
-                  ></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="activeFiltersmakerDateTimeTo-picker"
-                      data-testid="activeFiltersmakerDateTimeTo-picker"
-                      presentation="date"
-                      name="activeFiltersmakerDateTimeTo"
-                      [(ngModel)]="activeFilters.makerDateTimeTo"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
-
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'SECURITY.PROCESSING_RESULT' | appTranslate
-                }}</ion-label>
-                <ion-select
-                  [attr.aria-label]="'SECURITY.PROCESSING_RESULT' | appTranslate"
-                  interface="popover"
-                  [(ngModel)]="activeFilters.processingResult"
-                >
-                  <ion-select-option value="">All</ion-select-option>
-                  <ion-select-option value="success">Success</ion-select-option>
-                  <ion-select-option value="failure">Failure</ion-select-option>
-                </ion-select>
+                <ion-label position="stacked">{{ 'AUDIT.LOAN_ID' | appTranslate }}</ion-label>
+                <ion-input
+                  [attr.aria-label]="'AUDIT.LOAN_ID' | appTranslate"
+                  data-testid="audit-filter-loan-id"
+                  type="number"
+                  [(ngModel)]="activeFilters.loanId"
+                  (keyup.enter)="onApplyFilters()"
+                ></ion-input>
               </ion-item>
             </div>
 
             <div class="filter-actions">
-              <ion-button fill="clear" color="danger" (click)="onResetFilters()">
-                {{ 'COMMON.RESET' | appTranslate }}
-              </ion-button>
-              <ion-button color="primary" (click)="onApplyFilters()">
-                {{ 'COMMON.APPLY' | appTranslate }}
-              </ion-button>
+              <app-button
+                type="button"
+                intent="danger"
+                emphasis="quiet"
+                data-testid="audit-filter-reset"
+                (click)="onResetFilters()"
+                >{{ 'COMMON.RESET' | appTranslate }}</app-button
+              >
+              <app-button
+                type="button"
+                data-testid="audit-filter-apply"
+                (click)="onApplyFilters()"
+                >{{ 'COMMON.APPLY' | appTranslate }}</app-button
+              >
             </div>
           </div>
         </ion-accordion>
@@ -227,15 +233,15 @@ export interface AuditFilters {
         (pageChange)="onPage($event)"
         (sortChange)="onSort($event)"
       >
-        <ion-button
+        <app-button
           headerActions
-          fill="outline"
-          (click)="onExportCsv()"
+          type="button"
+          emphasis="outline"
+          icon="download-outline"
           [disabled]="auditLogs().length === 0"
+          (click)="onExportCsv()"
+          >{{ 'COMMON.EXPORT_CSV' | appTranslate }}</app-button
         >
-          <ion-icon name="download-outline" slot="start"></ion-icon>
-          {{ 'COMMON.EXPORT_CSV' | appTranslate }}
-        </ion-button>
 
         <ng-template appCellTemplate="madeOnDate" let-row>
           {{ row['madeOnDate'] | dateTime }}
@@ -250,15 +256,14 @@ export interface AuditFilters {
         </ng-template>
 
         <ng-template appCellTemplate="actions" let-row>
-          <ion-button
-            fill="clear"
-            color="primary"
-            (click)="onViewDetails(row)"
-            [attr.aria-label]="'COMMON.VIEW_DETAILS' | appTranslate"
-            [appTooltip]="'COMMON.VIEW_DETAILS' | appTranslate"
-          >
-            <ion-icon name="eye-outline"></ion-icon>
-          </ion-button>
+          <app-button
+            type="button"
+            emphasis="quiet"
+            icon="eye-outline"
+            [attr.data-testid]="'audit-open-' + row['id']"
+            [link]="['/security/audits', row['id']]"
+            [label]="'COMMON.VIEW_DETAILS' | appTranslate"
+          ></app-button>
         </ng-template>
       </app-data-table>
     </div>
@@ -283,22 +288,28 @@ export interface AuditFilters {
         gap: 16px;
         padding-top: 16px;
       }
+      .select-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .select-label {
+        font-size: 0.75rem;
+        color: var(--ion-color-medium-shade, #808289);
+      }
     `,
   ],
 })
 export class AuditLogsListComponent implements OnInit {
-  /** See `createPickersReady` — the date buttons must not outrun their pickers. */
-  readonly pickersReady = createPickersReady();
-
   /** True when the last load failed, so the table offers a retry instead of an empty list. */
   readonly hasError = signal(false);
 
   /** Re-runs the query behind the table when the user asks to try again. */
   private readonly retrySubject = new Subject<void>();
 
-  private readonly auditsService = inject(AuditsService);
-  private readonly dialogService = inject(DialogService);
+  private readonly audits = inject(AUDIT_API);
   private readonly download = inject(DOWNLOAD);
+  private readonly i18n = inject(I18N);
 
   private static readonly CHECKER_COLUMNS = ['checker', 'checkedOnDate'];
 
@@ -315,7 +326,23 @@ export class AuditLogsListComponent implements OnInit {
     { key: 'actions', label: 'COMMON.ACTIONS' },
   ];
 
-  readonly auditLogs = signal<Record<string, unknown>[]>([]);
+  readonly auditLogs = signal<AuditEntry[]>([]);
+
+  /** The choices Fineract publishes for each filter; empty until the template loads. */
+  readonly searchTemplate = signal<AuditSearchTemplate>(EMPTY_TEMPLATE);
+
+  readonly userOptions = computed(() =>
+    this.withAny(this.searchTemplate().users.map((u) => ({ value: u.id, label: u.username }))),
+  );
+  readonly actionOptions = computed(() =>
+    this.withAny(this.searchTemplate().actionNames.map((name) => ({ value: name, label: name }))),
+  );
+  readonly entityOptions = computed(() =>
+    this.withAny(this.searchTemplate().entityNames.map((name) => ({ value: name, label: name }))),
+  );
+  readonly statusOptions = computed(() =>
+    this.withAny(this.searchTemplate().statuses.map((s) => ({ value: s.id, label: s.name }))),
+  );
 
   /** Free-text search, applied to the rows of the page that is currently loaded. */
   private readonly searchText = signal('');
@@ -332,7 +359,7 @@ export class AuditLogsListComponent implements OnInit {
     if (!needle) return rows;
     return rows.filter((row) =>
       this.allColumns.some((col) => {
-        const value = row[col.key];
+        const value = row[col.key as keyof AuditEntry];
         return value != null && String(value).toLowerCase().includes(needle);
       }),
     );
@@ -344,7 +371,7 @@ export class AuditLogsListComponent implements OnInit {
    * left out unless at least one loaded row has a checker.
    */
   readonly columns = computed<ColumnDef[]>(() => {
-    const anyChecked = this.auditLogs().some((row) => !!row['checker'] || !!row['checkedOnDate']);
+    const anyChecked = this.auditLogs().some((row) => !!row.checker || !!row.checkedOnDate);
     return anyChecked
       ? this.allColumns
       : this.allColumns.filter((col) => !AuditLogsListComponent.CHECKER_COLUMNS.includes(col.key));
@@ -354,15 +381,10 @@ export class AuditLogsListComponent implements OnInit {
   readonly pageSize = signal<number>(10);
   readonly pageIndex = signal<number>(0);
 
-  activeFilters: AuditFilters = {
-    actionName: '',
-    entityName: '',
-    resourceId: undefined,
-    makerId: undefined,
-    makerDateTimeFrom: null,
-    makerDateTimeTo: null,
-    processingResult: '',
-  };
+  activeFilters: AuditFilters = emptyAuditFilters();
+
+  /** The filters behind the rows on screen. Paging and sorting reuse them, not the edited form. */
+  private appliedFilters: AuditFilters = emptyAuditFilters();
 
   private sortSubject = new Subject<SortEvent>();
   private pageSubject = new Subject<PageEvent>();
@@ -371,87 +393,47 @@ export class AuditLogsListComponent implements OnInit {
   private currentSort: SortEvent = { active: 'id', direction: 'desc' };
 
   ngOnInit(): void {
+    // Without the template the selects offer only "Any"; the list itself still loads.
+    this.audits
+      .searchTemplate()
+      .pipe(catchError(() => of(EMPTY_TEMPLATE)))
+      .subscribe((template) => this.searchTemplate.set(template));
+
     merge(this.sortSubject, this.pageSubject, this.filterSubject, this.retrySubject)
       .pipe(
         startWith({}),
         switchMap(() => {
           this.isLoading.set(true);
+          const query = toAuditQuery(
+            this.appliedFilters,
+            { pageIndex: this.pageIndex(), pageSize: this.pageSize() },
+            this.currentSort,
+          );
+          return this.audits.list(query).pipe(
+            tap(() => this.hasError.set(false)),
+            catchError(() => {
+              this.hasError.set(true);
+              return of(null);
+            }),
+          );
+        }),
+        map((page) => {
+          this.isLoading.set(false);
+          if (page === null) return [];
+
           const limit = this.pageSize();
           const offset = this.pageIndex() * limit;
-          const orderBy = this.currentSort.active;
-          const sortOrder = this.currentSort.direction.toUpperCase() || 'DESC';
+          const items = page.items;
 
-          // Through `toIsoDate`, not `toISOString()`: the latter converts to UTC first, so a
-          // filter set to today reads as tomorrow for anyone east of Greenwich once the local
-          // clock passes the offset, and as yesterday for anyone west of it.
-          const fromDate = this.activeFilters.makerDateTimeFrom
-            ? toIsoDate(this.activeFilters.makerDateTimeFrom)
-            : undefined;
-          const toDate = this.activeFilters.makerDateTimeTo
-            ? toIsoDate(this.activeFilters.makerDateTimeTo)
-            : undefined;
+          // If we received exactly 'limit' items, assume there might be more.
+          // Some Fineract versions return totalFilteredRecords as the same as current page size.
+          const total =
+            items.length === limit
+              ? offset + limit + 1
+              : page.totalFilteredRecords || offset + items.length;
 
-          return this.auditsService
-            .getAudits(
-              this.activeFilters.actionName || undefined,
-              this.activeFilters.entityName || undefined,
-              this.activeFilters.resourceId,
-              this.activeFilters.makerId,
-              fromDate,
-              toDate,
-              undefined,
-              undefined,
-              undefined,
-              undefined,
-              undefined,
-              undefined,
-              undefined,
-              undefined,
-              undefined,
-              this.activeFilters.processingResult || undefined,
-              'yyyy-MM-dd',
-              'en',
-              offset,
-              limit,
-              orderBy,
-              sortOrder,
-              true,
-            )
-            .pipe(
-              tap(() => this.hasError.set(false)),
-              catchError(() => {
-                this.hasError.set(true);
-                return of(null);
-              }),
-            );
-        }),
-        map((data: unknown) => {
-          this.isLoading.set(false);
-          if (data === null) return [];
-
-          const result = (typeof data === 'string' ? JSON.parse(data) : data) as Record<
-            string,
-            unknown
-          >;
-          const items = (result['pageItems'] as unknown[]) || (result as unknown);
-
-          if (Array.isArray(items)) {
-            const limit = this.pageSize();
-            const offset = this.pageIndex() * limit;
-
-            // If we received exactly 'limit' items, assume there might be more.
-            // Some Fineract versions return totalFilteredRecords as the same as current page size.
-            const total =
-              items.length === limit
-                ? offset + limit + 1
-                : (result['totalFilteredRecords'] as number) ||
-                  (result['totalRecords'] as number) ||
-                  offset + items.length;
-
-            this.totalRecords.set(total);
-            return items as Record<string, unknown>[];
-          }
-          return [];
+          this.totalRecords.set(total);
+          return [...items];
         }),
       )
       .subscribe((data) => {
@@ -460,20 +442,13 @@ export class AuditLogsListComponent implements OnInit {
   }
 
   onApplyFilters(): void {
+    this.appliedFilters = { ...this.activeFilters };
     this.pageIndex.set(0);
     this.filterSubject.next();
   }
 
   onResetFilters(): void {
-    this.activeFilters = {
-      actionName: '',
-      entityName: '',
-      resourceId: undefined,
-      makerId: undefined,
-      makerDateTimeFrom: null,
-      makerDateTimeTo: null,
-      processingResult: '',
-    };
+    this.activeFilters = emptyAuditFilters();
     this.onApplyFilters();
   }
 
@@ -493,13 +468,6 @@ export class AuditLogsListComponent implements OnInit {
     this.sortSubject.next(sort);
   }
 
-  onViewDetails(row: Record<string, unknown>): Promise<void> {
-    const payload = (row['commandAsJson'] as string) || JSON.stringify(row, null, 2);
-    return this.dialogService
-      .open(ViewPayloadDialogComponent, { data: { payload } })
-      .then(() => undefined);
-  }
-
   onRetry(): void {
     this.retrySubject.next();
   }
@@ -509,5 +477,14 @@ export class AuditLogsListComponent implements OnInit {
     const exportColumns = this.columns().filter((c) => c.key !== 'actions');
     const csv = toCsv(exportColumns, this.auditLogs());
     this.download.saveText(csv, 'audit-logs.csv', 'text/csv');
+  }
+
+  /**
+   * Every select starts with "Any", which clears that filter. Reads the language signal so the
+   * option lists re-translate when the user switches language.
+   */
+  private withAny(options: SearchableSelectOption[]): SearchableSelectOption[] {
+    this.i18n.currentLang();
+    return [{ value: '', label: this.i18n.translate('AUDIT.ANY') }, ...options];
   }
 }

@@ -31,7 +31,7 @@
     "postAdhocquery",
     "putAdhocqueryAdHocId"
   ],
-  "AuditsService": ["getAudits"],
+  "AuditsService": ["getAudits", "getAuditsAuditId", "getAuditsSearchtemplate"],
   "BatchAPIService": ["postBatches"],
   "BulkImportService": ["getImports", "getImportsDownloadOutputTemplate"],
   "BulkLoansService": ["getLoansLoanreassignmentTemplate", "postLoansLoanreassignment"],
