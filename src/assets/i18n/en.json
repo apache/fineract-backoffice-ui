@@ -2259,7 +2259,13 @@
     "SAVE": "Save Collection Sheet",
     "BACK": "Back",
     "RESULTS": "Collection Results",
-    "NOTHING_DUE": "Nothing is due for this office on this date."
+    "NOTHING_DUE": "Nothing is due for this office on this date.",
+    "CLIENT": "Client",
+    "ACCOUNT": "Account",
+    "PRODUCT": "Product",
+    "DUE": "Due",
+    "GROUP_TOTAL": "Group total",
+    "SHEET_TOTAL": "Sheet total"
   },
   "COLLATERAL_MANAGEMENT": {
     "CREATE": "Create Collateral",
