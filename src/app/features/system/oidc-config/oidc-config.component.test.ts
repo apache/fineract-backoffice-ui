@@ -133,6 +133,57 @@ describe('OidcConfigComponent', () => {
       expect(notificationsSpy.error).toHaveBeenCalled();
     });
 
+    /**
+     * Issue #749. A toast alone left an editable form on screen filled with defaults, which
+     * invites a Save that overwrites a configuration the screen never managed to read.
+     */
+    it('withholds the form when the read failed for any reason but 404', async () => {
+      await render(throwError(() => new HttpErrorResponse({ status: 500 })));
+
+      expect(component.loadFailed()).toBe(true);
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.querySelector('[data-testid="oidc-config-load-error"]')).not.toBeNull();
+      expect(host.querySelector('form.oidc-form')).toBeNull();
+    });
+
+    it('keeps the form on a 404, which is an answer rather than a failure', async () => {
+      await render(throwError(() => new HttpErrorResponse({ status: 404 })));
+
+      expect(component.loadFailed()).toBe(false);
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.querySelector('[data-testid="oidc-config-load-error"]')).toBeNull();
+      expect(host.querySelector('form.oidc-form')).not.toBeNull();
+    });
+
+    it('retries the read from the error state', async () => {
+      await render(throwError(() => new HttpErrorResponse({ status: 500 })));
+      const callsBefore = serviceSpy.getTenantsTenantIdOidcConfig.mock.calls.length;
+
+      component.load();
+
+      expect(serviceSpy.getTenantsTenantIdOidcConfig.mock.calls.length).toBe(callsBefore + 1);
+    });
+
+    /**
+     * Delete would ask the platform to remove a configuration that does not exist. On a 404 the
+     * form is open to *create* one, so the action has nothing to act on.
+     */
+    it('offers Delete only when a configuration exists', async () => {
+      const host = () => fixture.nativeElement as HTMLElement;
+      const deleteButton = () =>
+        [...host().querySelectorAll('ion-button')].find((button) =>
+          (button.textContent ?? '').includes('DELETE'),
+        );
+
+      expect(component.exists).toBe(true);
+      expect(deleteButton()).toBeDefined();
+
+      await render(throwError(() => new HttpErrorResponse({ status: 404 })));
+
+      expect(component.exists).toBe(false);
+      expect(deleteButton()).toBeUndefined();
+    });
+
     it('accepts a body that arrives already parsed', async () => {
       await render(of(PLATFORM_RESPONSE));
       expect(component.config().issuerUri).toBe(PLATFORM_RESPONSE.issuerUri);
