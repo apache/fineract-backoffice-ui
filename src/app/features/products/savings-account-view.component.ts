@@ -181,7 +181,16 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
                 <div class="subtitle-row">
                   <span class="account-no">#{{ account()?.accountNo }}</span>
                   <span class="divider">|</span>
-                  <span class="client-name">Client: {{ account()?.clientName }}</span>
+                  @if (account()?.clientId) {
+                    <a
+                      class="client-name clickable-link"
+                      [routerLink]="['/clients/view', account()!.clientId]"
+                      data-testid="savings-client-link"
+                      >Client: {{ account()?.clientName }}</a
+                    >
+                  } @else {
+                    <span class="client-name">Client: {{ account()?.clientName }}</span>
+                  }
                   <app-status-badge
                     [status]="account()?.status"
                     class="status-badge"
@@ -1283,7 +1292,18 @@ export class SavingsAccountViewComponent implements OnInit, OnDestroy {
     this.router.navigate([`/products/${type}/${this.accountId}/action/${command}`]);
   }
 
+  /**
+   * Returns to the client who owns the account, falling back to the account list.
+   *
+   * The list was never where the user came from: these accounts are opened from the client's own
+   * page, and going back to a global list meant finding the client again (#797).
+   */
   onBack() {
+    const clientId = this.account()?.clientId;
+    if (clientId) {
+      this.router.navigate(['/clients/view', clientId]);
+      return;
+    }
     const rawAccount = this.account() as unknown as Record<string, unknown>;
     const routePrefix = resolveAccountRoutePrefix(rawAccount);
     this.router.navigate([`/products/${routePrefix}`]);

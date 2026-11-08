@@ -27,7 +27,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import { PlatformDateService } from '../../core/services/platform-date.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { from } from 'rxjs';
 import { DecimalPipe, NgClass } from '@angular/common';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
@@ -96,6 +96,7 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
   standalone: true,
   imports: [
     TranslatePipe,
+    RouterLink,
     CdkTableModule,
     StatusBadgeComponent,
     EntityDatatablesComponent,
@@ -155,7 +156,16 @@ export type DepositTab = (typeof DEPOSIT_TAB)[keyof typeof DEPOSIT_TAB];
                 <div class="subtitle-row">
                   <span class="account-no">#{{ deposit()?.accountNo }}</span>
                   <span class="divider">|</span>
-                  <span class="client-name">Client: {{ deposit()?.clientName }}</span>
+                  @if (deposit()?.clientId) {
+                    <a
+                      class="client-name clickable-link"
+                      [routerLink]="['/clients/view', deposit()!.clientId]"
+                      data-testid="deposit-client-link"
+                      >Client: {{ deposit()?.clientName }}</a
+                    >
+                  } @else {
+                    <span class="client-name">Client: {{ deposit()?.clientName }}</span>
+                  }
                   <app-status-badge
                     data-testid="deposit-status"
                     [status]="getStatusValue()"
@@ -1263,7 +1273,13 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
     ]);
   }
 
+  /** Returns to the owning client, falling back to the deposit list (#797). */
   onBack(): void {
+    const clientId = this.deposit()?.clientId;
+    if (clientId) {
+      this.router.navigate(['/clients/view', clientId]);
+      return;
+    }
     const path = this.isRD ? '/products/recurring-deposits' : '/products/fixed-deposits';
     this.router.navigate([path]);
   }

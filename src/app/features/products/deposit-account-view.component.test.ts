@@ -47,6 +47,7 @@ const PENDING = {
 
 describe('DepositAccountViewComponent', () => {
   let fixture: ComponentFixture<DepositAccountViewComponent>;
+  const routerNavigate = vi.fn();
   let component: DepositAccountViewComponent;
   let deposits: Record<string, ReturnType<typeof vi.fn>>;
   let dialogService: SpyObj<DialogService>;
@@ -125,7 +126,7 @@ describe('DepositAccountViewComponent', () => {
         provideHttpClientTesting(),
         { provide: DEPOSIT_ACCOUNT_API, useValue: deposits },
         { provide: DialogService, useValue: dialogService },
-        { provide: Router, useValue: { url, navigate: () => undefined } },
+        { provide: Router, useValue: { url, navigate: routerNavigate } },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '7' } } } },
       ],
     }).compileComponents();
@@ -640,5 +641,33 @@ describe('DepositAccountViewComponent', () => {
         expect(spy).toHaveBeenCalled();
       }
     });
+  });
+
+  /**
+   * Issue #797. Back went to the global deposit list, which is never where the user came from:
+   * these accounts are opened from the client's own page, so going back meant finding the
+   * client again.
+   */
+  it('goes back to the client who owns the account', async () => {
+    await setup(account({ id: 300, value: 'Active', active: true }));
+    routerNavigate.mockClear();
+
+    fixture.componentInstance.onBack();
+
+    expect(routerNavigate).toHaveBeenCalledWith(['/clients/view', 42]);
+  });
+
+  it('falls back to the deposit list when the account carries no client', async () => {
+    await setup({
+      id: 7,
+      status: { id: 300, value: 'Active', active: true },
+      timeline: SUBMITTED_TIMELINE,
+      currency: { displaySymbol: '$' },
+    });
+    routerNavigate.mockClear();
+
+    fixture.componentInstance.onBack();
+
+    expect(routerNavigate).toHaveBeenCalledWith(['/products/fixed-deposits']);
   });
 });
