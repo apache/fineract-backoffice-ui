@@ -27,10 +27,13 @@ import { AccountChargesRequest } from './accountChargesRequest';
 
 
 export interface AccountRequest { 
+    accountNumber?: string;
     allowDividendCalculationForInactiveClients?: string;
     applicationDate?: string;
     approvedDate?: string;
+    bankNumber?: string;
     charges?: Array<AccountChargesRequest>;
+    checkNumber?: string;
     clientId?: number;
     currencyCode?: string;
     dateFormat?: string;
@@ -44,9 +47,12 @@ export interface AccountRequest {
     minimumActivePeriod?: number;
     minimumActivePeriodFrequencyType?: string;
     numberOfShares?: number;
+    paymentTypeId?: number;
     productId?: number;
     purchasedDate?: string;
+    receiptNumber?: string;
     requestedShares?: number;
+    routingCode?: string;
     savingsAccountId?: number;
     submittedDate?: string;
     unitPrice?: number;

@@ -43,7 +43,7 @@ import { GetRecurringDepositAccountsInterestPostingPeriodType } from './getRecur
  */
 export interface GetRecurringDepositAccountsAccountIdResponse { 
     accountChart?: GetRecurringDepositAccountsAccountChart;
-    accountNo?: number;
+    accountNo?: string;
     clientId?: number;
     clientName?: string;
     currency?: GetRecurringDepositAccountsCurrency;

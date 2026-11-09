@@ -46,6 +46,7 @@ export interface Charge {
     currencyCode?: string;
     deleted?: boolean;
     disbursementCharge?: boolean;
+    downPaymentCharge?: boolean;
     enableFreeWithdrawal?: boolean;
     enablePaymentType?: boolean;
     feeInterval?: number;

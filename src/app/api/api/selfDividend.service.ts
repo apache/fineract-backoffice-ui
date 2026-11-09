@@ -32,6 +32,14 @@ import { HttpClient, HttpHeaders, HttpParams,
 import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
+// @ts-ignore
+import { CommandProcessingResult } from '../model/commandProcessingResult';
+// @ts-ignore
+import { GetShareProductDividendDetailsResponse } from '../model/getShareProductDividendDetailsResponse';
+// @ts-ignore
+import { GetShareProductDividendsResponse } from '../model/getShareProductDividendsResponse';
+// @ts-ignore
+import { PostShareProductDividendsRequest } from '../model/postShareProductDividendsRequest';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -128,9 +136,9 @@ export class SelfDividendService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getShareproductProductIdDividend(productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, status?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getShareproductProductIdDividend(productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, status?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getShareproductProductIdDividend(productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, status?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getShareproductProductIdDividend(productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, status?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GetShareProductDividendsResponse>;
+    public getShareproductProductIdDividend(productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, status?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GetShareProductDividendsResponse>>;
+    public getShareproductProductIdDividend(productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, status?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GetShareProductDividendsResponse>>;
     public getShareproductProductIdDividend(productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, status?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (productId === null || productId === undefined) {
             throw new Error('Required parameter productId was null or undefined when calling getShareproductProductIdDividend.');
@@ -216,7 +224,7 @@ export class SelfDividendService extends BaseService {
 
         let localVarPath = `/v1/shareproduct/${this.configuration.encodeParam({name: "productId", value: productId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/dividend`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<GetShareProductDividendsResponse>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters.toHttpParams(),
@@ -244,9 +252,9 @@ export class SelfDividendService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getShareproductProductIdDividendDividendId(dividendId: number, productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, accountNo?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getShareproductProductIdDividendDividendId(dividendId: number, productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, accountNo?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getShareproductProductIdDividendDividendId(dividendId: number, productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, accountNo?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getShareproductProductIdDividendDividendId(dividendId: number, productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, accountNo?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GetShareProductDividendDetailsResponse>;
+    public getShareproductProductIdDividendDividendId(dividendId: number, productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, accountNo?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GetShareProductDividendDetailsResponse>>;
+    public getShareproductProductIdDividendDividendId(dividendId: number, productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, accountNo?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GetShareProductDividendDetailsResponse>>;
     public getShareproductProductIdDividendDividendId(dividendId: number, productId: number, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, accountNo?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (dividendId === null || dividendId === undefined) {
             throw new Error('Required parameter dividendId was null or undefined when calling getShareproductProductIdDividendDividendId.');
@@ -335,7 +343,7 @@ export class SelfDividendService extends BaseService {
 
         let localVarPath = `/v1/shareproduct/${this.configuration.encodeParam({name: "productId", value: productId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/dividend/${this.configuration.encodeParam({name: "dividendId", value: dividendId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<GetShareProductDividendDetailsResponse>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters.toHttpParams(),
@@ -353,17 +361,20 @@ export class SelfDividendService extends BaseService {
      * Create a share dividend
      * @endpoint post /v1/shareproduct/{productId}/dividend
      * @param productId 
-     * @param body 
+     * @param postShareProductDividendsRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postShareproductProductIdDividend(productId: number, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public postShareproductProductIdDividend(productId: number, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public postShareproductProductIdDividend(productId: number, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public postShareproductProductIdDividend(productId: number, body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postShareproductProductIdDividend(productId: number, postShareProductDividendsRequest: PostShareProductDividendsRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public postShareproductProductIdDividend(productId: number, postShareProductDividendsRequest: PostShareProductDividendsRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public postShareproductProductIdDividend(productId: number, postShareProductDividendsRequest: PostShareProductDividendsRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public postShareproductProductIdDividend(productId: number, postShareProductDividendsRequest: PostShareProductDividendsRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (productId === null || productId === undefined) {
             throw new Error('Required parameter productId was null or undefined when calling postShareproductProductIdDividend.');
+        }
+        if (postShareProductDividendsRequest === null || postShareProductDividendsRequest === undefined) {
+            throw new Error('Required parameter postShareProductDividendsRequest was null or undefined when calling postShareproductProductIdDividend.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -408,10 +419,10 @@ export class SelfDividendService extends BaseService {
 
         let localVarPath = `/v1/shareproduct/${this.configuration.encodeParam({name: "productId", value: productId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/dividend`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: postShareProductDividendsRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -433,9 +444,9 @@ export class SelfDividendService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putShareproductProductIdDividendDividendId(productId: number, dividendId: number, command?: string, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public putShareproductProductIdDividendDividendId(productId: number, dividendId: number, command?: string, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public putShareproductProductIdDividendDividendId(productId: number, dividendId: number, command?: string, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public putShareproductProductIdDividendDividendId(productId: number, dividendId: number, command?: string, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public putShareproductProductIdDividendDividendId(productId: number, dividendId: number, command?: string, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public putShareproductProductIdDividendDividendId(productId: number, dividendId: number, command?: string, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
     public putShareproductProductIdDividendDividendId(productId: number, dividendId: number, command?: string, body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (productId === null || productId === undefined) {
             throw new Error('Required parameter productId was null or undefined when calling putShareproductProductIdDividendDividendId.');
@@ -497,7 +508,7 @@ export class SelfDividendService extends BaseService {
 
         let localVarPath = `/v1/shareproduct/${this.configuration.encodeParam({name: "productId", value: productId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/dividend/${this.configuration.encodeParam({name: "dividendId", value: dividendId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CommandProcessingResult>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: body,

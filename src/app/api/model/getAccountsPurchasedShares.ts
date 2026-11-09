@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { GetAccountsPurchasedSharesPaymentDetailData } from './getAccountsPurchasedSharesPaymentDetailData';
 import { GetAccountsPurchasedSharesType } from './getAccountsPurchasedSharesType';
 import { GetAccountsPurchasedSharesStatus } from './getAccountsPurchasedSharesStatus';
 
@@ -34,6 +35,7 @@ export interface GetAccountsPurchasedShares {
     chargeAmount?: number;
     id?: number;
     numberOfShares?: number;
+    paymentDetailData?: GetAccountsPurchasedSharesPaymentDetailData;
     purchasedDate?: string;
     purchasedPrice?: number;
     status?: GetAccountsPurchasedSharesStatus;

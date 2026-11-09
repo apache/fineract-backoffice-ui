@@ -42,7 +42,7 @@ import { GetFixedDepositAccountsTimeline } from './getFixedDepositAccountsTimeli
  */
 export interface GetFixedDepositAccountsAccountIdResponse { 
     accountChart?: GetFixedDepositAccountsAccountChart;
-    accountNo?: number;
+    accountNo?: string;
     clientId?: number;
     clientName?: string;
     currency?: GetFixedDepositAccountsAccountIdCurrency;

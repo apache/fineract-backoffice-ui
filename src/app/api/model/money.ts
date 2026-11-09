@@ -23,9 +23,9 @@
  * Do not edit the class manually.
  */
 
+import { MoneyMc } from './moneyMc';
 import { CurrencyData } from './currencyData';
 import { MonetaryCurrency } from './monetaryCurrency';
-import { InterestPeriodMc } from './interestPeriodMc';
 
 
 export interface Money { 
@@ -37,7 +37,7 @@ export interface Money {
     greaterThanZero?: boolean;
     inMultiplesOf?: number;
     lessThanZero?: boolean;
-    mc?: InterestPeriodMc;
+    mc?: MoneyMc;
     zero?: boolean;
 }
 

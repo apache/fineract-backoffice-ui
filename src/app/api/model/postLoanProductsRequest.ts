@@ -74,6 +74,7 @@ export interface PostLoanProductsRequest {
     daysInMonthType?: number;
     daysInYearCustomStrategy?: string;
     daysInYearType?: number;
+    defaultDifferentialLendingRate?: number;
     deferredIncomeLiabilityAccountId?: number;
     delinquencyBucketId?: number;
     description?: string;
@@ -90,8 +91,16 @@ export interface PostLoanProductsRequest {
     enableInstallmentLevelDelinquency?: boolean;
     externalId?: string;
     feeToIncomeAccountMappings?: Array<LoanProductChargeToGLAccountMapper>;
+    /**
+     * First due day of the month of a semi-monthly product, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
+    /**
+     * The floating rate the product follows, when isLinkedToFloatingInterestRates is true
+     */
+    floatingRatesId?: number;
     fundId?: number;
     fundSourceAccountId?: number;
     goodwillCreditAccountId?: number;
@@ -116,6 +125,7 @@ export interface PostLoanProductsRequest {
     installmentAmountInMultiplesOf?: number;
     interestCalculationPeriodType?: number;
     interestOnLoanAccountId?: number;
+    interestRateDifferential?: number;
     interestRateFrequencyType?: number;
     interestRatePerPeriod?: number;
     interestRateVariationsForBorrowerCycle?: Array<number>;
@@ -125,6 +135,7 @@ export interface PostLoanProductsRequest {
     isArrearsBasedOnOriginalSchedule?: boolean;
     isCompoundingToBePostedAsTransaction?: boolean;
     isEqualAmortization?: boolean;
+    isFloatingInterestRateCalculationAllowed?: boolean;
     isInterestRecalculationEnabled?: boolean;
     isLinkedToFloatingInterestRates?: boolean;
     loanPortfolioAccountId?: number;
@@ -135,6 +146,7 @@ export interface PostLoanProductsRequest {
      * Percentage of the loan that guarantors must cover
      */
     mandatoryGuarantee?: number;
+    maxDifferentialLendingRate?: number;
     maxInterestRatePerPeriod?: number;
     maxNumberOfRepayments?: number;
     maxPrincipal?: number;
@@ -144,6 +156,7 @@ export interface PostLoanProductsRequest {
      */
     maximumGap?: number;
     merchantBuyDownFee?: boolean;
+    minDifferentialLendingRate?: number;
     minInterestRatePerPeriod?: number;
     minNumberOfRepayments?: number;
     minPrincipal?: number;
@@ -194,6 +207,10 @@ export interface PostLoanProductsRequest {
     repaymentFrequencyType?: number;
     repaymentStartDateType?: number;
     rescheduleStrategyMethod?: number;
+    /**
+     * Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     shortName?: string;
     startDate?: string;
     supportedInterestRefundTypes?: Array<string>;

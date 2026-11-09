@@ -89,6 +89,10 @@ export interface PutLoanProductsProductIdRequest {
     enableIncomeCapitalization?: boolean;
     enableInstallmentLevelDelinquency?: boolean;
     feeToIncomeAccountMappings?: Array<LoanProductChargeToGLAccountMapper>;
+    /**
+     * First due day of the month of a semi-monthly product, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     fundId?: number;
@@ -170,6 +174,10 @@ export interface PutLoanProductsProductIdRequest {
     repaymentFrequencyType?: number;
     repaymentStartDateType?: number;
     rescheduleStrategyMethod?: number;
+    /**
+     * Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     shortName?: string;
     startDate?: string;
     supportedInterestRefundTypes?: Array<string>;

@@ -59,6 +59,10 @@ export interface GetLoanProductsResponse {
     enableBuyDownFee?: boolean;
     enableIncomeCapitalization?: boolean;
     endDate?: string;
+    /**
+     * First due day of the month of a semi-monthly product, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     id?: number;
@@ -86,6 +90,10 @@ export interface GetLoanProductsResponse {
     repaymentEvery?: number;
     repaymentFrequencyType?: GetLoanProductsRepaymentFrequencyType;
     repaymentStartDateType?: GetLoanProductsRepaymentStartDateType;
+    /**
+     * Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     shortName?: string;
     startDate?: string;
     status?: string;
