@@ -42,6 +42,8 @@ import {
   seedFundedSavingsAccount,
   seedGroup,
 } from './utils/seed-api';
+import { selectTab } from './utils/ionic-locators';
+
 test.describe('Client details', () => {
   test('shows every saved identification field, the group, the staff member and an accounts summary', async ({
     page,
@@ -95,9 +97,13 @@ test.describe('Client details', () => {
       // No fixed or recurring deposit was seeded, and the row says so rather than being absent.
       await expect(page.getByTestId('overview-count-deposits')).toHaveText('0 / 0');
 
-      // The overview opens the tab it names, which is the other half of "and links to each
-      // account" — the per-account links live on the tabs.
-      await page.getByTestId('overview-open-loans').click();
+      // The per-account links live on the tabs; the overview names the types and reports the
+      // figures, which is what it is for. It carries no control of its own — a button here
+      // duplicated the tab and collided with the New Account menu on accessible name.
+      await expect(page.getByTestId('client-accounts-overview').locator('ion-button')).toHaveCount(
+        0,
+      );
+      await selectTab(page, 'Loan Accounts');
       await expect(page.getByTestId('client-loan-accounts')).toBeVisible();
     } finally {
       await api.dispose();

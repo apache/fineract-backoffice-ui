@@ -364,15 +364,19 @@ describe('ClientViewComponent', () => {
         expect(value(`overview-amount-${CLIENT_TAB.loans}`)).toBe('0.00');
       });
 
-      it('opens the tab for a row, since the tabs are a segment and not routes', () => {
+      /**
+       * The row names its type and nothing more. It was a button that switched tabs, which
+       * duplicated the tab above it and collided with the New Account menu's "Loan Account" on
+       * accessible name.
+       */
+      it('names each type without adding a second control for it', () => {
         showAccounts([{ id: 1, ...INR, status: { active: true }, loanBalance: 10 }]);
 
-        fixture.nativeElement
-          .querySelector(`[data-testid="${CSS.escape(`overview-open-${CLIENT_TAB.loans}`)}"]`)
-          .click();
-        fixture.detectChanges();
-
-        expect(component.activeTab()).toBe(CLIENT_TAB.loans);
+        const overview = fixture.nativeElement.querySelector(
+          '[data-testid="client-accounts-overview"]',
+        );
+        expect(overview.textContent).toContain('CLIENTS.LOAN_ACCOUNTS');
+        expect(overview.querySelectorAll('ion-button')).toHaveLength(0);
       });
     });
   });
