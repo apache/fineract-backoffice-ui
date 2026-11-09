@@ -18,12 +18,12 @@
  */
 
 /**
- * The generated collection sheet, rendered as a sheet (#670).
+ * The generated collection sheet: rendering it, and recording what was collected on it (#670).
  *
- * This is mocked on purpose, and it is the only way this can be covered: the backend spec beside
- * it (`collection-sheet.spec.ts`) exercises the real endpoint, which answers 200 with an empty
- * body unless a group meeting falls on the date — so a real instance proves the empty case and
- * can say nothing about the populated one. The payload below is shaped after Fineract's own
+ * This is mocked on purpose, and it is the only way either half can be covered: the backend spec
+ * beside it (`collection-sheet.spec.ts`) exercises the real endpoint, which answers 200 with an
+ * empty body unless a group meeting falls on the date — so a real instance proves the empty case
+ * and can say nothing about the populated one. The payload below is shaped after Fineract's own
  * `JLGCollectionSheetData`, not invented.
  */
 
@@ -62,6 +62,8 @@ const SHEET = {
               productName: 'Group Savings',
               currency: { code: 'INR' },
               dueAmount: 50,
+              // A display phrase, not the enum id the save command takes — see the save cases.
+              depositAccountType: 'Saving Deposit',
             },
           ],
         },
@@ -113,14 +115,28 @@ async function signIn(page: Page): Promise<void> {
   await expect(page).toHaveURL('/dashboard');
 }
 
-async function mockSheet(page: Page, sheet: unknown): Promise<void> {
+/**
+ * Answers the filters and the sheet, and collects the bodies of any `command=save`.
+ *
+ * The returned array is how the save cases assert on the request that left the browser, which
+ * is where the `officeId` the platform refuses came from.
+ */
+async function mockSheet(page: Page, sheet: unknown): Promise<Record<string, unknown>[]> {
+  const saved: Record<string, unknown>[] = [];
   await page.route('**/api/v1/offices**', (route) =>
     route.fulfill({ json: [{ id: 1, name: 'Head Office' }] }),
   );
   await page.route(/\/api\/v1\/staff/, (route) =>
     route.fulfill({ json: [{ id: 4, displayName: 'Officer, Field' }] }),
   );
-  await page.route(/\/api\/v1\/collectionsheet/, (route) => route.fulfill({ json: sheet }));
+  await page.route(/\/api\/v1\/collectionsheet/, (route) => {
+    if (route.request().url().includes('command=save')) {
+      saved.push(route.request().postDataJSON() as Record<string, unknown>);
+      return route.fulfill({ json: { officeId: 1, resourceId: 7 } });
+    }
+    return route.fulfill({ json: sheet });
+  });
+  return saved;
 }
 
 /** Fills the filters and generates. */
@@ -189,5 +205,93 @@ test.describe('Collection sheet rendering', () => {
 
     await expect(page.getByTestId('collection-sheet-empty')).toBeVisible();
     await expect(page.getByTestId('collection-sheet-results')).toHaveCount(0);
+  });
+});
+
+/**
+ * The other half of #670: the sheet showed what was owed, and Save posted the generate filters.
+ *
+ * The filters are what makes these worth asserting on the request rather than the screen.
+ * `command=save` routes to Fineract's `saveIndividualCollectionSheet`, whose validator runs
+ * `checkForUnsupportedParameters` against a set holding neither `officeId` nor `staffId`, so the
+ * save was refused outright — the button could not have worked.
+ */
+test.describe('Recording collections', () => {
+  /** The inner native input: ion-input re-emits its events, and the host has no value to fill. */
+  const amount = (page: Page, testId: string) => page.getByTestId(testId).locator('input');
+
+  async function openSheet(page: Page, sheet: unknown = SHEET) {
+    await signIn(page);
+    const saved = await mockSheet(page, sheet);
+    await generate(page);
+    await expect(page.getByTestId('collection-sheet-results')).toBeVisible();
+    return saved;
+  }
+
+  async function save(page: Page, saved: Record<string, unknown>[]) {
+    await page.getByRole('button', { name: /Save Collection Sheet/i }).click();
+    await expect.poll(() => saved.length).toBe(1);
+    return saved[0];
+  }
+
+  test('seeds each box with what is due, which is what is usually paid', async ({ page }) => {
+    await openSheet(page);
+
+    await expect(amount(page, 'collect-loan-101')).toHaveValue('950');
+    await expect(amount(page, 'collect-savings-55')).toHaveValue('50');
+    await expect(page.getByTestId('group-collected-7')).toHaveText('1,000.00');
+  });
+
+  test('posts what the operator entered, and no filters with it', async ({ page }) => {
+    const saved = await openSheet(page);
+    await amount(page, 'collect-loan-101').fill('400');
+    await expect(page.getByTestId('group-collected-7')).toHaveText('450.00');
+
+    const body = await save(page, saved);
+    // 400, not the 950 the sheet asked for: what is posted is the officer's figure.
+    expect(body['bulkRepaymentTransactions']).toEqual([{ loanId: 101, transactionAmount: 400 }]);
+    // 'Saving Deposit' resolved to the DepositAccountType id the save command takes.
+    expect(body['bulkSavingsDueTransactions']).toEqual([
+      { savingsId: 55, transactionAmount: 50, depositAccountType: 100 },
+    ]);
+    expect(body).not.toHaveProperty('officeId');
+    expect(body).not.toHaveProperty('staffId');
+  });
+
+  test('leaves out an account nobody paid', async ({ page }) => {
+    const saved = await openSheet(page);
+    await amount(page, 'collect-loan-101').fill('0');
+    await amount(page, 'collect-savings-55').fill('0');
+
+    const body = await save(page, saved);
+    expect(body['bulkRepaymentTransactions']).toEqual([]);
+    expect(body['bulkSavingsDueTransactions']).toEqual([]);
+  });
+
+  /**
+   * 'Current Deposit' is the `ELSE` of the platform's own CASE expression, so it covers
+   * FIXED_DEPOSIT and CURRENT_DEPOSIT alike and names neither. A deposit posted without a type
+   * is accepted and then silently does nothing, so there is nothing to type here.
+   */
+  test('offers no box for a savings account whose deposit type is ambiguous', async ({ page }) => {
+    const ambiguous = structuredClone(SHEET);
+    ambiguous.groups[0].clients[0].savings[0].depositAccountType = 'Current Deposit';
+    await openSheet(page, ambiguous);
+
+    await expect(page.getByTestId('collect-savings-55')).toHaveCount(0);
+    await expect(page.getByTestId('collect-savings-blocked-55')).toBeVisible();
+    // The amount due is still on the sheet: the officer has to see what the client owes even
+    // where this screen cannot record the payment.
+    await expect(page.getByRole('row', { name: /000000055/ })).toContainText('50.00');
+  });
+
+  test('clears what was entered when the operator goes back to the filters', async ({ page }) => {
+    await openSheet(page);
+    await amount(page, 'collect-loan-101').fill('400');
+
+    await page.getByRole('button', { name: 'Back' }).click();
+    await page.getByRole('button', { name: /generate/i }).click();
+
+    await expect(amount(page, 'collect-loan-101')).toHaveValue('950');
   });
 });
