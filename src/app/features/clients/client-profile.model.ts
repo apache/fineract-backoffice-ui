@@ -18,11 +18,36 @@
  */
 
 /**
+ * One entry from a Fineract code, as `CodeValueData` carries it: the label is `name`.
+ *
+ * Separate from {@link ClientEnumOption}, whose label is `value`, because the same response
+ * uses both and reading one for the other leaves an empty cell (#862 shipped that way).
+ */
+export interface ClientCodeValue {
+  id?: number;
+  name?: string;
+}
+
+/** A platform enum, as `EnumOptionData` carries it: the label is `value`. */
+export interface ClientEnumOption {
+  id?: number;
+  code?: string;
+  value?: string;
+}
+
+/**
  * Read-only fields already returned by GET /clients/{id} and used by the client edit form.
  * The generated GetClientsClientIdResponse omits these fields; keep their feature-level
  * shape explicit without hand-editing generated code. See issue #794.
+ *
+ * Shapes traced to Fineract's `ClientData`: `gender`, `clientType` and `clientClassification`
+ * are `CodeValueData`, and `legalForm` is an `EnumOptionData`.
  */
 export interface ClientProfileFields {
   mobileNo?: string | null;
   dateOfBirth?: string | readonly number[] | null;
+  gender?: ClientCodeValue | null;
+  clientType?: ClientCodeValue | null;
+  clientClassification?: ClientCodeValue | null;
+  legalForm?: ClientEnumOption | null;
 }

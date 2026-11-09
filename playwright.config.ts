@@ -90,6 +90,7 @@ const BACKEND_SPECS = [
   'working-capital-rbac-backend.spec.ts',
   'loan-servicing-rbac-backend.spec.ts',
   'charge-servicing-backend.spec.ts',
+  'client-details-fields.spec.ts',
   'client-family-member-backend.spec.ts',
   'client-transfer.spec.ts',
   'client-legal-form-search.spec.ts',
