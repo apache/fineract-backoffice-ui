@@ -18,6 +18,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/// <reference types="vitest/globals" />
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
@@ -173,6 +174,54 @@ describe('ClientViewComponent', () => {
 
     expect(valueFor('COMMON.ACTIVATION_DATE')).toBe(new Date(2026, 4, 30).toLocaleDateString());
     expect(valueFor('CLIENTS.TIMELINE_SUBMITTED')).toBe(new Date(2026, 4, 1).toLocaleDateString());
+  });
+
+  it('shows all groups assigned to a client', () => {
+      const response = {
+          id: 123,
+          displayName: 'Anne',
+          groups: [
+              { id: 1, name: 'Oakwood Group' },
+              { id: 2, name: 'Riverside Group' }
+          ]
+      };
+
+      component.client.set(response);
+      fixture.detectChanges();
+
+      const groupsField = Array.from(
+      fixture.nativeElement.querySelectorAll('.detail-item') as NodeListOf<Element>
+        ).find((element) =>
+        element.querySelector('.label')?.textContent?.includes('CLIENTS.GROUPS')
+        );
+
+      const groupsText = groupsField?.querySelector('.value')?.textContent?.trim();
+
+      expect(groupsField).toBeDefined();
+      expect(groupsText).toContain('Oakwood Group');
+      expect(groupsText).toContain('Riverside Group');
+  });
+
+  it('shows a placeholder when the client has no groups', () => {
+      const response = {
+          id: 123,
+          displayName: 'Anne',
+          groups: []
+      };
+
+      component.client.set(response);
+      fixture.detectChanges();
+
+      const groupsField = Array.from(
+      fixture.nativeElement.querySelectorAll('.detail-item') as NodeListOf<Element>
+        ).find((element) =>
+        element.querySelector('.label')?.textContent?.includes('CLIENTS.GROUPS')
+        );
+
+      const groupsText = groupsField?.querySelector('.value')?.textContent?.trim();
+
+      expect(groupsField).toBeDefined();
+      expect(groupsText).toContain('CLIENTS.NO_GROUPS');
   });
 
   describe('saved contact and identification fields', () => {

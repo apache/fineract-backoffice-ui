@@ -513,6 +513,8 @@
     "NO_SAVINGS_ACCOUNTS": "이 그룹에는 저축 계좌가 없습니다."
   },
   "CLIENTS": {
+    "GROUPS": "그룹",
+    "NO_GROUPS": "그룹 없음",
     "DATE_OF_BIRTH_NOT_SET": "설정되지 않음",
     "CLEAR_DATE_OF_BIRTH": "생년월일 지우기",
     "DEPOSIT_ACCOUNTS": "예금",
