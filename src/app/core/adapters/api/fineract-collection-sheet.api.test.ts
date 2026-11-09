@@ -72,6 +72,7 @@ const SHEET = {
               productName: 'Group Savings',
               currency: { code: 'INR' },
               dueAmount: 50,
+              depositAccountType: 'Saving Deposit',
             },
           ],
         },
@@ -163,9 +164,108 @@ describe('FineractCollectionSheetApi', () => {
     expect(generated.postCollectionsheet.mock.lastCall![0]).not.toHaveProperty('staffId');
   });
 
-  it('saves with the same filters under the save command', () => {
-    api.save({ officeId: 1, transactionDate: '2026-11-08' }).subscribe();
+  it('saves under the save command', () => {
+    api
+      .save({ officeId: 1, transactionDate: '2026-11-08' }, { loans: [], savings: [] })
+      .subscribe();
 
     expect(generated.postCollectionsheet.mock.lastCall![1]).toBe('save');
+  });
+
+  /**
+   * Not a tidy-up: `command=save` routes to `saveIndividualCollectionSheet`, whose validator
+   * runs `checkForUnsupportedParameters` against `INDIVIDUAL_COLLECTIONSHEET_REQUEST_DATA_
+   * PARAMETERS`, and that set holds neither `officeId` nor `staffId`. A save that carried the
+   * filters the sheet was generated with was refused outright.
+   */
+  it('sends no filters on a save, which the platform would refuse', () => {
+    api
+      .save({ officeId: 1, staffId: 4, transactionDate: '2026-11-08' }, { loans: [], savings: [] })
+      .subscribe();
+
+    const [body] = generated.postCollectionsheet.mock.lastCall!;
+    expect(body).not.toHaveProperty('officeId');
+    expect(body).not.toHaveProperty('staffId');
+    expect(body).toMatchObject({ locale: 'en' });
+    expect(body.transactionDate).toBeDefined();
+  });
+
+  it('posts the collections, naming each account and what was paid on it', () => {
+    api
+      .save(
+        { officeId: 1, transactionDate: '2026-11-08' },
+        {
+          loans: [{ loanId: 101, amount: 400 }],
+          savings: [{ savingsId: 55, amount: 50, depositAccountTypeId: 100 }],
+        },
+      )
+      .subscribe();
+
+    const [body] = generated.postCollectionsheet.mock.lastCall!;
+    expect(body.bulkRepaymentTransactions).toEqual([{ loanId: 101, transactionAmount: 400 }]);
+    expect(body.bulkSavingsDueTransactions).toEqual([
+      { savingsId: 55, transactionAmount: 50, depositAccountType: 100 },
+    ]);
+  });
+
+  it('leaves out an account nobody paid', () => {
+    api
+      .save(
+        { officeId: 1, transactionDate: '2026-11-08' },
+        {
+          loans: [{ loanId: 101, amount: 0 }],
+          savings: [{ savingsId: 55, amount: 0, depositAccountTypeId: 100 }],
+        },
+      )
+      .subscribe();
+
+    const [body] = generated.postCollectionsheet.mock.lastCall!;
+    expect(body.bulkRepaymentTransactions).toEqual([]);
+    expect(body.bulkSavingsDueTransactions).toEqual([]);
+  });
+
+  /**
+   * A deposit with no `depositAccountType` is accepted and then silently does nothing:
+   * `updateBulkMandatorySavingsDuePayments` catches and discards whatever the deposit throws.
+   * Dropping the row is the lesser harm — the operator is not told a collection was recorded.
+   */
+  it('drops a savings deposit whose account type is unknown rather than posting a no-op', () => {
+    api
+      .save(
+        { officeId: 1, transactionDate: '2026-11-08' },
+        { loans: [], savings: [{ savingsId: 56, amount: 60, depositAccountTypeId: null }] },
+      )
+      .subscribe();
+
+    expect(generated.postCollectionsheet.mock.lastCall![0].bulkSavingsDueTransactions).toEqual([]);
+  });
+});
+
+/**
+ * The sheet reports the kind of savings account in words and the save takes an enum id, and
+ * nothing in the platform converts between them.
+ *
+ * `CollectionSheetReadPlatformServiceImpl` selects
+ * `CASE WHEN sa.deposit_type_enum = 100 THEN 'Saving Deposit' ELSE (CASE WHEN ... = 300 THEN
+ * 'Recurring Deposit' ELSE 'Current Deposit' END) END`.
+ */
+describe('the savings deposit type', () => {
+  const typeOf = (depositAccountType?: string) =>
+    mapSavingsDue({ savingsId: 55, depositAccountType }).depositAccountTypeId;
+
+  it('reads the two labels that name one account type each', () => {
+    expect(typeOf('Saving Deposit')).toBe(100);
+    expect(typeOf('Recurring Deposit')).toBe(300);
+  });
+
+  /**
+   * 'Current Deposit' is the `ELSE` of that CASE, so it covers FIXED_DEPOSIT (200) and
+   * CURRENT_DEPOSIT (400) alike. Guessing either would post a deposit against the wrong kind of
+   * account.
+   */
+  it('refuses to guess at a label that covers two account types', () => {
+    expect(typeOf('Current Deposit')).toBeNull();
+    expect(typeOf(undefined)).toBeNull();
+    expect(typeOf('something else entirely')).toBeNull();
   });
 });

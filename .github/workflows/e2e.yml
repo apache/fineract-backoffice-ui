@@ -60,16 +60,24 @@ permissions: {}
 # and `--project=backend` mean the same thing locally as they do here.
 #
 # Both halves are sharded, and the shard counts differ for a reason. A mocked shard costs
-# nothing but a checkout, so four of them is close to free. A backend shard brings up its own
+# nothing but a checkout, so six of them is close to free. A backend shard brings up its own
 # PostgreSQL and Fineract — roughly two minutes before the first test runs — so each one is paid
-# for in bring-up time as well as runner minutes, and three is where that stops paying for
-# itself against a 21-file suite. Each backend shard gets a *separate* stack rather than sharing
-# one: the specs create and mutate real records, and `backend.setup.ts` seeds reference data, so
-# a shared instance would make them order-dependent across shards.
+# for in bring-up time as well as runner minutes, and that fixed cost is what caps the count.
+# Each backend shard gets a *separate* stack rather than sharing one: the specs create and mutate
+# real records, and `backend.setup.ts` seeds reference data, so a shared instance would make them
+# order-dependent across shards.
 #
-# Branch protection must require all four `E2E (mocked backend, shard n/4)` checks, all three
-# `E2E (real Fineract, shard n/3)` checks, and `E2E (mobile viewport)`. Do not require either `... report` job instead:
-# merging reports can succeed when a shard fails, so only the shard jobs enforce the result.
+# The counts were last set against a measured run (the 50-file backend suite over three shards
+# finished in 6:52, 12:08 and 14:08, and the mocked suite over four in 6:12 to 9:23). Splitting
+# the slow half five ways and the cheap half six ways spends the same runner minutes on a
+# shorter wall clock; the bring-up floor means a sixth backend shard would start costing more
+# than it saves. Re-measure before moving either, rather than raising them on principle.
+#
+# Branch protection must require all six `E2E (mocked backend, shard n/6)` checks, all five
+# `E2E (real Fineract, shard n/5)` checks, and `E2E (mobile viewport)`. Changing either count
+# renames those checks, so the required list has to be updated in the same change or the new
+# shards run unrequired. Do not require either `... report` job instead: merging reports can
+# succeed when a shard fails, so only the shard jobs enforce the result.
 jobs:
   mobile:
     # The narrow layout, on Pixel 7 emulation. Unsharded: it is one spec of eleven cases and the
@@ -137,8 +145,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
-        total: [4]
+        shard: [1, 2, 3, 4, 5, 6]
+        total: [6]
     permissions:
       contents: read # checkout
     steps:
@@ -381,8 +389,8 @@ jobs:
       # no result at all.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
-        total: [3]
+        shard: [1, 2, 3, 4, 5]
+        total: [5]
     permissions:
       contents: read # checkout
     steps:

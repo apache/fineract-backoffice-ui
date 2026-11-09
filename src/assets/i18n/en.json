@@ -2265,7 +2265,10 @@
     "PRODUCT": "Product",
     "DUE": "Due",
     "GROUP_TOTAL": "Group total",
-    "SHEET_TOTAL": "Sheet total"
+    "SHEET_TOTAL": "Sheet total",
+    "COLLECTED": "Collected",
+    "COLLECTED_TOTAL": "Collected total",
+    "NOT_COLLECTABLE": "Not collectable"
   },
   "COLLATERAL_MANAGEMENT": {
     "CREATE": "Create Collateral",
