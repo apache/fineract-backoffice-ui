@@ -72,8 +72,14 @@ describe('ShareDividendFormComponent', () => {
     expect(serviceSpy.postShareproductProductIdDividend).toHaveBeenCalled();
     const [productId, body] = serviceSpy.postShareproductProductIdDividend.mock.lastCall!;
     expect(productId).toBe(1);
-    const parsed = JSON.parse(body as string);
-    expect(parsed.dividendAmount).toBe(100);
+    // Sent as the request object the endpoint declares. It used to take a bare string body, so
+    // this screen hand-serialised one and the test parsed it back; the November 2026 spec sync
+    // gave the endpoint a typed request.
+    expect(body).toMatchObject({
+      dividendAmount: 100,
+      dividendPeriodStartDate: expect.any(String),
+      dividendPeriodEndDate: expect.any(String),
+    });
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/products/shares', 1, 'dividends']);
   });
 });

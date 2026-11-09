@@ -65,43 +65,69 @@ export class FineractAuditApi implements AuditApi {
     // `processingResult` as an integer; current Fineract reads `status` and ignores
     // `processingResult`. Each version drops the parameter it does not know.
     const status = query.statusId === undefined ? undefined : String(query.statusId);
-    return this.audits
-      .getAudits(
-        query.actionName,
-        query.entityName,
-        query.resourceId,
-        query.makerId,
-        query.madeFrom ? `${query.madeFrom} 00:00:00` : undefined,
-        // Fineract compares the timestamp column against this string, so a bare date would
-        // stop at midnight and drop the last day of the range.
-        query.madeTo ? `${query.madeTo} 23:59:59` : undefined,
-        query.checkerId,
-        undefined,
-        undefined,
-        status,
-        query.clientId,
-        query.loanId,
-        undefined,
-        undefined,
-        undefined,
-        status,
-        undefined,
-        undefined,
-        query.offset,
-        query.limit,
-        query.orderBy,
-        query.sortOrder,
-        true,
-      )
-      .pipe(
-        map((data) => {
-          const page = parsePage(data);
-          return {
-            items: (page.pageItems ?? []).map(toEntry),
-            totalFilteredRecords: page.totalFilteredRecords ?? 0,
-          };
-        }),
-      );
+    // `getAudits` takes forty-one positional parameters, and the November 2026 spec sync
+    // inserted eighteen of them between `locale` and `offset` — which moved `offset` into
+    // `productId` and `limit` into `transactionId`. That was caught only because the types
+    // happened to differ; had the inserted parameters been numbers, this would have gone on
+    // compiling and sent the page size as a transaction id.
+    //
+    // So the arguments are built as the method's own parameter tuple. `Parameters<>` gives the
+    // arity and the per-position types, so a future insertion fails here instead of silently
+    // querying the wrong field, and the names below say which slot each value is filling.
+    const args: Parameters<AuditsService['getAudits']> = [
+      query.actionName,
+      query.entityName,
+      query.resourceId,
+      query.makerId,
+      query.madeFrom ? `${query.madeFrom} 00:00:00` : undefined,
+      // Fineract compares the timestamp column against this string, so a bare date would stop
+      // at midnight and drop the last day of the range.
+      query.madeTo ? `${query.madeTo} 23:59:59` : undefined,
+      query.checkerId,
+      undefined, // checkerDateTimeFrom
+      undefined, // checkerDateTimeTo
+      status,
+      query.clientId,
+      query.loanId,
+      undefined, // officeId
+      undefined, // groupId
+      undefined, // savingsAccountId
+      status, // processingResult — see the note above on sending the status twice
+      undefined, // dateFormat
+      undefined, // locale
+      undefined, // productId
+      undefined, // transactionId
+      undefined, // subresourceId
+      undefined, // resourceExternalId
+      undefined, // subresourceExternalId
+      undefined, // loanExternalId
+      undefined, // submittedOfficeId
+      undefined, // submittedGroupId
+      undefined, // submittedClientId
+      undefined, // submittedLoanId
+      undefined, // submittedSavingsAccountId
+      undefined, // submittedProductId
+      undefined, // submittedTransactionId
+      undefined, // submittedResourceId
+      undefined, // submittedResourceExternalId
+      undefined, // submittedSubresourceId
+      undefined, // submittedSubresourceExternalId
+      undefined, // submittedLoanExternalId
+      query.offset,
+      query.limit,
+      query.orderBy,
+      query.sortOrder,
+      true, // paged
+    ];
+    return this.audits.getAudits(...args).pipe(
+      map((data) => {
+        const page = parsePage(data);
+        return {
+          items: (page.pageItems ?? []).map(toEntry),
+          totalFilteredRecords: page.totalFilteredRecords ?? 0,
+        };
+      }),
+    );
   }
 
   get(auditId: number): Observable<AuditEntry> {

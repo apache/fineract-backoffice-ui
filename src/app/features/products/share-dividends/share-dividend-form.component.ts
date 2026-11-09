@@ -21,7 +21,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../core/adapters';
-import { SelfDividendService } from '../../../api';
+import { SelfDividendService, type PostShareProductDividendsRequest } from '../../../api';
 import {
   IonButton,
   IonCard,
@@ -192,7 +192,9 @@ export class ShareDividendFormComponent implements OnInit {
 
   onSubmit(): void {
     this.isSaving.set(true);
-    const body = JSON.stringify({
+    // Typed as of the November 2026 spec sync: the endpoint used to declare a bare string body,
+    // so this screen hand-serialised one. The generated request carries exactly these fields.
+    const body: PostShareProductDividendsRequest = {
       dividendAmount: this.dividendAmount ?? undefined,
       dividendPeriodStartDate: this.dividendPeriodStartDate
         ? formatDateToFineract(this.dividendPeriodStartDate)
@@ -202,7 +204,7 @@ export class ShareDividendFormComponent implements OnInit {
         : undefined,
       dateFormat: FINERACT_DATE_FORMAT,
       locale: FINERACT_LOCALE,
-    });
+    };
 
     this.selfDividendService.postShareproductProductIdDividend(this.productId, body).subscribe({
       next: () => this.router.navigate(['/products/shares', this.productId, 'dividends']),

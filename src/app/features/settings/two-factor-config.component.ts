@@ -20,7 +20,11 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { DefaultService } from '../../api';
+import {
+  DefaultService,
+  type GetTwoFactorConfigurationResponse,
+  type PutTwoFactorConfigurationRequest,
+} from '../../api';
 import { I18N, TranslatePipe } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
 import { LoadErrorComponent } from '../../shared/components/load-error/load-error.component';
@@ -155,7 +159,10 @@ export class TwoFactorConfigComponent implements OnInit {
     this.isLoading.set(true);
     this.loadFailed.set(false);
     this.defaultService.getTwofactorConfigure().subscribe({
-      next: (raw: string) => {
+      // Typed as of the November 2026 spec sync; it used to be declared as a bare string. The
+      // both-shapes handling below stays: the declaration has changed once already, and reading
+      // an object as a string is how this screen would silently show "[object Object]".
+      next: (raw: GetTwoFactorConfigurationResponse | string) => {
         try {
           const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
           this.configJson.set(JSON.stringify(parsed, null, 2));
@@ -193,16 +200,21 @@ export class TwoFactorConfigComponent implements OnInit {
     }
 
     this.isSaving.set(true);
-    this.defaultService.putTwofactorConfigure(JSON.stringify(parsed)).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        this.i18n.translateAsync('TWO_FACTOR_CONFIG.SUCCESS').subscribe((msg: string) => {
-          this.notifications.success(msg);
-        });
-      },
-      error: () => {
-        this.isSaving.set(false);
-      },
-    });
+    // The editor is free-form JSON, so what the operator typed is checked for being parseable
+    // and then handed over as the request the endpoint now declares. The platform validates the
+    // keys; this screen does not pretend to know them.
+    this.defaultService
+      .putTwofactorConfigure(parsed as PutTwoFactorConfigurationRequest)
+      .subscribe({
+        next: () => {
+          this.isSaving.set(false);
+          this.i18n.translateAsync('TWO_FACTOR_CONFIG.SUCCESS').subscribe((msg: string) => {
+            this.notifications.success(msg);
+          });
+        },
+        error: () => {
+          this.isSaving.set(false);
+        },
+      });
   }
 }

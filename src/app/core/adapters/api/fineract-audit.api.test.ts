@@ -32,6 +32,14 @@ import { FineractAuditApi, toIsoDateTime } from './fineract-audit.api';
  * mapping tests below; the wire test at the end runs the real generated service, so a
  * regenerated client with a different order fails there even if this table drifts with it.
  */
+/**
+ * Where each value sits in `getAudits`'s forty-one positional parameters.
+ *
+ * The paging positions moved by eighteen in the November 2026 spec sync, which inserted
+ * `productId`, `transactionId`, the `subresource*` and `*ExternalId` filters and the whole
+ * `submitted*` family between `locale` and `offset`. This map is what caught it: the adapter
+ * went on compiling until `limit` landed on a `string` parameter.
+ */
 const ARG = {
   actionName: 0,
   entityName: 1,
@@ -44,11 +52,11 @@ const ARG = {
   clientId: 10,
   loanId: 11,
   processingResult: 15,
-  offset: 18,
-  limit: 19,
-  orderBy: 20,
-  sortOrder: 21,
-  paged: 22,
+  offset: 36,
+  limit: 37,
+  orderBy: 38,
+  sortOrder: 39,
+  paged: 40,
 } as const;
 
 const PAGE: AuditQuery = { offset: 20, limit: 10, orderBy: 'id', sortOrder: 'DESC' };
