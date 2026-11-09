@@ -29,7 +29,7 @@ import { GetFixedDepositAccountsChartSlabs } from './getFixedDepositAccountsChar
 
 export interface GetFixedDepositAccountsAccountChart { 
     accountId?: number;
-    accountNumber?: number;
+    accountNumber?: string;
     chartSlabs?: Set<GetFixedDepositAccountsChartSlabs>;
     fromDate?: string;
     id?: number;

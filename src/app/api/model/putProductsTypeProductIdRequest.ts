@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { PostProductsPaymentChannelToFundSourceMappings } from './postProductsPaymentChannelToFundSourceMappings';
 
 
 /**
@@ -31,6 +32,9 @@
 export interface PutProductsTypeProductIdRequest { 
     description?: string;
     locale?: string;
+    paymentChannelToFundSourceMappings?: Set<PostProductsPaymentChannelToFundSourceMappings>;
+    sharesIssued?: number;
+    totalShares?: number;
     unitPrice?: number;
 }
 

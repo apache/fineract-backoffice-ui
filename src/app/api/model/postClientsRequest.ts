@@ -60,6 +60,10 @@ export interface PostClientsRequest {
     middlename?: string;
     mobileNo?: string;
     officeId?: number;
+    /**
+     * Savings product of the account opened automatically when the client is activated
+     */
+    savingsProductId?: number;
     submittedOnDate?: string;
 }
 

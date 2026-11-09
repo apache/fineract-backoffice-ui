@@ -119,6 +119,7 @@ export interface LoanProductData {
     equalAmortization?: boolean;
     externalId?: string;
     feeToIncomeAccountMappings?: Array<ChargeToGLAccountMapper>;
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     floatingInterestRateCalculationAllowed?: boolean;
@@ -209,6 +210,7 @@ export interface LoanProductData {
     repaymentStartDateType?: EnumOptionData;
     repaymentStartDateTypeOptions?: Array<EnumOptionData>;
     rescheduleStrategyTypeOptions?: Array<EnumOptionData>;
+    secondRepaymentDayOfMonth?: number;
     shortName?: string;
     startDate?: string;
     status?: string;

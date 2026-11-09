@@ -74,6 +74,7 @@ export interface SavingsAccountData {
     glAccountIdForInterestReceivable?: number;
     glAccountIdForOverdraftPorfolio?: number;
     glAccountIdForSavingsControl?: number;
+    glAccountIdForSavingsReference?: number;
     groupGeneralData?: GroupGeneralData;
     groupId?: number;
     groupName?: string;

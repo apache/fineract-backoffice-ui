@@ -126,7 +126,8 @@ export namespace LoanProduct {
         Months: 'MONTHS',
         Years: 'YEARS',
         WholeTerm: 'WHOLE_TERM',
-        Invalid: 'INVALID'
+        Invalid: 'INVALID',
+        SemiMonthly: 'SEMI_MONTHLY'
     } as const;
     export type InterestPeriodFrequencyTypeEnum = typeof InterestPeriodFrequencyTypeEnum[keyof typeof InterestPeriodFrequencyTypeEnum];
     export const RepaymentStartDateTypeEnum = {

@@ -48,6 +48,10 @@ export interface PutLoansLoanIdRequest {
     enableDownPayment?: boolean;
     enableInstallmentLevelDelinquency?: boolean;
     expectedDisbursementDate?: string;
+    /**
+     * First due day of the month of a semi-monthly loan, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     fraud?: boolean;
@@ -80,6 +84,10 @@ export interface PutLoansLoanIdRequest {
     repaymentFrequencyNthDayType?: number;
     repaymentFrequencyType?: number;
     repaymentsStartingFromDate?: string;
+    /**
+     * Second due day of the month of a semi-monthly loan, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     submittedOnDate?: string;
     transactionProcessingStrategyCode?: string;
 }

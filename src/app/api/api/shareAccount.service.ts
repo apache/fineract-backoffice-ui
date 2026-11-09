@@ -393,7 +393,7 @@ export class ShareAccountService extends BaseService {
 
     /**
      * Submit new share application
-     * Submits new share application  Mandatory Fields: clientId, productId, submittedDate, savingsAccountId, requestedShares, applicationDate  Optional Fields: accountNo, externalId  Inherited from Product (if not provided): minimumActivePeriod, minimumActivePeriodFrequencyType, lockinPeriodFrequency, lockinPeriodFrequencyType
+     * Submits new share application  Mandatory Fields: clientId, productId, submittedDate, savingsAccountId, requestedShares, applicationDate  Optional Fields: accountNo, externalId, paymentTypeId, accountNumber, checkNumber, routingCode, receiptNumber, bankNumber  Inherited from Product (if not provided): minimumActivePeriod, minimumActivePeriodFrequencyType, lockinPeriodFrequency, lockinPeriodFrequencyType
      * @endpoint post /v1/accounts/{type}
      * @param type type
      * @param accountRequest 

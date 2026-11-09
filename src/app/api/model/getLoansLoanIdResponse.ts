@@ -97,6 +97,10 @@ export interface GetLoansLoanIdResponse {
     enableIncomeCapitalization?: boolean;
     enableInstallmentLevelDelinquency?: boolean;
     externalId?: string;
+    /**
+     * First due day of the month of a semi-monthly loan, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     fraud?: boolean;
@@ -145,6 +149,10 @@ export interface GetLoansLoanIdResponse {
     repaymentFrequencyType?: GetLoansLoanIdRepaymentFrequencyType;
     repaymentSchedule?: GetLoansLoanIdRepaymentSchedule;
     repaymentStartDateType?: EnumOptionData;
+    /**
+     * Second due day of the month of a semi-monthly loan, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     status?: GetLoansLoanIdStatus;
     subStatus?: GetLoansLoanIdSubStatus;
     summary?: GetLoansLoanIdSummary;
