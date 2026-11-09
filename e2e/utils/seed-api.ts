@@ -347,6 +347,114 @@ export async function seedClient(
   return { clientId, firstName, lastName, displayName: `${firstName} ${lastName}` };
 }
 
+/** A client seeded with every identification field the details page is meant to show. */
+export interface SeededDetailedClient extends SeededClient {
+  mobileNo: string;
+  /** ISO `YYYY-MM-DD`, which is what the page renders it as. */
+  dateOfBirth: string;
+  staffName: string;
+  genderName: string;
+  clientTypeName: string;
+  classificationName: string;
+}
+
+/**
+ * A client carrying a mobile number, a date of birth, a gender, a type, a classification and an
+ * assigned staff member.
+ *
+ * Seeded through the API rather than typed into the create form on purpose: what the details
+ * page was getting wrong is which **field names** it reads off `GET /clients/{id}`, and the
+ * only way to hold it to that is to put known values in through the platform and look for them
+ * on the screen. Driving the form would prove the form.
+ *
+ * The three code values are read-or-created: a fresh tenant defines the codes `Gender`,
+ * `ClientType` and `ClientClassification` on migration but leaves them empty, and whatever is
+ * already there is used rather than adding another entry on every run.
+ */
+export async function seedDetailedClient(
+  api: APIRequestContext,
+  namePrefix = 'E2EDetails',
+): Promise<SeededDetailedClient> {
+  const firstName = `${namePrefix}${seedSuffix()}`;
+  const lastName = 'Tester';
+  const staff = await seedStaff(api, `${namePrefix}Officer`);
+  const gender = await ensureCodeValue(api, 'Gender', 'Female');
+  const clientType = await ensureCodeValue(api, 'ClientType', 'Individual');
+  const classification = await ensureCodeValue(api, 'ClientClassification', 'Rural');
+  const mobileNo = '9876500011';
+  const dateOfBirth = '1990-05-15';
+
+  const { clientId } = await post<{ clientId: number }>(api, '/clients', {
+    officeId: 1,
+    firstname: firstName,
+    lastname: lastName,
+    legalFormId: 1,
+    active: true,
+    activationDate: fineractDate(),
+    mobileNo,
+    // Sent in the platform's own format, with the same dateFormat the rest of the body uses.
+    dateOfBirth: '15 May 1990',
+    staffId: staff.staffId,
+    genderId: gender.id,
+    clientTypeId: clientType.id,
+    clientClassificationId: classification.id,
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+
+  return {
+    clientId,
+    firstName,
+    lastName,
+    displayName: `${firstName} ${lastName}`,
+    mobileNo,
+    dateOfBirth,
+    staffName: staff.staffName,
+    genderName: gender.name,
+    clientTypeName: clientType.name,
+    classificationName: classification.name,
+  };
+}
+
+/**
+ * An active loan against a client that already exists.
+ *
+ * {@link seedActiveLoan} seeds a client of its own, which is no use to a spec that needs the
+ * loan to belong to a particular one.
+ */
+export async function seedActiveLoanForClient(
+  api: APIRequestContext,
+  clientId: number,
+  principal = 1000,
+  namePrefix = 'E2EDetails',
+): Promise<number> {
+  const product = await seedLoanProduct(api, namePrefix);
+  const today = fineractDate();
+  const { loanId } = await post<{ loanId: number }>(api, '/loans', {
+    clientId,
+    productId: product.productId,
+    principal,
+    loanTermFrequency: 3,
+    loanTermFrequencyType: 2,
+    numberOfRepayments: 3,
+    repaymentEvery: 1,
+    repaymentFrequencyType: 2,
+    interestRatePerPeriod: 0,
+    amortizationType: 1,
+    interestType: 0,
+    interestCalculationPeriodType: 1,
+    transactionProcessingStrategyCode: 'mifos-standard-strategy',
+    expectedDisbursementDate: today,
+    submittedOnDate: today,
+    loanType: 'individual',
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+  await approveLoan(api, loanId);
+  await disburseLoan(api, loanId);
+  return loanId;
+}
+
 export async function seedEntityClient(
   api: APIRequestContext,
   namePrefix = 'E2ESeedEntity',

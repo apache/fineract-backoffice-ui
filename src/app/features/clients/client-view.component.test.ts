@@ -215,6 +215,168 @@ describe('ClientViewComponent', () => {
     });
   });
 
+  /**
+   * The rest of #794: the codes, the legal form, the staff member and the groups, none of which
+   * this page mentioned, plus the summary that saved opening four tabs to add rows up by eye.
+   */
+  describe('identification, membership and the accounts overview', () => {
+    const value = (id: string) =>
+      (
+        fixture.nativeElement.querySelector(`[data-testid="${CSS.escape(id)}"]`) as Element | null
+      )?.textContent
+        ?.replaceAll(/\s+/g, ' ')
+        .trim();
+
+    function show(fields: Record<string, unknown>): void {
+      component.client.set({ id: 123, displayName: 'Synthetic Client', ...fields } as any);
+      fixture.detectChanges();
+    }
+
+    /**
+     * `CodeValueData` labels itself with `name`; `EnumOptionData` with `value`. Reading one for
+     * the other is how #862 shipped a column of `[object Object]`, so both are asserted on a
+     * payload shaped the way the platform sends it.
+     */
+    it('reads a code by its name and an enum by its value', () => {
+      show({
+        gender: { id: 21, name: 'Female' },
+        clientType: { id: 31, name: 'Individual' },
+        clientClassification: { id: 41, name: 'Rural' },
+        legalForm: { id: 1, code: 'legalFormType.person', value: 'PERSON' },
+      });
+
+      expect(value('client-gender')).toBe('Female');
+      expect(value('client-type')).toBe('Individual');
+      expect(value('client-classification')).toBe('Rural');
+      expect(value('client-legal-form')).toBe('PERSON');
+    });
+
+    /**
+     * The row was the literal word "Person" for every client, so an Entity was labelled a
+     * person on its own details page.
+     */
+    it('does not call an entity a person', () => {
+      show({ legalForm: { id: 2, code: 'legalFormType.entity', value: 'ENTITY' } });
+      expect(value('client-legal-form')).toBe('ENTITY');
+    });
+
+    it.each([{}, { gender: null, clientType: null, clientClassification: null, legalForm: null }])(
+      'shows a placeholder rather than an empty cell: %j',
+      (fields) => {
+        show(fields);
+        expect(value('client-gender')).toBe('—');
+        expect(value('client-type')).toBe('—');
+        expect(value('client-classification')).toBe('—');
+        expect(value('client-legal-form')).toBe('—');
+      },
+    );
+
+    it('lists every group the client belongs to, each as a link to it', () => {
+      show({
+        groups: [
+          { id: 7, name: 'Mahila Mandal A' },
+          { id: 8, name: 'Sunrise JLG' },
+        ],
+      });
+
+      expect(value('client-group-7')).toBe('Mahila Mandal A');
+      expect(value('client-group-8')).toBe('Sunrise JLG');
+      const link = fixture.nativeElement.querySelector('[data-testid="client-group-7"]');
+      expect(link.tagName.toLowerCase()).toBe('a');
+      expect(link.getAttribute('href')).toBe('/groups/view/7');
+    });
+
+    /** The number still shows; only the link is withheld, as elsewhere on this page. */
+    it('shows a group without a link to a reader who cannot open it', () => {
+      authServiceSpy.hasPermission.mockImplementation(
+        (permission: string | string[]) => permission !== 'READ_GROUP',
+      );
+      show({ groups: [{ id: 7, name: 'Mahila Mandal A' }] });
+
+      const cell = fixture.nativeElement.querySelector('[data-testid="client-group-7"]');
+      expect(cell.tagName.toLowerCase()).toBe('span');
+      expect(cell.textContent.trim()).toBe('Mahila Mandal A');
+    });
+
+    it('says so when there is no group', () => {
+      show({ groups: [] });
+      expect(value('client-groups')).toBe('—');
+    });
+
+    describe('the accounts overview', () => {
+      function showAccounts(loanAccounts: unknown[], savingsAccounts: unknown[] = []): void {
+        component.loanAccounts.set(loanAccounts as ClientLoanAccountRow[]);
+        component.savingsAccounts.set(savingsAccounts as any);
+        fixture.detectChanges();
+      }
+
+      const INR = { currency: { code: 'INR' } };
+
+      it('counts the active accounts of each type and totals what the platform reports', () => {
+        showAccounts(
+          [
+            { id: 1, ...INR, status: { active: true }, loanBalance: 1200.5 },
+            { id: 2, ...INR, status: { active: false }, loanBalance: 0 },
+          ],
+          [
+            {
+              id: 3,
+              ...INR,
+              depositType: { id: 100 },
+              status: { active: true },
+              accountBalance: 400,
+            },
+            {
+              id: 4,
+              ...INR,
+              depositType: { id: 200 },
+              status: { active: true },
+              accountBalance: 5000,
+            },
+          ],
+        );
+
+        expect(value(`overview-count-${CLIENT_TAB.loans}`)).toBe('1 / 2');
+        expect(value(`overview-amount-${CLIENT_TAB.loans}`)).toBe('1,200.50');
+        expect(value(`overview-count-${CLIENT_TAB.savings}`)).toBe('1 / 1');
+        expect(value(`overview-amount-${CLIENT_TAB.savings}`)).toBe('400.00');
+        // The fixed deposit lands under Deposits, not under Savings, as the tabs do.
+        expect(value(`overview-count-${CLIENT_TAB.deposits}`)).toBe('1 / 1');
+        expect(value(`overview-amount-${CLIENT_TAB.deposits}`)).toBe('5,000.00');
+      });
+
+      /**
+       * 500 USD plus 500 INR is 1000 of nothing. A wrong total on a summary card is worse than
+       * an absent one, and the per-account tables below still show each balance with its symbol.
+       */
+      it('declines to total accounts held in different currencies', () => {
+        showAccounts([
+          { id: 1, currency: { code: 'INR' }, status: { active: true }, loanBalance: 500 },
+          { id: 2, currency: { code: 'USD' }, status: { active: true }, loanBalance: 500 },
+        ]);
+
+        expect(value(`overview-count-${CLIENT_TAB.loans}`)).toBe('2 / 2');
+        expect(value(`overview-amount-${CLIENT_TAB.loans}`)).toBe('—');
+      });
+
+      it('reads a missing balance as zero rather than printing nothing', () => {
+        showAccounts([{ id: 1, ...INR, status: { active: true } }]);
+        expect(value(`overview-amount-${CLIENT_TAB.loans}`)).toBe('0.00');
+      });
+
+      it('opens the tab for a row, since the tabs are a segment and not routes', () => {
+        showAccounts([{ id: 1, ...INR, status: { active: true }, loanBalance: 10 }]);
+
+        fixture.nativeElement
+          .querySelector(`[data-testid="${CSS.escape(`overview-open-${CLIENT_TAB.loans}`)}"]`)
+          .click();
+        fixture.detectChanges();
+
+        expect(component.activeTab()).toBe(CLIENT_TAB.loans);
+      });
+    });
+  });
+
   describe('failed load', () => {
     /**
      * A fresh instance, not the shared `fixture`/`component` from the outer `beforeEach` — that
