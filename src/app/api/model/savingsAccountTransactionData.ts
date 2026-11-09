@@ -114,6 +114,7 @@ export interface SavingsAccountTransactionData {
     waivePenaltyCharge?: boolean;
     waivePenaltyChargeAndNotReversed?: boolean;
     withHoldTaxAndNotReversed?: boolean;
+    withHoldTaxAndReversed?: boolean;
     withdrawal?: boolean;
     withdrawalFeeAndNotReversed?: boolean;
 }

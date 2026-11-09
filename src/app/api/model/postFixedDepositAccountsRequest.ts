@@ -23,12 +23,14 @@
  * Do not edit the class manually.
  */
 
+import { PostFixedDepositAccountsCharges } from './postFixedDepositAccountsCharges';
 
 
 /**
  * PostFixedDepositAccountsRequest
  */
 export interface PostFixedDepositAccountsRequest { 
+    charges?: Array<PostFixedDepositAccountsCharges>;
     clientId?: number;
     dateFormat?: string;
     depositAmount?: number;

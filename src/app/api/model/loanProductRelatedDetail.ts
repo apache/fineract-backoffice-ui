@@ -51,6 +51,7 @@ export interface LoanProductRelatedDetail {
     enableDownPayment?: boolean;
     enableIncomeCapitalization?: boolean;
     equalAmortization?: boolean;
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     graceOnArrearsAgeing?: number;
     graceOnInterestCharged?: number;
@@ -73,6 +74,7 @@ export interface LoanProductRelatedDetail {
     recurringMoratoriumOnPrincipalPeriods?: number;
     repayEvery?: number;
     repaymentPeriodFrequencyType?: LoanProductRelatedDetail.RepaymentPeriodFrequencyTypeEnum;
+    secondRepaymentDayOfMonth?: number;
     supportedInterestRefundTypes?: Array<LoanProductRelatedDetail.SupportedInterestRefundTypesEnum>;
 }
 export namespace LoanProductRelatedDetail {
@@ -137,7 +139,8 @@ export namespace LoanProductRelatedDetail {
         Months: 'MONTHS',
         Years: 'YEARS',
         WholeTerm: 'WHOLE_TERM',
-        Invalid: 'INVALID'
+        Invalid: 'INVALID',
+        SemiMonthly: 'SEMI_MONTHLY'
     } as const;
     export type InterestPeriodFrequencyTypeEnum = typeof InterestPeriodFrequencyTypeEnum[keyof typeof InterestPeriodFrequencyTypeEnum];
     export const LoanScheduleProcessingTypeEnum = {
@@ -161,7 +164,8 @@ export namespace LoanProductRelatedDetail {
         Months: 'MONTHS',
         Years: 'YEARS',
         WholeTerm: 'WHOLE_TERM',
-        Invalid: 'INVALID'
+        Invalid: 'INVALID',
+        SemiMonthly: 'SEMI_MONTHLY'
     } as const;
     export type RepaymentPeriodFrequencyTypeEnum = typeof RepaymentPeriodFrequencyTypeEnum[keyof typeof RepaymentPeriodFrequencyTypeEnum];
     export const SupportedInterestRefundTypesEnum = {

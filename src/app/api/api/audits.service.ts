@@ -75,6 +75,24 @@ export class AuditsService extends BaseService {
      * @param processingResult 
      * @param dateFormat 
      * @param locale 
+     * @param productId 
+     * @param transactionId 
+     * @param subresourceId 
+     * @param resourceExternalId 
+     * @param subresourceExternalId 
+     * @param loanExternalId 
+     * @param submittedOfficeId 
+     * @param submittedGroupId 
+     * @param submittedClientId 
+     * @param submittedLoanId 
+     * @param submittedSavingsAccountId 
+     * @param submittedProductId 
+     * @param submittedTransactionId 
+     * @param submittedResourceId 
+     * @param submittedResourceExternalId 
+     * @param submittedSubresourceId 
+     * @param submittedSubresourceExternalId 
+     * @param submittedLoanExternalId 
      * @param offset offset
      * @param limit limit
      * @param orderBy orderBy
@@ -84,10 +102,10 @@ export class AuditsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getAudits(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, checkerId?: number, checkerDateTimeFrom?: string, checkerDateTimeTo?: string, status?: string, clientId?: number, loanId?: number, officeId?: number, groupId?: number, savingsAccountId?: number, processingResult?: string, dateFormat?: string, locale?: string, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, paged?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getAudits(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, checkerId?: number, checkerDateTimeFrom?: string, checkerDateTimeTo?: string, status?: string, clientId?: number, loanId?: number, officeId?: number, groupId?: number, savingsAccountId?: number, processingResult?: string, dateFormat?: string, locale?: string, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, paged?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getAudits(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, checkerId?: number, checkerDateTimeFrom?: string, checkerDateTimeTo?: string, status?: string, clientId?: number, loanId?: number, officeId?: number, groupId?: number, savingsAccountId?: number, processingResult?: string, dateFormat?: string, locale?: string, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, paged?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public getAudits(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, checkerId?: number, checkerDateTimeFrom?: string, checkerDateTimeTo?: string, status?: string, clientId?: number, loanId?: number, officeId?: number, groupId?: number, savingsAccountId?: number, processingResult?: string, dateFormat?: string, locale?: string, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, paged?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getAudits(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, checkerId?: number, checkerDateTimeFrom?: string, checkerDateTimeTo?: string, status?: string, clientId?: number, loanId?: number, officeId?: number, groupId?: number, savingsAccountId?: number, processingResult?: string, dateFormat?: string, locale?: string, productId?: number, transactionId?: string, subresourceId?: number, resourceExternalId?: string, subresourceExternalId?: string, loanExternalId?: string, submittedOfficeId?: number, submittedGroupId?: number, submittedClientId?: number, submittedLoanId?: number, submittedSavingsAccountId?: number, submittedProductId?: number, submittedTransactionId?: string, submittedResourceId?: number, submittedResourceExternalId?: string, submittedSubresourceId?: number, submittedSubresourceExternalId?: string, submittedLoanExternalId?: string, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, paged?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
+    public getAudits(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, checkerId?: number, checkerDateTimeFrom?: string, checkerDateTimeTo?: string, status?: string, clientId?: number, loanId?: number, officeId?: number, groupId?: number, savingsAccountId?: number, processingResult?: string, dateFormat?: string, locale?: string, productId?: number, transactionId?: string, subresourceId?: number, resourceExternalId?: string, subresourceExternalId?: string, loanExternalId?: string, submittedOfficeId?: number, submittedGroupId?: number, submittedClientId?: number, submittedLoanId?: number, submittedSavingsAccountId?: number, submittedProductId?: number, submittedTransactionId?: string, submittedResourceId?: number, submittedResourceExternalId?: string, submittedSubresourceId?: number, submittedSubresourceExternalId?: string, submittedLoanExternalId?: string, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, paged?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
+    public getAudits(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, checkerId?: number, checkerDateTimeFrom?: string, checkerDateTimeTo?: string, status?: string, clientId?: number, loanId?: number, officeId?: number, groupId?: number, savingsAccountId?: number, processingResult?: string, dateFormat?: string, locale?: string, productId?: number, transactionId?: string, subresourceId?: number, resourceExternalId?: string, subresourceExternalId?: string, loanExternalId?: string, submittedOfficeId?: number, submittedGroupId?: number, submittedClientId?: number, submittedLoanId?: number, submittedSavingsAccountId?: number, submittedProductId?: number, submittedTransactionId?: string, submittedResourceId?: number, submittedResourceExternalId?: string, submittedSubresourceId?: number, submittedSubresourceExternalId?: string, submittedLoanExternalId?: string, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, paged?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getAudits(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, makerDateTimeFrom?: string, makerDateTimeTo?: string, checkerId?: number, checkerDateTimeFrom?: string, checkerDateTimeTo?: string, status?: string, clientId?: number, loanId?: number, officeId?: number, groupId?: number, savingsAccountId?: number, processingResult?: string, dateFormat?: string, locale?: string, productId?: number, transactionId?: string, subresourceId?: number, resourceExternalId?: string, subresourceExternalId?: string, loanExternalId?: string, submittedOfficeId?: number, submittedGroupId?: number, submittedClientId?: number, submittedLoanId?: number, submittedSavingsAccountId?: number, submittedProductId?: number, submittedTransactionId?: string, submittedResourceId?: number, submittedResourceExternalId?: string, submittedSubresourceId?: number, submittedSubresourceExternalId?: string, submittedLoanExternalId?: string, offset?: number, limit?: number, orderBy?: string, sortOrder?: string, paged?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -248,6 +266,168 @@ export class AuditsService extends BaseService {
             localVarQueryParameters,
             'locale',
             <any>locale,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'productId',
+            <any>productId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'transactionId',
+            <any>transactionId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'subresourceId',
+            <any>subresourceId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'resourceExternalId',
+            <any>resourceExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'subresourceExternalId',
+            <any>subresourceExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'loanExternalId',
+            <any>loanExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedOfficeId',
+            <any>submittedOfficeId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedGroupId',
+            <any>submittedGroupId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedClientId',
+            <any>submittedClientId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedLoanId',
+            <any>submittedLoanId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedSavingsAccountId',
+            <any>submittedSavingsAccountId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedProductId',
+            <any>submittedProductId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedTransactionId',
+            <any>submittedTransactionId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedResourceId',
+            <any>submittedResourceId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedResourceExternalId',
+            <any>submittedResourceExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedSubresourceId',
+            <any>submittedSubresourceId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedSubresourceExternalId',
+            <any>submittedSubresourceExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedLoanExternalId',
+            <any>submittedLoanExternalId,
             QueryParamStyle.Form,
             true,
         );

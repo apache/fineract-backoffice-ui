@@ -137,14 +137,32 @@ export class MakerCheckerOr4EyeFunctionalityService extends BaseService {
      * @param savingsAccountId 
      * @param dateFormat 
      * @param locale 
+     * @param productId 
+     * @param transactionId 
+     * @param subresourceId 
+     * @param resourceExternalId 
+     * @param subresourceExternalId 
+     * @param loanExternalId 
+     * @param submittedOfficeId 
+     * @param submittedGroupId 
+     * @param submittedClientId 
+     * @param submittedLoanId 
+     * @param submittedSavingsAccountId 
+     * @param submittedProductId 
+     * @param submittedTransactionId 
+     * @param submittedResourceId 
+     * @param submittedResourceExternalId 
+     * @param submittedSubresourceId 
+     * @param submittedSubresourceExternalId 
+     * @param submittedLoanExternalId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<AuditData>>;
-    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<AuditData>>>;
-    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<AuditData>>>;
-    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, productId?: number, transactionId?: string, subresourceId?: number, resourceExternalId?: string, subresourceExternalId?: string, loanExternalId?: string, submittedOfficeId?: number, submittedGroupId?: number, submittedClientId?: number, submittedLoanId?: number, submittedSavingsAccountId?: number, submittedProductId?: number, submittedTransactionId?: string, submittedResourceId?: number, submittedResourceExternalId?: string, submittedSubresourceId?: number, submittedSubresourceExternalId?: string, submittedLoanExternalId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<AuditData>>;
+    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, productId?: number, transactionId?: string, subresourceId?: number, resourceExternalId?: string, subresourceExternalId?: string, loanExternalId?: string, submittedOfficeId?: number, submittedGroupId?: number, submittedClientId?: number, submittedLoanId?: number, submittedSavingsAccountId?: number, submittedProductId?: number, submittedTransactionId?: string, submittedResourceId?: number, submittedResourceExternalId?: string, submittedSubresourceId?: number, submittedSubresourceExternalId?: string, submittedLoanExternalId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<AuditData>>>;
+    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, productId?: number, transactionId?: string, subresourceId?: number, resourceExternalId?: string, subresourceExternalId?: string, loanExternalId?: string, submittedOfficeId?: number, submittedGroupId?: number, submittedClientId?: number, submittedLoanId?: number, submittedSavingsAccountId?: number, submittedProductId?: number, submittedTransactionId?: string, submittedResourceId?: number, submittedResourceExternalId?: string, submittedSubresourceId?: number, submittedSubresourceExternalId?: string, submittedLoanExternalId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<AuditData>>>;
+    public getMakercheckers(actionName?: string, entityName?: string, resourceId?: number, makerId?: number, username?: string, makerDateTimeFrom?: string, makerDateTimeTo?: string, clientId?: number, loanid?: number, officeId?: number, groupId?: number, savingsAccountId?: number, dateFormat?: string, locale?: string, productId?: number, transactionId?: string, subresourceId?: number, resourceExternalId?: string, subresourceExternalId?: string, loanExternalId?: string, submittedOfficeId?: number, submittedGroupId?: number, submittedClientId?: number, submittedLoanId?: number, submittedSavingsAccountId?: number, submittedProductId?: number, submittedTransactionId?: string, submittedResourceId?: number, submittedResourceExternalId?: string, submittedSubresourceId?: number, submittedSubresourceExternalId?: string, submittedLoanExternalId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -269,6 +287,168 @@ export class MakerCheckerOr4EyeFunctionalityService extends BaseService {
             localVarQueryParameters,
             'locale',
             <any>locale,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'productId',
+            <any>productId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'transactionId',
+            <any>transactionId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'subresourceId',
+            <any>subresourceId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'resourceExternalId',
+            <any>resourceExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'subresourceExternalId',
+            <any>subresourceExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'loanExternalId',
+            <any>loanExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedOfficeId',
+            <any>submittedOfficeId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedGroupId',
+            <any>submittedGroupId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedClientId',
+            <any>submittedClientId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedLoanId',
+            <any>submittedLoanId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedSavingsAccountId',
+            <any>submittedSavingsAccountId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedProductId',
+            <any>submittedProductId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedTransactionId',
+            <any>submittedTransactionId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedResourceId',
+            <any>submittedResourceId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedResourceExternalId',
+            <any>submittedResourceExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedSubresourceId',
+            <any>submittedSubresourceId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedSubresourceExternalId',
+            <any>submittedSubresourceExternalId,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'submittedLoanExternalId',
+            <any>submittedLoanExternalId,
             QueryParamStyle.Form,
             true,
         );

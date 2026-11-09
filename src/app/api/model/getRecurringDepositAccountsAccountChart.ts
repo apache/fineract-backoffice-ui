@@ -29,7 +29,7 @@ import { GetRecurringDepositAccountsChartSlabs } from './getRecurringDepositAcco
 
 export interface GetRecurringDepositAccountsAccountChart { 
     accountId?: number;
-    accountNumber?: number;
+    accountNumber?: string;
     chartSlabs?: Set<GetRecurringDepositAccountsChartSlabs>;
     fromDate?: string;
     id?: number;
