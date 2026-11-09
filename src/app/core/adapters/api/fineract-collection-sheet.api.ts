@@ -31,6 +31,7 @@ import type {
   CollectionSheet,
   CollectionSheetApi,
   CollectionSheetClient,
+  CollectionSheetCollections,
   CollectionSheetGroup,
   CollectionSheetLoanDue,
   CollectionSheetRequest,
@@ -66,6 +67,8 @@ interface RawSavingsDue {
   readonly productName?: string;
   readonly currency?: { readonly code?: string };
   readonly dueAmount?: number;
+  /** A display label, not an enum — see {@link DEPOSIT_ACCOUNT_TYPE_IDS}. */
+  readonly depositAccountType?: string;
 }
 
 interface RawClient {
@@ -90,6 +93,24 @@ interface RawSheet {
 }
 
 const amount = (value: number | undefined): number => value ?? 0;
+
+/**
+ * The label the sheet reports for a savings account, mapped back to the `DepositAccountType` id
+ * the save command wants.
+ *
+ * The two do not match by accident. `CollectionSheetReadPlatformServiceImpl` selects
+ * `CASE WHEN sa.deposit_type_enum = 100 THEN 'Saving Deposit' ELSE (CASE WHEN ... = 300 THEN
+ * 'Recurring Deposit' ELSE 'Current Deposit' END) END`, so the sheet carries a phrase; the save
+ * reads `depositAccountType` as an integer. Nothing in the platform converts between them.
+ *
+ * 'Current Deposit' is deliberately absent: that branch of the CASE is the `ELSE`, so it covers
+ * both FIXED_DEPOSIT (200) and CURRENT_DEPOSIT (400) and names neither. A guess there would
+ * post a deposit against the wrong kind of account.
+ */
+const DEPOSIT_ACCOUNT_TYPE_IDS: Readonly<Record<string, number>> = {
+  'Saving Deposit': 100,
+  'Recurring Deposit': 300,
+};
 
 /** Maps one loan's dues. Exported for its own test. */
 export function mapLoanDue(raw: RawLoanDue): CollectionSheetLoanDue {
@@ -117,6 +138,7 @@ export function mapSavingsDue(raw: RawSavingsDue): CollectionSheetSavingsDue {
     productName: raw.productName ?? '',
     currencyCode: raw.currency?.code ?? '',
     dueAmount: amount(raw.dueAmount),
+    depositAccountTypeId: DEPOSIT_ACCOUNT_TYPE_IDS[raw.depositAccountType ?? ''] ?? null,
   };
 }
 
@@ -175,19 +197,59 @@ export class FineractCollectionSheetApi implements CollectionSheetApi {
 
   generate(request: CollectionSheetRequest): Observable<CollectionSheet | null> {
     return this.sheets
-      .postCollectionsheet(this.body(request), 'generate')
+      .postCollectionsheet(
+        {
+          officeId: request.officeId,
+          ...(request.staffId === undefined ? {} : { staffId: request.staffId }),
+          ...this.when(request),
+        },
+        'generate',
+      )
       .pipe(map((response) => mapCollectionSheet(response as RawSheet | null)));
   }
 
-  save(request: CollectionSheetRequest): Observable<void> {
-    return this.sheets.postCollectionsheet(this.body(request), 'save').pipe(map(() => undefined));
+  /**
+   * Posts the collections.
+   *
+   * The body carries no `officeId` or `staffId`, and that is not an omission: `command=save`
+   * routes to `saveIndividualCollectionSheet`, whose validator runs
+   * `checkForUnsupportedParameters` against `INDIVIDUAL_COLLECTIONSHEET_REQUEST_DATA_PARAMETERS`
+   * — a set holding `transactionDate`, `dateFormat`, `locale`, `note`,
+   * `actualDisbursementDate`, `bulkRepaymentTransactions`, `bulkDisbursementTransactions` and
+   * `bulkSavingsDueTransactions`, and neither filter. Sending them is a 400 rather than a save.
+   *
+   * A row the officer left at zero is left out. The platform tolerates it — its deserializer
+   * builds a command only above zero and skips the resulting hole — but a request that names an
+   * account it is not paying invites the reading that it was.
+   */
+  save(request: CollectionSheetRequest, collections: CollectionSheetCollections): Observable<void> {
+    const loans = collections.loans.filter((payment) => payment.amount > 0);
+    const savings = collections.savings.filter(
+      (payment) => payment.amount > 0 && payment.depositAccountTypeId !== null,
+    );
+
+    return this.sheets
+      .postCollectionsheet(
+        {
+          ...this.when(request),
+          bulkRepaymentTransactions: loans.map((payment) => ({
+            loanId: payment.loanId,
+            transactionAmount: payment.amount,
+          })),
+          bulkSavingsDueTransactions: savings.map((payment) => ({
+            savingsId: payment.savingsId,
+            transactionAmount: payment.amount,
+            depositAccountType: payment.depositAccountTypeId!,
+          })),
+        },
+        'save',
+      )
+      .pipe(map(() => undefined));
   }
 
-  /** The filters both commands take. How the date is parsed is the adapter's business. */
-  private body(request: CollectionSheetRequest) {
+  /** The date, in the format and locale the platform parses it with. */
+  private when(request: CollectionSheetRequest) {
     return {
-      officeId: request.officeId,
-      ...(request.staffId === undefined ? {} : { staffId: request.staffId }),
       transactionDate: formatDateToFineract(request.transactionDate),
       dateFormat: FINERACT_DATE_FORMAT,
       locale: FINERACT_LOCALE,

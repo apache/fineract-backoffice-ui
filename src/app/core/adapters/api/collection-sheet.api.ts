@@ -49,6 +49,14 @@ export interface CollectionSheetSavingsDue {
   readonly productName: string;
   readonly currencyCode: string;
   readonly dueAmount: number;
+  /**
+   * Fineract's `DepositAccountType` id for the account, or `null` when the sheet's label does
+   * not identify one.
+   *
+   * Needed because saving a deposit asks for the id while the sheet reports a display label —
+   * see {@link CollectionSheetSavingsPayment.depositAccountTypeId}.
+   */
+  readonly depositAccountTypeId: number | null;
 }
 
 /** One client's row on the sheet. */
@@ -87,6 +95,37 @@ export interface CollectionSheet {
   readonly totalDue: number;
 }
 
+/**
+ * One loan repayment the officer collected at the meeting.
+ *
+ * `amount` is what was handed over, which is not necessarily what was due: a client may pay
+ * part of an instalment, or more than one.
+ */
+export interface CollectionSheetLoanPayment {
+  readonly loanId: number;
+  readonly amount: number;
+}
+
+/** One mandatory savings deposit the officer collected at the meeting. */
+export interface CollectionSheetSavingsPayment {
+  readonly savingsId: number;
+  readonly amount: number;
+  /**
+   * Fineract's `DepositAccountType` id, which the deposit is posted against.
+   *
+   * `null` when the generated sheet did not say which kind of account this is. A deposit sent
+   * without it is accepted and then silently does nothing, so the adapter leaves such a row out
+   * rather than reporting a collection that was never recorded.
+   */
+  readonly depositAccountTypeId: number | null;
+}
+
+/** What the officer collected, as the save command posts it back. */
+export interface CollectionSheetCollections {
+  readonly loans: readonly CollectionSheetLoanPayment[];
+  readonly savings: readonly CollectionSheetSavingsPayment[];
+}
+
 /** What generating a sheet needs. */
 export interface CollectionSheetRequest {
   readonly officeId: number;
@@ -106,14 +145,17 @@ export interface CollectionSheetApi {
   generate(request: CollectionSheetRequest): Observable<CollectionSheet | null>;
 
   /**
-   * Submits the sheet with `command=save`.
+   * Submits what was collected, with `command=save`.
    *
-   * Carries the filters and nothing else, which is all this screen has to send: it does not yet
-   * collect what was actually paid at the meeting. Fineract's save command accepts
-   * `bulkRepaymentTransactions` and `bulkDisbursementTransactions`, and until the screen offers
-   * fields for them a save records no collections — the remaining half of #670.
+   * Takes the collections rather than deriving them from the sheet: what was due is the
+   * platform's answer, and what was paid is the officer's, and only the second one is posted.
+   *
+   * The request is here for the transaction date alone. `command=save` routes to Fineract's
+   * *individual* sheet save, whose validator calls `checkForUnsupportedParameters` against a set
+   * that holds neither `officeId` nor `staffId` — so a save that carried the generate filters
+   * was refused outright. Which filters produced the sheet is not part of posting its payments.
    */
-  save(request: CollectionSheetRequest): Observable<void>;
+  save(request: CollectionSheetRequest, collections: CollectionSheetCollections): Observable<void>;
 }
 
 /** Injection token for the active {@link CollectionSheetApi}. */

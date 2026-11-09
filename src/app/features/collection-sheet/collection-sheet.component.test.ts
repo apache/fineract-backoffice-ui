@@ -184,6 +184,148 @@ describe('CollectionSheetComponent', () => {
     });
   });
 
+  /**
+   * The half of #670 that outlived the table: the sheet showed what was due and the Save button
+   * posted the generate filters, so nothing anyone collected was ever recorded.
+   */
+  describe('the save request', () => {
+    /**
+     * A group with one loan and two savings accounts. The second savings account is a
+     * 'Current Deposit', which is the `ELSE` branch of the platform's own CASE expression and so
+     * names neither FIXED_DEPOSIT nor CURRENT_DEPOSIT — it cannot be posted.
+     */
+    const SHEET = {
+      dueDate: '2026-11-08',
+      groups: [
+        {
+          groupId: 7,
+          groupName: 'Mahila Mandal A',
+          clients: [
+            {
+              clientId: 21,
+              clientName: 'Asha Kumar',
+              loans: [{ loanId: 101, accountId: '000000101', totalDue: 950 }],
+              savings: [
+                {
+                  savingsId: 55,
+                  accountId: '000000055',
+                  dueAmount: 50,
+                  depositAccountType: 'Saving Deposit',
+                },
+                {
+                  savingsId: 56,
+                  accountId: '000000056',
+                  dueAmount: 60,
+                  depositAccountType: 'Current Deposit',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    function generateSheet(): void {
+      component.request.officeId = 1;
+      component.staffId = 4;
+      component.generate();
+      http.match((r) => r.url.includes('/collectionsheet'))[0].flush(SHEET);
+      fixture.detectChanges();
+    }
+
+    /** Types into the real input, so the template binding is under test and not just the handler. */
+    function collect(testId: string, value: string): void {
+      const input: HTMLElement = fixture.nativeElement.querySelector(
+        `[data-testid="${CSS.escape(testId)}"]`,
+      );
+      expect(input).not.toBeNull();
+      input.dispatchEvent(new CustomEvent('ionInput', { detail: { value } }));
+      fixture.detectChanges();
+    }
+
+    function save(): Record<string, unknown> {
+      component.save();
+      const requests = matching('/collectionsheet');
+      expect(requests).toHaveLength(1);
+      return requests[0].body as Record<string, unknown>;
+    }
+
+    it('seeds each box with what is due, which is what is usually paid', () => {
+      generateSheet();
+
+      expect(component.loanCollected()).toEqual({ 101: 950 });
+      // 56 is seeded at zero: it cannot be posted, and an amount in a total no save will carry
+      // is worse than an empty box.
+      expect(component.savingsCollected()).toEqual({ 55: 50, 56: 0 });
+      expect(component.collectedTotal()).toBe(1000);
+    });
+
+    it('posts what was collected rather than what was due', () => {
+      generateSheet();
+      collect('collect-loan-101', '400');
+
+      expect(save()['bulkRepaymentTransactions']).toEqual([
+        { loanId: 101, transactionAmount: 400 },
+      ]);
+    });
+
+    /**
+     * `command=save` routes to Fineract's `saveIndividualCollectionSheet`, whose validator calls
+     * `checkForUnsupportedParameters` against a set holding neither `officeId` nor `staffId`.
+     * The screen sent both, so every save was refused before it reached a loan.
+     */
+    it('carries neither filter, because the platform refuses them on a save', () => {
+      generateSheet();
+
+      const body = save();
+      expect(body).not.toHaveProperty('officeId');
+      expect(body).not.toHaveProperty('staffId');
+      expect(body).toMatchObject({ transactionDate: expect.any(String), locale: 'en' });
+    });
+
+    it('leaves out an account nobody paid', () => {
+      generateSheet();
+      collect('collect-loan-101', '0');
+      collect('collect-savings-55', '0');
+
+      const body = save();
+      expect(body['bulkRepaymentTransactions']).toEqual([]);
+      expect(body['bulkSavingsDueTransactions']).toEqual([]);
+    });
+
+    /**
+     * The sheet names the kind of account in words ('Saving Deposit'); the save posts it as a
+     * `DepositAccountType` id (100). A deposit sent without one is accepted and then silently
+     * does nothing — `updateBulkMandatorySavingsDuePayments` swallows the exception.
+     */
+    it('posts a savings deposit against the account type the platform means by its label', () => {
+      generateSheet();
+
+      expect(save()['bulkSavingsDueTransactions']).toEqual([
+        { savingsId: 55, transactionAmount: 50, depositAccountType: 100 },
+      ]);
+    });
+
+    it('offers no box for an account whose type the sheet does not identify', () => {
+      generateSheet();
+
+      expect(fixture.nativeElement.querySelector('[data-testid="collect-savings-56"]')).toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="collect-savings-blocked-56"]'),
+      ).not.toBeNull();
+    });
+
+    it('clears what was entered when the operator goes back to the filters', () => {
+      generateSheet();
+      collect('collect-loan-101', '400');
+
+      component.back();
+
+      expect(component.loanCollected()).toEqual({});
+      expect(component.collectedTotal()).toBe(0);
+    });
+  });
+
   afterEach(() => {
     // Every spec answers the requests it provokes. An unanswered one means the component asked
     // for something the spec did not expect, which is worth failing on.
