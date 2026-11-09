@@ -327,6 +327,13 @@ export class SavingsAccountTransactionFormComponent implements OnInit {
   accountId = 0;
   readonly command = signal('');
   readonly isSaving = signal(false);
+  /**
+   * The transaction being corrected, when the form was opened as `modify`.
+   *
+   * `null` for a new deposit or withdrawal. Carried as a query parameter so the dispatch route
+   * keeps one shape and one permission gate — see `onModifyTransaction` on the account view.
+   */
+  readonly modifiedTransactionId = signal<number | null>(null);
 
   transaction: PostSavingsAccountTransactionsRequest = {};
   /** Note bound separately as it might not be in the direct model */
@@ -338,8 +345,44 @@ export class SavingsAccountTransactionFormComponent implements OnInit {
     this.route.params.subscribe((params) => {
       this.accountId = +params['accountId'];
       this.command.set(params['command']);
+      const transactionId = Number(this.route.snapshot.queryParamMap.get('transactionId'));
+      this.modifiedTransactionId.set(
+        Number.isFinite(transactionId) && transactionId > 0 ? transactionId : null,
+      );
       this.loadTemplate();
+      const modified = this.modifiedTransactionId();
+      if (modified !== null) this.loadTransaction(modified);
     });
+  }
+
+  /**
+   * Fills the form with the transaction being corrected.
+   *
+   * All three of these are required by the platform on a modify — it runs the same validator as
+   * a fresh deposit, so `paymentTypeId` is `notNull` there too. Prefilling is therefore not a
+   * convenience: without the payment type the operator would have to re-pick a value they never
+   * chose to change.
+   */
+  private loadTransaction(transactionId: number): void {
+    this.transactionService
+      .getSavingsaccountsSavingsIdTransactionsTransactionId(this.accountId, transactionId)
+      .subscribe({
+        next: (transaction) => {
+          const raw = transaction as unknown as Record<string, unknown>;
+          this.transaction.transactionAmount = raw['amount'] as number;
+          const paymentDetail = raw['paymentDetailData'] as Record<string, unknown> | undefined;
+          const paymentType = paymentDetail?.['paymentType'] as Record<string, unknown> | undefined;
+          if (paymentType?.['id'] !== undefined) {
+            this.transaction.paymentTypeId = paymentType['id'] as number;
+          }
+          // `date` is a `LocalDate`, which this endpoint sends as `[y, m, d]`.
+          const date = raw['date'];
+          if (Array.isArray(date)) this.transactionDate.set(formatArrayDate(date as number[]));
+        },
+        error: () => {
+          this.notifications.error(this.i18n.translate('COMMON.ERROR'));
+        },
+      });
   }
 
   private loadTemplate(): void {
@@ -381,24 +424,35 @@ export class SavingsAccountTransactionFormComponent implements OnInit {
           }
         : { ...this.transaction, note: this.note };
 
-    this.transactionService
-      .postSavingsaccountsSavingsIdTransactions(
-        this.accountId,
-        payload as PostSavingsAccountTransactionsRequest,
-        this.command(),
-      )
-      .subscribe({
-        next: (response) => {
-          this.isSaving.set(false);
-          this.mutationOutcome.complete({
-            response,
-            successMessage: this.i18n.translate('SAVINGS.TRANSACTION_SUCCESS'),
-            recordRoute: (id) => ['/products/savings-accounts/view', id],
-            recordId: this.accountId,
-          });
-        },
-        error: () => this.isSaving.set(false),
-      });
+    // A correction is addressed to the transaction, a new entry to the account's collection.
+    // Same command word either way; different URL, and sending one to the other is a 404.
+    const modified = this.modifiedTransactionId();
+    const request =
+      modified === null
+        ? this.transactionService.postSavingsaccountsSavingsIdTransactions(
+            this.accountId,
+            payload as PostSavingsAccountTransactionsRequest,
+            this.command(),
+          )
+        : this.transactionService.postSavingsaccountsSavingsIdTransactionsTransactionId(
+            this.accountId,
+            modified,
+            payload as PostSavingsAccountTransactionsRequest,
+            this.command(),
+          );
+
+    request.subscribe({
+      next: (response) => {
+        this.isSaving.set(false);
+        this.mutationOutcome.complete({
+          response,
+          successMessage: this.i18n.translate('SAVINGS.TRANSACTION_SUCCESS'),
+          recordRoute: (id) => ['/products/savings-accounts/view', id],
+          recordId: this.accountId,
+        });
+      },
+      error: () => this.isSaving.set(false),
+    });
   }
 
   onCancel(): void {

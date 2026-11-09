@@ -619,10 +619,34 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
                             <ion-icon name="lock-open-outline"></ion-icon>
                           </ion-button>
                         } @else if (canUndo(tx)) {
+                          @if (canModify(tx)) {
+                            <ion-button
+                              fill="clear"
+                              size="small"
+                              appRequiresPermission="ADJUSTTRANSACTION_SAVINGSACCOUNT"
+                              [attr.data-testid]="'savings-tx-modify-' + tx.id"
+                              [attr.aria-label]="'ACTIONS.MODIFY_TRANSACTION' | appTranslate"
+                              (click)="onModifyTransaction(tx)"
+                            >
+                              <ion-icon name="create-outline"></ion-icon>
+                            </ion-button>
+                          }
                           <ion-button
                             fill="clear"
                             color="danger"
                             size="small"
+                            appRequiresPermission="REVERSETRANSACTION_SAVINGSACCOUNT"
+                            [attr.data-testid]="'savings-tx-reverse-' + tx.id"
+                            [attr.aria-label]="'ACTIONS.REVERSE_TRANSACTION' | appTranslate"
+                            (click)="onReverseTransaction(tx)"
+                          >
+                            <ion-icon name="swap-horizontal-outline"></ion-icon>
+                          </ion-button>
+                          <ion-button
+                            fill="clear"
+                            color="danger"
+                            size="small"
+                            appRequiresPermission="UNDOTRANSACTION_SAVINGSACCOUNT"
                             [attr.data-testid]="'savings-tx-undo-' + tx.id"
                             [attr.aria-label]="'ACTIONS.UNDO_TRANSACTION' | appTranslate"
                             (click)="onUndoTransaction(tx)"
@@ -1185,6 +1209,63 @@ export class SavingsAccountViewComponent implements OnInit, OnDestroy {
     const raw = transaction as unknown as Record<string, unknown>;
     const type = raw['transactionType'] as Record<string, unknown> | undefined;
     return !raw['reversed'] && !type?.['amountHold'] && !type?.['amountRelease'];
+  }
+
+  /**
+   * Whether this row can be corrected rather than only unwound.
+   *
+   * The three conditions are the ones `adjustSavingsTransaction` checks before it does anything,
+   * each of which it answers with an error rather than a no-op:
+   *
+   *  - only a deposit or a withdrawal (`isDeposit() || isWithdrawal()`), so an interest posting,
+   *    a fee or a hold is excluded — `TransactionUpdateNotAllowedException`;
+   *  - not already reversed, same exception;
+   *  - not part of an account transfer, which answers
+   *    `error.msg.saving.account.transfer.transaction.update.not.allowed`. The payload carries
+   *    the transfer as `transfer`, so this is readable here rather than only discoverable by
+   *    sending the request.
+   */
+  canModify(transaction: SavingsAccountTransactionData): boolean {
+    const raw = transaction as unknown as Record<string, unknown>;
+    const type = raw['transactionType'] as Record<string, unknown> | undefined;
+    const isDepositOrWithdrawal = Boolean(type?.['deposit']) || Boolean(type?.['withdrawal']);
+    return isDepositOrWithdrawal && !raw['reversed'] && !raw['transfer'];
+  }
+
+  /**
+   * Opens the transaction form to correct this row.
+   *
+   * The transaction id travels as a query parameter rather than a path segment so the existing
+   * dispatch route keeps its single shape, and with it the one permission gate that
+   * `savingsCommandPermission` resolves from `:command`. What is being corrected is a parameter
+   * of the action, not a page of its own.
+   */
+  onModifyTransaction(transaction: SavingsAccountTransactionData): void {
+    void this.router.navigate(
+      ['/products/savings-accounts', this.accountId, 'transactions', 'modify'],
+      { queryParams: { transactionId: transaction.id } },
+    );
+  }
+
+  /**
+   * Reverses a transaction, leaving a reversal entry behind.
+   *
+   * Distinct from undo: `reverse` posts a contra transaction through `handleReversal`, so the
+   * ledger shows both the original and its reversal. No note is collected, deliberately —
+   * `reverseTransaction` reads only `isBulk` from the body and never a note, so a note field
+   * here would gather text the platform discards.
+   */
+  onReverseTransaction(transaction: SavingsAccountTransactionData): void {
+    void this.dialogService
+      .confirm({
+        title: this.i18n.translate('ACTIONS.REVERSE_TRANSACTION'),
+        message: this.i18n.translate('ACTIONS.CONFIRM_REVERSE_TRANSACTION'),
+        destructive: true,
+      })
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.runTransactionCommand(Number(transaction.id), 'reverse');
+      });
   }
 
   /**

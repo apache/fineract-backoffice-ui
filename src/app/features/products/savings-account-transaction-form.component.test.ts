@@ -29,10 +29,18 @@ import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { NgForm } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
-function createComponent(command: string) {
+/**
+ * @param transactionId - the `transactionId` query parameter, for the `modify` command. The
+ *   route mock carries a `snapshot.queryParamMap` whether or not one is given: the component
+ *   reads it on every open, and a mock without it threw asynchronously out of the `params`
+ *   subscription — which left the suite reporting four errors beside thirteen passes.
+ */
+function createComponent(command: string, transactionId?: number) {
   const transactionSpy: SpyObj<SavingsAccountTransactionsService> = createSpyObj([
     'getSavingsaccountsSavingsIdTransactionsTemplate',
+    'getSavingsaccountsSavingsIdTransactionsTransactionId',
     'postSavingsaccountsSavingsIdTransactions',
+    'postSavingsaccountsSavingsIdTransactionsTransactionId',
   ]);
   const routerSpy: SpyObj<Router> = createSpyObj(['navigate']);
 
@@ -44,6 +52,25 @@ function createComponent(command: string) {
   transactionSpy.postSavingsaccountsSavingsIdTransactions.mockReturnValue(
     of({}) as unknown as ReturnType<
       SavingsAccountTransactionsService['postSavingsaccountsSavingsIdTransactions']
+    >,
+  );
+  transactionSpy.postSavingsaccountsSavingsIdTransactionsTransactionId.mockReturnValue(
+    of({}) as unknown as ReturnType<
+      SavingsAccountTransactionsService['postSavingsaccountsSavingsIdTransactionsTransactionId']
+    >,
+  );
+  // The payload for a deposit being corrected, as `SavingsAccountTransactionData` carries it:
+  // `amount` rather than `transactionAmount`, the payment type nested under
+  // `paymentDetailData`, and `date` as `[y, m, d]`.
+  transactionSpy.getSavingsaccountsSavingsIdTransactionsTransactionId.mockReturnValue(
+    of({
+      id: 11,
+      amount: 250,
+      date: [2026, 10, 15],
+      transactionType: { deposit: true },
+      paymentDetailData: { paymentType: { id: 3, name: 'Cheque' } },
+    }) as unknown as ReturnType<
+      SavingsAccountTransactionsService['getSavingsaccountsSavingsIdTransactionsTransactionId']
     >,
   );
 
@@ -58,7 +85,17 @@ function createComponent(command: string) {
       { provide: Router, useValue: routerSpy },
       {
         provide: ActivatedRoute,
-        useValue: { params: of({ accountId: '7', command }) },
+        useValue: {
+          params: of({ accountId: '7', command }),
+          snapshot: {
+            queryParamMap: {
+              get: (key: string) =>
+                key === 'transactionId' && transactionId !== undefined
+                  ? String(transactionId)
+                  : null,
+            },
+          },
+        },
       },
       provideNoopAnimations(),
     ],
@@ -123,6 +160,72 @@ describe('SavingsAccountTransactionFormComponent', () => {
 
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/products/savings-accounts/view', 7]);
     expect(transactionSpy.postSavingsaccountsSavingsIdTransactions).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Correcting a transaction (#782).
+ *
+ * `modify` is the same form and the same command word, posted to a different URL: a correction
+ * is addressed to the transaction, a new entry to the account's collection. The platform runs
+ * the same validator either way, so `paymentTypeId` is required on a correction too — which is
+ * why the existing payment type has to be prefilled rather than re-picked.
+ */
+describe('SavingsAccountTransactionFormComponent modify', () => {
+  it('reads the transaction being corrected', () => {
+    const { transactionSpy } = createComponent('modify', 11);
+
+    expect(
+      transactionSpy.getSavingsaccountsSavingsIdTransactionsTransactionId,
+    ).toHaveBeenCalledWith(7, 11);
+  });
+
+  it('prefills the amount, the date and the payment type the operator did not change', () => {
+    const { component } = createComponent('modify', 11);
+
+    expect(component.transaction.transactionAmount).toBe(250);
+    expect(component.transaction.paymentTypeId).toBe(3);
+    // `date` arrives as [y, m, d]; the picker binds a YYYY-MM-DD string.
+    expect(component.transactionDate()).toBe('2026-10-15');
+  });
+
+  /**
+   * The assertion that matters: a correction sent to the collection endpoint creates a second
+   * transaction instead of replacing the first, which is a silent double count.
+   */
+  it('posts to the transaction, not to the account collection', () => {
+    const { component, transactionSpy } = createComponent('modify', 11);
+    component.transaction.transactionAmount = 400;
+
+    component.onSubmit();
+
+    expect(transactionSpy.postSavingsaccountsSavingsIdTransactions).not.toHaveBeenCalled();
+    const [accountId, transactionId, body, command] =
+      transactionSpy.postSavingsaccountsSavingsIdTransactionsTransactionId.mock.lastCall!;
+    expect(accountId).toBe(7);
+    expect(transactionId).toBe(11);
+    expect(command).toBe('modify');
+    expect(body).toMatchObject({
+      transactionAmount: 400,
+      paymentTypeId: 3,
+      dateFormat: 'yyyy-MM-dd',
+      locale: 'en',
+    });
+  });
+
+  it('leaves a new deposit posting to the collection', () => {
+    const { component, transactionSpy } = createComponent('deposit');
+    component.transaction.transactionAmount = 100;
+
+    component.onSubmit();
+
+    expect(transactionSpy.postSavingsaccountsSavingsIdTransactions).toHaveBeenCalled();
+    expect(
+      transactionSpy.postSavingsaccountsSavingsIdTransactionsTransactionId,
+    ).not.toHaveBeenCalled();
+    expect(
+      transactionSpy.getSavingsaccountsSavingsIdTransactionsTransactionId,
+    ).not.toHaveBeenCalled();
   });
 });
 
