@@ -179,6 +179,7 @@ test.describe('Group membership and lifecycle', () => {
     const groupName = `E2E Group ${suffix}`;
 
     const clientName = await createClient(page, suffix);
+    const clientUrl = page.url();
     const staffName = await createStaff(page, suffix);
     await createGroup(page, groupName);
     await openGroup(page, groupName);
@@ -232,6 +233,12 @@ test.describe('Group membership and lifecycle', () => {
     await membersDialog.getByTestId('group-members-confirm').click();
 
     await expect(page.getByRole('cell', { name: clientName })).toBeVisible({ timeout: 20000 });
+
+    await page.goto(clientUrl);
+    const clientGroups = page.locator('app-client-view .detail-item').filter({ hasText: 'Groups' });
+    await expect(clientGroups).toContainText(groupName, { timeout: 20000 });
+
+    await openGroup(page, groupName);
     await page.getByTestId('group-tab-general').click();
     await expect(page.getByTestId('group-member-count')).toHaveText('1');
 
