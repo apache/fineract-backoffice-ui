@@ -753,20 +753,16 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       <tbody>
                         @for (row of accountsOverview(); track row.tab) {
                           <tr>
-                            <td>
-                              <!--
-                                Opens the tab rather than linking to it: the tabs are an
-                                ion-segment, not routes, so there is no URL to link to.
-                              -->
-                              <ion-button
-                                fill="clear"
-                                size="small"
-                                class="overview-link"
-                                [attr.data-testid]="'overview-open-' + row.tab"
-                                (click)="activeTab.set(row.tab)"
-                                >{{ row.labelKey | appTranslate }}</ion-button
-                              >
-                            </td>
+                            <!--
+                              A label, not a control. It was an ion-button that switched to the
+                              matching tab, which duplicated the tab sitting directly above it
+                              and gave the page a second button accessibly named "Loan Accounts"
+                              beside the New Account menu's "Loan Account" — two controls one
+                              word apart, which is ambiguous to read out and was ambiguous to
+                              address: it broke the New Account locator in
+                              functional-coverage.spec.ts.
+                            -->
+                            <th scope="row">{{ row.labelKey | appTranslate }}</th>
                             <td class="numeric" [attr.data-testid]="'overview-count-' + row.tab">
                               {{ row.active }} / {{ row.total }}
                             </td>
@@ -1224,12 +1220,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
         text-align: right;
         font-variant-numeric: tabular-nums;
       }
-      .overview-link {
-        --padding-start: 0;
-        --padding-end: 0;
-        margin: 0;
-        text-transform: none;
-        font-size: inherit;
+      .overview-table th[scope='row'] {
+        font-weight: 400;
       }
       .group-separator {
         color: var(--text-muted);
