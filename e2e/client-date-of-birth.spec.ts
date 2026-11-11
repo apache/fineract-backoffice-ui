@@ -19,7 +19,7 @@
 
 import { expect, test, type Page } from './fixtures';
 
-async function signIn(page: Page): Promise<void> {
+async function signIn(page: Page, businessDate?: readonly number[]): Promise<void> {
   await page.route('**/config.json*', async (route) => {
     await route.fulfill({
       status: 200,
@@ -43,13 +43,13 @@ async function signIn(page: Page): Promise<void> {
     });
   });
   await page.route('**/api/v1/configurations/name/enable-business-date**', (route) =>
-    route.fulfill({ json: { name: 'enable-business-date', enabled: false } }),
+    route.fulfill({ json: { name: 'enable-business-date', enabled: businessDate !== undefined } }),
   );
   await page.route('**/api/v1/businessdate**', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify([{ type: 'BUSINESS_DATE', date: [2026, 9, 5] }]),
+      body: JSON.stringify([{ type: 'BUSINESS_DATE', date: businessDate ?? [2026, 9, 5] }]),
     });
   });
 
@@ -212,6 +212,33 @@ for (const viewport of [
       );
       await page.screenshot({ path: testInfo.outputPath('selected-dob.png'), fullPage: true });
       expect(await submitSyntheticClient(page)).toHaveProperty('dateOfBirth', expectedDate);
+    });
+    test.describe('platform DOB bound', () => {
+      test.use({ timezoneId: 'Pacific/Kiritimati' });
+
+      test('blocks a browser-ahead future day and submits the valid business-date boundary', async ({
+        page,
+      }) => {
+        await page.clock.install({ time: new Date('2026-05-15T12:00:00Z') });
+        await signIn(page, [2026, 5, 15]);
+        await openPersonalDetails(page);
+        expect(await page.evaluate(() => new Date().getDate())).toBe(16);
+        await expect(
+          dobButton(page).getByRole('button', { name: 'Not set', exact: true }),
+        ).toBeVisible();
+        await dobButton(page).click();
+        const futureDay = dobPicker(page).getByRole('button', { name: /Saturday, May 16$/ });
+        await expect(futureDay).toBeDisabled();
+        const validDay = dobPicker(page).getByRole('button', {
+          name: 'Friday, May 15',
+          exact: true,
+        });
+        await expect(validDay).toBeEnabled();
+        await validDay.click();
+        await page.keyboard.press('Escape');
+        await expect(dobPicker(page)).not.toBeVisible();
+        expect(await submitSyntheticClient(page)).toHaveProperty('dateOfBirth', '15 May 2026');
+      });
     });
   });
 }

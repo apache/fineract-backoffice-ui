@@ -21,6 +21,7 @@ import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { BUSINESS_DATE_API } from '../../core/adapters';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClientFormComponent } from './client-form.component';
+import { PlatformDateService } from '../../core/services/platform-date.service';
 import { ClientService, OfficesService } from '../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService } from '../../core/services/dialog.service';
@@ -28,7 +29,11 @@ import { of, Observable, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideIonicTesting } from '../../testing/ionic-testing';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
-import { FakeOverlayAdapter, provideFakeAdapters } from '../../testing/adapters';
+import {
+  FakeBusinessDateApi,
+  FakeOverlayAdapter,
+  provideFakeAdapters,
+} from '../../testing/adapters';
 
 describe('ClientFormComponent', () => {
   const HEAD_OFFICE = 'Head Office';
@@ -300,6 +305,40 @@ describe('ClientFormComponent', () => {
       fixture.detectChanges();
       const hint = fixture.nativeElement.querySelector('[data-testid="client-form-step-hint"]');
       expect(hint).toBeTruthy();
+    });
+  });
+
+  describe('date of birth upper bound', () => {
+    const picker = () =>
+      fixture.nativeElement.querySelector('[data-testid="dateOfBirth-picker"]') as HTMLElement & {
+        max?: string;
+      };
+
+    it('uses the governing business date and keeps an unset birthday absent', async () => {
+      (TestBed.inject(BUSINESS_DATE_API) as FakeBusinessDateApi).businessDate = '2026-05-15';
+      fixture = TestBed.createComponent(ClientFormComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(picker().max).toBe('2026-05-15');
+      expect(component.dateOfBirth()).toBeNull();
+    });
+
+    it('uses the platform clock without a business date and preserves a chosen birthday', async () => {
+      const platformDate = TestBed.inject(PlatformDateService);
+      platformDate.recordServerTime(new Date('2026-05-15T12:00:00Z'));
+      fixture = TestBed.createComponent(ClientFormComponent);
+      component = fixture.componentInstance;
+      component.dateOfBirth.set('1990-01-05');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(picker().max).toBe('2026-05-15');
+      platformDate.recordServerTime(new Date('2026-05-16T12:00:00Z'));
+      fixture.detectChanges();
+      expect(picker().max).toBe('2026-05-16');
+      expect(component.dateOfBirth()).toBe('1990-01-05');
     });
   });
 
