@@ -18,11 +18,61 @@
  */
 
 import { ActivatedRouteSnapshot } from '@angular/router';
+import type { TranslateParams } from '../core/adapters/i18n/i18n.adapter';
 
-/** One link in the trail: `labelKey` is a translation key, `url` where it navigates. */
+/** Record names are literal text; navigation labels are translated when rendered. */
+export type BreadcrumbLabel =
+  { kind: 'translation'; key: string; params?: TranslateParams } | { kind: 'text'; text: string };
+
 export interface Breadcrumb {
-  labelKey: string;
-  url: string;
+  label: BreadcrumbLabel;
+  /** Ancestors have URLs; the current page does not need a link. */
+  url?: string;
+}
+
+export interface AccountBreadcrumbData {
+  owner: {
+    type: 'client' | 'group';
+    id: number;
+    name: string;
+  };
+  accountType: 'loan' | 'savings' | 'fixed-deposit' | 'recurring-deposit' | 'share';
+  accountNo: string;
+}
+
+const ACCOUNT_LABEL_KEYS: Record<AccountBreadcrumbData['accountType'], string> = {
+  loan: 'BREADCRUMBS.LOAN_ACCOUNT',
+  savings: 'BREADCRUMBS.SAVINGS_ACCOUNT',
+  'fixed-deposit': 'BREADCRUMBS.FIXED_DEPOSIT',
+  'recurring-deposit': 'BREADCRUMBS.RECURRING_DEPOSIT',
+  share: 'BREADCRUMBS.SHARE_ACCOUNT',
+};
+
+/** Builds an owner-based trail independently of the account's route or navigation history. */
+export function buildAccountBreadcrumbs(data: AccountBreadcrumbData): Breadcrumb[] {
+  const { owner, accountType, accountNo } = data;
+  const ownerPath = owner.type === 'client' ? '/clients' : '/groups';
+
+  return [
+    {
+      label: {
+        kind: 'translation',
+        key: owner.type === 'client' ? 'nav.clients' : 'nav.groups',
+      },
+      url: ownerPath,
+    },
+    {
+      label: { kind: 'text', text: owner.name },
+      url: `${ownerPath}/view/${owner.id}`,
+    },
+    {
+      label: {
+        kind: 'translation',
+        key: ACCOUNT_LABEL_KEYS[accountType],
+        params: { accountNo },
+      },
+    },
+  ];
 }
 
 /**
@@ -45,8 +95,12 @@ export function buildBreadcrumbs(root: ActivatedRouteSnapshot): Breadcrumb[] {
     if (segment) url += `/${segment}`;
 
     const title = route.routeConfig?.title;
-    if (typeof title === 'string' && crumbs.at(-1)?.labelKey !== title) {
-      crumbs.push({ labelKey: title, url });
+    const previousLabel = crumbs.at(-1)?.label;
+    if (
+      typeof title === 'string' &&
+      !(previousLabel?.kind === 'translation' && previousLabel.key === title)
+    ) {
+      crumbs.push({ label: { kind: 'translation', key: title }, url });
     }
     route = route.firstChild;
   }

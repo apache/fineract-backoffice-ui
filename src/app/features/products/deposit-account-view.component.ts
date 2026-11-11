@@ -19,6 +19,7 @@
 
 import {
   Component,
+  DestroyRef,
   OnInit,
   OnDestroy,
   computed,
@@ -28,7 +29,8 @@ import {
 } from '@angular/core';
 import { PlatformDateService } from '../../core/services/platform-date.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { from } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, Subject, catchError, finalize, from, merge, of, switchMap, tap } from 'rxjs';
 import { DecimalPipe, NgClass } from '@angular/common';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { LoadErrorComponent } from '../../shared';
@@ -46,6 +48,8 @@ import type {
 } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
 import { DialogService } from '../../core/services/dialog.service';
+import { BreadcrumbService } from '../../core/services/breadcrumb.service';
+import { buildAccountBreadcrumbs } from '../../layout/breadcrumb';
 import {
   DepositClosureDialogComponent,
   DepositClosureDialogData,
@@ -763,6 +767,9 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
   private readonly dialogService = inject(DialogService);
   private readonly notifications = inject(NotificationService);
   private readonly i18n = inject(I18N);
+  private readonly breadcrumbService = inject(BreadcrumbService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly reloadAccount$ = new Subject<void>();
 
   accountId = 0;
   isRD = false;
@@ -808,52 +815,84 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
   readonly chargeColumns = ['name', 'amount', 'outstanding'];
 
   ngOnInit(): void {
-    this.accountId = Number(this.route.snapshot.paramMap.get('id'));
     this.isRD = this.router.url.includes('recurring');
-    this.loadData();
+    this.observeAccountReloads();
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const id = params.get('id');
+      if (id === null) return;
+
+      this.accountId = Number(id);
+      this.transactions.set([]);
+      this.chargeOptions.set([]);
+      this.loadData();
+    });
   }
 
   ngOnDestroy(): void {
     for (const popover of this.popovers()) {
       void popover.dismiss().catch(() => false);
     }
+    this.breadcrumbService.clearOverride();
   }
 
-  /**
-   * Reads the account.
-   *
-   * This used to reach through the service as `service['retrieveOne14']` — a name that exists on
-   * neither generated service, so the lookup produced `undefined` and calling it threw
-   * `TypeError: call is not a function` out of `ngOnInit`. The template is wrapped in
-   * `@if (account())`, so the page rendered as nothing at all: every fixed and recurring deposit
-   * account opened to a blank screen.
-   *
-   * The double cast through `Record<string, unknown>` is what let that compile. Calling the
-   * generated methods by name is the point — ADR-0001 stabilises those names precisely so a
-   * rename becomes a compile error rather than a blank page.
-   */
   loadData(): void {
-    this.isLoading.set(true);
+    this.reloadAccount$.next();
+  }
 
-    this.deposits.get(this.depositType, this.accountId).subscribe({
-      next: (account) => {
-        this.deposit.set(account);
-        this.charges.set([...account.charges]);
-        this.chartRows.set(account.chartRows);
-        this.loadError.set(null);
-        this.isLoading.set(false);
-        this.loadTransactions();
-        this.loadChargeOptions();
-      },
-      // The interceptor's toast still fires here, unlike on the savings view: this read goes
-      // through `DEPOSIT_ACCOUNT_API`, which takes no per-request context, and suppressing it
-      // inside the adapter would also silence the deposit *form*, which reports nothing of its
-      // own. A toast beside the panel is a duplicate report; a silent form is a blank screen.
-      error: (error: HttpErrorResponse) => {
-        this.loadError.set(error.status === 404 || error.status === 403 ? 'not-found' : 'failed');
-        this.isLoading.set(false);
-      },
-    });
+  private observeAccountReloads(): void {
+    this.reloadAccount$
+      .pipe(
+        switchMap(() => {
+          this.breadcrumbService.setOverride([]);
+          const type = this.depositType;
+          const accountId = this.accountId;
+          this.isLoading.set(true);
+          this.loadError.set(null);
+
+          return this.deposits.get(type, accountId).pipe(
+            // The deposit adapter also serves the form, which relies on the interceptor's toast.
+            catchError((error: HttpErrorResponse) => {
+              this.loadError.set(
+                error.status === 404 || error.status === 403 ? 'not-found' : 'failed',
+              );
+              return EMPTY;
+            }),
+            finalize(() => this.isLoading.set(false)),
+            switchMap((account) => {
+              this.applyAccountData(account, type);
+              return merge(
+                this.loadTransactions(type, accountId),
+                this.loadChargeOptions(type, account),
+              );
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
+  }
+
+  private applyAccountData(account: DepositAccount, type: DepositType): void {
+    this.deposit.set(account);
+    this.charges.set([...account.charges]);
+    this.chartRows.set(account.chartRows);
+
+    const owner =
+      account.clientId != null && account.clientName.trim()
+        ? { type: 'client' as const, id: account.clientId, name: account.clientName }
+        : account.groupId != null && account.groupName.trim()
+          ? { type: 'group' as const, id: account.groupId, name: account.groupName }
+          : null;
+
+    if (owner && account.accountNo.trim()) {
+      this.breadcrumbService.setOverride(
+        buildAccountBreadcrumbs({
+          owner,
+          accountType: type === 'recurring' ? 'recurring-deposit' : 'fixed-deposit',
+          accountNo: account.accountNo,
+        }),
+      );
+    }
   }
 
   /**
@@ -863,16 +902,20 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
    * `chargeOptions` is product-specific — offering a charge the product does not allow would be
    * a dialog whose submit can only be refused.
    */
-  private loadChargeOptions(): void {
-    const clientId = this.deposit()?.clientId;
-    const productId = this.deposit()?.productId;
-    if (clientId === null || clientId === undefined) return;
-    if (productId === null || productId === undefined) return;
+  private loadChargeOptions(type: DepositType, account: DepositAccount) {
+    const { clientId, productId } = account;
+    if (clientId == null || productId == null) {
+      this.chargeOptions.set([]);
+      return EMPTY;
+    }
 
-    this.deposits.template(this.depositType, clientId, productId).subscribe({
-      next: (template) => this.chargeOptions.set([...template.chargeOptions]),
-      error: () => this.chargeOptions.set([]),
-    });
+    return this.deposits.template(type, clientId, productId).pipe(
+      tap((template) => this.chargeOptions.set([...template.chargeOptions])),
+      catchError(() => {
+        this.chargeOptions.set([]);
+        return EMPTY;
+      }),
+    );
   }
 
   /**
@@ -945,11 +988,11 @@ export class DepositAccountViewComponent implements OnInit, OnDestroy {
    * A failure here leaves the rest of the screen intact: the account loaded, and a missing
    * transaction list is not a reason to blank the lifecycle actions.
    */
-  private loadTransactions(): void {
-    this.deposits.transactions(this.depositType, this.accountId).subscribe({
-      next: (transactions) => this.transactions.set(transactions),
-      error: () => this.transactions.set([]),
-    });
+  private loadTransactions(type: DepositType, accountId: number) {
+    return this.deposits.transactions(type, accountId).pipe(
+      catchError(() => of([])),
+      tap((transactions) => this.transactions.set(transactions)),
+    );
   }
 
   /**

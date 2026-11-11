@@ -18,7 +18,9 @@
  */
 
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { buildBreadcrumbs } from './breadcrumb';
+import { describe, expect, it } from 'vitest';
+import { buildAccountBreadcrumbs, buildBreadcrumbs } from './breadcrumb';
+import type { AccountBreadcrumbData } from './breadcrumb';
 
 /** Builds a minimal linked chain of snapshot-shaped nodes, root first. */
 function chain(nodes: { segment?: string; title?: string }[]): ActivatedRouteSnapshot {
@@ -49,8 +51,8 @@ describe('buildBreadcrumbs', () => {
     ]);
 
     expect(buildBreadcrumbs(root)).toEqual([
-      { labelKey: 'nav.clients', url: '/clients' },
-      { labelKey: 'CLIENTS.DETAILS', url: '/clients/view/5' },
+      { label: { kind: 'translation', key: 'nav.clients' }, url: '/clients' },
+      { label: { kind: 'translation', key: 'CLIENTS.DETAILS' }, url: '/clients/view/5' },
     ]);
   });
 
@@ -61,7 +63,9 @@ describe('buildBreadcrumbs', () => {
       { segment: '', title: 'nav.clients' },
     ]);
 
-    expect(buildBreadcrumbs(root)).toEqual([{ labelKey: 'nav.clients', url: '/clients' }]);
+    expect(buildBreadcrumbs(root)).toEqual([
+      { label: { kind: 'translation', key: 'nav.clients' }, url: '/clients' },
+    ]);
   });
 
   it('keeps two non-adjacent crumbs that happen to share a title', () => {
@@ -72,9 +76,55 @@ describe('buildBreadcrumbs', () => {
     ]);
 
     expect(buildBreadcrumbs(root)).toEqual([
-      { labelKey: 'SAME', url: '/a' },
-      { labelKey: 'OTHER', url: '/a/b' },
-      { labelKey: 'SAME', url: '/a/b/c' },
+      { label: { kind: 'translation', key: 'SAME' }, url: '/a' },
+      { label: { kind: 'translation', key: 'OTHER' }, url: '/a/b' },
+      { label: { kind: 'translation', key: 'SAME' }, url: '/a/b/c' },
     ]);
+  });
+});
+
+describe('buildAccountBreadcrumbs', () => {
+  it.each(['client', 'group'] as const)(
+    'builds links for a %s owner and preserves the literal name',
+    (type) => {
+      const path = type === 'client' ? '/clients' : '/groups';
+      expect(
+        buildAccountBreadcrumbs({
+          owner: { type, id: 42, name: 'Navigation Test' },
+          accountType: 'loan',
+          accountNo: '000000001',
+        }),
+      ).toEqual([
+        {
+          label: { kind: 'translation', key: type === 'client' ? 'nav.clients' : 'nav.groups' },
+          url: path,
+        },
+        { label: { kind: 'text', text: 'Navigation Test' }, url: `${path}/view/42` },
+        {
+          label: {
+            kind: 'translation',
+            key: 'BREADCRUMBS.LOAN_ACCOUNT',
+            params: { accountNo: '000000001' },
+          },
+        },
+      ]);
+    },
+  );
+
+  it.each<[AccountBreadcrumbData['accountType'], string]>([
+    ['loan', 'BREADCRUMBS.LOAN_ACCOUNT'],
+    ['savings', 'BREADCRUMBS.SAVINGS_ACCOUNT'],
+    ['fixed-deposit', 'BREADCRUMBS.FIXED_DEPOSIT'],
+    ['recurring-deposit', 'BREADCRUMBS.RECURRING_DEPOSIT'],
+    ['share', 'BREADCRUMBS.SHARE_ACCOUNT'],
+  ])('uses the translated account label for %s', (accountType, key) => {
+    const crumbs = buildAccountBreadcrumbs({
+      owner: { type: 'client', id: 42, name: 'Navigation Test' },
+      accountType,
+      accountNo: '000000001',
+    });
+    expect(crumbs.at(-1)).toEqual({
+      label: { kind: 'translation', key, params: { accountNo: '000000001' } },
+    });
   });
 });

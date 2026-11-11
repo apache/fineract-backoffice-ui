@@ -1,4 +1,11 @@
 {
+  "BREADCRUMBS": {
+    "LOAN_ACCOUNT": "ऋण खाता {{accountNo}}",
+    "SAVINGS_ACCOUNT": "बचत खाता {{accountNo}}",
+    "FIXED_DEPOSIT": "सावधि जमा {{accountNo}}",
+    "RECURRING_DEPOSIT": "आवर्ती जमा {{accountNo}}",
+    "SHARE_ACCOUNT": "शेयर खाता {{accountNo}}"
+  },
   "license": "Apache-2.0",
   "app": {
     "title": "फिनरैक्ट बैकोफिस यूआई",

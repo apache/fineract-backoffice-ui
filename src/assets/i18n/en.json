@@ -1,4 +1,11 @@
 {
+  "BREADCRUMBS": {
+    "LOAN_ACCOUNT": "Loan Account {{accountNo}}",
+    "SAVINGS_ACCOUNT": "Savings Account {{accountNo}}",
+    "FIXED_DEPOSIT": "Fixed Deposit {{accountNo}}",
+    "RECURRING_DEPOSIT": "Recurring Deposit {{accountNo}}",
+    "SHARE_ACCOUNT": "Share Account {{accountNo}}"
+  },
   "license": "Apache-2.0",
   "app": {
     "title": "Fineract Backoffice UI",

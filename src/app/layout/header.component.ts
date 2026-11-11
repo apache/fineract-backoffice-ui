@@ -747,16 +747,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
    *
    * Mirrors BreadcrumbComponent, which solves the same problem the same way.
    */
-  protected readonly pageTitleKey = toSignal(
+  private readonly pageTitleBreadcrumb = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
       startWith(null),
-      map(() => buildBreadcrumbs(this.router.routerState.snapshot.root).at(-1)?.labelKey ?? ''),
+      map(() => buildBreadcrumbs(this.router.routerState.snapshot.root).at(-1)),
     ),
     {
-      initialValue: buildBreadcrumbs(this.router.routerState.snapshot.root).at(-1)?.labelKey ?? '',
+      initialValue: buildBreadcrumbs(this.router.routerState.snapshot.root).at(-1),
     },
   );
+  protected readonly pageTitleKey = computed(() => {
+    const label = this.pageTitleBreadcrumb()?.label;
+    return label?.kind === 'translation' ? label.key : '';
+  });
   private readonly themeIsDark = this.themeService.isDarkMode;
 
   /**

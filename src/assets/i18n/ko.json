@@ -1,4 +1,11 @@
 {
+  "BREADCRUMBS": {
+    "LOAN_ACCOUNT": "대출 계좌 {{accountNo}}",
+    "SAVINGS_ACCOUNT": "예금 계좌 {{accountNo}}",
+    "FIXED_DEPOSIT": "정기 예금 {{accountNo}}",
+    "RECURRING_DEPOSIT": "적금 {{accountNo}}",
+    "SHARE_ACCOUNT": "출자금 계좌 {{accountNo}}"
+  },
   "LOANS": {
     "REPAYMENT_START_DATE_NOT_SET": "설정되지 않음",
     "CLEAR_REPAYMENT_START_DATE": "상환 시작일 지우기"

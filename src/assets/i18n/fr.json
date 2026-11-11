@@ -1,4 +1,11 @@
 {
+  "BREADCRUMBS": {
+    "LOAN_ACCOUNT": "Compte de prêt {{accountNo}}",
+    "SAVINGS_ACCOUNT": "Compte d'épargne {{accountNo}}",
+    "FIXED_DEPOSIT": "Dépôt à terme {{accountNo}}",
+    "RECURRING_DEPOSIT": "Dépôt périodique {{accountNo}}",
+    "SHARE_ACCOUNT": "Compte de parts sociales {{accountNo}}"
+  },
   "license": "Apache-2.0",
   "app": {
     "title": "Fineract Backoffice UI",
