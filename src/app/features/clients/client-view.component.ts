@@ -639,7 +639,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       <span class="label">{{ 'CLIENTS.GROUPS' | appTranslate }}</span>
                       <span class="value">
                         @for (group of client()?.groups ?? []; track group.id) {
-                          <span style="display: block">{{group.name}}</span>
+                          <span style="display: block">{{ group.name }}</span>
                         } @empty {
                           <span>{{ 'CLIENTS.NO_GROUPS' | appTranslate }}</span>
                         }

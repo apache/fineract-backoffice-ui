@@ -177,51 +177,47 @@ describe('ClientViewComponent', () => {
   });
 
   it('shows all groups assigned to a client', () => {
-      const response = {
-          id: 123,
-          displayName: 'Anne',
-          groups: [
-              { id: 1, name: 'Oakwood Group' },
-              { id: 2, name: 'Riverside Group' }
-          ]
-      };
+    const response = {
+      id: 123,
+      displayName: 'Anne',
+      groups: [
+        { id: 1, name: 'Oakwood Group' },
+        { id: 2, name: 'Riverside Group' },
+      ],
+    };
 
-      component.client.set(response);
-      fixture.detectChanges();
+    component.client.set(response);
+    fixture.detectChanges();
 
-      const groupsField = Array.from(
-      fixture.nativeElement.querySelectorAll('.detail-item') as NodeListOf<Element>
-        ).find((element) =>
-        element.querySelector('.label')?.textContent?.includes('CLIENTS.GROUPS')
-        );
+    const groupsField = Array.from(
+      fixture.nativeElement.querySelectorAll('.detail-item') as NodeListOf<Element>,
+    ).find((element) => element.querySelector('.label')?.textContent?.includes('CLIENTS.GROUPS'));
 
-      const groupsText = groupsField?.querySelector('.value')?.textContent?.trim();
+    const groupsText = groupsField?.querySelector('.value')?.textContent?.trim();
 
-      expect(groupsField).toBeDefined();
-      expect(groupsText).toContain('Oakwood Group');
-      expect(groupsText).toContain('Riverside Group');
+    expect(groupsField).toBeDefined();
+    expect(groupsText).toContain('Oakwood Group');
+    expect(groupsText).toContain('Riverside Group');
   });
 
   it('shows a placeholder when the client has no groups', () => {
-      const response = {
-          id: 123,
-          displayName: 'Anne',
-          groups: []
-      };
+    const response = {
+      id: 123,
+      displayName: 'Anne',
+      groups: [],
+    };
 
-      component.client.set(response);
-      fixture.detectChanges();
+    component.client.set(response);
+    fixture.detectChanges();
 
-      const groupsField = Array.from(
-      fixture.nativeElement.querySelectorAll('.detail-item') as NodeListOf<Element>
-        ).find((element) =>
-        element.querySelector('.label')?.textContent?.includes('CLIENTS.GROUPS')
-        );
+    const groupsField = Array.from(
+      fixture.nativeElement.querySelectorAll('.detail-item') as NodeListOf<Element>,
+    ).find((element) => element.querySelector('.label')?.textContent?.includes('CLIENTS.GROUPS'));
 
-      const groupsText = groupsField?.querySelector('.value')?.textContent?.trim();
+    const groupsText = groupsField?.querySelector('.value')?.textContent?.trim();
 
-      expect(groupsField).toBeDefined();
-      expect(groupsText).toContain('CLIENTS.NO_GROUPS');
+    expect(groupsField).toBeDefined();
+    expect(groupsText).toContain('CLIENTS.NO_GROUPS');
   });
 
   describe('saved contact and identification fields', () => {
