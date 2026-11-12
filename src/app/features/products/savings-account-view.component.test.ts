@@ -24,8 +24,8 @@ import { SavingsAccountViewComponent } from './savings-account-view.component';
 import { SavingsAccountService } from '../../api';
 import { AuthService } from '../../core/services/auth.service';
 import { DialogService } from '../../core/services/dialog.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { ActivatedRoute, ParamMap, Router, convertToParamMap } from '@angular/router';
+import { BehaviorSubject, Observable, Subject, finalize, of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
@@ -33,6 +33,9 @@ import { provideIonicTesting } from '../../testing/ionic-testing';
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { provideFakeAdapters } from '../../testing/adapters';
 import { expectLookedUp } from '../../testing/translated-text';
+import { BreadcrumbService } from '../../core/services/breadcrumb.service';
+
+type AccountResponse = NonNullable<ReturnType<SavingsAccountViewComponent['account']>>;
 
 describe('SavingsAccountViewComponent', () => {
   let component: SavingsAccountViewComponent;
@@ -41,8 +44,10 @@ describe('SavingsAccountViewComponent', () => {
   let authServiceSpy: SpyObj<AuthService>;
   let routerSpy: SpyObj<Router>;
   let dialogServiceSpy: SpyObj<DialogService>;
+  let routeParams: BehaviorSubject<ParamMap>;
 
   beforeEach(async () => {
+    routeParams = new BehaviorSubject(convertToParamMap({ id: '789' }));
     savingsServiceSpy = createSpyObj<SavingsAccountService>([
       'getSavingsaccountsAccountId',
       'postSavingsaccountsAccountId',
@@ -74,9 +79,7 @@ describe('SavingsAccountViewComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            paramMap: of({
-              get: (key: string) => (key === 'id' ? '789' : null),
-            }),
+            paramMap: routeParams,
           },
         },
       ],
@@ -125,6 +128,150 @@ describe('SavingsAccountViewComponent', () => {
     expect(component.account()?.savingsProductName).toBe('Regular Savings');
     expect(component.loadError()).toBeNull();
     expect(component.isLoading()).toBe(false);
+  });
+
+  describe('breadcrumbs and account reloads', () => {
+    function mockResponse(response: Observable<AccountResponse>): void {
+      savingsServiceSpy.getSavingsaccountsAccountId.mockReturnValue(
+        response as unknown as ReturnType<SavingsAccountService['getSavingsaccountsAccountId']>,
+      );
+    }
+
+    it.each<{
+      owner: Partial<AccountResponse>;
+      listKey: string;
+      path: string;
+      name: string;
+    }>([
+      {
+        owner: { clientId: 42, clientName: 'Jane Smith' },
+        listKey: 'nav.clients',
+        path: '/clients/view/42',
+        name: 'Jane Smith',
+      },
+      {
+        owner: { groupId: 7, groupName: 'Savings Group' },
+        listKey: 'nav.groups',
+        path: '/groups/view/7',
+        name: 'Savings Group',
+      },
+      {
+        owner: { clientId: 42, clientName: 'Jane Smith', groupId: 7, groupName: 'Savings Group' },
+        listKey: 'nav.clients',
+        path: '/clients/view/42',
+        name: 'Jane Smith',
+      },
+    ])('builds the owner trail for $path', ({ owner, listKey, path, name }) => {
+      mockResponse(of({ ...owner, accountNo: 'SA000789' }));
+      component.loadAccountData();
+
+      expect(TestBed.inject(BreadcrumbService).override()).toEqual([
+        {
+          label: { kind: 'translation', key: listKey },
+          url: path.startsWith('/clients') ? '/clients' : '/groups',
+        },
+        { label: { kind: 'text', text: name }, url: path },
+        {
+          label: {
+            kind: 'translation',
+            key: 'BREADCRUMBS.SAVINGS_ACCOUNT',
+            params: { accountNo: 'SA000789' },
+          },
+        },
+      ]);
+    });
+
+    it.each<AccountResponse>([
+      { accountNo: 'SA000789' },
+      { clientId: 42, clientName: ' ', accountNo: 'SA000789' },
+      { groupId: 7, groupName: ' ', accountNo: 'SA000789' },
+      { clientId: 42, clientName: 'Jane Smith', accountNo: ' ' },
+    ])('clears the previous trail when owner or account data is incomplete: %j', (data) => {
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      expect(breadcrumbs.override()).toHaveLength(3);
+      mockResponse(of(data));
+      component.loadAccountData();
+      expect(breadcrumbs.override()).toEqual([]);
+    });
+
+    it('cancels a pending reload and keeps the spinner active for the replacement', () => {
+      const first = new Subject<AccountResponse>();
+      const second = new Subject<AccountResponse>();
+      const cancelled = vi.fn();
+      mockResponse(first.pipe(finalize(cancelled)));
+      component.loadAccountData();
+      expect(component.isLoading()).toBe(true);
+      mockResponse(second);
+      component.loadAccountData();
+      expect(cancelled).toHaveBeenCalledOnce();
+      expect(component.isLoading()).toBe(true);
+
+      second.next({ clientId: 43, clientName: 'New owner', accountNo: 'NEW' });
+      second.complete();
+      first.next({ clientId: 42, clientName: 'Stale owner', accountNo: 'OLD' });
+      expect(component.account()?.clientName).toBe('New owner');
+      expect(component.isLoading()).toBe(false);
+      expect(TestBed.inject(BreadcrumbService).override()?.[1].label).toEqual({
+        kind: 'text',
+        text: 'New owner',
+      });
+    });
+
+    it('clears the previous trail and cancels the request when the account ID changes', () => {
+      const first = new Subject<AccountResponse>();
+      const second = new Subject<AccountResponse>();
+      const cancelled = vi.fn();
+      mockResponse(first.pipe(finalize(cancelled)));
+      component.loadAccountData();
+      mockResponse(second);
+      routeParams.next(convertToParamMap({ id: '790' }));
+
+      expect(cancelled).toHaveBeenCalledOnce();
+      expect(component.accountId).toBe(790);
+      expect(savingsServiceSpy.getSavingsaccountsAccountId).toHaveBeenLastCalledWith(
+        790,
+        false,
+        undefined,
+        'all',
+        'body',
+        false,
+        expect.objectContaining({ context: expect.anything() }),
+      );
+      expect(TestBed.inject(BreadcrumbService).override()).toEqual([]);
+      expect(component.isLoading()).toBe(true);
+    });
+
+    it('can reload successfully after an error and clears the old breadcrumb on failure', () => {
+      mockResponse(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.loadAccountData();
+      expect(component.loadError()).toBe('failed');
+      expect(component.isLoading()).toBe(false);
+      expect(TestBed.inject(BreadcrumbService).override()).toEqual([]);
+
+      mockResponse(of({ clientId: 42, clientName: 'Recovered owner', accountNo: 'SA000789' }));
+      component.loadAccountData();
+      expect(component.loadError()).toBeNull();
+      expect(component.isLoading()).toBe(false);
+      expect(component.account()?.clientName).toBe('Recovered owner');
+      expect(TestBed.inject(BreadcrumbService).override()).toHaveLength(3);
+    });
+
+    it('cancels the request and prevents late breadcrumbs after destruction', () => {
+      const response = new Subject<AccountResponse>();
+      const cancelled = vi.fn();
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      mockResponse(response.pipe(finalize(cancelled)));
+      component.loadAccountData();
+      fixture.destroy();
+      expect(cancelled).toHaveBeenCalledOnce();
+      response.next({ clientId: 99, clientName: 'Late owner', accountNo: 'OLD' });
+      expect(breadcrumbs.override()).toBeNull();
+      expect(component.account()?.clientName).toBe('Jane Smith');
+      savingsServiceSpy.getSavingsaccountsAccountId.mockClear();
+      component.loadAccountData();
+      routeParams.next(convertToParamMap({ id: '790' }));
+      expect(savingsServiceSpy.getSavingsaccountsAccountId).not.toHaveBeenCalled();
+    });
   });
 
   /**
@@ -308,17 +455,26 @@ describe('SavingsAccountViewComponent', () => {
    * command on this screen sends by default.
    */
   describe('undo approval', () => {
-    it('sends an empty body when the dialog is confirmed with no note', async () => {
+    it('sends an empty body and refreshes the account after undoing approval', async () => {
       dialogServiceSpy.open.mockResolvedValue({});
+      savingsServiceSpy.getSavingsaccountsAccountId.mockReturnValueOnce(
+        of({
+          ...component.account(),
+          status: { submittedAndPendingApproval: true },
+        }) as unknown as ReturnType<SavingsAccountService['getSavingsaccountsAccountId']>,
+      );
 
       component.onUndoApproval();
-      await Promise.resolve();
+      await fixture.whenStable();
 
       expect(savingsServiceSpy.postSavingsaccountsAccountId).toHaveBeenCalledWith(
         789,
         {},
         'undoapproval',
       );
+      expect(savingsServiceSpy.getSavingsaccountsAccountId).toHaveBeenCalledTimes(2);
+      expect(component.account()?.status?.submittedAndPendingApproval).toBe(true);
+      expect(TestBed.inject(BreadcrumbService).override()?.[1].url).toBe('/clients/view/42');
     });
 
     it('sends only the note when the dialog is confirmed with one', async () => {

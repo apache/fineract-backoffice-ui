@@ -19,15 +19,20 @@
 
 import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, finalize, of, throwError } from 'rxjs';
 
 import { DepositAccountViewComponent } from './deposit-account-view.component';
 import { DEPOSIT_ACCOUNT_API } from '../../core/adapters';
-import type { DepositAccount } from '../../core/adapters';
+import type {
+  DepositAccount,
+  DepositAccountTemplate,
+  DepositTransaction,
+} from '../../core/adapters';
+import { BreadcrumbService } from '../../core/services/breadcrumb.service';
 import {
   mapDepositAccount,
   mapDepositTransaction,
@@ -51,6 +56,7 @@ describe('DepositAccountViewComponent', () => {
   let component: DepositAccountViewComponent;
   let deposits: Record<string, ReturnType<typeof vi.fn>>;
   let dialogService: SpyObj<DialogService>;
+  let routeParams: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   /** Shared, and only ever read: the submitted-on date the commands are floored on. */
   const SUBMITTED_TIMELINE = { submittedOnDate: [2026, 8, 9] };
@@ -97,6 +103,7 @@ describe('DepositAccountViewComponent', () => {
     url = '/products/fixed-deposits/view/7',
   ): Promise<void> {
     TestBed.resetTestingModule();
+    routeParams = new BehaviorSubject(convertToParamMap({ id: '7' }));
 
     // One fake adapter in place of four generated services. The screen no longer knows what
     // Fineract calls any of these operations, which is the point of ADR 0006's boundary — and
@@ -127,7 +134,7 @@ describe('DepositAccountViewComponent', () => {
         { provide: DEPOSIT_ACCOUNT_API, useValue: deposits },
         { provide: DialogService, useValue: dialogService },
         { provide: Router, useValue: { url, navigate: routerNavigate } },
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '7' } } } },
+        { provide: ActivatedRoute, useValue: { paramMap: routeParams } },
       ],
     }).compileComponents();
 
@@ -154,6 +161,136 @@ describe('DepositAccountViewComponent', () => {
     // names on the other side of the boundary.
     expect(deposits['get']).toHaveBeenCalledWith('fixed', 7);
     expect(component.deposit()).toBeTruthy();
+  });
+
+  describe('account breadcrumbs and reloads', () => {
+    const ownedDeposit = {
+      id: 7,
+      clientId: 42,
+      clientName: 'Jane Smith',
+      accountNo: '000000007',
+      depositProductId: 12,
+      status: PENDING,
+    };
+
+    it.each([
+      ['fixed', 'BREADCRUMBS.FIXED_DEPOSIT'],
+      ['recurring', 'BREADCRUMBS.RECURRING_DEPOSIT'],
+    ])('builds the owner trail for a %s deposit', async (type, key) => {
+      await setup(ownedDeposit, [], `/products/${type}-deposits/view/7`);
+
+      expect(deposits['get']).toHaveBeenCalledWith(type, 7);
+      expect(TestBed.inject(BreadcrumbService).override()).toEqual([
+        { label: { kind: 'translation', key: 'nav.clients' }, url: '/clients' },
+        { label: { kind: 'text', text: 'Jane Smith' }, url: '/clients/view/42' },
+        { label: { kind: 'translation', key, params: { accountNo: '000000007' } } },
+      ]);
+    });
+
+    it.each([
+      ['fixed', 'BREADCRUMBS.FIXED_DEPOSIT'],
+      ['recurring', 'BREADCRUMBS.RECURRING_DEPOSIT'],
+    ])('links the group owner for a %s deposit', async (type, key) => {
+      await setup(
+        { id: 7, groupId: 1, groupName: 'Navigation Test Group', accountNo: '000000007' },
+        [],
+        `/products/${type}-deposits/view/7`,
+      );
+
+      expect(TestBed.inject(BreadcrumbService).override()).toEqual([
+        { label: { kind: 'translation', key: 'nav.groups' }, url: '/groups' },
+        { label: { kind: 'text', text: 'Navigation Test Group' }, url: '/groups/view/1' },
+        { label: { kind: 'translation', key, params: { accountNo: '000000007' } } },
+      ]);
+    });
+
+    it('prefers the client when the response carries both owners', async () => {
+      await setup({ ...ownedDeposit, groupId: 1, groupName: 'Navigation Test Group' });
+
+      expect(TestBed.inject(BreadcrumbService).override()?.[1]).toEqual({
+        label: { kind: 'text', text: 'Jane Smith' },
+        url: '/clients/view/42',
+      });
+    });
+
+    it('cancels the old read and clears its breadcrumbs when the account ID changes', async () => {
+      await setup(ownedDeposit);
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      const first = new Subject<DepositAccount>();
+      const second = new Subject<DepositAccount>();
+      const cancelled = vi.fn();
+      deposits['get'].mockReturnValue(first.pipe(finalize(cancelled)));
+      component.loadData();
+      expect(cancelled).not.toHaveBeenCalled();
+
+      deposits['get'].mockReturnValue(second);
+      routeParams.next(convertToParamMap({ id: '8' }));
+
+      expect(cancelled).toHaveBeenCalledOnce();
+      expect(deposits['get']).toHaveBeenLastCalledWith('fixed', 8);
+      expect(breadcrumbs.override()).toEqual([]);
+      expect(component.isLoading()).toBe(true);
+
+      second.next(mapped({ ...ownedDeposit, id: 8, clientName: 'New owner', accountNo: 'NEW' }));
+      second.complete();
+      first.next(mapped({ ...ownedDeposit, clientName: 'Stale owner' }));
+
+      expect(component.deposit()?.id).toBe(8);
+      expect(component.isLoading()).toBe(false);
+      expect(breadcrumbs.override()?.[1].label).toEqual({ kind: 'text', text: 'New owner' });
+    });
+
+    it('cancels the previous transaction and charge option reads on a reload', async () => {
+      await setup(ownedDeposit);
+      const transactions = new Subject<DepositTransaction[]>();
+      const template = new Subject<DepositAccountTemplate>();
+      const transactionsCancelled = vi.fn();
+      const templateCancelled = vi.fn();
+      deposits['transactions'].mockReturnValue(transactions.pipe(finalize(transactionsCancelled)));
+      deposits['template'].mockReturnValue(template.pipe(finalize(templateCancelled)));
+
+      component.loadData();
+      expect(transactionsCancelled).not.toHaveBeenCalled();
+      expect(templateCancelled).not.toHaveBeenCalled();
+      expect(component.isLoading()).toBe(false);
+
+      deposits['transactions'].mockReturnValue(of([]));
+      deposits['template'].mockReturnValue(of(EMPTY_TEMPLATE));
+      component.loadData();
+      expect(transactionsCancelled).toHaveBeenCalledOnce();
+      expect(templateCancelled).toHaveBeenCalledOnce();
+    });
+
+    it('clears the trail after an error and allows a retry with incomplete owner data', async () => {
+      await setup(ownedDeposit);
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      deposits['get'].mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.loadData();
+      expect(breadcrumbs.override()).toEqual([]);
+      expect(component.loadError()).toBe('failed');
+      expect(component.isLoading()).toBe(false);
+
+      deposits['get'].mockReturnValue(of(mapped({ ...ownedDeposit, clientName: '' })));
+      component.loadData();
+      expect(component.loadError()).toBeNull();
+      expect(component.deposit()?.clientName).toBe('');
+      expect(breadcrumbs.override()).toEqual([]);
+    });
+
+    it('cancels the account read on destruction and ignores a late response', async () => {
+      await setup(ownedDeposit);
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      const response = new Subject<DepositAccount>();
+      const cancelled = vi.fn();
+      deposits['get'].mockReturnValue(response.pipe(finalize(cancelled)));
+      component.loadData();
+
+      fixture.destroy();
+      expect(cancelled).toHaveBeenCalledOnce();
+      response.next(mapped({ ...ownedDeposit, clientName: 'Late owner' }));
+      expect(breadcrumbs.override()).toBeNull();
+      expect(component.deposit()?.clientName).toBe('Jane Smith');
+    });
   });
 
   it('offers only the actions the account status allows', async () => {

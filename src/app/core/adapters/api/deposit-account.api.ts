@@ -60,6 +60,8 @@ export interface DepositAccount {
   /** `depositProductName`, not `productName` — see the table above. */
   readonly productName: string;
   readonly clientName: string;
+  readonly groupId: number | null;
+  readonly groupName: string;
   /** `depositProductId` on a deposit account; `savingsProductId` is the savings response's name. */
   readonly productId: number | null;
   /** `summary.accountBalance`. `null` when the payload states none, never 0 — see below. */

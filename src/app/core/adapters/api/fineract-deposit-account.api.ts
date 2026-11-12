@@ -92,6 +92,8 @@ interface AccountPayload {
   readonly id?: number;
   readonly accountNo?: string;
   readonly clientId?: number;
+  readonly groupId?: number;
+  readonly groupName?: string;
   /** What a deposit account calls its product. */
   readonly depositProductId?: number;
   /** What a savings account calls it; declared by the generated type, absent on deposits. */
@@ -230,6 +232,8 @@ export function mapDepositAccount(payload: AccountPayload): DepositAccount {
     })),
     productName: payload.depositProductName ?? '',
     clientName: payload.clientName ?? '',
+    groupId: payload.groupId ?? null,
+    groupName: payload.groupName ?? '',
     chartRows: mapChartRows(payload.accountChart?.chartSlabs),
     status: {
       value: payload.status?.value ?? '',

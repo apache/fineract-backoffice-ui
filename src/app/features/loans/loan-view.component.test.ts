@@ -33,18 +33,20 @@ import {
 } from '../../api';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { ActivatedRoute, ParamMap, Router, convertToParamMap } from '@angular/router';
+import { Observable, Subject, finalize, of, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
 import { provideIonicTesting } from '../../testing/ionic-testing';
 import { DialogService } from '../../core/services/dialog.service';
 import { LOAN_SCHEDULE_TYPE } from '../products/loan-schedule-type';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
+import { BreadcrumbService } from '../../core/services/breadcrumb.service';
 
 const PRODUCT_NAME = 'Micro Loan Product';
 const EXTERNAL_ID = 'ext-456';
 const LOAN_ID = 456;
+type LoanResponse = NonNullable<ReturnType<LoanViewComponent['loan']>>;
 
 describe('LoanViewComponent', () => {
   let component: LoanViewComponent;
@@ -77,6 +79,7 @@ describe('LoanViewComponent', () => {
   async function setup(
     loanOverrides: Record<string, unknown> = {},
     capitalizedIncomeRows: unknown[] = [],
+    paramMap: Observable<ParamMap> = of(convertToParamMap({ id: String(LOAN_ID) })),
   ): Promise<void> {
     TestBed.resetTestingModule();
 
@@ -137,7 +140,7 @@ describe('LoanViewComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            paramMap: of({ get: (key: string) => (key === 'id' ? '456' : null) }),
+            paramMap,
           },
         },
       ],
@@ -159,6 +162,138 @@ describe('LoanViewComponent', () => {
   it('should load loan details on init', () => {
     expect(loansServiceSpy.getLoansLoanId).toHaveBeenCalledWith(456, false, 'all');
     expect(component.loan()?.loanProductName).toBe(PRODUCT_NAME);
+  });
+
+  describe('group loan breadcrumbs', () => {
+    it('links the nested group returned for a group-owned loan', async () => {
+      await setup({
+        clientId: undefined,
+        clientName: undefined,
+        group: { id: 1, name: 'Navigation Test Group' },
+        accountNo: '000000002',
+      });
+
+      expect(TestBed.inject(BreadcrumbService).override()).toEqual([
+        { label: { kind: 'translation', key: 'nav.groups' }, url: '/groups' },
+        { label: { kind: 'text', text: 'Navigation Test Group' }, url: '/groups/view/1' },
+        {
+          label: {
+            kind: 'translation',
+            key: 'BREADCRUMBS.LOAN_ACCOUNT',
+            params: { accountNo: '000000002' },
+          },
+        },
+      ]);
+    });
+
+    it('uses the client when the loan also carries a group', async () => {
+      await setup({ group: { id: 1, name: 'Navigation Test Group' } });
+
+      expect(TestBed.inject(BreadcrumbService).override()?.[1]).toEqual({
+        label: { kind: 'text', text: 'Jane Smith' },
+        url: '/clients/view/42',
+      });
+    });
+  });
+
+  describe('loan reloads', () => {
+    function mockResponse(response: Observable<LoanResponse>): void {
+      loansServiceSpy.getLoansLoanId.mockReturnValue(
+        response as unknown as ReturnType<LoansService['getLoansLoanId']>,
+      );
+    }
+
+    it.each([
+      { scenario: 'no owner', data: { accountNo: 'L000456' } },
+      {
+        scenario: 'a blank group name',
+        data: { accountNo: 'L000456', group: { id: 1, name: ' ' } },
+      },
+      { scenario: 'no account number', data: { clientId: 42, clientName: 'Jane Smith' } },
+    ])('clears the previous trail when the reloaded loan has $scenario', ({ data }) => {
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      expect(breadcrumbs.override()).toHaveLength(3);
+
+      mockResponse(of(data));
+      component.loadLoanData();
+
+      expect(breadcrumbs.override()).toEqual([]);
+    });
+
+    it('cancels the previous request when another reload starts', () => {
+      const first = new Subject<LoanResponse>();
+      const second = new Subject<LoanResponse>();
+      const cancelled = vi.fn();
+      mockResponse(first.pipe(finalize(cancelled)));
+      component.loadLoanData();
+      expect(cancelled).not.toHaveBeenCalled();
+
+      mockResponse(second);
+      component.loadLoanData();
+      expect(cancelled).toHaveBeenCalledOnce();
+
+      second.next({ id: LOAN_ID, clientId: 42, clientName: 'New owner', accountNo: 'L000456' });
+      first.next({ id: LOAN_ID, clientId: 99, clientName: 'Stale owner', accountNo: 'OLD' });
+      expect(component.loan()?.clientName).toBe('New owner');
+      expect(TestBed.inject(BreadcrumbService).override()?.[1].label).toEqual({
+        kind: 'text',
+        text: 'New owner',
+      });
+    });
+
+    it('cancels the previous request when the route changes to another loan', async () => {
+      const params = new Subject<ParamMap>();
+      await setup({}, [], params);
+      const first = new Subject<LoanResponse>();
+      const cancelled = vi.fn();
+      mockResponse(first.pipe(finalize(cancelled)));
+      params.next(convertToParamMap({ id: '456' }));
+
+      mockResponse(of({ id: 789, clientId: 43, clientName: 'Other owner', accountNo: 'L000789' }));
+      params.next(convertToParamMap({ id: '789' }));
+
+      expect(cancelled).toHaveBeenCalledOnce();
+      expect(loansServiceSpy.getLoansLoanId).toHaveBeenLastCalledWith(789, false, 'all');
+      first.next({ id: 456, clientId: 42, clientName: 'Old owner', accountNo: 'L000456' });
+      expect(component.loan()?.id).toBe(789);
+    });
+
+    it('keeps accepting reloads after an HTTP error', () => {
+      const error = new Error('Request failed');
+      const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      try {
+        mockResponse(throwError(() => error));
+        component.loadLoanData();
+        expect(log).toHaveBeenCalledWith('Failed to load loan data', error);
+        expect(TestBed.inject(BreadcrumbService).override()).toEqual([]);
+
+        mockResponse(
+          of({ id: LOAN_ID, clientId: 42, clientName: 'Recovered owner', accountNo: 'L000456' }),
+        );
+        component.loadLoanData();
+        expect(component.loan()?.clientName).toBe('Recovered owner');
+        expect(TestBed.inject(BreadcrumbService).override()).toHaveLength(3);
+      } finally {
+        log.mockRestore();
+      }
+    });
+
+    it('cancels an active request on destruction and cannot restore old breadcrumbs', () => {
+      const response = new Subject<LoanResponse>();
+      const cancelled = vi.fn();
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      mockResponse(response.pipe(finalize(cancelled)));
+      component.loadLoanData();
+      fixture.destroy();
+
+      expect(cancelled).toHaveBeenCalledOnce();
+      response.next({ id: LOAN_ID, clientId: 42, clientName: 'Late owner', accountNo: 'L000456' });
+      expect(breadcrumbs.override()).toBeNull();
+      expect(component.loan()?.clientName).toBe('Jane Smith');
+      loansServiceSpy.getLoansLoanId.mockClear();
+      component.loadLoanData();
+      expect(loansServiceSpy.getLoansLoanId).not.toHaveBeenCalled();
+    });
   });
 
   /**
