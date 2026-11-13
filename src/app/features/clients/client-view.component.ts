@@ -636,16 +636,6 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       person on its own details page.
                     -->
                     <div class="detail-item">
-                      <span class="label">{{ 'CLIENTS.GROUPS' | appTranslate }}</span>
-                      <span class="value">
-                        @for (group of client()?.groups ?? []; track group.id) {
-                          <span style="display: block">{{ group.name }}</span>
-                        } @empty {
-                          <span>{{ 'CLIENTS.NO_GROUPS' | appTranslate }}</span>
-                        }
-                      </span>
-                    </div>
-                    <div class="detail-item">
                       <span class="label">{{ 'CLIENTS.LEGAL_FORM' | appTranslate }}</span>
                       <span class="value" data-testid="client-legal-form">{{
                         profile().legalForm?.value || '—'
@@ -709,7 +699,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       <span class="label">{{ 'CLIENTS.GROUPS' | appTranslate }}</span>
                       <span class="value" data-testid="client-groups">
                         @if (clientGroups().length === 0) {
-                          —
+                          {{ 'CLIENTS.NO_GROUPS' | appTranslate }}
                         } @else {
                           @for (group of clientGroups(); track group.id) {
                             @if (canViewGroups()) {

@@ -235,12 +235,13 @@ test.describe('Group membership and lifecycle', () => {
     await expect(page.getByRole('cell', { name: clientName })).toBeVisible({ timeout: 20000 });
 
     await page.goto(clientUrl);
-    const clientGroups = page
-      .locator('app-client-view .detail-item')
-      .filter({ has: page.locator('.label').getByText('Groups', { exact: true }) });
+
+    const clientGroups = page.getByTestId('client-groups');
 
     await expect(clientGroups).toHaveCount(1);
-    await expect(clientGroups).toContainText(groupName, { timeout: 20000 });
+    await expect(clientGroups).toContainText(groupName, {
+      timeout: 20000,
+    });
 
     await openGroup(page, groupName);
     await page.getByTestId('group-tab-general').click();
