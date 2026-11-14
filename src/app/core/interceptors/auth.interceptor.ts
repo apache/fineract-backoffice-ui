@@ -19,6 +19,8 @@
 
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { catchError, from, of, switchMap } from 'rxjs';
+import { OidcService } from '../services/oidc.service';
 import { AuthService } from '../services/auth.service';
 import { ConfigService } from '../services/config.service';
 
@@ -85,6 +87,7 @@ export const authInterceptor: HttpInterceptorFn = (
 ) => {
   const authService = inject(AuthService);
   const config = inject(ConfigService);
+  const oidc = inject(OidcService);
   const token = authService.getAuthToken();
   const tenantId = authService.currentTenantId();
 
@@ -102,6 +105,25 @@ export const authInterceptor: HttpInterceptorFn = (
         'X-Mifos-Platform-TenantId': tenantId,
       },
     });
+  }
+
+  // Signed in through the identity provider: a Bearer token, refreshed first if it is about to
+  // expire. A refresh that fails on the network is not fatal here; the request goes out with the
+  // token it has and Fineract decides. No Basic credential and no Fineract second factor exist
+  // for such a session.
+  if (oidc.hasSession()) {
+    const withTenant = authReq;
+    return from(oidc.ensureFresh()).pipe(
+      catchError(() => of(undefined)),
+      switchMap(() => {
+        const bearer = oidc.getAccessToken();
+        return next(
+          bearer
+            ? withTenant.clone({ setHeaders: { Authorization: `Bearer ${bearer}` } })
+            : withTenant,
+        );
+      }),
+    );
   }
 
   // Inject Basic Auth token if the user is logged in

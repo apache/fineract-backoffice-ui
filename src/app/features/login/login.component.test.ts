@@ -25,7 +25,7 @@ import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService, UserSession } from '../../core/services/auth.service';
 import { ConfigService } from '../../core/services/config.service';
-import { NotificationService } from '../../core/services/notification.service';
+import { OidcService } from '../../core/services/oidc.service';
 import { WritableSignal, signal } from '@angular/core';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 
@@ -34,7 +34,7 @@ describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
   let authServiceSpy: SpyObj<AuthService>;
   let configServiceSpy: SpyObj<ConfigService>;
-  let notificationSpy: SpyObj<NotificationService>;
+  let oidcSpy: SpyObj<OidcService>;
   let routerSpy: SpyObj<Router>;
   const mockApiUrl = 'https://localhost:8443/fineract-provider/api/v1';
 
@@ -53,12 +53,14 @@ describe('LoginComponent', () => {
         config: signal({ allowedApiOrigins: [] }),
         // Off by default, matching every existing config.json — see ConfigService.oidcLoginEnabled.
         oidcLoginEnabled: signal(false),
+        passwordLoginEnabled: signal(true),
       },
     );
     configServiceSpy.setApiUrl.mockReturnValue(true);
     configServiceSpy.isAllowedApiUrl.mockReturnValue(true);
 
-    notificationSpy = createSpyObj(['success', 'error', 'show']);
+    oidcSpy = createSpyObj(['startLogin']);
+    oidcSpy.startLogin.mockResolvedValue(undefined);
 
     routerSpy = createSpyObj(['navigate']);
 
@@ -68,7 +70,7 @@ describe('LoginComponent', () => {
         ...provideTranslateTesting(),
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ConfigService, useValue: configServiceSpy },
-        { provide: NotificationService, useValue: notificationSpy },
+        { provide: OidcService, useValue: oidcSpy },
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
@@ -221,20 +223,47 @@ describe('LoginComponent', () => {
       expect(fixture.nativeElement.querySelector('#password')).not.toBeNull();
     });
 
-    it('says the provider round trip is not built yet, rather than doing nothing or pretending to redirect', async () => {
+    async function withSso(passwordLogin: boolean) {
       TestBed.resetTestingModule();
       await setup();
       (configServiceSpy.oidcLoginEnabled as unknown as WritableSignal<boolean>).set(true);
+      (configServiceSpy.passwordLoginEnabled as unknown as WritableSignal<boolean>).set(
+        passwordLogin,
+      );
       fixture.detectChanges();
-
-      const button = fixture.nativeElement.querySelector(
+      return fixture.nativeElement.querySelector(
         '[data-testid="login-sso-button"]',
       ) as HTMLButtonElement;
-      button.click();
+    }
 
-      expect(notificationSpy.show).toHaveBeenCalledWith('login.sso.notImplemented');
-      expect(routerSpy.navigate).not.toHaveBeenCalled();
+    it('starts the authorization-code flow when clicked', async () => {
+      (await withSso(true)).click();
+
+      expect(oidcSpy.startLogin).toHaveBeenCalledTimes(1);
       expect(authServiceSpy.login).not.toHaveBeenCalled();
+    });
+
+    it('reports an identity provider that cannot be reached, and keeps the button usable', async () => {
+      const button = await withSso(true);
+      oidcSpy.startLogin.mockRejectedValue(new Error('discovery'));
+      button.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="login-sso-error"]').textContent,
+      ).toContain('login.sso.unreachable');
+      expect(button.disabled).toBe(false);
+    });
+
+    it('hides the password form when the deployment turns it off', async () => {
+      await withSso(false);
+
+      expect(fixture.nativeElement.querySelector('#username')).toBeNull();
+      expect(fixture.nativeElement.querySelector('#password')).toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="login-sso-button"]'),
+      ).not.toBeNull();
     });
   });
 

@@ -18,16 +18,18 @@
  */
 
 /**
- * The identity-provider route on the login page, driven against mocked endpoints.
+ * Signing in through an identity provider, driven against mocked endpoints.
  *
- * The button is switched on by `oidcLoginEnabled` in `config.json` and, for now, only announces
- * that signing in through a provider is not available yet (issue #370). What matters, and what
- * this pins, is everything around that: a deployment that never set the flag sees exactly the
- * screen it always saw, and one that did still has username and password as a way in — the flag
- * must never become the only door, the way a second factor can.
+ * The button is switched on by `oidcLoginEnabled` plus a complete `oidc` block in `config.json`.
+ * This pins both halves. First, everything around the feature: a deployment that never set the
+ * keys sees exactly the screen it always saw, and username and password stay a way in unless the
+ * deployment turns the form off, which only takes effect with a working OIDC configuration.
+ * Second, the round trip: discovery, the redirect with PKCE, the code exchange, and the session
+ * built from `GET /v1/userdetails`, including the answer that must never open a session, the 404
+ * Fineract gives when it does not load that endpoint for OIDC federation.
  *
- * `oidc-login-backend.spec.ts` proves the same against a real Fineract; this covers the matrix a
- * real one cannot vary per test, above all the configurations that must show nothing.
+ * `oidc-login-backend.spec.ts` proves the password half against a real Fineract; this covers the
+ * matrix a real one cannot vary per test, above all the configurations that must show nothing.
  */
 
 import { test, expect, Page } from './fixtures';
@@ -38,7 +40,14 @@ const USER = 'mifos';
 const PASSWORD = 'password';
 
 const SSO_BUTTON = 'login-sso-button';
-const NOT_AVAILABLE = /not available yet/i;
+
+const ISSUER = 'https://idp.example.test/realms/bank';
+const CLIENT_ID = 'backoffice-ui';
+const AUTHORIZE = `${ISSUER}/protocol/openid-connect/auth`;
+const TOKEN = `${ISSUER}/protocol/openid-connect/token`;
+const OIDC_CONFIG = { issuer: ISSUER, clientId: CLIENT_ID };
+
+const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' };
 
 interface MockOptions {
   /**
@@ -46,20 +55,41 @@ interface MockOptions {
    * every `config.json` that predates the flag.
    */
   oidcLoginEnabled?: unknown;
+  /** What `config.json` says for `oidc`. Defaults to a complete block when the flag is given. */
+  oidc?: unknown;
+  /** What `config.json` says for `passwordLoginEnabled`. */
+  passwordLoginEnabled?: unknown;
   /** Whether `/v1/authentication` asks for a second factor after the password. */
   twoFactorRequired?: boolean;
+  /** The status `/v1/userdetails` answers with. Defaults to 200 and a user. */
+  userDetailsStatus?: number;
 }
 
 interface Mocked {
   /** Every request the page made to the authentication endpoint. */
   authenticationRequests: string[];
+  /** The query of the request that reached the provider's authorization endpoint, if any. */
+  authorizeQuery: () => URLSearchParams | null;
+  /** The `Authorization` header of each `/v1/userdetails` request. */
+  userDetailsAuthorization: string[];
+}
+
+function base64Url(value: unknown): string {
+  return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
 async function mockPlatform(page: Page, options: MockOptions = {}): Promise<Mocked> {
   const authenticationRequests: string[] = [];
+  const userDetailsAuthorization: string[] = [];
+  let authorizeQuery: URLSearchParams | null = null;
+
   const config: Record<string, unknown> = { fineractApiUrl: API_BASE, defaultTenant: TENANT };
   if ('oidcLoginEnabled' in options) {
     config['oidcLoginEnabled'] = options.oidcLoginEnabled;
+    config['oidc'] = 'oidc' in options ? options.oidc : OIDC_CONFIG;
+  }
+  if ('passwordLoginEnabled' in options) {
+    config['passwordLoginEnabled'] = options.passwordLoginEnabled;
   }
 
   await page.route('**/config.json*', async (route) => {
@@ -107,7 +137,81 @@ async function mockPlatform(page: Page, options: MockOptions = {}): Promise<Mock
     });
   });
 
-  return { authenticationRequests };
+  // The identity provider. Discovery names the endpoints, all on the issuer's origin.
+  await page.route(`${ISSUER}/.well-known/openid-configuration`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: CORS,
+      body: JSON.stringify({
+        issuer: ISSUER,
+        authorization_endpoint: AUTHORIZE,
+        token_endpoint: TOKEN,
+        end_session_endpoint: `${ISSUER}/protocol/openid-connect/logout`,
+      }),
+    });
+  });
+
+  // The provider "signs the person in" at once and sends the browser back with a code and the
+  // state it was given.
+  await page.route(`${AUTHORIZE}**`, async (route) => {
+    authorizeQuery = new URL(route.request().url()).searchParams;
+    const redirect = new URL(authorizeQuery.get('redirect_uri') ?? '');
+    redirect.searchParams.set('code', 'the-code');
+    redirect.searchParams.set('state', authorizeQuery.get('state') ?? '');
+    await route.fulfill({ status: 302, headers: { location: redirect.toString() } });
+  });
+
+  await page.route(TOKEN, async (route) => {
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: CORS });
+      return;
+    }
+    const nonce = authorizeQuery?.get('nonce');
+    const now = Math.floor(Date.now() / 1000);
+    const idToken = [
+      base64Url({ alg: 'none' }),
+      base64Url({ iss: ISSUER, aud: CLIENT_ID, nonce, iat: now, exp: now + 300 }),
+      'signature',
+    ].join('.');
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: CORS,
+      body: JSON.stringify({
+        access_token: 'the-access-token',
+        refresh_token: 'the-refresh-token',
+        id_token: idToken,
+        token_type: 'Bearer',
+        expires_in: 300,
+        refresh_expires_in: 1800,
+      }),
+    });
+  });
+
+  await page.route('**/api/v1/userdetails**', async (route) => {
+    userDetailsAuthorization.push((await route.request().headerValue('authorization')) ?? '');
+    const status = options.userDetailsStatus ?? 200;
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(
+        status === 200
+          ? {
+              username: USER,
+              userId: 1,
+              officeId: 1,
+              officeName: 'Head Office',
+              authenticated: true,
+              roles: [{ id: 1, name: 'Super user', description: 'all', disabled: false }],
+              permissions: ['ALL_FUNCTIONS'],
+            }
+          : { developerMessage: 'No static resource', httpStatusCode: String(status) },
+      ),
+    });
+  });
+
+  return { authenticationRequests, authorizeQuery: () => authorizeQuery, userDetailsAuthorization };
 }
 
 /**
@@ -148,6 +252,22 @@ test.describe('identity-provider route on the login page', () => {
     });
   }
 
+  test('does not offer the route when the oidc block is missing, and keeps the form', async ({
+    page,
+  }) => {
+    await mockPlatform(page, {
+      oidcLoginEnabled: true,
+      oidc: undefined,
+      passwordLoginEnabled: false,
+    });
+    await page.goto('/login');
+
+    // passwordLoginEnabled: false must not lock everyone out when there is no way to sign in
+    // through the provider.
+    await expect(page.getByTestId(SSO_BUTTON)).toHaveCount(0);
+    await expect(page.locator('#username')).toBeVisible();
+  });
+
   test('offers the route above the password form, which stays in place', async ({ page }) => {
     await mockPlatform(page, { oidcLoginEnabled: true });
     await page.goto('/login');
@@ -168,28 +288,20 @@ test.describe('identity-provider route on the login page', () => {
     expect(buttonBox!.y).toBeLessThan(usernameBox!.y);
   });
 
-  test('says plainly that it is not available yet, and goes nowhere', async ({ page }) => {
-    const { authenticationRequests } = await mockPlatform(page, { oidcLoginEnabled: true });
+  test('removes the password form only when the deployment asks and OIDC is configured', async ({
+    page,
+  }) => {
+    await mockPlatform(page, { oidcLoginEnabled: true, passwordLoginEnabled: false });
     await page.goto('/login');
 
-    await page.getByTestId(SSO_BUTTON).click();
-
-    // Not a silent no-op, and not a redirect this application could not complete.
-    await expect(page.getByText(NOT_AVAILABLE)).toBeVisible();
-    await expect(page).toHaveURL(/\/login/);
-    expect(authenticationRequests).toEqual([]);
-
-    // The person is left where they can still sign in the ordinary way.
-    await expect(page.locator('#username')).toBeVisible();
+    await expect(page.getByTestId(SSO_BUTTON)).toBeVisible();
+    await expect(page.locator('#username')).toHaveCount(0);
+    await expect(page.locator('#password')).toHaveCount(0);
   });
 
   test('username and password still sign in when the route is offered', async ({ page }) => {
     await mockPlatform(page, { oidcLoginEnabled: true });
     await page.goto('/login');
-
-    // After the notice, too: pressing the button must not leave the form in a worse state.
-    await page.getByTestId(SSO_BUTTON).click();
-    await expect(page.getByText(NOT_AVAILABLE)).toBeVisible();
 
     await signIn(page);
 
@@ -207,5 +319,61 @@ test.describe('identity-provider route on the login page', () => {
     // different sign-in here would abandon a half-finished one.
     await expect(page.getByTestId('two-factor-code')).toBeVisible();
     await expect(page.getByTestId(SSO_BUTTON)).toHaveCount(0);
+  });
+});
+
+test.describe('signing in through the identity provider', () => {
+  test('sends the browser to the provider with PKCE S256, then opens a session from userdetails', async ({
+    page,
+  }) => {
+    const mocked = await mockPlatform(page, { oidcLoginEnabled: true });
+    await page.goto('/login');
+
+    await page.getByTestId(SSO_BUTTON).click();
+
+    await expect(page).toHaveURL('/dashboard');
+
+    const query = mocked.authorizeQuery();
+    expect(query).not.toBeNull();
+    expect(query!.get('client_id')).toBe(CLIENT_ID);
+    expect(query!.get('response_type')).toBe('code');
+    expect(query!.get('code_challenge_method')).toBe('S256');
+    expect(query!.get('code_challenge')).toBeTruthy();
+    expect(query!.get('redirect_uri')).toMatch(/\/auth\/callback$/);
+    expect(query!.get('scope')).toBe('openid profile');
+    expect(query!.get('scope')).not.toContain('offline_access');
+
+    // The user context is the Bearer-authenticated userdetails answer; the password endpoint is
+    // never involved.
+    expect(mocked.userDetailsAuthorization).toEqual(['Bearer the-access-token']);
+    expect(mocked.authenticationRequests).toEqual([]);
+  });
+
+  test('does not open a session when the server does not serve userdetails (404)', async ({
+    page,
+  }) => {
+    const mocked = await mockPlatform(page, { oidcLoginEnabled: true, userDetailsStatus: 404 });
+    await page.goto('/login');
+
+    await page.getByTestId(SSO_BUTTON).click();
+
+    // A clear message and a way back, not a half-signed-in application.
+    const error = page.getByTestId('oidc-callback-error');
+    await expect(error).toBeVisible();
+    await expect(error).toContainText('cannot identify users who sign in through an identity');
+    await expect(page).toHaveURL(/\/auth\/callback/);
+    expect(mocked.userDetailsAuthorization).toEqual(['Bearer the-access-token']);
+
+    await page.getByTestId('oidc-callback-back').click();
+    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByTestId(SSO_BUTTON)).toBeVisible();
+  });
+
+  test('does not open a session when the callback state does not match', async ({ page }) => {
+    await mockPlatform(page, { oidcLoginEnabled: true });
+    await page.goto('/auth/callback?code=stolen&state=not-the-one-we-sent');
+
+    await expect(page.getByTestId('oidc-callback-error')).toBeVisible();
+    await expect(page).not.toHaveURL(/\/dashboard/);
   });
 });

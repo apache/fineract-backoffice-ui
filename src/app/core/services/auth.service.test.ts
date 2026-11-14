@@ -21,7 +21,10 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { FakeStorageAdapter, provideFakeAdapters } from '../../testing/adapters';
-import { AuthService, UserSession } from './auth.service';
+import { vi } from 'vitest';
+import { provideTestConfig } from '../../testing/config';
+import { OidcService } from './oidc.service';
+import { AuthService, UserSession, sessionFromUserDetails } from './auth.service';
 import { ConfigService } from './config.service';
 
 describe('AuthService', () => {
@@ -87,6 +90,112 @@ describe('AuthService', () => {
     expect(service.isAuthenticated()).toBe(false);
     expect(service.currentUser()).toBeNull();
     expect(storage.readRaw('session')).toBeNull();
+  });
+
+  describe('identity-provider sign-in', () => {
+    /** A verbatim shape of Fineract's `AuthenticatedOauthUserData` for a non-administrator. */
+    const userDetails = {
+      username: 'teller1',
+      userId: 7,
+      accessToken: 'AT',
+      authenticated: true,
+      officeId: 2,
+      officeName: 'Agence Douala',
+      staffId: 9,
+      staffDisplayName: 'Teller, One',
+      roles: [{ id: 3, name: 'back-office-operator', description: 'ACT-11', disabled: false }],
+      permissions: ['READ_CLIENT', 'READ_SAVINGSACCOUNT ', 'READ_CLIENT'],
+      shouldRenewPassword: false,
+      isTwoFactorAuthenticationRequired: false,
+    };
+
+    it('maps the userdetails answer to the session the Basic login produces', () => {
+      expect(sessionFromUserDetails(userDetails)).toEqual({
+        username: 'teller1',
+        userId: 7,
+        officeId: 2,
+        officeName: 'Agence Douala',
+        staffId: 9,
+        staffDisplayName: 'Teller, One',
+        authenticated: true,
+        base64EncodedAuthenticationKey: '',
+        permissions: ['READ_CLIENT', 'READ_SAVINGSACCOUNT ', 'READ_CLIENT'],
+        roles: userDetails.roles,
+        authType: 'oidc',
+      });
+    });
+
+    it('refuses an answer that names no user', () => {
+      expect(() => sessionFromUserDetails({})).toThrow();
+      expect(() => sessionFromUserDetails(null)).toThrow();
+    });
+
+    it('asks Fineract with the Bearer token and opens a complete session, permissions normalised', () => {
+      const oidc = TestBed.inject(OidcService);
+      vi.spyOn(oidc, 'getAccessToken').mockReturnValue('AT');
+      service.completeOidcLogin().subscribe();
+
+      const req = httpMock.expectOne((r) => r.url.endsWith('/userdetails'));
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get('Authorization')).toBe('Bearer AT');
+      expect(req.request.headers.get('Fineract-Platform-TenantId')).toBe('default');
+      req.flush(userDetails);
+
+      expect(service.isAuthenticated()).toBe(true);
+      expect(service.isOidcSession()).toBe(true);
+      expect(service.twoFactorPending()).toBe(false);
+      expect(service.username()).toBe('teller1');
+      expect(service.officeName()).toBe('Agence Douala');
+      expect(service.getAuthToken()).toBeNull();
+      expect(service.currentUser()?.permissions).toEqual(['READ_CLIENT', 'READ_SAVINGSACCOUNT']);
+      expect(service.hasPermission('READ_CLIENT')).toBe(true);
+      expect(service.hasPermission('CREATE_CLIENT')).toBe(false);
+    });
+
+    it('drops the tokens when Fineract refuses them, leaving nobody half signed in', () => {
+      const oidc = TestBed.inject(OidcService);
+      const clear = vi.spyOn(oidc, 'clear');
+      let failed = false;
+      service.completeOidcLogin().subscribe({ error: () => (failed = true) });
+
+      httpMock
+        .expectOne((r) => r.url.endsWith('/userdetails'))
+        .flush({}, { status: 401, statusText: 'Unauthorized' });
+
+      expect(failed).toBe(true);
+      expect(clear).toHaveBeenCalled();
+      expect(service.isAuthenticated()).toBe(false);
+    });
+
+    it('ends the session at the provider on logout', () => {
+      const oidc = TestBed.inject(OidcService);
+      const end = vi.spyOn(oidc, 'endSession').mockResolvedValue();
+      (service as unknown as { setSession: (s: UserSession) => void }).setSession(
+        sessionFromUserDetails(userDetails),
+      );
+
+      service.logout();
+
+      expect(end).toHaveBeenCalledTimes(1);
+      expect(service.isAuthenticated()).toBe(false);
+    });
+
+    it('does not contact the provider when a password session logs out', () => {
+      const oidc = TestBed.inject(OidcService);
+      const end = vi.spyOn(oidc, 'endSession').mockResolvedValue();
+      (service as unknown as { setSession: (s: UserSession) => void }).setSession(mockSession);
+
+      service.logout();
+
+      expect(end).not.toHaveBeenCalled();
+    });
+
+    it('does not restore an identity-provider session that has no tokens (a new tab)', () => {
+      storage.write('session', sessionFromUserDetails(userDetails));
+      const fresh = TestBed.runInInjectionContext(() => new AuthService());
+      expect(fresh.isAuthenticated()).toBe(false);
+      expect(fresh.currentUser()).toBeNull();
+    });
   });
 
   describe('hasPermission', () => {
@@ -303,5 +412,91 @@ describe('AuthService', () => {
       ]);
       expect(freshService.hasPermission('READ_X')).toBe(true);
     });
+  });
+});
+
+/**
+ * The real OidcService end to end through AuthService.logout(): only the browser's redirect and the
+ * provider's HTTP answers are replaced. A mocked `endSession` once hid that the ID token was wiped
+ * before it was read, so the end-session URL carried no `id_token_hint`.
+ */
+describe('AuthService.logout with an identity-provider session', () => {
+  const ISSUER = 'https://sso.example/realms/bank';
+
+  class RecordingOidcService extends OidcService {
+    readonly navigations: string[] = [];
+    protected override navigate(url: string): void {
+      this.navigations.push(url);
+    }
+    protected override origin(): string {
+      return 'https://ui.example';
+    }
+  }
+
+  let storage: FakeStorageAdapter;
+  let oidc: RecordingOidcService;
+  let auth: AuthService;
+
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          issuer: ISSUER,
+          authorization_endpoint: `${ISSUER}/auth`,
+          token_endpoint: `${ISSUER}/token`,
+          end_session_endpoint: `${ISSUER}/logout`,
+        }),
+      ),
+    );
+    const fakes = provideFakeAdapters();
+    storage = fakes.storage;
+    TestBed.configureTestingModule({
+      providers: [
+        ...fakes.providers,
+        provideTestConfig({
+          oidcLoginEnabled: true,
+          oidc: { issuer: ISSUER, clientId: 'backoffice-ui' },
+        }),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: OidcService, useClass: RecordingOidcService },
+      ],
+    });
+    oidc = TestBed.inject(OidcService) as RecordingOidcService;
+    storage.write('oidcTokens', {
+      accessToken: 'AT',
+      idToken: 'THE-ID-TOKEN',
+      refreshToken: 'RT',
+      expiresAt: Date.now() + 300_000,
+    });
+    storage.write('session', {
+      username: 'teller1',
+      userId: 7,
+      base64EncodedAuthenticationKey: '',
+      authenticated: true,
+      officeId: 1,
+      officeName: 'Head Office',
+      permissions: ['READ_CLIENT'],
+      authType: 'oidc',
+    });
+    auth = TestBed.inject(AuthService);
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('sends id_token_hint and post_logout_redirect_uri to the end-session endpoint', async () => {
+    expect(auth.isAuthenticated()).toBe(true);
+
+    auth.logout();
+    await vi.waitFor(() => expect(oidc.navigations).toHaveLength(1));
+
+    const url = new URL(oidc.navigations[0]);
+    expect(url.origin + url.pathname).toBe(`${ISSUER}/logout`);
+    expect(url.searchParams.get('id_token_hint')).toBe('THE-ID-TOKEN');
+    expect(url.searchParams.get('post_logout_redirect_uri')).toBe('https://ui.example/login');
+    expect(url.searchParams.get('client_id')).toBe('backoffice-ui');
+    expect(auth.isAuthenticated()).toBe(false);
+    expect(oidc.hasSession()).toBe(false);
   });
 });
