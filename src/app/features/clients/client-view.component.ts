@@ -699,7 +699,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       <span class="label">{{ 'CLIENTS.GROUPS' | appTranslate }}</span>
                       <span class="value" data-testid="client-groups">
                         @if (clientGroups().length === 0) {
-                          —
+                          {{ 'CLIENTS.NO_GROUPS' | appTranslate }}
                         } @else {
                           @for (group of clientGroups(); track group.id) {
                             @if (canViewGroups()) {

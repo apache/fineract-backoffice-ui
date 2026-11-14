@@ -18,6 +18,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/// <reference types="vitest/globals" />
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
@@ -300,7 +301,7 @@ describe('ClientViewComponent', () => {
 
     it('says so when there is no group', () => {
       show({ groups: [] });
-      expect(value('client-groups')).toBe('—');
+      expect(value('client-groups')).toBe('CLIENTS.NO_GROUPS');
     });
 
     describe('the accounts overview', () => {
