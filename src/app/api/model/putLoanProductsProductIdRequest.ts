@@ -180,6 +180,7 @@ export interface PutLoanProductsProductIdRequest {
     secondRepaymentDayOfMonth?: number;
     shortName?: string;
     startDate?: string;
+    supportedFeeRefundTypes?: Array<string>;
     supportedInterestRefundTypes?: Array<string>;
     transactionProcessingStrategyCode?: string;
     transfersInSuspenseAccountId?: number;

@@ -93,6 +93,7 @@ export interface LoanProductData {
     compoundingToBePostedAsTransaction?: boolean;
     creditAllocation?: Array<CreditAllocationData>;
     creditAllocationAllocationTypes?: Array<EnumOptionData>;
+    creditAllocationStrategyOptions?: Array<EnumOptionData>;
     creditAllocationTransactionTypes?: Array<EnumOptionData>;
     currency?: CurrencyData;
     currencyOptions?: Array<CurrencyData>;
@@ -214,6 +215,8 @@ export interface LoanProductData {
     shortName?: string;
     startDate?: string;
     status?: string;
+    supportedFeeRefundTypes?: Array<StringEnumOptionData>;
+    supportedFeeRefundTypesOptions?: Array<StringEnumOptionData>;
     supportedInterestRefundTypes?: Array<StringEnumOptionData>;
     supportedInterestRefundTypesOptions?: Array<StringEnumOptionData>;
     syncExpectedWithDisbursementDate?: boolean;

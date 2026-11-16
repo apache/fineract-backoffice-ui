@@ -165,6 +165,7 @@ export interface GetLoanProductsProductIdResponse {
     secondRepaymentDayOfMonth?: number;
     shortName?: string;
     status?: string;
+    supportedFeeRefundTypes?: Array<StringEnumOptionData>;
     supportedInterestRefundTypes?: Array<StringEnumOptionData>;
     transactionProcessingStrategyCode?: string;
     transactionProcessingStrategyName?: string;
