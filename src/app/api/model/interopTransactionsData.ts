@@ -24,6 +24,7 @@
  */
 
 import { InteropTransactionData } from './interopTransactionData';
+import { CommandProcessingSubResourceResult } from './commandProcessingSubResourceResult';
 import { ExternalId } from './externalId';
 
 
@@ -47,6 +48,7 @@ export interface InteropTransactionsData {
     savingsId?: number;
     subResourceExternalId?: ExternalId;
     subResourceId?: number;
+    subResources?: Array<CommandProcessingSubResourceResult>;
     transactionId?: string;
     transactions?: Array<InteropTransactionData>;
 }

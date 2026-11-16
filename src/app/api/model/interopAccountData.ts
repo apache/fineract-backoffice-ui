@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { CommandProcessingSubResourceResult } from './commandProcessingSubResourceResult';
 import { ExternalId } from './externalId';
 
 
@@ -46,6 +47,7 @@ export interface InteropAccountData {
     savingsId?: number;
     subResourceExternalId?: ExternalId;
     subResourceId?: number;
+    subResources?: Array<CommandProcessingSubResourceResult>;
     transactionId?: string;
 }
 

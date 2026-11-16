@@ -252,6 +252,7 @@ model/collateralProductUpdateResponse.ts
 model/collectionSheetRequest.ts
 model/columnFilterData.ts
 model/commandProcessingResult.ts
+model/commandProcessingSubResourceResult.ts
 model/component.ts
 model/componentData.ts
 model/configuredJobNamesDTO.ts
@@ -333,6 +334,8 @@ model/executeJobRequest.ts
 model/executeWorkingCapitalLoanTransactionCommandRequest.ts
 model/executeWorkingCapitalLoanTransactionCommandResponse.ts
 model/extensionData.ts
+model/externalAssetOwnerLoanAttributeData.ts
+model/externalAssetOwnerLoanAttributesData.ts
 model/externalAssetOwnerRequest.ts
 model/externalAssetOwnerSearchRequest.ts
 model/externalAssetOwnerTransferChangesData.ts
@@ -1284,9 +1287,11 @@ model/postLoansLoanIdSchedulePeriod.ts
 model/postLoansLoanIdScheduleRequest.ts
 model/postLoansLoanIdScheduleResponse.ts
 model/postLoansLoanIdStatus.ts
+model/postLoansLoanIdSubResource.ts
 model/postLoansLoanIdTransactionsRequest.ts
 model/postLoansLoanIdTransactionsResponse.ts
 model/postLoansLoanIdTransactionsResponseChanges.ts
+model/postLoansLoanIdTransactionsSubResource.ts
 model/postLoansLoanIdTransactionsTransactionIdRequest.ts
 model/postLoansOriginatorData.ts
 model/postLoansRepaymentSchedulePeriods.ts
@@ -1451,6 +1456,7 @@ model/putDataTablesResponse.ts
 model/putDelinquencyBucketResponse.ts
 model/putDelinquencyRangeResponse.ts
 model/putEmailRequest.ts
+model/putExternalAssetOwnerLoanAttributeRequest.ts
 model/putExternalAssetOwnerLoanProductAttributeRequest.ts
 model/putExternalServiceRequest.ts
 model/putFinancialActivityAccountsChanges.ts

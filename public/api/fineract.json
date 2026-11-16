@@ -7197,6 +7197,96 @@
         "x-alternative-operation-id": "updateLoanProductAttribute"
       }
     },
+    "/v1/external-asset-owners/loans/external-id/{loanExternalId}/attributes": {
+      "get": {
+        "description": "Retrieves the copy of the external asset owner loan product attributes taken when COB executes the loan's first sale. From then on the copy decides the loan's external asset owner behaviour for the rest of its life, including resales, buybacks and later sales: attributes the loan product gains, changes or loses later do not affect it. An attribute that was not configured on the loan product when the copy was taken is not in the copy, and its default behaviour applies. SETTLEMENT_MODEL in the copy is the settlement model the sale was initiated under, even if the loan product changed before the sale was executed. copiedFromTransferId is the id of the sale request (the pending transfer) whose execution created the copy. A loan without a copy follows its loan product attributes and is returned with hasLoanLevelCopy=false and no attributes. There is no backfill: loans sold before the loan-level copy was introduced have no copy, keep following their loan product attributes, and get a copy, taken from the loan product attributes at that moment, the next time COB executes a sale of the loan.",
+        "operationId": "retrieveExternalAssetOwnerLoanAttributesByLoanExternalId",
+        "parameters": [
+          {
+            "description": "loanExternalId",
+            "in": "path",
+            "name": "loanExternalId",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ExternalAssetOwnerLoanAttributesData" }
+              }
+            },
+            "description": "default response"
+          }
+        },
+        "summary": "Retrieve the loan-level external asset owner attributes of a loan by loan external id",
+        "tags": ["External Asset Owners"]
+      }
+    },
+    "/v1/external-asset-owners/loans/{loanId}/attributes": {
+      "get": {
+        "description": "Retrieves the copy of the external asset owner loan product attributes taken when COB executes the loan's first sale. From then on the copy decides the loan's external asset owner behaviour for the rest of its life, including resales, buybacks and later sales: attributes the loan product gains, changes or loses later do not affect it. An attribute that was not configured on the loan product when the copy was taken is not in the copy, and its default behaviour applies. SETTLEMENT_MODEL in the copy is the settlement model the sale was initiated under, even if the loan product changed before the sale was executed. copiedFromTransferId is the id of the sale request (the pending transfer) whose execution created the copy. A loan without a copy follows its loan product attributes and is returned with hasLoanLevelCopy=false and no attributes. There is no backfill: loans sold before the loan-level copy was introduced have no copy, keep following their loan product attributes, and get a copy, taken from the loan product attributes at that moment, the next time COB executes a sale of the loan.",
+        "operationId": "retrieveExternalAssetOwnerLoanAttributes",
+        "parameters": [
+          {
+            "description": "loanId",
+            "in": "path",
+            "name": "loanId",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ExternalAssetOwnerLoanAttributesData" }
+              }
+            },
+            "description": "default response"
+          }
+        },
+        "summary": "Retrieve the loan-level external asset owner attributes of a loan",
+        "tags": ["External Asset Owners"]
+      },
+      "put": {
+        "description": "Exceptional correction tool, not part of the normal workflow. Sets a single external asset owner attribute on the loan-level copy of one loan. Validation, normalisation and error codes are the same as for the loan product attribute endpoint (PUT /external-asset-owners/loan-product/{loanProductId}/attributes/{id}). It affects only this loan and only activity from this point onwards; already posted journal entries and events are not changed. It is intended for use outside COB: relative to a COB run already in progress for the loan, when the correction takes effect is undefined and it may apply to only part of that run. The loan must already have a loan-level copy, which is taken when COB executes the loan's first sale. There is no backfill: a loan sold before the loan-level copy was introduced has no copy until its next executed sale, follows its loan product attributes until then, and is rejected with error.msg.externalAssetOwnerLoanAttribute.noLoanLevelCopy. SETTLEMENT_MODEL cannot be changed while a transfer is in progress. Requires the UPDATE_EXTERNAL_ASSET_OWNER_LOAN_ATTRIBUTE permission and supports maker-checker.",
+        "operationId": "updateExternalAssetOwnerLoanAttribute",
+        "parameters": [
+          {
+            "description": "loanId",
+            "in": "path",
+            "name": "loanId",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PutExternalAssetOwnerLoanAttributeRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
+          },
+          "403": {
+            "description": "The loan has no loan-level copy, the attribute is invalid, or a transfer is in progress"
+          }
+        },
+        "summary": "Correct a loan-level external asset owner attribute",
+        "tags": ["External Asset Owners"]
+      }
+    },
     "/v1/external-asset-owners/owners/external-id/{ownerExternalId}/journal-entries": {
       "get": {
         "description": "Retrieve Journal entries of owner by owner externalId",
@@ -32237,7 +32327,18 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" }
+        }
+      },
+      "CommandProcessingSubResourceResult": {
+        "type": "object",
+        "properties": {
+          "resourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "Component": {
@@ -32285,6 +32386,7 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/CreditAllocationOrder" }
           },
+          "creditAllocationStrategy": { "type": "string" },
           "transactionType": { "type": "string" }
         }
       },
@@ -33092,6 +33194,26 @@
         "type": "object",
         "properties": { "key": { "type": "string" }, "value": { "type": "string" } },
         "required": ["key"]
+      },
+      "ExternalAssetOwnerLoanAttributeData": {
+        "type": "object",
+        "properties": {
+          "attributeKey": { "type": "string" },
+          "attributeValue": { "type": "string" }
+        }
+      },
+      "ExternalAssetOwnerLoanAttributesData": {
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ExternalAssetOwnerLoanAttributeData" }
+          },
+          "copiedFromTransferId": { "type": "integer", "format": "int64" },
+          "hasLoanLevelCopy": { "type": "boolean" },
+          "loanExternalId": { "type": "string" },
+          "loanId": { "type": "integer", "format": "int64" }
+        }
       },
       "ExternalAssetOwnerRequest": {
         "type": "object",
@@ -37645,6 +37767,10 @@
           },
           "shortName": { "type": "string", "example": "ad11" },
           "status": { "type": "string", "example": "loanProduct.active" },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "supportedInterestRefundTypes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
@@ -37793,6 +37919,10 @@
           "shortName": { "type": "string", "example": "pe1" },
           "startDate": { "type": "string", "format": "date" },
           "status": { "type": "string", "example": "loanProduct.active" },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "supportedInterestRefundTypes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
@@ -37903,6 +38033,10 @@
             "uniqueItems": true
           },
           "creditAllocationAllocationTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EnumOptionData" }
+          },
+          "creditAllocationStrategyOptions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/EnumOptionData" }
           },
@@ -38041,6 +38175,14 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/GetLoanProductsRescheduleStrategyType" },
             "uniqueItems": true
+          },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
+          "supportedFeeRefundTypesOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
           },
           "supportedInterestRefundTypes": {
             "type": "array",
@@ -38978,6 +39120,7 @@
           "totalCreditBalanceRefundReversed": { "type": "number", "example": 0.0 },
           "totalExpectedCostOfLoan": { "type": "number", "example": 258000.0 },
           "totalExpectedRepayment": { "type": "number", "example": 1258000.0 },
+          "totalFeeRefund": { "type": "number" },
           "totalGoodwillCredit": { "type": "number", "example": 0.0 },
           "totalGoodwillCreditReversed": { "type": "number", "example": 0.0 },
           "totalInterestPaymentWaiver": { "type": "number", "example": 0.0 },
@@ -43979,6 +44122,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" }
         }
       },
@@ -44008,6 +44155,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" }
         },
         "required": ["accountId"]
@@ -44042,6 +44193,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" }
         }
       },
@@ -44078,6 +44233,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "subjectName": { "$ref": "#/components/schemas/SubjectName" },
           "transactionId": { "type": "string" }
         }
@@ -44146,6 +44305,10 @@
           "state": { "type": "string", "enum": ["ACCEPTED", "REJECTED"] },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionCode": { "type": "string" },
           "transactionId": { "type": "string" }
         },
@@ -44184,6 +44347,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" },
           "transactionType": {
             "type": "string",
@@ -44275,6 +44442,10 @@
           "state": { "type": "string", "enum": ["ACCEPTED", "REJECTED"] },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionCode": { "type": "string" },
           "transactionId": { "type": "string" }
         },
@@ -44321,6 +44492,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" },
           "transactions": {
             "type": "array",
@@ -44383,6 +44558,10 @@
           "state": { "type": "string", "enum": ["ACCEPTED", "REJECTED"] },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionCode": { "type": "string" },
           "transactionId": { "type": "string" },
           "transferCode": { "type": "string" }
@@ -44978,6 +45157,7 @@
       "LoanProductCreditAllocationRule": {
         "type": "object",
         "properties": {
+          "allocationStrategy": { "type": "string", "enum": ["RULE_BASED", "PRINCIPAL_ONLY"] },
           "allocationTypes": {
             "type": "array",
             "items": { "type": "string", "enum": ["PENALTY", "FEE", "PRINCIPAL", "INTEREST"] }
@@ -45110,6 +45290,10 @@
             "items": { "$ref": "#/components/schemas/CreditAllocationData" }
           },
           "creditAllocationAllocationTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EnumOptionData" }
+          },
+          "creditAllocationStrategyOptions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/EnumOptionData" }
           },
@@ -45331,6 +45515,14 @@
           "shortName": { "type": "string" },
           "startDate": { "type": "string", "format": "date" },
           "status": { "type": "string" },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
+          "supportedFeeRefundTypesOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "supportedInterestRefundTypes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
@@ -45530,7 +45722,8 @@
               "REFUND_FOR_ACTIVE_LOAN",
               "INTEREST_PAYMENT_WAIVER",
               "INTEREST_REFUND",
-              "CAPITALIZED_INCOME_ADJUSTMENT"
+              "CAPITALIZED_INCOME_ADJUSTMENT",
+              "FEE_REFUND"
             ]
           }
         },
@@ -45630,6 +45823,10 @@
             "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID", "SEMI_MONTHLY"]
           },
           "secondRepaymentDayOfMonth": { "type": "integer", "format": "int32" },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["MERCHANT_ISSUED_REFUND", "PAYOUT_REFUND"] }
+          },
           "supportedInterestRefundTypes": {
             "type": "array",
             "items": { "type": "string", "enum": ["MERCHANT_ISSUED_REFUND", "PAYOUT_REFUND"] }
@@ -45917,6 +46114,7 @@
           "creditBalanceRefund": { "type": "boolean" },
           "disbursement": { "type": "boolean" },
           "downPayment": { "type": "boolean" },
+          "feeRefund": { "type": "boolean" },
           "goodwillCredit": { "type": "boolean" },
           "id": { "type": "integer", "format": "int64" },
           "initiateTransfer": { "type": "boolean" },
@@ -48309,6 +48507,7 @@
           },
           "shortName": { "type": "string", "example": "LPAA" },
           "startDate": { "type": "string", "example": "10 July 2022" },
+          "supportedFeeRefundTypes": { "type": "array", "items": { "type": "string" } },
           "supportedInterestRefundTypes": { "type": "array", "items": { "type": "string" } },
           "syncExpectedWithDisbursementDate": {
             "type": "boolean",
@@ -48616,7 +48815,12 @@
             "type": "string",
             "example": "b4f8fefd-a14d-4487-8d80-6f2fb0e07836"
           },
-          "subResourceId": { "type": "integer", "format": "int64", "example": 22 }
+          "subResourceId": { "type": "integer", "format": "int64", "example": 22 },
+          "subResources": {
+            "type": "array",
+            "description": "Additional secondary resources created by the command (e.g. interest and fee refunds)",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdSubResource" }
+          }
         }
       },
       "PostLoansLoanIdScheduleDeletedInstallment": {
@@ -48718,6 +48922,17 @@
           "waitingForDisbursal": { "type": "boolean", "example": false }
         }
       },
+      "PostLoansLoanIdSubResource": {
+        "type": "object",
+        "description": "Additional secondary resources created by the command (e.g. interest and fee refunds)",
+        "properties": {
+          "resourceExternalId": {
+            "type": "string",
+            "example": "b4f8fefd-a14d-4487-8d80-6f2fb0e07836"
+          },
+          "resourceId": { "type": "integer", "format": "int64", "example": 22 }
+        }
+      },
       "PostLoansLoanIdTransactionsRequest": {
         "type": "object",
         "description": "PostLoansLoanIdTransactionsRequest",
@@ -48777,7 +48992,12 @@
             "type": "string",
             "example": "95174ff9-1a75-4d72-a413-6f9b1cb988b7"
           },
-          "subResourceId": { "type": "integer", "format": "int64", "example": 22 }
+          "subResourceId": { "type": "integer", "format": "int64", "example": 22 },
+          "subResources": {
+            "type": "array",
+            "description": "Derived transactions created with the refund (interest and/or fee refund)",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdTransactionsSubResource" }
+          }
         }
       },
       "PostLoansLoanIdTransactionsResponseChanges": {
@@ -48797,6 +49017,17 @@
           },
           "transactionAmount": { "type": "string", "example": "50,000.00" },
           "transactionDate": { "type": "string", "example": "28 June 2022" }
+        }
+      },
+      "PostLoansLoanIdTransactionsSubResource": {
+        "type": "object",
+        "description": "Derived transactions created with the refund (interest and/or fee refund)",
+        "properties": {
+          "resourceExternalId": {
+            "type": "string",
+            "example": "95174ff9-1a75-4d72-a413-6f9b1cb988b7"
+          },
+          "resourceId": { "type": "integer", "format": "int64", "example": 22 }
         }
       },
       "PostLoansLoanIdTransactionsTransactionIdRequest": {
@@ -51690,6 +51921,14 @@
           }
         }
       },
+      "PutExternalAssetOwnerLoanAttributeRequest": {
+        "type": "object",
+        "description": "PutExternalAssetOwnerLoanAttributeRequest",
+        "properties": {
+          "attributeKey": { "type": "string", "example": "EXCLUDED_TRANSACTION_TYPES" },
+          "attributeValue": { "type": "string", "example": "BUY_DOWN_FEE,BUY_DOWN_FEE_ADJUSTMENT" }
+        }
+      },
       "PutExternalAssetOwnerLoanProductAttributeRequest": {
         "type": "object",
         "description": "PutExternalAssetOwnerLoanProductAttributeRequest",
@@ -52282,6 +52521,7 @@
           },
           "shortName": { "type": "string", "example": "LPAA" },
           "startDate": { "type": "string", "example": "10 July 2022" },
+          "supportedFeeRefundTypes": { "type": "array", "items": { "type": "string" } },
           "supportedInterestRefundTypes": { "type": "array", "items": { "type": "string" } },
           "transactionProcessingStrategyCode": {
             "type": "string",
@@ -55174,6 +55414,7 @@
           "interestPaymentWaiver",
           "accrualActivity",
           "interestRefund",
+          "feeRefund",
           "accrualAdjustment",
           "capitalizedIncome",
           "capitalizedIncomeAmortization",

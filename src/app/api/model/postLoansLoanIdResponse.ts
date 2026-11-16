@@ -24,6 +24,7 @@
  */
 
 import { PostLoansLoanIdChanges } from './postLoansLoanIdChanges';
+import { PostLoansLoanIdSubResource } from './postLoansLoanIdSubResource';
 
 
 /**
@@ -38,5 +39,9 @@ export interface PostLoansLoanIdResponse {
     resourceId?: number;
     subResourceExternalId?: string;
     subResourceId?: number;
+    /**
+     * Additional secondary resources created by the command (e.g. interest and fee refunds)
+     */
+    subResources?: Array<PostLoansLoanIdSubResource>;
 }
 
