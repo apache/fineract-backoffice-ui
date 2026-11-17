@@ -572,4 +572,52 @@ describe('SavingsAccountViewComponent', () => {
 
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/clients/view', 42]);
   });
+
+  describe('overdraft display', () => {
+    it('renders the Overdraft card and limits when allowOverdraft is enabled', () => {
+      component.account.set({
+        ...component.account(),
+        allowOverdraft: true,
+        overdraftLimit: 500,
+        nominalAnnualInterestRateOverdraft: 12,
+        minOverdraftForInterestCalculation: 50,
+        currency: { displaySymbol: '$' },
+        summary: { accountBalance: 1000, availableBalance: 1500 },
+      } as any);
+      fixture.detectChanges();
+
+      const host = fixture.nativeElement as HTMLElement;
+      const overdraftCard = host.querySelector('[data-testid="savings-overdraft-card"]');
+      expect(overdraftCard).not.toBeNull();
+      expect(host.querySelector('[data-testid="savings-overdraft-card-limit"]')?.textContent).toContain(
+        '500.00',
+      );
+      expect(host.querySelector('[data-testid="savings-overdraft-card-rate"]')?.textContent).toContain(
+        '12%',
+      );
+      expect(
+        host.querySelector('[data-testid="savings-overdraft-card-min-calc"]')?.textContent,
+      ).toContain('50.00');
+
+      const summaryLimit = host.querySelector('[data-testid="savings-summary-overdraft-limit"]');
+      expect(summaryLimit?.textContent).toContain('500.00');
+      const availableBalance = host.querySelector('[data-testid="savings-summary-available-balance"]');
+      expect(availableBalance?.textContent).toContain('1,500.00');
+    });
+
+    it('withholds the Overdraft card and summary limit when allowOverdraft is not enabled', () => {
+      component.account.set({
+        ...component.account(),
+        allowOverdraft: false,
+        overdraftLimit: 0,
+        summary: { accountBalance: 1000, availableBalance: 1000 },
+      } as any);
+      fixture.detectChanges();
+
+      const host = fixture.nativeElement as HTMLElement;
+      expect(host.querySelector('[data-testid="savings-overdraft-card"]')).toBeNull();
+      expect(host.querySelector('[data-testid="savings-summary-overdraft-limit"]')).toBeNull();
+      expect(host.querySelector('[data-testid="savings-summary-available-balance"]')).not.toBeNull();
+    });
+  });
 });
