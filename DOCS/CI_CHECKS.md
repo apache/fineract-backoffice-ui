@@ -161,18 +161,18 @@ baseline with `npm run i18n:check -- --update` when a catalogue legitimately shr
 #### Money-term glossary for translators
 
 Fineract has several verbs that are close in everyday speech and different in the ledger.
-Translate each to a distinct term, and never fold two of them into one. The French catalogue
-(`fr.json`) uses:
+Translate each to a distinct term, and never fold two of them into one. The French (`fr.json`)
+and Spanish (`es.json`) catalogues use:
 
-| English    | French               | Meaning                                                          |
-| ---------- | -------------------- | ---------------------------------------------------------------- |
-| Cancel     | Annuler              | Abandon a screen or dialog. Never a ledger action.               |
-| Undo       | Défaire              | Withdraw a state change, such as an approval or a rejection.     |
-| Reverse    | Contre-passer        | Post an opposite entry; the original stays on the account.       |
-| Waive      | Exonérer             | Forgive a charge or interest that was due.                       |
-| Write off  | Passer en perte      | Remove an uncollectable loan balance from the books.             |
-| Charge off | Passer en non-valeur | Classify a loan as uncollectable under the product's accounting. |
-| Chargeback | Rétrofacturation     | A payment taken back through the payment network.                |
+| English    | French               | Spanish             | Meaning                                                          |
+| ---------- | -------------------- | ------------------- | ---------------------------------------------------------------- |
+| Cancel     | Annuler              | Cancelar            | Abandon a screen or dialog. Never a ledger action.               |
+| Undo       | Défaire              | Deshacer            | Withdraw a state change, such as an approval or a rejection.     |
+| Reverse    | Contre-passer        | Revertir            | Post an opposite entry; the original stays on the account.       |
+| Waive      | Exonérer             | Condonar            | Forgive a charge or interest that was due.                       |
+| Write off  | Passer en perte      | Pasar a fallido     | Remove an uncollectable loan balance from the books.             |
+| Charge off | Passer en non-valeur | Declarar incobrable | Classify a loan as uncollectable under the product's accounting. |
+| Chargeback | Rétrofacturation     | Contracargo         | A payment taken back through the payment network.                |
 
 Use the same distinctions when adding a language, and keep placeholders such as `{{amount}}`
 unchanged.
