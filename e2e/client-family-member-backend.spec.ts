@@ -36,7 +36,7 @@
  *   a last name as well, which is its own rule and is marked as such.
  */
 
-import type { APIRequestContext } from '@playwright/test';
+import type { APIRequestContext, APIResponse, Response } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { login } from './utils/fineract-login';
 import {
@@ -48,6 +48,32 @@ import {
   type SeededClient,
 } from './utils/seed-api';
 import { selectOption } from './utils/select-option';
+
+/**
+ * The response body, or a note in its place.
+ *
+ * Both saves here navigate to the client page on success, and Chromium discards a response body
+ * once the page it belongs to has gone. The body is wanted only to name the platform's complaint
+ * when a save is refused, so losing it on the path where nothing went wrong must not fail the
+ * test: before this, the eagerly evaluated expect() message raced that navigation and threw
+ * `Protocol error (Network.getResponseBody)` instead of asserting the status.
+ */
+async function savedBody(response: Response): Promise<string> {
+  return response.text().catch(() => '<body discarded by the navigation that followed the save>');
+}
+
+/** What the platform said, for the message of an assertion about the status it said it with. */
+async function rejection(response: APIResponse): Promise<string> {
+  return `the platform answered ${response.status()}: ${(await response.text()).slice(0, 300)}`;
+}
+
+/** The globalisation codes of a validation answer, which is how the platform names each rule. */
+async function validationCodes(response: APIResponse): Promise<(string | undefined)[]> {
+  const body = (await response.json()) as {
+    errors?: { userMessageGlobalisationCode?: string }[];
+  };
+  return (body.errors ?? []).map((error) => error.userMessageGlobalisationCode);
+}
 
 const DATE_FORMAT = 'dd MMMM yyyy';
 const LOCALE = 'en';
@@ -170,7 +196,12 @@ test.describe('Family member against Fineract', () => {
       ),
       page.getByTestId('family-submit-btn').click(),
     ]);
-    expect(saved.status(), (await saved.text()).slice(0, 300)).toBe(200);
+    // Read with a fallback: the save is followed by a navigation to the client page, and
+    // Chromium discards a response body once the page it belongs to has gone. expect()
+    // evaluates its message argument whether or not the assertion fails, so reading the body
+    // eagerly raced the navigation the click had just triggered and threw instead of asserting.
+    // The status stays readable either way; the body is only a diagnostic for a non-200.
+    expect(saved.status(), (await savedBody(saved)).slice(0, 300)).toBe(200);
 
     await expect(page.locator('ion-toast.success-toast')).toHaveJSProperty(
       'message',
@@ -218,7 +249,12 @@ test.describe('Family member against Fineract', () => {
       ),
       page.getByTestId('family-submit-btn').click(),
     ]);
-    expect(saved.status(), (await saved.text()).slice(0, 300)).toBe(200);
+    // Read with a fallback: the save is followed by a navigation to the client page, and
+    // Chromium discards a response body once the page it belongs to has gone. expect()
+    // evaluates its message argument whether or not the assertion fails, so reading the body
+    // eagerly raced the navigation the click had just triggered and threw instead of asserting.
+    // The status stays readable either way; the body is only a diagnostic for a non-200.
+    expect(saved.status(), (await savedBody(saved)).slice(0, 300)).toBe(200);
     await expect(page).toHaveURL(`/clients/view/${client.clientId}`);
 
     const after = await api.get(`${API_BASE}/clients/${client.clientId}/familymembers/${memberId}`);
@@ -226,16 +262,25 @@ test.describe('Family member against Fineract', () => {
     expect(isoDay(((await after.json()) as FamilyMember).dateOfBirth)).toBe(bound);
   });
 
-  test('the platform enforces none of its own rules, so the form is the only guard', async ({
+  test('the platform enforces its own rules, and each one backs a rule the form already had', async ({
     page,
   }) => {
     // Worth measuring rather than assuming, because it decides how much of this the form has to
     // do itself. `ClientFamilyMemberCommandFromApiJsonDeserializer` declares three rules — a
     // mandatory first name, a mandatory relationship, a birth date no later than the business
-    // date — collects every breach of them into a `DataValidatorBuilder`, and then never calls
-    // `throwExceptionIfValidationWarningsExist`. The collected errors are discarded.
+    // date — and collects every breach of them into a `DataValidatorBuilder`.
+    //
+    // Until November 2026 it never called `throwExceptionIfValidationWarningsExist`: the
+    // collected errors were discarded, every one of these requests was accepted, and the form
+    // was the only guard. The platform now throws them, so each of the form's three rules is
+    // backed by one of its own. The form keeps them regardless — refusing before sending is what
+    // keeps the operator out of the platform's error path — but this is no longer the only thing
+    // standing between a bad request and a stored row.
+    //
+    // Still measured rather than trusted: `apache/fineract:latest` is not pinned, so this is
+    // what notices when one of these answers moves again.
 
-    // So a member with no first name at all is stored, and reads back with an empty one.
+    // No first name at all.
     const nameless = await api.post(`${API_BASE}/clients/${client.clientId}/familymembers`, {
       data: {
         lastName: 'Nameless',
@@ -244,24 +289,23 @@ test.describe('Family member against Fineract', () => {
         locale: LOCALE,
       },
     });
-    expect(
-      nameless.status(),
-      'a member with no first name was refused, so the platform has started throwing what its ' +
-        'validator collects and the form could defer to it',
-    ).toBe(200);
+    expect(nameless.status(), await rejection(nameless)).toBe(400);
+    expect(await validationCodes(nameless)).toContain(
+      'org.apache.fineract.portfolio.client.familymember.firstname.not-blank',
+    );
 
-    // The one rule anything enforces is a NOT NULL constraint, and what comes back is the
-    // database's own sentence about a column — not a message naming a field on the form. Which
-    // is the other half of why the form marks its required fields: the platform's answer, when
-    // it has one, is not an answer the operator can act on.
+    // No relationship. This was a 403 carrying the database's own sentence about a column named
+    // `relationship_cv_id` — true, and no use to an operator. It is now the validator's own
+    // answer, naming the parameter the form names.
     const unrelated = await api.post(`${API_BASE}/clients/${client.clientId}/familymembers`, {
       data: { firstName: 'Unrelated', lastName: 'Person', dateFormat: DATE_FORMAT, locale: LOCALE },
     });
-    expect(unrelated.status()).toBe(403);
-    expect(await unrelated.text()).toContain('relationship_cv_id');
+    expect(unrelated.status(), await rejection(unrelated)).toBe(400);
+    expect(await validationCodes(unrelated)).toContain(
+      'org.apache.fineract.portfolio.client.familymember.relationship-id.not-null',
+    );
 
-    // And a birth date after the platform's own day is accepted, the rule for it collected and
-    // dropped like the rest.
+    // A birth date after the platform's own day.
     const unborn = await api.post(`${API_BASE}/clients/${client.clientId}/familymembers`, {
       data: {
         firstName: 'Unborn',
@@ -272,14 +316,25 @@ test.describe('Family member against Fineract', () => {
         locale: LOCALE,
       },
     });
-    expect(
-      unborn.status(),
-      `a birth date one day past ${bound} was refused, so the picker's bound has become the ` +
-        "platform's rule rather than the form's own",
-    ).toBe(200);
+    expect(unborn.status(), await rejection(unborn)).toBe(400);
+    expect(await validationCodes(unborn)).toContain(
+      'org.apache.fineract.portfolio.client.familymember.date-of-birth.must-be-in-past',
+    );
 
-    // Which leaves the picker as the only thing that stops it: the first day the platform would
-    // have refused is the first day the form does not offer.
+    // A last name, though, is still the form's own rule and is marked as such: the platform
+    // stores a member without one.
+    const noLastName = await api.post(`${API_BASE}/clients/${client.clientId}/familymembers`, {
+      data: {
+        firstName: 'OnlyFirst',
+        relationshipId: relationship.id,
+        dateFormat: DATE_FORMAT,
+        locale: LOCALE,
+      },
+    });
+    expect(noLastName.status(), await rejection(noLastName)).toBe(200);
+
+    // And the picker stops on the same day the platform starts refusing, which is why none of
+    // the three answers above is one an operator ever has to read.
     await login(page);
     await page.goto(`/clients/${client.clientId}/family-members/create`);
     const picker = page.getByTestId('family-dob-picker');

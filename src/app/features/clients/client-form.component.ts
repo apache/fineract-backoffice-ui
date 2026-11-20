@@ -425,6 +425,7 @@ import {
                           data-testid="dateOfBirth-picker"
                           presentation="date"
                           name="dateOfBirth"
+                          [max]="maxDateOfBirth()"
                           [ngModel]="dateOfBirth()"
                           (ngModelChange)="dateOfBirth.set($event)"
                         ></ion-datetime>
@@ -660,6 +661,7 @@ export class ClientFormComponent implements OnInit {
   readonly submittedOnDate = signal(this.platformDate.today());
   readonly activationDate = signal(this.platformDate.today());
   readonly dateOfBirth = signal<string | null>(null);
+  readonly maxDateOfBirth = this.platformDate.today;
   readonly offices = signal<GetOfficesResponse[]>([]);
 
   /**

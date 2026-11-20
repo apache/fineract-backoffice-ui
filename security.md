@@ -496,6 +496,22 @@ The following changes should trigger a revision of this threat model:
 
 ## §13 Triage dispositions
 
+> [!IMPORTANT]
+> **Rule 1 is checked before anything else in this table and short-circuits the rest.**
+> This project has never been released by the Apache Fineract PMC. `package.json`
+> reads `1.0.0-rc.1`, there is no release tag, and the 1.0.0 release is tracked as
+> an open issue. A release candidate is not a release: no operator can be running
+> a released version of this UI, because there isn't one.
+
+| Disposition                               | Meaning                                                                                                                                                                                                                                                      | Licensed by |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
+| **1. `NOT-ACCEPTED: unreleased-project`** | **Checked first.** The report concerns this repository rather than a released Apache Fineract artifact. It is closed without further triage: no CVE is requested, no security release is made, and no embargo applies. None of the rows below are evaluated. | §2, §13a    |
+
+The rest of this table applies **only** once rule 1 no longer does — see §13a. It is
+kept current rather than deleted, because it is what triage returns to on the day
+1.0.0 ships, and because it is what the project uses on its own findings in the
+meantime.
+
 | Disposition                            | Meaning                                                                                                                                                                                      | Licensed by |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | `VALID`                                | Violates a property the project claims, via an in-scope adversary and input.                                                                                                                 | §8, §6, §7  |
@@ -507,6 +523,33 @@ The following changes should trigger a revision of this threat model:
 | `BY-DESIGN: property-disclaimed`       | Concerns a property the project explicitly does not provide (e.g., client-side rate limiting, CSP enforcement, storage encryption).                                                          | §9          |
 | `KNOWN-NON-FINDING`                    | Matches a known misuse pattern or explicitly documented non-finding under §11.                                                                                                               | §11         |
 | `MODEL-GAP`                            | Cannot be cleanly routed to any of the above. Triggers §12 revision and requires model update before triage can conclude.                                                                    | §12         |
+
+---
+
+## §13a When rule 1 stops applying
+
+Rule 1 of §13 is removed **in the same change that cuts the 1.0.0 release** — not
+separately, and not later. Whoever prepares that release removes it; the release is
+not complete while it is still here.
+
+That coupling is the point. An exemption of this shape is only honest while its
+premise holds, and the failure mode is not someone abusing it — it is everyone
+forgetting it. A file that still says "reports about this are closed unread" after
+the artifact ships would turn a true statement about a release candidate into a
+false one about a release, and it would do so silently.
+
+Two things rule 1 does **not** do:
+
+- **It does not suppress the model above it.** §1–§12 and §14–§18 describe a
+  threat model this project holds itself to today, and the project applies the
+  dispositions below rule 1 to its own findings — that is how the gates in §14
+  came to exist. Rule 1 governs what an _inbound report_ is entitled to, not what
+  the project considers worth fixing.
+- **It does not reach the Fineract server.** A finding in the Fineract API,
+  database or server-side authorization concerns a _released_ artifact and is
+  routed by `OUT-OF-MODEL: backend-layer`, not closed by rule 1. The release
+  status of this UI says nothing about the release status of what it talks to, and
+  conflating the two is the one misreading of rule 1 that could do real harm.
 
 ---
 

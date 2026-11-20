@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { PostLoansLoanIdTransactionsSubResource } from './postLoansLoanIdTransactionsSubResource';
 import { PostLoansLoanIdTransactionsResponseChanges } from './postLoansLoanIdTransactionsResponseChanges';
 
 
@@ -38,5 +39,9 @@ export interface PostLoansLoanIdTransactionsResponse {
     resourceId?: number;
     subResourceExternalId?: string;
     subResourceId?: number;
+    /**
+     * Derived transactions created with the refund (interest and/or fee refund)
+     */
+    subResources?: Array<PostLoansLoanIdTransactionsSubResource>;
 }
 

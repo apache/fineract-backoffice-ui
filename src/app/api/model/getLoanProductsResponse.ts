@@ -97,6 +97,7 @@ export interface GetLoanProductsResponse {
     shortName?: string;
     startDate?: string;
     status?: string;
+    supportedFeeRefundTypes?: Array<StringEnumOptionData>;
     supportedInterestRefundTypes?: Array<StringEnumOptionData>;
     transactionProcessingStrategy?: string;
     transactionProcessingStrategyName?: string;

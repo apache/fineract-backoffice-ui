@@ -33,6 +33,10 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
+import { CommandProcessingResult } from '../model/commandProcessingResult';
+// @ts-ignore
+import { ExternalAssetOwnerLoanAttributesData } from '../model/externalAssetOwnerLoanAttributesData';
+// @ts-ignore
 import { ExternalAssetOwnerRequest } from '../model/externalAssetOwnerRequest';
 // @ts-ignore
 import { ExternalOwnerJournalEntryData } from '../model/externalOwnerJournalEntryData';
@@ -52,6 +56,8 @@ import { PostExternalAssetOwnerRequest } from '../model/postExternalAssetOwnerRe
 import { PostExternalAssetOwnerResponse } from '../model/postExternalAssetOwnerResponse';
 // @ts-ignore
 import { PostInitiateTransferResponse } from '../model/postInitiateTransferResponse';
+// @ts-ignore
+import { PutExternalAssetOwnerLoanAttributeRequest } from '../model/putExternalAssetOwnerLoanAttributeRequest';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -115,6 +121,132 @@ export class ExternalAssetOwnersService extends BaseService {
         let localVarPath = `/v1/external-asset-owners`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<Array<ExternalTransferOwnerData>>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Retrieve the loan-level external asset owner attributes of a loan by loan external id
+     * Retrieves the copy of the external asset owner loan product attributes taken when COB executes the loan\&#39;s first sale. From then on the copy decides the loan\&#39;s external asset owner behaviour for the rest of its life, including resales, buybacks and later sales: attributes the loan product gains, changes or loses later do not affect it. An attribute that was not configured on the loan product when the copy was taken is not in the copy, and its default behaviour applies. SETTLEMENT_MODEL in the copy is the settlement model the sale was initiated under, even if the loan product changed before the sale was executed. copiedFromTransferId is the id of the sale request (the pending transfer) whose execution created the copy. A loan without a copy follows its loan product attributes and is returned with hasLoanLevelCopy&#x3D;false and no attributes. There is no backfill: loans sold before the loan-level copy was introduced have no copy, keep following their loan product attributes, and get a copy, taken from the loan product attributes at that moment, the next time COB executes a sale of the loan.
+     * @endpoint get /v1/external-asset-owners/loans/external-id/{loanExternalId}/attributes
+     * @param loanExternalId loanExternalId
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public getExternalAssetOwnersLoansExternalIdLoanExternalIdAttributes(loanExternalId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ExternalAssetOwnerLoanAttributesData>;
+    public getExternalAssetOwnersLoansExternalIdLoanExternalIdAttributes(loanExternalId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ExternalAssetOwnerLoanAttributesData>>;
+    public getExternalAssetOwnersLoansExternalIdLoanExternalIdAttributes(loanExternalId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ExternalAssetOwnerLoanAttributesData>>;
+    public getExternalAssetOwnersLoansExternalIdLoanExternalIdAttributes(loanExternalId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (loanExternalId === null || loanExternalId === undefined) {
+            throw new Error('Required parameter loanExternalId was null or undefined when calling getExternalAssetOwnersLoansExternalIdLoanExternalIdAttributes.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (basicAuth) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('basicAuth', 'Authorization', localVarHeaders, 'Basic ');
+
+        // authentication (tenantid) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('tenantid', 'fineract-platform-tenantid', localVarHeaders);
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/v1/external-asset-owners/loans/external-id/${this.configuration.encodeParam({name: "loanExternalId", value: loanExternalId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/attributes`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<ExternalAssetOwnerLoanAttributesData>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Retrieve the loan-level external asset owner attributes of a loan
+     * Retrieves the copy of the external asset owner loan product attributes taken when COB executes the loan\&#39;s first sale. From then on the copy decides the loan\&#39;s external asset owner behaviour for the rest of its life, including resales, buybacks and later sales: attributes the loan product gains, changes or loses later do not affect it. An attribute that was not configured on the loan product when the copy was taken is not in the copy, and its default behaviour applies. SETTLEMENT_MODEL in the copy is the settlement model the sale was initiated under, even if the loan product changed before the sale was executed. copiedFromTransferId is the id of the sale request (the pending transfer) whose execution created the copy. A loan without a copy follows its loan product attributes and is returned with hasLoanLevelCopy&#x3D;false and no attributes. There is no backfill: loans sold before the loan-level copy was introduced have no copy, keep following their loan product attributes, and get a copy, taken from the loan product attributes at that moment, the next time COB executes a sale of the loan.
+     * @endpoint get /v1/external-asset-owners/loans/{loanId}/attributes
+     * @param loanId loanId
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public getExternalAssetOwnersLoansLoanIdAttributes(loanId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ExternalAssetOwnerLoanAttributesData>;
+    public getExternalAssetOwnersLoansLoanIdAttributes(loanId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ExternalAssetOwnerLoanAttributesData>>;
+    public getExternalAssetOwnersLoansLoanIdAttributes(loanId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ExternalAssetOwnerLoanAttributesData>>;
+    public getExternalAssetOwnersLoansLoanIdAttributes(loanId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (loanId === null || loanId === undefined) {
+            throw new Error('Required parameter loanId was null or undefined when calling getExternalAssetOwnersLoansLoanIdAttributes.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (basicAuth) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('basicAuth', 'Authorization', localVarHeaders, 'Basic ');
+
+        // authentication (tenantid) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('tenantid', 'fineract-platform-tenantid', localVarHeaders);
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/v1/external-asset-owners/loans/${this.configuration.encodeParam({name: "loanId", value: loanId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/attributes`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<ExternalAssetOwnerLoanAttributesData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -960,6 +1092,83 @@ export class ExternalAssetOwnersService extends BaseService {
                 context: localVarHttpContext,
                 body: externalAssetOwnerRequest,
                 params: localVarQueryParameters.toHttpParams(),
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Correct a loan-level external asset owner attribute
+     * Exceptional correction tool, not part of the normal workflow. Sets a single external asset owner attribute on the loan-level copy of one loan. Validation, normalisation and error codes are the same as for the loan product attribute endpoint (PUT /external-asset-owners/loan-product/{loanProductId}/attributes/{id}). It affects only this loan and only activity from this point onwards; already posted journal entries and events are not changed. It is intended for use outside COB: relative to a COB run already in progress for the loan, when the correction takes effect is undefined and it may apply to only part of that run. The loan must already have a loan-level copy, which is taken when COB executes the loan\&#39;s first sale. There is no backfill: a loan sold before the loan-level copy was introduced has no copy until its next executed sale, follows its loan product attributes until then, and is rejected with error.msg.externalAssetOwnerLoanAttribute.noLoanLevelCopy. SETTLEMENT_MODEL cannot be changed while a transfer is in progress. Requires the UPDATE_EXTERNAL_ASSET_OWNER_LOAN_ATTRIBUTE permission and supports maker-checker.
+     * @endpoint put /v1/external-asset-owners/loans/{loanId}/attributes
+     * @param loanId loanId
+     * @param putExternalAssetOwnerLoanAttributeRequest 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public putExternalAssetOwnersLoansLoanIdAttributes(loanId: number, putExternalAssetOwnerLoanAttributeRequest: PutExternalAssetOwnerLoanAttributeRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
+    public putExternalAssetOwnersLoansLoanIdAttributes(loanId: number, putExternalAssetOwnerLoanAttributeRequest: PutExternalAssetOwnerLoanAttributeRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
+    public putExternalAssetOwnersLoansLoanIdAttributes(loanId: number, putExternalAssetOwnerLoanAttributeRequest: PutExternalAssetOwnerLoanAttributeRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public putExternalAssetOwnersLoansLoanIdAttributes(loanId: number, putExternalAssetOwnerLoanAttributeRequest: PutExternalAssetOwnerLoanAttributeRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (loanId === null || loanId === undefined) {
+            throw new Error('Required parameter loanId was null or undefined when calling putExternalAssetOwnersLoansLoanIdAttributes.');
+        }
+        if (putExternalAssetOwnerLoanAttributeRequest === null || putExternalAssetOwnerLoanAttributeRequest === undefined) {
+            throw new Error('Required parameter putExternalAssetOwnerLoanAttributeRequest was null or undefined when calling putExternalAssetOwnersLoansLoanIdAttributes.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (basicAuth) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('basicAuth', 'Authorization', localVarHeaders, 'Basic ');
+
+        // authentication (tenantid) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('tenantid', 'fineract-platform-tenantid', localVarHeaders);
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/v1/external-asset-owners/loans/${this.configuration.encodeParam({name: "loanId", value: loanId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/attributes`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<CommandProcessingResult>('put', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: putExternalAssetOwnerLoanAttributeRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

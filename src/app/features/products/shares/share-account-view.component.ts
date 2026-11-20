@@ -21,6 +21,7 @@ import { CdkTableModule } from '@angular/cdk/table';
 import { DecimalPipe } from '@angular/common';
 import {
   Component,
+  DestroyRef,
   OnInit,
   OnDestroy,
   computed,
@@ -45,10 +46,13 @@ import {
   IonSegmentButton,
   IonSpinner,
 } from '@ionic/angular/standalone';
-import { Observable, from } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, Observable, Subject, catchError, finalize, from, switchMap } from 'rxjs';
 
 import { ShareAccountService } from '../../../api';
 import { I18N, TranslatePipe } from '../../../core/adapters';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
+import { buildAccountBreadcrumbs } from '../../../layout/breadcrumb';
 import { DialogService } from '../../../core/services/dialog.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -401,6 +405,9 @@ export class ShareAccountViewComponent implements OnInit, OnDestroy {
   private readonly dialogService = inject(DialogService);
   private readonly notifications = inject(NotificationService);
   private readonly i18n = inject(I18N);
+  private readonly breadcrumbService = inject(BreadcrumbService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly reloadAccount$ = new Subject<void>();
 
   private static readonly TYPE = 'share';
   private readonly LIST_PATH = '/products/shares';
@@ -414,31 +421,64 @@ export class ShareAccountViewComponent implements OnInit, OnDestroy {
   readonly shareColumns = ['date', 'type', 'shares', 'price', 'amount', 'status'];
 
   ngOnInit(): void {
-    this.accountId = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadAccount();
+    this.observeAccountReloads();
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const id = params.get('id');
+      if (id === null) return;
+
+      this.accountId = Number(id);
+      this.loadAccount();
+    });
   }
 
   ngOnDestroy(): void {
     for (const popover of this.popovers()) {
       void popover.dismiss().catch(() => false);
     }
+    this.breadcrumbService.clearOverride();
   }
 
   loadAccount(): void {
-    this.isLoading.set(true);
-    this.shareService
-      .getAccountsTypeAccountId(this.accountId, ShareAccountViewComponent.TYPE)
-      .subscribe({
-        next: (data) => {
-          this.account.set(data as unknown as ShareAccountDetail);
+    this.reloadAccount$.next();
+  }
+
+  private observeAccountReloads(): void {
+    this.reloadAccount$
+      .pipe(
+        switchMap(() => {
+          this.breadcrumbService.setOverride([]);
+          this.isLoading.set(true);
           this.hasError.set(false);
-          this.isLoading.set(false);
-        },
-        error: () => {
-          this.hasError.set(true);
-          this.isLoading.set(false);
-        },
-      });
+          return this.shareService
+            .getAccountsTypeAccountId(this.accountId, ShareAccountViewComponent.TYPE)
+            .pipe(
+              catchError(() => {
+                this.hasError.set(true);
+                return EMPTY;
+              }),
+              finalize(() => this.isLoading.set(false)),
+            );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((data) => this.applyAccountData(data as unknown as ShareAccountDetail));
+  }
+
+  private applyAccountData(account: ShareAccountDetail): void {
+    this.account.set(account);
+
+    const { clientId, clientName, accountNo } = account;
+    if (clientId == null || !clientName?.trim() || !accountNo?.trim()) {
+      return;
+    }
+
+    this.breadcrumbService.setOverride(
+      buildAccountBreadcrumbs({
+        owner: { type: 'client', id: clientId, name: clientName },
+        accountType: 'share',
+        accountNo,
+      }),
+    );
   }
 
   // --- Status ---------------------------------------------------------------------------------
