@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { GetSavingsChargeTransactionResponse } from './getSavingsChargeTransactionResponse';
 import { GetChargesChargeCalculationType } from './getChargesChargeCalculationType';
 import { GetChargesChargeTimeType } from './getChargesChargeTimeType';
 import { GetChargesCurrencyResponse } from './getChargesCurrencyResponse';
@@ -47,5 +48,6 @@ export interface GetSavingsAccountsSavingsAccountIdChargesSavingsAccountChargeId
     name?: string;
     penalty?: boolean;
     percentage?: number;
+    transactions?: Array<GetSavingsChargeTransactionResponse>;
 }
 

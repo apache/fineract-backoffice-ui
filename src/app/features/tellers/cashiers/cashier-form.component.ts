@@ -83,7 +83,9 @@ interface CashierForm {
     <div class="form-container">
       <ion-card>
         <ion-card-header>
-          <ion-card-title>{{ 'TELLERS.ALLOCATE_CASHIER' | appTranslate }}</ion-card-title>
+          <ion-card-title>{{
+            (isEdit() ? 'TELLERS.EDIT_CASHIER' : 'TELLERS.ALLOCATE_CASHIER') | appTranslate
+          }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
@@ -129,6 +131,7 @@ interface CashierForm {
                           id="cashier-start-date-picker"
                           data-testid="cashier-start-date-picker"
                           presentation="date"
+                          [value]="startDate()"
                           (ionChange)="onStartDateChange($event)"
                         ></ion-datetime>
                       </ng-template>
@@ -151,6 +154,7 @@ interface CashierForm {
                           id="cashier-end-date-picker"
                           data-testid="cashier-end-date-picker"
                           presentation="date"
+                          [value]="endDate()"
                           (ionChange)="onEndDateChange($event)"
                         ></ion-datetime>
                       </ng-template>
@@ -232,33 +236,77 @@ export class CashierFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   tellerId = 0;
+  cashierId = 0;
+  /** True on `cashiers/:cashierId/edit`, which modifies the allocation instead of creating one. */
+  readonly isEdit = signal(false);
   readonly isSaving = signal(false);
 
   cashier: CashierForm = {
     isFullDay: true,
   };
 
-  startDate: Date = new Date();
-  endDate: Date = new Date();
+  /**
+   * ISO-8601 `YYYY-MM-DD`, not `Date`.
+   *
+   * The pickers now bind `[value]`, which they did not before — without it a loaded allocation's
+   * dates had nowhere to land and the edit form would have shown today for both. `ion-datetime`
+   * reads and emits this format, and so does the adapter, so holding the string means no
+   * conversion in either direction and no timezone to get wrong on the way through.
+   */
+  readonly startDate = signal(toIsoDate(new Date()));
+  readonly endDate = signal(toIsoDate(new Date()));
   readonly staff = signal<Staff[]>([]);
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
       this.tellerId = +params['tellerId'];
+      const cashierId = params['cashierId'];
+      if (cashierId) {
+        this.cashierId = +cashierId;
+        this.isEdit.set(true);
+        this.loadCashier();
+      }
     });
     this.loadStaff();
   }
 
   onStartDateChange(event: CustomEvent): void {
     if (event.detail.value) {
-      this.startDate = new Date(event.detail.value as string);
+      this.startDate.set(toIsoDate(new Date(event.detail.value as string)));
     }
   }
 
   onEndDateChange(event: CustomEvent): void {
     if (event.detail.value) {
-      this.endDate = new Date(event.detail.value as string);
+      this.endDate.set(toIsoDate(new Date(event.detail.value as string)));
     }
+  }
+
+  /**
+   * Prefills from the allocation being edited.
+   *
+   * A date Fineract did not send is left at the form's default rather than blanked: the platform
+   * requires both ends of the period, so an empty picker would only buy a refusal.
+   */
+  private loadCashier(): void {
+    this.tellerApi.getCashier(this.tellerId, this.cashierId).subscribe({
+      next: (cashier) => {
+        this.cashier = {
+          staffId: cashier.staffId ?? undefined,
+          isFullDay: cashier.isFullDay,
+          description: cashier.description ?? undefined,
+        };
+        if (cashier.startDate) {
+          this.startDate.set(cashier.startDate);
+        }
+        if (cashier.endDate) {
+          this.endDate.set(cashier.endDate);
+        }
+      },
+      error: (err: unknown) => {
+        console.error('Failed to load the cashier allocation', err);
+      },
+    });
   }
 
   private loadStaff(): void {
@@ -275,20 +323,24 @@ export class CashierFormComponent implements OnInit {
   onSubmit(): void {
     this.isSaving.set(true);
 
-    this.tellerApi
-      .createCashier(this.tellerId, {
-        // The picker cannot submit without a staff member: the field is `required`, and the
-        // button is disabled while the form is invalid.
-        staffId: this.cashier.staffId!,
-        isFullDay: this.cashier.isFullDay,
-        description: this.cashier.description,
-        startDate: toIsoDate(this.startDate),
-        endDate: toIsoDate(this.endDate),
-      })
-      .subscribe({
-        next: () => this.router.navigate(['/tellers', this.tellerId, 'cashiers']),
-        error: () => this.isSaving.set(false),
-      });
+    const payload = {
+      // The form cannot submit without a staff member: the field is `required`, and the button
+      // is disabled while the form is invalid.
+      staffId: this.cashier.staffId!,
+      isFullDay: this.cashier.isFullDay,
+      description: this.cashier.description,
+      startDate: this.startDate(),
+      endDate: this.endDate(),
+    };
+
+    const saved = this.isEdit()
+      ? this.tellerApi.updateCashier(this.tellerId, this.cashierId, payload)
+      : this.tellerApi.createCashier(this.tellerId, payload);
+
+    saved.subscribe({
+      next: () => this.router.navigate(['/tellers', this.tellerId, 'cashiers']),
+      error: () => this.isSaving.set(false),
+    });
   }
 
   onCancel(): void {

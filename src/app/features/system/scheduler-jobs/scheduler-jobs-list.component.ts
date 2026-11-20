@@ -25,6 +25,7 @@ import { ColumnDef, CellTemplateDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { IonButton, IonCard, IonCheckbox, IonIcon, IonToggle } from '@ionic/angular/standalone';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
 import { I18N, TranslatePipe } from '../../../core/adapters';
 import { DialogService } from '../../../core/services/dialog.service';
 import {
@@ -54,6 +55,7 @@ import {
     IonCheckbox,
     IonToggle,
     TooltipDirective,
+    HasPermissionDirective,
     DateTimePipe,
   ],
   template: `
@@ -130,6 +132,21 @@ import {
         >
           <ion-icon name="time-outline"></ion-icon>
         </ion-button>
+        <!--
+          Removed rather than disabled: it leads to a route that declares UPDATE_SCHEDULER, and an
+          operator who may only run jobs has nothing to do there. Fineract refuses the PUT anyway.
+        -->
+        <ion-button
+          *appHasPermission="'UPDATE_SCHEDULER'"
+          fill="clear"
+          color="primary"
+          data-testid="scheduler-job-edit"
+          [attr.aria-label]="'COMMON.EDIT' | appTranslate"
+          [appTooltip]="'COMMON.EDIT' | appTranslate"
+          (click)="onEdit(row)"
+        >
+          <ion-icon name="create-outline"></ion-icon>
+        </ion-button>
       </ng-template>
     </app-data-table>
   `,
@@ -161,7 +178,7 @@ export class SchedulerJobsListComponent implements OnInit {
     { key: 'displayName', label: 'SCHEDULER_JOBS.NAME', sortable: true },
     { key: 'active', label: 'SCHEDULER_JOBS.ACTIVE', sortable: true, width: '100px' },
     { key: 'nextRunTime', label: 'SCHEDULER_JOBS.NEXT_RUN', sortable: true, width: '200px' },
-    { key: 'actions', label: 'COMMON.ACTIONS', sortable: false, width: '100px' },
+    { key: 'actions', label: 'COMMON.ACTIONS', sortable: false, width: '150px' },
   ];
 
   readonly jobs = signal<GetJobsResponse[]>([]);
@@ -213,6 +230,11 @@ export class SchedulerJobsListComponent implements OnInit {
   onHistory(row: GetJobsResponse): void {
     if (!row.jobId) return;
     this.router.navigate(['/system/scheduler-jobs', row.jobId, 'history']);
+  }
+
+  onEdit(row: GetJobsResponse): void {
+    if (!row.jobId) return;
+    this.router.navigate(['/system/scheduler-jobs', row.jobId, 'edit']);
   }
 
   isSelected(row: GetJobsResponse): boolean {

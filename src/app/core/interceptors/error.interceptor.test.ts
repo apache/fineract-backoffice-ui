@@ -151,6 +151,107 @@ describe('errorInterceptor', () => {
     expect(notificationsSpy.error).toHaveBeenCalledWith(expectedMessage);
   });
 
+  /**
+   * The payload here is `POST /users` with a policy-violating password and a mismatched
+   * confirmation, exactly as a running Fineract answers it: the rejected password is in
+   * `args[0].value` of the first entry, and the `repeatPassword` entry carries both values.
+   * Issue #752 — the field is masked, and the toast used to print it anyway.
+   */
+  it('never echoes a rejected password back, in either entry', () => {
+    const submitted = 'passsword1A!x';
+    const confirmation = 'different2B!y';
+    const mockPasswordRefusal = {
+      defaultUserMessage: 'Validation errors exist.',
+      userMessageGlobalisationCode: 'validation.msg.validation.errors.exist',
+      errors: [
+        {
+          defaultUserMessage:
+            'Password must be 12 to 50 characters long, containing at least one uppercase letter',
+          userMessageGlobalisationCode: 'validation.msg.user.password.does.not.match.regexp',
+          parameterName: 'password',
+          args: [
+            { value: submitted },
+            { value: String.raw`^(?!.*(.)\1)(?!.*\s)(?=.*\d).{12,50}$` },
+          ],
+        },
+        {
+          defaultUserMessage: 'The parameter `repeatPassword` is not equal to password.',
+          userMessageGlobalisationCode: 'validation.msg.user.repeatPassword.not.equal.to.password',
+          parameterName: 'repeatPassword',
+          args: [{ value: confirmation }, { value: submitted }],
+        },
+      ],
+    };
+
+    httpClient.post(testUrl, {}).subscribe({
+      next: () => {
+        throw new Error(expectedErrorMsg);
+      },
+      error: () => undefined,
+    });
+
+    const req = httpTestingController.expectOne(testUrl);
+    req.flush(mockPasswordRefusal, { status: 400, statusText: 'Bad Request' });
+
+    const message = notificationsSpy.error.mock.calls[0][0] as string;
+    expect(message).not.toContain(submitted);
+    expect(message).not.toContain(confirmation);
+    // The regex goes with them: it is the only other thing in the args, and the message beside
+    // it already states the rule in words.
+    expect(message).not.toContain('(?!');
+    // The rules themselves still reach the user.
+    expect(message).toContain('Password must be 12 to 50 characters long');
+    expect(message).toContain('[repeatPassword]');
+  });
+
+  it('never echoes a rejected SMS gateway app key back', () => {
+    httpClient.put(testUrl, {}).subscribe({ error: () => undefined });
+
+    httpTestingController.expectOne(testUrl).flush(
+      {
+        errors: [
+          {
+            parameterName: 'tenant_app_key',
+            defaultUserMessage: 'The parameter `tenant_app_key` is invalid.',
+            args: [{ value: 'gateway-secret-key' }],
+          },
+        ],
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    const message = notificationsSpy.error.mock.calls[0][0] as string;
+    expect(message).not.toContain('gateway-secret-key');
+    expect(message).toContain('[tenant_app_key]');
+  });
+
+  it('still echoes a non-sensitive parameter, which is what the args are for', () => {
+    const mockRefusal = {
+      errors: [
+        {
+          parameterName: 'principal',
+          defaultUserMessage: 'Principal is greater than the maximum the product allows',
+          args: [{ value: 50_000 }],
+        },
+      ],
+    };
+
+    httpClient.post(testUrl, {}).subscribe({
+      next: () => {
+        throw new Error(expectedErrorMsg);
+      },
+      error: () => undefined,
+    });
+
+    httpTestingController
+      .expectOne(testUrl)
+      .flush(mockRefusal, { status: 400, statusText: 'Bad Request' });
+
+    expect(notificationsSpy.error).toHaveBeenCalledWith(
+      '• [principal] Principal is greater than the maximum the product allows (50000)',
+    );
+  });
+
   it('should handle single developerMessage or defaultUserMessage', () => {
     httpClient.get(testUrl).subscribe({
       next: () => {

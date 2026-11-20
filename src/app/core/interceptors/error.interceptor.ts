@@ -81,6 +81,47 @@ function unwrapNestedError(err: Record<string, unknown>): Record<string, unknown
 }
 
 /**
+ * Parameter names whose value must never reach the screen.
+ *
+ * Fineract echoes the rejected value back in `args`, which this formatter appends to the
+ * message so a user can see what the platform objected to. For a password that is a disclosure:
+ * `POST /users` with a password the policy refuses answers
+ *
+ * ```json
+ * { "parameterName": "password",
+ *   "userMessageGlobalisationCode": "validation.msg.user.password.does.not.match.regexp",
+ *   "args": [ { "value": "<the submitted password>" }, { "value": "^(?!.*(.)\\1)…" } ] }
+ * ```
+ *
+ * and the `repeatPassword` entry carries **both** values. Measured against a running Fineract.
+ * The field is masked precisely so the value is not readable on screen, over a shoulder, in a
+ * screenshot or in a support ticket; a toast that prints it undoes that. Issue #752.
+ *
+ * Matched as a substring of the lower-cased parameter name, so `repeatPassword`,
+ * `clientSecret` and `pinNumber` are all covered without enumerating every spelling the
+ * platform might use. When a parameter matches, the args are dropped entirely rather than
+ * filtered: the only other thing in them is the policy regex, which no operator can act on —
+ * the message beside it already states the rule in words.
+ */
+const SENSITIVE_PARAMETER_FRAGMENTS: readonly string[] = [
+  'password',
+  'secret',
+  'pin',
+  'token',
+  'credential',
+  'otp',
+  // The SMS gateway's `tenant_app_key` (issue #790).
+  'app_key',
+];
+
+/** Whether this error entry names a parameter whose value must not be echoed. */
+function isSensitiveParameter(parameterName: unknown): boolean {
+  if (typeof parameterName !== 'string') return false;
+  const name = parameterName.toLowerCase();
+  return SENSITIVE_PARAMETER_FRAGMENTS.some((fragment) => name.includes(fragment));
+}
+
+/**
  * Builds the user-facing message for a failed request.
  *
  * Fineract returns validation failures as an `errors` array, each entry naming the parameter
@@ -117,7 +158,7 @@ function messageFor(error: HttpErrorResponse, i18n: I18nAdapter): string {
         const err = unwrapNestedError(rawErr);
         const msg = err['developerMessage'] || err['defaultUserMessage'] || 'Validation error';
         const param = err['parameterName'] ? `[${err['parameterName']}] ` : '';
-        const rawArgs = err['args'];
+        const rawArgs = isSensitiveParameter(err['parameterName']) ? undefined : err['args'];
         const argStrings = Array.isArray(rawArgs)
           ? rawArgs
               .map((a: unknown) =>

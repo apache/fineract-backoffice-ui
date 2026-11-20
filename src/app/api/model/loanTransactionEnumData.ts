@@ -49,11 +49,13 @@ export interface LoanTransactionEnumData {
     creditBalanceRefund?: boolean;
     disbursement?: boolean;
     downPayment?: boolean;
+    feeRefund?: boolean;
     goodwillCredit?: boolean;
     id?: number;
     initiateTransfer?: boolean;
     interestPaymentWaiver?: boolean;
     interestRefund?: boolean;
+    loanWithdrawal?: boolean;
     merchantIssuedRefund?: boolean;
     payoutRefund?: boolean;
     reAge?: boolean;

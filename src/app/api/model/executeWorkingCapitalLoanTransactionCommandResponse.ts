@@ -29,6 +29,7 @@
  * Response for working capital loan transaction command execution
  */
 export interface ExecuteWorkingCapitalLoanTransactionCommandResponse { 
+    changes?: { [key: string]: object; };
     clientId?: number;
     loanExternalId?: string;
     loanId?: number;

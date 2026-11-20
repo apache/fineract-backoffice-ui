@@ -5,7 +5,7 @@
     "description": "Apache Fineract is a secure, multi-tenanted microfinance platform.\nThe goal of the Apache Fineract API is to empower developers to build apps on top of the Apache Fineract Platform.\nThe [reference app](https://cui.fineract.dev) (username: mifos, password: password) works on the same demo tenant as the interactive links in this documentation.\nUntil we complete the new REST API documentation you still have the legacy documentation available [here](https://fineract.apache.org/docs/legacy/).\nPlease check [the current Fineract documentation](https://fineract.apache.org/docs/current/) for more information.",
     "license": { "name": "Apache 2.0", "url": "http://www.apache.org/licenses/LICENSE-2.0.html" },
     "title": "Apache Fineract REST API",
-    "version": "1.16.0-SNAPSHOT"
+    "version": "1.17.0-SNAPSHOT"
   },
   "servers": [
     { "url": "/fineract-provider/api" },
@@ -272,6 +272,10 @@
     {
       "description": "API to enable clients to retrieve Loan states in a specific point in time",
       "name": "LoansPointInTime"
+    },
+    {
+      "description": "Computes a progressive-loan payoff schedule from raw inputs, without creating or referencing a loan and without persisting anything.",
+      "name": "Payoff Schedule Preview"
     },
     {
       "description": "internal loan testing API. This API should be disabled in production!!!",
@@ -1031,7 +1035,7 @@
         "x-alternative-operation-id": "retrieveAllAccounts_1"
       },
       "post": {
-        "description": "Submits new share application\n\nMandatory Fields: clientId, productId, submittedDate, savingsAccountId, requestedShares, applicationDate\n\nOptional Fields: accountNo, externalId\n\nInherited from Product (if not provided): minimumActivePeriod, minimumActivePeriodFrequencyType, lockinPeriodFrequency, lockinPeriodFrequencyType",
+        "description": "Submits new share application\n\nMandatory Fields: clientId, productId, submittedDate, savingsAccountId, requestedShares, applicationDate\n\nOptional Fields: accountNo, externalId, paymentTypeId, accountNumber, checkNumber, routingCode, receiptNumber, bankNumber\n\nInherited from Product (if not provided): minimumActivePeriod, minimumActivePeriodFrequencyType, lockinPeriodFrequency, lockinPeriodFrequencyType",
         "operationId": "createShareAccount",
         "parameters": [
           {
@@ -1735,6 +1739,68 @@
           { "in": "query", "name": "processingResult", "schema": { "type": "string" } },
           { "in": "query", "name": "dateFormat", "schema": { "type": "string" } },
           { "in": "query", "name": "locale", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "productId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "transactionId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "subresourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "resourceExternalId", "schema": { "type": "string" } },
+          { "in": "query", "name": "subresourceExternalId", "schema": { "type": "string" } },
+          { "in": "query", "name": "loanExternalId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedOfficeId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedGroupId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedClientId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedLoanId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedSavingsAccountId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedProductId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "submittedTransactionId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedResourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "submittedResourceExternalId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedSubresourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedSubresourceExternalId",
+            "schema": { "type": "string" }
+          },
+          { "in": "query", "name": "submittedLoanExternalId", "schema": { "type": "string" } },
           {
             "description": "offset",
             "in": "query",
@@ -5214,6 +5280,9 @@
               }
             },
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request: validation.msg.globalConfiguration.stringValue.is.not.one.of.expected.enumerations if stringValue is not one of the configuration's allowedValues"
           }
         },
         "summary": "Update Global Configuration by name",
@@ -5302,6 +5371,9 @@
               }
             },
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request: validation.msg.globalConfiguration.stringValue.is.not.one.of.expected.enumerations if stringValue is not one of the configuration's allowedValues"
           }
         },
         "summary": "Update Global Configuration",
@@ -5886,7 +5958,7 @@
     },
     "/v1/datatables/{datatable}/{apptableId}/{datatableId}": {
       "delete": {
-        "description": "Deletes the entry (if it exists) for data tables that are one to many with the application table.",
+        "description": "Deletes the entry for data tables that are one to many with the application table. An entry that does not belong to apptableId is not found. A data table that is one-to-one with the application table refuses an entry id.",
         "operationId": "deleteDatatableEntry",
         "parameters": [
           {
@@ -5962,7 +6034,7 @@
         "tags": ["Data Tables"]
       },
       "put": {
-        "description": "Updates the row (if it exists) of the data table.",
+        "description": "Updates the row (if it exists) of the data table. A data table that is one-to-one with the application table refuses an entry id.",
         "operationId": "updateDatatableEntryOneToMany",
         "parameters": [
           {
@@ -7123,6 +7195,96 @@
         "summary": "Update a Loan Product Attribute",
         "tags": ["External Asset Owner Loan Product Attributes"],
         "x-alternative-operation-id": "updateLoanProductAttribute"
+      }
+    },
+    "/v1/external-asset-owners/loans/external-id/{loanExternalId}/attributes": {
+      "get": {
+        "description": "Retrieves the copy of the external asset owner loan product attributes taken when COB executes the loan's first sale. From then on the copy decides the loan's external asset owner behaviour for the rest of its life, including resales, buybacks and later sales: attributes the loan product gains, changes or loses later do not affect it. An attribute that was not configured on the loan product when the copy was taken is not in the copy, and its default behaviour applies. SETTLEMENT_MODEL in the copy is the settlement model the sale was initiated under, even if the loan product changed before the sale was executed. copiedFromTransferId is the id of the sale request (the pending transfer) whose execution created the copy. A loan without a copy follows its loan product attributes and is returned with hasLoanLevelCopy=false and no attributes. There is no backfill: loans sold before the loan-level copy was introduced have no copy, keep following their loan product attributes, and get a copy, taken from the loan product attributes at that moment, the next time COB executes a sale of the loan.",
+        "operationId": "retrieveExternalAssetOwnerLoanAttributesByLoanExternalId",
+        "parameters": [
+          {
+            "description": "loanExternalId",
+            "in": "path",
+            "name": "loanExternalId",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ExternalAssetOwnerLoanAttributesData" }
+              }
+            },
+            "description": "default response"
+          }
+        },
+        "summary": "Retrieve the loan-level external asset owner attributes of a loan by loan external id",
+        "tags": ["External Asset Owners"]
+      }
+    },
+    "/v1/external-asset-owners/loans/{loanId}/attributes": {
+      "get": {
+        "description": "Retrieves the copy of the external asset owner loan product attributes taken when COB executes the loan's first sale. From then on the copy decides the loan's external asset owner behaviour for the rest of its life, including resales, buybacks and later sales: attributes the loan product gains, changes or loses later do not affect it. An attribute that was not configured on the loan product when the copy was taken is not in the copy, and its default behaviour applies. SETTLEMENT_MODEL in the copy is the settlement model the sale was initiated under, even if the loan product changed before the sale was executed. copiedFromTransferId is the id of the sale request (the pending transfer) whose execution created the copy. A loan without a copy follows its loan product attributes and is returned with hasLoanLevelCopy=false and no attributes. There is no backfill: loans sold before the loan-level copy was introduced have no copy, keep following their loan product attributes, and get a copy, taken from the loan product attributes at that moment, the next time COB executes a sale of the loan.",
+        "operationId": "retrieveExternalAssetOwnerLoanAttributes",
+        "parameters": [
+          {
+            "description": "loanId",
+            "in": "path",
+            "name": "loanId",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ExternalAssetOwnerLoanAttributesData" }
+              }
+            },
+            "description": "default response"
+          }
+        },
+        "summary": "Retrieve the loan-level external asset owner attributes of a loan",
+        "tags": ["External Asset Owners"]
+      },
+      "put": {
+        "description": "Exceptional correction tool, not part of the normal workflow. Sets a single external asset owner attribute on the loan-level copy of one loan. Validation, normalisation and error codes are the same as for the loan product attribute endpoint (PUT /external-asset-owners/loan-product/{loanProductId}/attributes/{id}). It affects only this loan and only activity from this point onwards; already posted journal entries and events are not changed. It is intended for use outside COB: relative to a COB run already in progress for the loan, when the correction takes effect is undefined and it may apply to only part of that run. The loan must already have a loan-level copy, which is taken when COB executes the loan's first sale. There is no backfill: a loan sold before the loan-level copy was introduced has no copy until its next executed sale, follows its loan product attributes until then, and is rejected with error.msg.externalAssetOwnerLoanAttribute.noLoanLevelCopy. SETTLEMENT_MODEL cannot be changed while a transfer is in progress. Requires the UPDATE_EXTERNAL_ASSET_OWNER_LOAN_ATTRIBUTE permission and supports maker-checker.",
+        "operationId": "updateExternalAssetOwnerLoanAttribute",
+        "parameters": [
+          {
+            "description": "loanId",
+            "in": "path",
+            "name": "loanId",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PutExternalAssetOwnerLoanAttributeRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
+          },
+          "403": {
+            "description": "The loan has no loan-level copy, the attribute is invalid, or a transfer is in progress"
+          }
+        },
+        "summary": "Correct a loan-level external asset owner attribute",
+        "tags": ["External Asset Owners"]
       }
     },
     "/v1/external-asset-owners/owners/external-id/{ownerExternalId}/journal-entries": {
@@ -8314,7 +8476,7 @@
         "x-alternative-operation-id": "retrieveAll_30"
       },
       "post": {
-        "description": "Creates a Fixed Deposit Product\n\nMandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal,inMultiplesOf, interestCompoundingPeriodType, interestCalculationType, interestCalculationDaysInYearType, minDepositTerm, minDepositTermTypeId, accountingRule\n\nOptional Fields: lockinPeriodFrequency, lockinPeriodFrequencyType, maxDepositTerm, maxDepositTermTypeId, inMultiplesOfDepositTerm, inMultiplesOfDepositTermTypeId, preClosurePenalApplicable, preClosurePenalInterest, preClosurePenalInterestOnTypeId, feeToIncomeAccountMappings, penaltyToIncomeAccountMappings, charges, charts, , withHoldTax, taxGroupId\n\n\nMandatory Fields for Cash based accounting (accountingRule = 2): savingsReferenceAccountId, savingsControlAccountId, interestOnSavingsAccountId, incomeFromFeeAccountId, transfersInSuspenseAccountId, incomeFromPenaltyAccountId",
+        "description": "Creates a Fixed Deposit Product\n\nMandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal,inMultiplesOf, interestCompoundingPeriodType, interestCalculationType, interestCalculationDaysInYearType, minDepositTerm, minDepositTermTypeId, accountingRule\n\nOptional Fields: startDate, closeDate, lockinPeriodFrequency, lockinPeriodFrequencyType, maxDepositTerm, maxDepositTermTypeId, inMultiplesOfDepositTerm, inMultiplesOfDepositTermTypeId, preClosurePenalApplicable, preClosurePenalInterest, preClosurePenalInterestOnTypeId, feeToIncomeAccountMappings, penaltyToIncomeAccountMappings, charges, charts, , withHoldTax, taxGroupId\n\n\nMandatory Fields for Cash based accounting (accountingRule = 2): savingsReferenceAccountId, savingsControlAccountId, interestOnSavingsAccountId, incomeFromFeeAccountId, transfersInSuspenseAccountId, incomeFromPenaltyAccountId",
         "operationId": "createFixedDepositProduct",
         "requestBody": {
           "content": {
@@ -10462,13 +10624,11 @@
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ProgressiveLoanInterestScheduleModel" }
-              }
+              "application/json": { "schema": { "type": "object", "additionalProperties": true } }
             },
-            "description": "default response"
+            "description": "Progressive loan interest schedule model"
           }
         },
         "summary": "Fetch ProgressiveLoanInterestScheduleModel",
@@ -10488,13 +10648,11 @@
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ProgressiveLoanInterestScheduleModel" }
-              }
+              "application/json": { "schema": { "type": "object", "additionalProperties": true } }
             },
-            "description": "default response"
+            "description": "Progressive loan interest schedule model"
           }
         },
         "summary": "Update and Save ProgressiveLoanInterestScheduleModel",
@@ -17893,7 +18051,69 @@
             "schema": { "type": "integer", "format": "int64" }
           },
           { "in": "query", "name": "dateFormat", "schema": { "type": "string" } },
-          { "in": "query", "name": "locale", "schema": { "type": "string" } }
+          { "in": "query", "name": "locale", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "productId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "transactionId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "subresourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "resourceExternalId", "schema": { "type": "string" } },
+          { "in": "query", "name": "subresourceExternalId", "schema": { "type": "string" } },
+          { "in": "query", "name": "loanExternalId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedOfficeId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedGroupId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedClientId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedLoanId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedSavingsAccountId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedProductId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "submittedTransactionId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedResourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "submittedResourceExternalId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedSubresourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedSubresourceExternalId",
+            "schema": { "type": "string" }
+          },
+          { "in": "query", "name": "submittedLoanExternalId", "schema": { "type": "string" } }
         ],
         "responses": {
           "default": {
@@ -18524,6 +18744,32 @@
         },
         "summary": "Update a Payment Type",
         "tags": ["Payment Type"]
+      }
+    },
+    "/v1/payoff-schedule-preview": {
+      "post": {
+        "description": "Computes a declining-balance, equal-installment schedule with the progressive loan engine, either over a term or by applying a fixed payment each period until the amount is paid off. The term must use the frequency's unit and be an exact multiple of it, as for a regular loan. Due dates are not moved for holidays or non-working days. Requires the LOAN read permission.",
+        "operationId": "calculatePayoffSchedulePreview",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostPayoffSchedulePreviewRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PostPayoffSchedulePreviewResponse" }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Compute a payoff schedule preview",
+        "tags": ["Payoff Schedule Preview"]
       }
     },
     "/v1/permissions": {
@@ -19859,7 +20105,7 @@
         "x-alternative-operation-id": "retrieveAll_32"
       },
       "post": {
-        "description": "Creates a Recurring Deposit Product\n\nMandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal,inMultiplesOf, interestCompoundingPeriodType, interestPostingPeriodType, interestCalculationType, interestCalculationDaysInYearType, minDepositTerm, minDepositTermTypeId, accountingRule, depositAmount, charts\n\nMandatory Fields for Cash based accounting (accountingRule = 2): savingsReferenceAccountId, savingsControlAccountId, interestOnSavingsAccountId, incomeFromFeeAccountId, transfersInSuspenseAccountId, incomeFromPenaltyAccountId\n\nOptional Fields: lockinPeriodFrequency, lockinPeriodFrequencyType, maxDepositTerm, maxDepositTermTypeId, inMultiplesOfDepositTerm, inMultiplesOfDepositTermTypeId, preClosurePenalApplicable, preClosurePenalInterest, preClosurePenalInterestOnTypeId, feeToIncomeAccountMappings, penaltyToIncomeAccountMappings, charges, minDepositAmount, maxDepositAmount, withHoldTax, taxGroupId",
+        "description": "Creates a Recurring Deposit Product\n\nMandatory Fields: name, shortName, description, currencyCode, digitsAfterDecimal,inMultiplesOf, interestCompoundingPeriodType, interestPostingPeriodType, interestCalculationType, interestCalculationDaysInYearType, minDepositTerm, minDepositTermTypeId, accountingRule, depositAmount, charts\n\nMandatory Fields for Cash based accounting (accountingRule = 2): savingsReferenceAccountId, savingsControlAccountId, interestOnSavingsAccountId, incomeFromFeeAccountId, transfersInSuspenseAccountId, incomeFromPenaltyAccountId\n\nOptional Fields: startDate, closeDate, lockinPeriodFrequency, lockinPeriodFrequencyType, maxDepositTerm, maxDepositTermTypeId, inMultiplesOfDepositTerm, inMultiplesOfDepositTermTypeId, preClosurePenalApplicable, preClosurePenalInterest, preClosurePenalInterestOnTypeId, feeToIncomeAccountMappings, penaltyToIncomeAccountMappings, charges, minDepositAmount, maxDepositAmount, withHoldTax, taxGroupId",
         "operationId": "createRecurringDepositProduct",
         "requestBody": {
           "content": {
@@ -21921,7 +22167,7 @@
         "tags": ["Savings Charges"]
       },
       "get": {
-        "description": "Retrieves a Savings account Charge\n\nExample Requests:\n\n/savingsaccounts/1/charges/5\n\n\n/savingsaccounts/1/charges/5?fields=name,amountOrPercentage",
+        "description": "Retrieves a Savings account Charge\n\nExample Requests:\n\n/savingsaccounts/1/charges/5\n\n\n/savingsaccounts/1/charges/5?fields=name,amountOrPercentage\n\nUse associations=transactions or associations=all to include recorded transaction allocations, including reversed transactions and available payment details.",
         "operationId": "retrieveOneSavingsAccountCharge",
         "parameters": [
           {
@@ -22747,9 +22993,13 @@
           { "in": "query", "name": "status", "schema": { "type": "integer", "format": "int32" } }
         ],
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GetShareProductDividendsResponse" }
+              }
+            },
+            "description": "OK"
           }
         },
         "summary": "List all share dividends",
@@ -22766,11 +23016,22 @@
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostShareProductDividendsRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "summary": "Create a share dividend",
@@ -22827,9 +23088,13 @@
           }
         ],
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GetShareProductDividendDetailsResponse" }
+              }
+            },
+            "description": "OK"
           }
         },
         "summary": "Retrieve a share dividend",
@@ -22855,9 +23120,13 @@
         ],
         "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+              }
+            },
+            "description": "OK"
           }
         },
         "summary": "Update a share dividend",
@@ -24336,7 +24605,7 @@
         "x-alternative-operation-id": "retrieveTaxComponent"
       },
       "put": {
-        "description": "Updates Tax component. Debit and credit account details cannot be modified. All the future tax components would be replaced with the new percentage.",
+        "description": "Updates Tax component. Once the component is linked to a charge, savings product or savings account, or used in a tax transaction, only the name can be modified. All the future tax components would be replaced with the new percentage.",
         "operationId": "updateTaxComponent",
         "parameters": [
           {
@@ -25412,9 +25681,16 @@
       "get": {
         "operationId": "getOTPDeliveryMethods",
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GetTwoFactorDeliveryMethodsResponse" }
+                }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Two Factor"]
@@ -25430,9 +25706,13 @@
           }
         ],
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PostTwoFactorRequestTokenResponse" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Two Factor"]
@@ -25442,20 +25722,35 @@
       "get": {
         "operationId": "retrieveAll_4",
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GetTwoFactorConfigurationResponse" }
+              }
+            },
+            "description": "OK"
           }
         },
         "x-alternative-operation-id": "retrieveAll_9"
       },
       "put": {
         "operationId": "updateConfiguration_1",
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PutTwoFactorConfigurationRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PutTwoFactorConfigurationResponse" }
+              }
+            },
+            "description": "OK"
           }
         },
         "x-alternative-operation-id": "updateConfiguration_3"
@@ -25464,11 +25759,22 @@
     "/v1/twofactor/invalidate": {
       "post": {
         "operationId": "updateConfiguration",
-        "requestBody": { "content": { "*/*": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostTwoFactorInvalidateRequest" }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PostTwoFactorInvalidateResponse" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Two Factor"],
@@ -25480,9 +25786,13 @@
         "operationId": "validate",
         "parameters": [{ "in": "query", "name": "token", "schema": { "type": "string" } }],
         "responses": {
-          "default": {
-            "content": { "application/json": { "schema": { "type": "string" } } },
-            "description": "default response"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PostTwoFactorValidateResponse" }
+              }
+            },
+            "description": "OK"
           }
         },
         "tags": ["Two Factor"]
@@ -26148,7 +26458,7 @@
         "tags": ["Working Capital Loans"]
       },
       "post": {
-        "description": "Mandatory command query parameter: approve, reject, undoapproval, disburse, or undodisbursal.",
+        "description": "Mandatory command query parameter: approve, reject, undoapproval, disburse, or undodisbursal. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "stateTransitionWorkingCapitalLoanByExternalId",
         "parameters": [
           {
@@ -27027,7 +27337,7 @@
         "tags": ["Working Capital Loan Transactions"]
       },
       "post": {
-        "description": "Supported command query parameter: repayment, creditBalanceRefund, payoutRefund, goodwillCredit, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff, undoWriteOff, recoveryPayment",
+        "description": "Supported command query parameter: repayment, creditBalanceRefund, payoutRefund, goodwillCredit, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff, undoWriteOff, recoveryPayment. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "executeWorkingCapitalLoanTransactionByExternalId",
         "parameters": [
           {
@@ -27107,7 +27417,7 @@
     },
     "/v1/working-capital-loans/external-id/{loanExternalId}/transactions/external-id/{transactionExternalId}": {
       "post": {
-        "description": "Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo",
+        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanExternalIdTransactionExternalId",
         "parameters": [
           {
@@ -27160,7 +27470,7 @@
     },
     "/v1/working-capital-loans/external-id/{loanExternalId}/transactions/template": {
       "get": {
-        "description": "Supported command query parameters: disburse, repayment, goodwillCredit, creditBalanceRefund, recoveryPayment, discountFee, discountFeeAdjustment, chargeOff, prepayLoan. The optional transactionDate quotes the balance as of that date, defaulting to the business date; only what is owed is scoped to it, so the amount stays net of every payment already made.",
+        "description": "Supported command query parameters: disburse, repayment, goodwillCredit, creditBalanceRefund, recoveryPayment, discountFee, discountFeeAdjustment, chargeOff, prepayLoan. The optional transactionDate quotes the balance as of that date, defaulting to the business date; only what is owed is scoped to it, so the amount stays net of every payment already made. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "getWorkingCapitalLoanTransactionTemplateByExternalId",
         "parameters": [
           {
@@ -27247,7 +27557,7 @@
         "tags": ["Working Capital Loan Transactions"]
       },
       "post": {
-        "description": "Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo",
+        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanExternalIdTransactionId",
         "parameters": [
           {
@@ -27418,7 +27728,7 @@
         "tags": ["Working Capital Loans"]
       },
       "post": {
-        "description": "Mandatory command query parameter: approve, reject, undoapproval, disburse, or undodisbursal.",
+        "description": "Mandatory command query parameter: approve, reject, undoapproval, disburse, or undodisbursal. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "stateTransitionWorkingCapitalLoanById",
         "parameters": [
           {
@@ -28453,7 +28763,7 @@
         "tags": ["Working Capital Loan Transactions"]
       },
       "post": {
-        "description": "Supported command query parameter: repayment, creditBalanceRefund, payoutRefund, goodwillCredit, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff, undoWriteOff, recoveryPayment",
+        "description": "Supported command query parameter: repayment, creditBalanceRefund, payoutRefund, goodwillCredit, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff, undoWriteOff, recoveryPayment. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "executeWorkingCapitalLoanTransactionById",
         "parameters": [
           {
@@ -28533,7 +28843,7 @@
     },
     "/v1/working-capital-loans/{loanId}/transactions/external-id/{transactionExternalId}": {
       "post": {
-        "description": "Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo",
+        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanIdTransactionExternalId",
         "parameters": [
           {
@@ -28586,7 +28896,7 @@
     },
     "/v1/working-capital-loans/{loanId}/transactions/template": {
       "get": {
-        "description": "Supported command query parameters: disburse, repayment, goodwillCredit, creditBalanceRefund, recoveryPayment, discountFee, discountFeeAdjustment, chargeOff, prepayLoan. The optional transactionDate quotes the balance as of that date, defaulting to the business date; only what is owed is scoped to it, so the amount stays net of every payment already made.",
+        "description": "Supported command query parameters: disburse, repayment, goodwillCredit, creditBalanceRefund, recoveryPayment, discountFee, discountFeeAdjustment, chargeOff, prepayLoan. The optional transactionDate quotes the balance as of that date, defaulting to the business date; only what is owed is scoped to it, so the amount stays net of every payment already made. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "getWorkingCapitalLoanTransactionTemplateById",
         "parameters": [
           {
@@ -28673,7 +28983,7 @@
         "tags": ["Working Capital Loan Transactions"]
       },
       "post": {
-        "description": "Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo",
+        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanIdTransactionId",
         "parameters": [
           {
@@ -29986,6 +30296,68 @@
           { "in": "query", "name": "dateFormat", "schema": { "type": "string" } },
           { "in": "query", "name": "locale", "schema": { "type": "string" } },
           {
+            "in": "query",
+            "name": "productId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "transactionId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "subresourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "resourceExternalId", "schema": { "type": "string" } },
+          { "in": "query", "name": "subresourceExternalId", "schema": { "type": "string" } },
+          { "in": "query", "name": "loanExternalId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedOfficeId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedGroupId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedClientId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedLoanId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedSavingsAccountId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedProductId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "submittedTransactionId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedResourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "in": "query", "name": "submittedResourceExternalId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "submittedSubresourceId",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "in": "query",
+            "name": "submittedSubresourceExternalId",
+            "schema": { "type": "string" }
+          },
+          { "in": "query", "name": "submittedLoanExternalId", "schema": { "type": "string" } },
+          {
             "description": "offset",
             "in": "query",
             "name": "offset",
@@ -30290,13 +30662,16 @@
       "AccountRequest": {
         "type": "object",
         "properties": {
+          "accountNumber": { "type": "string" },
           "allowDividendCalculationForInactiveClients": { "type": "string" },
           "applicationDate": { "type": "string" },
           "approvedDate": { "type": "string" },
+          "bankNumber": { "type": "string" },
           "charges": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/AccountChargesRequest" }
           },
+          "checkNumber": { "type": "string" },
           "clientId": { "type": "integer", "format": "int64" },
           "currencyCode": { "type": "string" },
           "dateFormat": { "type": "string" },
@@ -30310,9 +30685,12 @@
           "minimumActivePeriod": { "type": "integer", "format": "int32" },
           "minimumActivePeriodFrequencyType": { "type": "string" },
           "numberOfShares": { "type": "integer", "format": "int64" },
+          "paymentTypeId": { "type": "integer", "format": "int64" },
           "productId": { "type": "integer", "format": "int64" },
           "purchasedDate": { "type": "string" },
+          "receiptNumber": { "type": "string" },
           "requestedShares": { "type": "integer", "format": "int64" },
+          "routingCode": { "type": "string" },
           "savingsAccountId": { "type": "integer", "format": "int64" },
           "submittedDate": { "type": "string" },
           "unitPrice": { "type": "number" }
@@ -30381,7 +30759,8 @@
           },
           "transferAmount": { "type": "number" },
           "transferDate": { "type": "string", "format": "date" },
-          "transferDescription": { "type": "string" }
+          "transferDescription": { "type": "string" },
+          "transferTime": { "type": "string", "example": "09:00:00Z" }
         }
       },
       "AccountTransferRequest": {
@@ -30405,7 +30784,8 @@
           "toOfficeId": { "type": "string" },
           "transferAmount": { "type": "string" },
           "transferDate": { "type": "string" },
-          "transferDescription": { "type": "string" }
+          "transferDescription": { "type": "string" },
+          "transferTime": { "type": "string" }
         }
       },
       "AccountingRuleData": {
@@ -30696,19 +31076,83 @@
           "clientName": { "type": "string" },
           "commandAsJson": { "type": "string" },
           "entityName": { "type": "string" },
+          "groupId": { "type": "integer", "format": "int64" },
           "groupLevelName": { "type": "string" },
           "groupName": { "type": "string" },
           "id": { "type": "integer", "format": "int64" },
           "ip": { "type": "string" },
           "loanAccountNo": { "type": "string" },
+          "loanExternalId": { "type": "string" },
           "loanId": { "type": "integer", "format": "int64" },
           "madeOnDate": { "type": "string", "format": "date-time" },
           "maker": { "type": "string" },
+          "officeId": { "type": "integer", "format": "int64" },
           "officeName": { "type": "string" },
           "processingResult": { "type": "string" },
+          "productId": { "type": "integer", "format": "int64" },
+          "resourceExternalId": { "type": "string" },
           "resourceId": { "type": "integer", "format": "int64" },
+          "savingsAccountId": { "type": "integer", "format": "int64" },
           "savingsAccountNo": { "type": "string" },
+          "submittedClientId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedGroupId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedLoanExternalId": {
+            "type": "string",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedLoanId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedOfficeId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedProductId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedResourceExternalId": {
+            "type": "string",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedResourceId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedSavingsAccountId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedSubresourceExternalId": {
+            "type": "string",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedSubresourceId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "submittedTransactionId": {
+            "type": "string",
+            "description": "Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept."
+          },
+          "subresourceExternalId": { "type": "string" },
           "subresourceId": { "type": "integer", "format": "int64" },
+          "transactionId": { "type": "string" },
           "url": { "type": "string" }
         }
       },
@@ -31110,6 +31554,7 @@
           "currencyCode": { "type": "string" },
           "deleted": { "type": "boolean" },
           "disbursementCharge": { "type": "boolean" },
+          "downPaymentCharge": { "type": "boolean" },
           "enableFreeWithdrawal": { "type": "boolean" },
           "enablePaymentType": { "type": "boolean" },
           "feeInterval": { "type": "integer", "format": "int32" },
@@ -31882,7 +32327,18 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" }
+        }
+      },
+      "CommandProcessingSubResourceResult": {
+        "type": "object",
+        "properties": {
+          "resourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "Component": {
@@ -31930,6 +32386,7 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/CreditAllocationOrder" }
           },
+          "creditAllocationStrategy": { "type": "string" },
           "transactionType": { "type": "string" }
         }
       },
@@ -32680,18 +33137,18 @@
       },
       "ExecuteWorkingCapitalLoanTransactionCommandRequest": {
         "type": "object",
-        "description": "Request for transaction command executed on a transaction named in the path: undo, adjust, discountFee or discountFeeAdjustment. For command=undo use only note and reversalExternalId. For command=adjust dateFormat / locale / transactionDate / transactionAmount / classificationId / externalId / paymentDetails are accepted.",
+        "description": "Request for transaction command executed on a transaction named in the path: undo, adjust, adjustByDelta, discountFee or discountFeeAdjustment. For command=undo use only note and reversalExternalId. For command=adjust and command=adjustByDelta dateFormat / locale / transactionDate / transactionAmount / classificationId / note / reversalExternalId / externalId / paymentDetails are accepted.",
         "properties": {
           "classificationId": {
             "type": "integer",
             "format": "int64",
-            "description": "Optional code value id for transaction classification (command=discountFee, discountFeeAdjustment, adjust)",
+            "description": "Optional code value id for transaction classification (command=discountFee, discountFeeAdjustment, adjust, adjustByDelta)",
             "example": 12
           },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "externalId": {
             "type": "string",
-            "description": "Optional external id for the created transaction. For command=adjust this is the id of the replacement when transactionAmount > 0 (same as term-loan adjust). The reversed transaction keeps its original external id. If omitted and auto-generation is enabled, a new id is generated for the replacement.",
+            "description": "Optional external id for the created transaction. For command=adjust and command=adjustByDelta this is the id of the replacement, when there is one (same as term-loan adjust). The reversed transaction keeps its original external id. If omitted and auto-generation is enabled, a new id is generated for the replacement.",
             "example": "replacement-ext-001"
           },
           "locale": { "type": "string", "example": "en_GB" },
@@ -32701,17 +33158,17 @@
           },
           "reversalExternalId": {
             "type": "string",
-            "description": "Optional external id for the reversal (command=undo)",
+            "description": "Optional external id stamped on the reversed transaction (command=undo, adjust, adjustByDelta)",
             "example": "loan-ext-001"
           },
           "transactionAmount": {
             "type": "number",
-            "description": "Transaction amount (command=discountFee, discountFeeAdjustment); command=adjust zero reverses the existing transaction (same as undo). A positive amount reverses it and creates a replacement",
+            "description": "Transaction amount (command=discountFee, discountFeeAdjustment); command=adjust zero reverses the existing transaction (same as undo). A positive amount reverses it and creates a replacement. command=adjustByDelta: a signed delta on the existing amount (positive increases, negative decreases) - the replacement is existing + transactionAmount; a delta that cancels the existing amount only reverses it, zero is rejected (400) and a decrease beyond the existing amount is refused (403)",
             "example": 100.0
           },
           "transactionDate": {
             "type": "string",
-            "description": "Transaction date (command=discountFeeAdjustment); for command=discountFee it defaults to the date of the related disbursement and, when sent, must be equal to it; command=adjust required when transactionAmount > 0: date of the replacement transaction. Optional when transactionAmount is 0 (undo).",
+            "description": "Transaction date (command=discountFeeAdjustment); for command=discountFee it defaults to the date of the related disbursement and, when sent, must be equal to it; command=adjust required when transactionAmount > 0: date of the replacement transaction. Optional when transactionAmount is 0 (undo). command=adjustByDelta optional: moves the replacement to this date; when omitted the replacement keeps the original's date.",
             "example": "28 June 2024"
           }
         }
@@ -32720,6 +33177,11 @@
         "type": "object",
         "description": "Response for working capital loan transaction command execution",
         "properties": {
+          "changes": {
+            "type": "object",
+            "additionalProperties": { "type": "object", "example": {} },
+            "example": {}
+          },
           "clientId": { "type": "integer", "format": "int64", "example": 2 },
           "loanExternalId": { "type": "string", "example": "loan-ext-001" },
           "loanId": { "type": "integer", "format": "int64", "example": 3 },
@@ -32732,6 +33194,26 @@
         "type": "object",
         "properties": { "key": { "type": "string" }, "value": { "type": "string" } },
         "required": ["key"]
+      },
+      "ExternalAssetOwnerLoanAttributeData": {
+        "type": "object",
+        "properties": {
+          "attributeKey": { "type": "string" },
+          "attributeValue": { "type": "string" }
+        }
+      },
+      "ExternalAssetOwnerLoanAttributesData": {
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ExternalAssetOwnerLoanAttributeData" }
+          },
+          "copiedFromTransferId": { "type": "integer", "format": "int64" },
+          "hasLoanLevelCopy": { "type": "boolean" },
+          "loanExternalId": { "type": "string" },
+          "loanId": { "type": "integer", "format": "int64" }
+        }
       },
       "ExternalAssetOwnerRequest": {
         "type": "object",
@@ -33368,7 +33850,8 @@
           "toOffice": { "$ref": "#/components/schemas/GetAccountTransfersPageItemsFromOffice" },
           "transferAmount": { "type": "number", "format": "float", "example": 200 },
           "transferDate": { "type": "string", "format": "date" },
-          "transferDescription": { "type": "string", "example": "pay off loan from savings." }
+          "transferDescription": { "type": "string", "example": "pay off loan from savings." },
+          "transferTime": { "type": "string", "example": "09:00:00Z" }
         }
       },
       "GetAccountTransfersPageItemsCurrency": {
@@ -33677,7 +34160,8 @@
             "uniqueItems": true
           },
           "transferAmount": { "type": "integer", "format": "int64", "example": 0 },
-          "transferDate": { "type": "string", "format": "date" }
+          "transferDate": { "type": "string", "format": "date" },
+          "transferTime": { "type": "string", "example": "09:00:00Z" }
         }
       },
       "GetAccountTransfersTimeline": {
@@ -33808,10 +34292,32 @@
           "chargeAmount": { "type": "number", "format": "double", "example": 0.05 },
           "id": { "type": "integer", "format": "int64", "example": 6 },
           "numberOfShares": { "type": "integer", "format": "int32", "example": 10 },
+          "paymentDetailData": {
+            "$ref": "#/components/schemas/GetAccountsPurchasedSharesPaymentDetailData"
+          },
           "purchasedDate": { "type": "string", "format": "date" },
           "purchasedPrice": { "type": "number", "format": "double", "example": 0.5 },
           "status": { "$ref": "#/components/schemas/GetAccountsPurchasedSharesStatus" },
           "type": { "$ref": "#/components/schemas/GetAccountsPurchasedSharesType" }
+        }
+      },
+      "GetAccountsPurchasedSharesPaymentDetailData": {
+        "type": "object",
+        "properties": {
+          "accountNumber": { "type": "string", "example": "acc123" },
+          "bankNumber": { "type": "string", "example": "ban123" },
+          "checkNumber": { "type": "string", "example": "che123" },
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "paymentType": { "$ref": "#/components/schemas/GetAccountsPurchasedSharesPaymentType" },
+          "receiptNumber": { "type": "string", "example": "rec123" },
+          "routingCode": { "type": "string", "example": "rou123" }
+        }
+      },
+      "GetAccountsPurchasedSharesPaymentType": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "name": { "type": "string", "example": "Cash" }
         }
       },
       "GetAccountsPurchasedSharesStatus": {
@@ -33865,6 +34371,8 @@
           "approvedByLastname": { "type": "string", "example": "Administrator" },
           "approvedByUsername": { "type": "string", "example": "mifos" },
           "approvedDate": { "type": "string", "format": "date" },
+          "closedDate": { "type": "string", "format": "date" },
+          "rejectedDate": { "type": "string", "format": "date" },
           "submittedByFirstname": { "type": "string", "example": "App" },
           "submittedByLastname": { "type": "string", "example": "Administrator" },
           "submittedByUsername": { "type": "string", "example": "mifos" },
@@ -34593,6 +35101,7 @@
         "description": "GetClientsClientIdTransactionsTransactionIdResponse",
         "properties": {
           "amount": { "type": "number", "example": 60.0 },
+          "clientChargeId": { "type": "integer", "format": "int64", "example": 42 },
           "currency": { "$ref": "#/components/schemas/GetClientTransactionsCurrency" },
           "date": { "type": "string", "format": "date" },
           "id": { "type": "integer", "format": "int64", "example": 1 },
@@ -35149,7 +35658,7 @@
         "type": "object",
         "properties": {
           "accountId": { "type": "integer", "format": "int64", "example": 5 },
-          "accountNumber": { "type": "integer", "format": "int64" },
+          "accountNumber": { "type": "string", "example": "FD000023" },
           "chartSlabs": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/GetFixedDepositAccountsChartSlabs" },
@@ -35192,7 +35701,7 @@
         "description": "GetFixedDepositAccountsAccountIdResponse",
         "properties": {
           "accountChart": { "$ref": "#/components/schemas/GetFixedDepositAccountsAccountChart" },
-          "accountNo": { "type": "integer", "format": "int64" },
+          "accountNo": { "type": "string", "example": "FD000023" },
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "clientName": { "type": "string", "example": "Sangamesh N" },
           "currency": { "$ref": "#/components/schemas/GetFixedDepositAccountsAccountIdCurrency" },
@@ -35216,6 +35725,11 @@
           "interestFreePeriodApplicable": { "type": "boolean", "example": false },
           "interestPostingPeriodType": {
             "$ref": "#/components/schemas/GetFixedDepositAccountsInterestPostingPeriodType"
+          },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
           },
           "maturityAmount": { "type": "number", "example": 5140.25 },
           "maturityDate": { "type": "string", "format": "date" },
@@ -35395,7 +35909,7 @@
         "type": "object",
         "description": "GetFixedDepositAccountsResponse",
         "properties": {
-          "accountNo": { "type": "integer", "format": "int64", "example": 1 },
+          "accountNo": { "type": "string", "example": "000000001" },
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "clientName": { "type": "string", "example": "Sangamesh N" },
           "currency": { "$ref": "#/components/schemas/GetFixedDepositAccountsCurrency" },
@@ -35747,6 +36261,7 @@
           "activeChart": {
             "$ref": "#/components/schemas/GetFixedDepositProductsProductIdActiveChart"
           },
+          "closeDate": { "type": "string", "format": "date" },
           "currency": { "$ref": "#/components/schemas/GetFixedDepositProductsProductIdCurrency" },
           "description": {
             "type": "string",
@@ -35793,7 +36308,9 @@
           "preClosurePenalInterestOnType": {
             "$ref": "#/components/schemas/GetFixedDepositProductsProductIdPreClosurePenalInterestOnType"
           },
-          "shortName": { "type": "string", "example": "FD01" }
+          "shortName": { "type": "string", "example": "FD01" },
+          "startDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "savingsProduct.active" }
         }
       },
       "GetFixedDepositProductsResponse": {
@@ -35803,6 +36320,7 @@
           "accountingRule": {
             "$ref": "#/components/schemas/GetFixedDepositProductsAccountingRule"
           },
+          "closeDate": { "type": "string", "format": "date" },
           "currency": { "$ref": "#/components/schemas/GetFixedDepositProductsCurrency" },
           "description": { "type": "string", "example": "FD01" },
           "id": { "type": "integer", "format": "int64", "example": 3 },
@@ -35829,7 +36347,9 @@
           "name": { "type": "string", "example": "FD01" },
           "nominalAnnualInterestRate": { "type": "number", "format": "double", "example": 0 },
           "preClosurePenalApplicable": { "type": "boolean", "example": false },
-          "shortName": { "type": "string", "example": "FD01" }
+          "shortName": { "type": "string", "example": "FD01" },
+          "startDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "savingsProduct.active" }
         }
       },
       "GetFromAccountStandingInstructionSwagger": {
@@ -36706,8 +37226,8 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "amortizationType.equal.installments" },
-          "description": { "type": "string", "example": "Equal installments" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "value": { "type": "string", "example": "Equal installments" }
         }
       },
       "GetLoanProductsAssetAccountOptions": {
@@ -36860,8 +37380,8 @@
             "type": "string",
             "example": "interestRateFrequency.periodFrequencyType.months"
           },
-          "description": { "type": "string", "example": "Per month" },
-          "id": { "type": "integer", "format": "int64", "example": 2 }
+          "id": { "type": "integer", "format": "int64", "example": 2 },
+          "value": { "type": "string", "example": "Per month" }
         }
       },
       "GetLoanProductsInterestRateTemplateFrequencyType": {
@@ -36953,16 +37473,16 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "interestType.declining.balance" },
-          "description": { "type": "string", "example": "Declining Balance" },
-          "id": { "type": "integer", "format": "int64", "example": 0 }
+          "id": { "type": "integer", "format": "int64", "example": 0 },
+          "value": { "type": "string", "example": "Declining Balance" }
         }
       },
       "GetLoanProductsInterestType": {
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "interestType.flat" },
-          "description": { "type": "string", "example": "Flat" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "value": { "type": "string", "example": "Flat" }
         }
       },
       "GetLoanProductsLiabilityAccountOptions": {
@@ -37149,6 +37669,12 @@
             "items": { "$ref": "#/components/schemas/GetLoanFeeToIncomeAccountMappings" },
             "uniqueItems": true
           },
+          "firstRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "First due day of the month of a semi-monthly product, between 1 and 27.",
+            "example": 10
+          },
           "fixedLength": { "type": "integer", "format": "int32", "example": 10 },
           "fixedPrincipalPercentagePerInstallment": { "type": "number", "example": 5.5 },
           "graceOnArrearsAgeing": { "type": "integer", "format": "int32", "example": 1 },
@@ -37190,6 +37716,7 @@
           "minNumberOfRepayments": { "type": "integer", "format": "int32", "example": 5 },
           "minPrincipal": { "type": "number", "format": "double", "example": 2000.0 },
           "minimumGap": { "type": "integer", "format": "int32", "example": 0 },
+          "monthEndDueDateStrategy": { "$ref": "#/components/schemas/StringEnumOptionData" },
           "multiDisburseLoan": { "type": "boolean", "example": true },
           "name": { "type": "string", "example": "advanced accounting" },
           "numberOfRepaymentVariationsForBorrowerCycle": {
@@ -37232,8 +37759,18 @@
           "repaymentStartDateType": {
             "$ref": "#/components/schemas/GetLoanProductsRepaymentStartDateType"
           },
+          "secondRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.",
+            "example": 25
+          },
           "shortName": { "type": "string", "example": "ad11" },
           "status": { "type": "string", "example": "loanProduct.active" },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "supportedInterestRefundTypes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
@@ -37258,8 +37795,8 @@
         "type": "object",
         "properties": {
           "code": { "type": "string", "example": "repaymentFrequency.periodFrequencyType.days" },
-          "description": { "type": "string", "example": "Days" },
-          "id": { "type": "integer", "format": "int64", "example": 0 }
+          "id": { "type": "integer", "format": "int64", "example": 0 },
+          "value": { "type": "string", "example": "Days" }
         }
       },
       "GetLoanProductsRepaymentStartDateType": {
@@ -37314,6 +37851,12 @@
           "enableBuyDownFee": { "type": "boolean", "example": false },
           "enableIncomeCapitalization": { "type": "boolean", "example": false },
           "endDate": { "type": "string", "format": "date" },
+          "firstRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "First due day of the month of a semi-monthly product, between 1 and 27.",
+            "example": 10
+          },
           "fixedLength": { "type": "integer", "format": "int32", "example": 10 },
           "fixedPrincipalPercentagePerInstallment": { "type": "number", "example": 5.5 },
           "id": { "type": "integer", "format": "int64", "example": 1 },
@@ -37341,6 +37884,7 @@
           "merchantBuyDownFee": { "type": "boolean", "example": false },
           "minNumberOfRepayments": { "type": "integer", "format": "int32", "example": 5 },
           "minPrincipal": { "type": "number", "format": "double", "example": 5000.0 },
+          "monthEndDueDateStrategy": { "$ref": "#/components/schemas/StringEnumOptionData" },
           "name": { "type": "string", "example": "personal loan product" },
           "numberOfRepaymentVariationsForBorrowerCycle": {
             "type": "array",
@@ -37366,9 +37910,19 @@
           "repaymentStartDateType": {
             "$ref": "#/components/schemas/GetLoanProductsRepaymentStartDateType"
           },
+          "secondRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.",
+            "example": 25
+          },
           "shortName": { "type": "string", "example": "pe1" },
           "startDate": { "type": "string", "format": "date" },
           "status": { "type": "string", "example": "loanProduct.active" },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "supportedInterestRefundTypes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
@@ -37482,6 +38036,10 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/EnumOptionData" }
           },
+          "creditAllocationStrategyOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EnumOptionData" }
+          },
           "creditAllocationTransactionTypes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/EnumOptionData" }
@@ -37571,6 +38129,11 @@
             "items": { "$ref": "#/components/schemas/EnumOptionData" }
           },
           "merchantBuyDownFee": { "type": "boolean", "example": false },
+          "monthEndDueDateStrategy": { "$ref": "#/components/schemas/StringEnumOptionData" },
+          "monthEndDueDateStrategyOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "numberOfRepaymentVariationsForBorrowerCycle": {
             "type": "array",
             "example": [],
@@ -37612,6 +38175,14 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/GetLoanProductsRescheduleStrategyType" },
             "uniqueItems": true
+          },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
+          "supportedFeeRefundTypesOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
           },
           "supportedInterestRefundTypes": {
             "type": "array",
@@ -38119,6 +38690,7 @@
           "goodwillCredit": { "type": "boolean", "example": false },
           "id": { "type": "integer", "format": "int64", "example": 1 },
           "initiateTransfer": { "type": "boolean", "example": false },
+          "loanWithdrawal": { "type": "boolean", "example": false },
           "merchantIssuedRefund": { "type": "boolean", "example": false },
           "payoutRefund": { "type": "boolean", "example": false },
           "recoveryRepayment": { "type": "boolean", "example": false },
@@ -38364,6 +38936,12 @@
           "enableIncomeCapitalization": { "type": "boolean", "example": false },
           "enableInstallmentLevelDelinquency": { "type": "boolean", "example": false },
           "externalId": { "type": "string", "example": "95174ff9-1a75-4d72-a413-6f9b1cb988b7" },
+          "firstRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "First due day of the month of a semi-monthly loan, between 1 and 27.",
+            "example": 10
+          },
           "fixedLength": { "type": "integer", "format": "int32", "example": 1 },
           "fixedPrincipalPercentagePerInstallment": { "type": "number", "example": 5.5 },
           "fraud": { "type": "boolean", "example": false },
@@ -38410,6 +38988,7 @@
             "items": { "$ref": "#/components/schemas/GetLoansLoanIdLoanTermVariations" }
           },
           "loanType": { "$ref": "#/components/schemas/GetLoansLoanIdLoanType" },
+          "monthEndDueDateStrategy": { "$ref": "#/components/schemas/StringEnumOptionData" },
           "netDisbursalAmount": { "type": "number", "example": 200.0 },
           "numberOfRepayments": { "type": "integer", "format": "int32", "example": 12 },
           "originators": {
@@ -38426,6 +39005,12 @@
           },
           "repaymentSchedule": { "$ref": "#/components/schemas/GetLoansLoanIdRepaymentSchedule" },
           "repaymentStartDateType": { "$ref": "#/components/schemas/EnumOptionData" },
+          "secondRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Second due day of the month of a semi-monthly loan, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.",
+            "example": 25
+          },
           "status": { "$ref": "#/components/schemas/GetLoansLoanIdStatus" },
           "subStatus": { "$ref": "#/components/schemas/GetLoansLoanIdSubStatus" },
           "summary": { "$ref": "#/components/schemas/GetLoansLoanIdSummary" },
@@ -38535,6 +39120,7 @@
           "totalCreditBalanceRefundReversed": { "type": "number", "example": 0.0 },
           "totalExpectedCostOfLoan": { "type": "number", "example": 258000.0 },
           "totalExpectedRepayment": { "type": "number", "example": 1258000.0 },
+          "totalFeeRefund": { "type": "number" },
           "totalGoodwillCredit": { "type": "number", "example": 0.0 },
           "totalGoodwillCreditReversed": { "type": "number", "example": 0.0 },
           "totalInterestPaymentWaiver": { "type": "number", "example": 0.0 },
@@ -38767,8 +39353,8 @@
             "type": "string",
             "example": "interestCalculationPeriodType.same.as.repayment.period"
           },
-          "description": { "type": "string", "example": "Same as repayment period" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "value": { "type": "string", "example": "Same as repayment period" }
         }
       },
       "GetLoansResponse": {
@@ -38939,6 +39525,7 @@
         "type": "object",
         "properties": {
           "accountDetailId": { "type": "integer", "format": "int64", "example": 6 },
+          "allowPartialTransfer": { "type": "boolean", "example": false },
           "amount": { "type": "number", "format": "float", "example": 150.0 },
           "fromAccount": {
             "$ref": "#/components/schemas/GetFromAccountStandingInstructionSwagger"
@@ -39291,7 +39878,7 @@
           "shortName": { "type": "string", "example": "SP" },
           "totalShares": { "type": "integer", "format": "int32", "example": 100 },
           "totalSharesIssued": { "type": "integer", "format": "int32", "example": 50 },
-          "unitPrice": { "type": "integer", "format": "int32", "example": 1 }
+          "unitPrice": { "type": "number", "example": 1.0 }
         }
       },
       "GetProductsTypeResponse": {
@@ -39380,7 +39967,7 @@
         "type": "object",
         "properties": {
           "accountId": { "type": "integer", "format": "int64", "example": 5 },
-          "accountNumber": { "type": "integer", "format": "int64" },
+          "accountNumber": { "type": "string", "example": "RD000023" },
           "chartSlabs": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/GetRecurringDepositAccountsChartSlabs" },
@@ -39413,7 +40000,7 @@
           "accountChart": {
             "$ref": "#/components/schemas/GetRecurringDepositAccountsAccountChart"
           },
-          "accountNo": { "type": "integer", "format": "int64" },
+          "accountNo": { "type": "string", "example": "RD000023" },
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "clientName": { "type": "string", "example": "Sangamesh N" },
           "currency": { "$ref": "#/components/schemas/GetRecurringDepositAccountsCurrency" },
@@ -39437,6 +40024,11 @@
           },
           "interestPostingPeriodType": {
             "$ref": "#/components/schemas/GetRecurringDepositAccountsInterestPostingPeriodType"
+          },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
           },
           "mandatoryRecommendedDepositAmount": { "type": "number", "example": 100 },
           "maturityAmount": { "type": "number", "example": 252.59 },
@@ -39623,7 +40215,7 @@
         "type": "object",
         "description": "GetRecurringDepositAccountsResponse",
         "properties": {
-          "accountNo": { "type": "integer", "format": "int64", "example": 1 },
+          "accountNo": { "type": "string", "example": "000000001" },
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "clientName": { "type": "string", "example": "Sangamesh N" },
           "currency": { "$ref": "#/components/schemas/GetRecurringDepositAccountsCurrency" },
@@ -39985,6 +40577,7 @@
           "activeChart": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsProductIdActiveChart"
           },
+          "closeDate": { "type": "string", "format": "date" },
           "currency": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsProductIdCurrency"
           },
@@ -40037,7 +40630,9 @@
           "recurringDepositFrequencyType": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsRecurringDepositFrequencyType"
           },
-          "shortName": { "type": "string", "example": "RD01" }
+          "shortName": { "type": "string", "example": "RD01" },
+          "startDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "savingsProduct.active" }
         }
       },
       "GetRecurringDepositProductsRecurringDepositFrequencyType": {
@@ -40058,6 +40653,7 @@
           "accountingRule": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsAccountingRule"
           },
+          "closeDate": { "type": "string", "format": "date" },
           "currency": { "$ref": "#/components/schemas/GetRecurringDepositProductsCurrency" },
           "description": { "type": "string", "example": "RD01" },
           "id": { "type": "integer", "format": "int64", "example": 3 },
@@ -40088,7 +40684,9 @@
           "recurringDepositFrequencyType": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsRecurringDepositFrequencyType"
           },
-          "shortName": { "type": "string", "example": "RD01" }
+          "shortName": { "type": "string", "example": "RD01" },
+          "startDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "example": "savingsProduct.active" }
         }
       },
       "GetRecurringPaymentDetailData": {
@@ -40345,6 +40943,7 @@
           "runningBalance": { "type": "number", "example": 500 },
           "submittedByUsername": { "type": "string", "example": "mifos" },
           "submittedOnDate": { "type": "string", "format": "date" },
+          "transactionTime": { "type": "string", "example": "09:00:00Z" },
           "transactionType": { "$ref": "#/components/schemas/GetTranscationEnumData" }
         }
       },
@@ -40404,7 +41003,11 @@
           "id": { "type": "integer", "format": "int64", "example": 1 },
           "name": { "type": "string", "example": "Passbook fee" },
           "penalty": { "type": "boolean", "example": false },
-          "percentage": { "type": "number", "format": "double", "example": 0 }
+          "percentage": { "type": "number", "format": "double", "example": 0 },
+          "transactions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GetSavingsChargeTransactionResponse" }
+          }
         }
       },
       "GetSavingsAccountsSavingsAccountIdChargesTemplateResponse": {
@@ -40477,6 +41080,20 @@
           "code": { "type": "string", "example": "chargeTimeType.specifiedDueDate" },
           "description": { "type": "string", "example": "Specified due date" },
           "id": { "type": "integer", "format": "int32", "example": 1 }
+        }
+      },
+      "GetSavingsChargeTransactionResponse": {
+        "type": "object",
+        "description": "Recorded transaction allocation for the selected savings account charge",
+        "properties": {
+          "allocationId": { "type": "integer", "format": "int64", "example": 7 },
+          "amount": { "type": "number", "format": "double", "example": 100.0 },
+          "amountAllocated": { "type": "number", "format": "double", "example": 25.0 },
+          "date": { "type": "string", "format": "date" },
+          "paymentDetailData": { "$ref": "#/components/schemas/PaymentDetailData" },
+          "reversed": { "type": "boolean", "example": false },
+          "transactionId": { "type": "integer", "format": "int64", "example": 42 },
+          "transactionType": { "$ref": "#/components/schemas/SavingsAccountTransactionEnumData" }
         }
       },
       "GetSavingsChargesChargeTimeType": {
@@ -41188,12 +41805,71 @@
           "transactionType": { "type": "string", "example": "deposit" }
         }
       },
+      "GetShareDividendAccountData": {
+        "type": "object",
+        "properties": {
+          "accountNo": { "type": "string", "example": "000000001" },
+          "clientId": { "type": "integer", "format": "int64", "example": 1 },
+          "clientName": { "type": "string", "example": "Client Name" },
+          "id": { "type": "integer", "format": "int64", "example": 1 }
+        }
+      },
+      "GetShareDividendStatus": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "shareAccountDividendStatusType.initiated" },
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "value": { "type": "string", "example": "Initiated" }
+        }
+      },
       "GetShareEquityId": {
         "type": "object",
         "properties": {
           "glCode": { "type": "string", "example": "EQUITY1" },
           "id": { "type": "integer", "format": "int64", "example": 66 },
           "name": { "type": "string", "example": "Equity Account" }
+        }
+      },
+      "GetShareProductDividendDetailsPageItems": {
+        "type": "object",
+        "properties": {
+          "accountData": { "$ref": "#/components/schemas/GetShareDividendAccountData" },
+          "amount": { "type": "number", "example": 11320.755 },
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "savingsTransactionId": { "type": "integer", "format": "int64", "example": 1 },
+          "status": { "$ref": "#/components/schemas/GetShareDividendStatus" }
+        }
+      },
+      "GetShareProductDividendDetailsResponse": {
+        "type": "object",
+        "description": "GetShareProductDividendDetailsResponse",
+        "properties": {
+          "pageItems": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GetShareProductDividendDetailsPageItems" }
+          },
+          "totalFilteredRecords": { "type": "integer", "format": "int32", "example": 5 }
+        }
+      },
+      "GetShareProductDividendsPageItems": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number", "example": 50000.0 },
+          "dividendPeriodEndDate": { "type": "string", "format": "date" },
+          "dividendPeriodStartDate": { "type": "string", "format": "date" },
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "status": { "$ref": "#/components/schemas/GetShareDividendStatus" }
+        }
+      },
+      "GetShareProductDividendsResponse": {
+        "type": "object",
+        "description": "GetShareProductDividendsResponse",
+        "properties": {
+          "pageItems": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GetShareProductDividendsPageItems" }
+          },
+          "totalFilteredRecords": { "type": "integer", "format": "int32", "example": 1 }
         }
       },
       "GetShareReferenceId": {
@@ -41248,7 +41924,11 @@
           "fromOffice": { "$ref": "#/components/schemas/GetFromOfficeStandingInstructionSwagger" },
           "name": { "type": "string", "example": "ACC Transfer" },
           "standingInstructionId": { "type": "integer", "format": "int64", "example": 1 },
-          "status": { "type": "string", "example": "success" },
+          "status": {
+            "type": "string",
+            "description": "success, partial (only the part of the amount the savings account could cover was transferred, see allowPartialTransfer) or failed",
+            "example": "success"
+          },
           "toAccount": { "$ref": "#/components/schemas/GetStandingInstructionHistoryToAccount" },
           "toAccountType": {
             "$ref": "#/components/schemas/GetToAccountTypeStandingInstructionSwagger"
@@ -41482,6 +42162,22 @@
           "id": { "type": "integer", "format": "int32", "example": 2 }
         }
       },
+      "GetTaxesComponentsDebitAccount": {
+        "type": "object",
+        "properties": {
+          "glCode": { "type": "string", "example": "100001" },
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "name": { "type": "string", "example": "Tax Asset Account" }
+        }
+      },
+      "GetTaxesComponentsDebitAccountType": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "accountType.asset" },
+          "id": { "type": "integer", "format": "int32", "example": 1 },
+          "value": { "type": "string", "example": "accountType.asset" }
+        }
+      },
       "GetTaxesComponentsHistories": { "type": "object" },
       "GetTaxesComponentsResponse": {
         "type": "object",
@@ -41490,6 +42186,13 @@
           "creditAccount": { "$ref": "#/components/schemas/GetTaxesComponentsCreditAccount" },
           "creditAccountType": {
             "$ref": "#/components/schemas/GetTaxesComponentsCreditAccountType"
+          },
+          "debitAccount": { "$ref": "#/components/schemas/GetTaxesComponentsDebitAccount" },
+          "debitAccountType": { "$ref": "#/components/schemas/GetTaxesComponentsDebitAccountType" },
+          "editable": {
+            "type": "boolean",
+            "description": "false once the component is linked to a charge, savings product or savings account, or used in a tax transaction; then only name can be changed",
+            "example": true
           },
           "id": { "type": "integer", "format": "int64", "example": 1 },
           "name": { "type": "string", "example": "tax component 1" },
@@ -41772,6 +42475,54 @@
           "code": { "type": "string", "example": "accountTransferType.account.transfer" },
           "id": { "type": "integer", "format": "int32", "example": 1 },
           "value": { "type": "string", "example": "Account Transfer" }
+        }
+      },
+      "GetTwoFactorConfigurationResponse": {
+        "type": "object",
+        "description": "GetTwoFactorConfigurationResponse",
+        "properties": {
+          "access-token-live-time": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Seconds",
+            "example": 86400
+          },
+          "access-token-live-time-extended": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Seconds",
+            "example": 604800
+          },
+          "otp-delivery-email-body": {
+            "type": "string",
+            "example": "Hello {{username}}.\nYour OTP login token is {{token}}."
+          },
+          "otp-delivery-email-enable": { "type": "boolean", "example": true },
+          "otp-delivery-email-subject": {
+            "type": "string",
+            "example": "Fineract Two-Factor Authentication Token"
+          },
+          "otp-delivery-sms-enable": { "type": "boolean", "example": false },
+          "otp-delivery-sms-provider": { "type": "integer", "format": "int32", "example": 1 },
+          "otp-delivery-sms-text": {
+            "type": "string",
+            "example": "Your authentication token for Fineract is {{token}}."
+          },
+          "otp-token-length": { "type": "integer", "format": "int32", "example": 5 },
+          "otp-token-live-time": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Seconds",
+            "example": 300
+          }
+        }
+      },
+      "GetTwoFactorDeliveryMethodsResponse": {
+        "type": "object",
+        "description": "GetTwoFactorDeliveryMethodsResponse",
+        "properties": {
+          "name": { "type": "string", "example": "email" },
+          "target": { "type": "string", "example": "demomfi@mifos.org" }
         }
       },
       "GetUserDetailsResponse": {
@@ -42233,6 +42984,7 @@
             "type": "number",
             "description": "Fees moved out of the outstanding balance by a charge waiver"
           },
+          "overdueSinceDate": { "type": "string", "format": "date" },
           "overpayment": { "type": "number" },
           "penalty": { "type": "number" },
           "penaltyOutstanding": { "type": "number" },
@@ -42260,6 +43012,7 @@
           "totalDiscountFeeAdjustment": { "type": "number" },
           "totalExpectedRepayment": { "type": "number" },
           "totalOutstanding": { "type": "number" },
+          "totalPayment": { "type": "number" },
           "totalRepayment": { "type": "number" },
           "unrealizedIncomeFromDiscountFee": { "type": "number" }
         }
@@ -42413,6 +43166,11 @@
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "clientName": { "type": "string", "example": "bharath gowda" },
           "clientOfficeId": { "type": "integer", "format": "int64", "example": 1 },
+          "clientOfficeName": {
+            "type": "string",
+            "description": "Client office name",
+            "example": "Head Office"
+          },
           "currency": { "$ref": "#/components/schemas/CurrencyData" },
           "delinquencyBucket": { "$ref": "#/components/schemas/GetDelinquencyBucket" },
           "delinquencyEffectiveStartDate": {
@@ -42677,10 +43435,25 @@
       "GlobalConfigurationPropertyData": {
         "type": "object",
         "properties": {
+          "allowedValues": {
+            "type": "array",
+            "description": "The values stringValue is restricted to, in their canonical spelling. Matching ignores case and surrounding whitespace, and an update stores the canonical spelling. Omitted if the configuration is not restricted.",
+            "example": ["eod", "real-time"],
+            "items": {
+              "type": "string",
+              "description": "The values stringValue is restricted to, in their canonical spelling. Matching ignores case and surrounding whitespace, and an update stores the canonical spelling. Omitted if the configuration is not restricted.",
+              "example": "[\"eod\",\"real-time\"]"
+            }
+          },
           "dateValue": { "type": "string", "format": "date" },
           "description": { "type": "string" },
           "enabled": { "type": "boolean" },
           "id": { "type": "integer", "format": "int64" },
+          "multipleValuesAllowed": {
+            "type": "boolean",
+            "description": "Whether stringValue holds a comma-separated list of allowedValues instead of a single one. Omitted if the configuration is not restricted.",
+            "example": false
+          },
           "name": { "type": "string" },
           "stringValue": { "type": "string" },
           "trapDoor": { "type": "boolean" },
@@ -43082,57 +43855,6 @@
           "resourceId": { "type": "integer", "format": "int64" }
         }
       },
-      "ILoanConfigurationDetails": {
-        "type": "object",
-        "properties": {
-          "allowFullTermForTranche": { "type": "boolean" },
-          "allowPartialPeriodInterestCalculation": { "type": "boolean" },
-          "amortizationMethod": {
-            "type": "string",
-            "enum": ["EQUAL_PRINCIPAL", "EQUAL_INSTALLMENTS", "INVALID"]
-          },
-          "annualNominalInterestRate": { "type": "number" },
-          "currencyData": { "$ref": "#/components/schemas/CurrencyData" },
-          "daysInMonthType": { "type": "integer", "format": "int32" },
-          "daysInYearCustomStrategy": {
-            "type": "string",
-            "enum": ["FULL_LEAP_YEAR", "FEB_29_PERIOD_ONLY"]
-          },
-          "daysInYearType": { "type": "integer", "format": "int32" },
-          "graceOnArrearsAgeing": { "type": "integer", "format": "int32" },
-          "graceOnInterestCharged": { "type": "integer", "format": "int32" },
-          "graceOnInterestPayment": { "type": "integer", "format": "int32" },
-          "graceOnPrincipalPayment": { "type": "integer", "format": "int32" },
-          "interestCalculationPeriodMethod": {
-            "type": "string",
-            "enum": ["DAILY", "SAME_AS_REPAYMENT_PERIOD", "INVALID"]
-          },
-          "interestMethod": { "type": "string", "enum": ["DECLINING_BALANCE", "FLAT", "INVALID"] },
-          "interestPeriodFrequencyType": {
-            "type": "string",
-            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID"]
-          },
-          "interestRecalculationEnabled": { "type": "boolean" },
-          "interestRecognitionOnDisbursementDate": { "type": "boolean" },
-          "loanScheduleProcessingType": { "type": "string", "enum": ["HORIZONTAL", "VERTICAL"] },
-          "nominalInterestRatePerPeriod": { "type": "number" },
-          "numberOfRepayments": { "type": "integer", "format": "int32" },
-          "preCloseInterestCalculationStrategy": {
-            "type": "string",
-            "enum": ["NONE", "TILL_PRE_CLOSURE_DATE", "TILL_REST_FREQUENCY_DATE"]
-          },
-          "recurringMoratoriumOnPrincipalPeriods": { "type": "integer", "format": "int32" },
-          "repayEvery": { "type": "integer", "format": "int32" },
-          "repaymentPeriodFrequencyType": {
-            "type": "string",
-            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID"]
-          },
-          "restFrequencyType": {
-            "type": "string",
-            "enum": ["INVALID", "SAME_AS_REPAYMENT_PERIOD", "DAILY", "WEEKLY", "MONTHLY"]
-          }
-        }
-      },
       "IdDocument": {
         "type": "object",
         "properties": {
@@ -43243,48 +43965,6 @@
             "example": "2024-01-01"
           }
         }
-      },
-      "InterestPeriod": {
-        "type": "object",
-        "properties": {
-          "balanceCorrectionAmount": { "$ref": "#/components/schemas/Money" },
-          "calculatedDueInterest": { "type": "number" },
-          "capitalizedIncomePrincipal": { "$ref": "#/components/schemas/Money" },
-          "creditedAmounts": { "$ref": "#/components/schemas/Money" },
-          "creditedInterest": { "$ref": "#/components/schemas/Money" },
-          "creditedPrincipal": { "$ref": "#/components/schemas/Money" },
-          "disbursementAmount": { "$ref": "#/components/schemas/Money" },
-          "dueDate": { "type": "string", "format": "date" },
-          "firstInterestPeriod": { "type": "boolean" },
-          "fromDate": { "type": "string", "format": "date" },
-          "length": { "type": "integer", "format": "int64" },
-          "lengthTillPeriodDueDate": { "type": "integer", "format": "int64" },
-          "mc": {
-            "type": "object",
-            "properties": {
-              "precision": { "type": "integer", "format": "int32" },
-              "roundingMode": {
-                "type": "string",
-                "enum": [
-                  "UP",
-                  "DOWN",
-                  "CEILING",
-                  "FLOOR",
-                  "HALF_UP",
-                  "HALF_DOWN",
-                  "HALF_EVEN",
-                  "UNNECESSARY"
-                ]
-              }
-            }
-          },
-          "outstandingLoanBalance": { "$ref": "#/components/schemas/Money" },
-          "paused": { "type": "boolean" },
-          "rateFactor": { "type": "number" },
-          "rateFactorTillPeriodDueDate": { "type": "number" },
-          "repaymentPeriod": { "$ref": "#/components/schemas/RepaymentPeriod" }
-        },
-        "required": ["dueDate", "fromDate"]
       },
       "InterestRateChartCreateRequest": {
         "type": "object",
@@ -43442,6 +44122,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" }
         }
       },
@@ -43471,33 +44155,18 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" }
         },
         "required": ["accountId"]
       },
       "InteropIdentifierRequestData": {
         "type": "object",
-        "properties": {
-          "accountId": { "type": "string", "minLength": 1 },
-          "idType": {
-            "type": "string",
-            "enum": [
-              "MSISDN",
-              "EMAIL",
-              "PERSONAL_ID",
-              "BUSINESS",
-              "DEVICE",
-              "ACCOUNT_ID",
-              "IBAN",
-              "ALIAS",
-              "BBAN"
-            ],
-            "minLength": 1
-          },
-          "idValue": { "type": "string", "minLength": 1 },
-          "subIdOrType": { "type": "string" }
-        },
-        "required": ["accountId", "idType", "idValue"]
+        "properties": { "accountId": { "type": "string", "minLength": 1 } },
+        "required": ["accountId"]
       },
       "InteropIdentifiersResponseData": {
         "type": "object",
@@ -43524,6 +44193,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" }
         }
       },
@@ -43560,6 +44233,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "subjectName": { "$ref": "#/components/schemas/SubjectName" },
           "transactionId": { "type": "string" }
         }
@@ -43628,6 +44305,10 @@
           "state": { "type": "string", "enum": ["ACCEPTED", "REJECTED"] },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionCode": { "type": "string" },
           "transactionId": { "type": "string" }
         },
@@ -43666,6 +44347,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" },
           "transactionType": {
             "type": "string",
@@ -43757,6 +44442,10 @@
           "state": { "type": "string", "enum": ["ACCEPTED", "REJECTED"] },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionCode": { "type": "string" },
           "transactionId": { "type": "string" }
         },
@@ -43803,6 +44492,10 @@
           "savingsId": { "type": "integer", "format": "int64" },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionId": { "type": "string" },
           "transactions": {
             "type": "array",
@@ -43865,6 +44558,10 @@
           "state": { "type": "string", "enum": ["ACCEPTED", "REJECTED"] },
           "subResourceExternalId": { "$ref": "#/components/schemas/ExternalId" },
           "subResourceId": { "type": "integer", "format": "int64" },
+          "subResources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandProcessingSubResourceResult" }
+          },
           "transactionCode": { "type": "string" },
           "transactionId": { "type": "string" },
           "transferCode": { "type": "string" }
@@ -44310,7 +45007,7 @@
           "includeInBorrowerCycle": { "type": "boolean" },
           "interestPeriodFrequencyType": {
             "type": "string",
-            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID"]
+            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID", "SEMI_MONTHLY"]
           },
           "interestRecalculationEnabled": { "type": "boolean" },
           "linkedToFloatingInterestRate": { "type": "boolean" },
@@ -44460,6 +45157,7 @@
       "LoanProductCreditAllocationRule": {
         "type": "object",
         "properties": {
+          "allocationStrategy": { "type": "string", "enum": ["RULE_BASED", "PRINCIPAL_ONLY"] },
           "allocationTypes": {
             "type": "array",
             "items": { "type": "string", "enum": ["PENALTY", "FEE", "PRINCIPAL", "INTEREST"] }
@@ -44595,6 +45293,10 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/EnumOptionData" }
           },
+          "creditAllocationStrategyOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EnumOptionData" }
+          },
           "creditAllocationTransactionTypes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/EnumOptionData" }
@@ -44645,6 +45347,7 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/ChargeToGLAccountMapper" }
           },
+          "firstRepaymentDayOfMonth": { "type": "integer", "format": "int32" },
           "fixedLength": { "type": "integer", "format": "int32" },
           "fixedPrincipalPercentagePerInstallment": { "type": "number" },
           "floatingInterestRateCalculationAllowed": { "type": "boolean" },
@@ -44741,6 +45444,11 @@
           "minPrincipal": { "type": "number" },
           "minimumDaysBetweenDisbursalAndFirstRepayment": { "type": "integer", "format": "int32" },
           "minimumGap": { "type": "integer", "format": "int32" },
+          "monthEndDueDateStrategy": { "$ref": "#/components/schemas/StringEnumOptionData" },
+          "monthEndDueDateStrategyOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "multiDisburseLoan": { "type": "boolean" },
           "name": { "type": "string" },
           "numberOfRepaymentVariationsForBorrowerCycle": {
@@ -44803,9 +45511,18 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/EnumOptionData" }
           },
+          "secondRepaymentDayOfMonth": { "type": "integer", "format": "int32" },
           "shortName": { "type": "string" },
           "startDate": { "type": "string", "format": "date" },
           "status": { "type": "string" },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
+          "supportedFeeRefundTypesOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "supportedInterestRefundTypes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
@@ -45005,7 +45722,8 @@
               "REFUND_FOR_ACTIVE_LOAN",
               "INTEREST_PAYMENT_WAIVER",
               "INTEREST_REFUND",
-              "CAPITALIZED_INCOME_ADJUSTMENT"
+              "CAPITALIZED_INCOME_ADJUSTMENT",
+              "FEE_REFUND"
             ]
           }
         },
@@ -45069,6 +45787,7 @@
           "enableDownPayment": { "type": "boolean" },
           "enableIncomeCapitalization": { "type": "boolean" },
           "equalAmortization": { "type": "boolean" },
+          "firstRepaymentDayOfMonth": { "type": "integer", "format": "int32" },
           "fixedLength": { "type": "integer", "format": "int32" },
           "graceOnArrearsAgeing": { "type": "integer", "format": "int32" },
           "graceOnInterestCharged": { "type": "integer", "format": "int32" },
@@ -45083,13 +45802,17 @@
           "interestMethod": { "type": "string", "enum": ["DECLINING_BALANCE", "FLAT", "INVALID"] },
           "interestPeriodFrequencyType": {
             "type": "string",
-            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID"]
+            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID", "SEMI_MONTHLY"]
           },
           "interestRecalculationEnabled": { "type": "boolean" },
           "interestRecognitionOnDisbursementDate": { "type": "boolean" },
           "loanScheduleProcessingType": { "type": "string", "enum": ["HORIZONTAL", "VERTICAL"] },
           "loanScheduleType": { "type": "string", "enum": ["CUMULATIVE", "PROGRESSIVE"] },
           "merchantBuyDownFee": { "type": "boolean" },
+          "monthEndDueDateStrategy": {
+            "type": "string",
+            "enum": ["LAST_DAY_OF_MONTH", "FIRST_DAY_OF_NEXT_MONTH"]
+          },
           "nominalInterestRatePerPeriod": { "type": "number" },
           "numberOfRepayments": { "type": "integer", "format": "int32" },
           "principal": { "$ref": "#/components/schemas/Money" },
@@ -45097,7 +45820,12 @@
           "repayEvery": { "type": "integer", "format": "int32" },
           "repaymentPeriodFrequencyType": {
             "type": "string",
-            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID"]
+            "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID", "SEMI_MONTHLY"]
+          },
+          "secondRepaymentDayOfMonth": { "type": "integer", "format": "int32" },
+          "supportedFeeRefundTypes": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["MERCHANT_ISSUED_REFUND", "PAYOUT_REFUND"] }
           },
           "supportedInterestRefundTypes": {
             "type": "array",
@@ -45317,7 +46045,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID"]
+              "enum": ["DAYS", "WEEKS", "MONTHS", "YEARS", "WHOLE_TERM", "INVALID", "SEMI_MONTHLY"]
             }
           },
           "possibleNextRepaymentDate": { "type": "string", "format": "date" },
@@ -45386,11 +46114,13 @@
           "creditBalanceRefund": { "type": "boolean" },
           "disbursement": { "type": "boolean" },
           "downPayment": { "type": "boolean" },
+          "feeRefund": { "type": "boolean" },
           "goodwillCredit": { "type": "boolean" },
           "id": { "type": "integer", "format": "int64" },
           "initiateTransfer": { "type": "boolean" },
           "interestPaymentWaiver": { "type": "boolean" },
           "interestRefund": { "type": "boolean" },
+          "loanWithdrawal": { "type": "boolean" },
           "merchantIssuedRefund": { "type": "boolean" },
           "payoutRefund": { "type": "boolean" },
           "reAge": { "type": "boolean" },
@@ -46126,7 +46856,7 @@
           "name": { "type": "string", "minLength": 1 },
           "position": { "type": "integer", "format": "int64", "minimum": 0 }
         },
-        "required": ["isSystemDefined", "name"]
+        "required": ["name"]
       },
       "PaymentTypeUpdateResponse": {
         "type": "object",
@@ -46205,6 +46935,11 @@
         "type": "object",
         "description": "PostAccountsTypeAccountIdRequest",
         "properties": {
+          "accountNumber": {
+            "type": "string",
+            "description": "command=applyadditionalshares, redeemshares, close",
+            "example": "acc123"
+          },
           "activatedDate": {
             "type": "string",
             "description": "command=activate",
@@ -46215,6 +46950,21 @@
             "description": "command=approve",
             "example": "01 January 2026"
           },
+          "bankNumber": {
+            "type": "string",
+            "description": "command=applyadditionalshares, redeemshares, close",
+            "example": "ban123"
+          },
+          "checkNumber": {
+            "type": "string",
+            "description": "command=applyadditionalshares, redeemshares, close",
+            "example": "che123"
+          },
+          "closedDate": {
+            "type": "string",
+            "description": "command=close",
+            "example": "01 January 2026"
+          },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "locale": { "type": "string", "example": "en" },
           "note": {
@@ -46222,10 +46972,26 @@
             "description": "command=approve",
             "example": "Share Account Approval Note"
           },
+          "paymentTypeId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "command=applyadditionalshares, redeemshares, close",
+            "example": 1
+          },
+          "receiptNumber": {
+            "type": "string",
+            "description": "command=applyadditionalshares, redeemshares, close",
+            "example": "rec123"
+          },
           "requestedShares": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/PostAccountsRequestedShares" },
             "uniqueItems": true
+          },
+          "routingCode": {
+            "type": "string",
+            "description": "command=applyadditionalshares, redeemshares, close",
+            "example": "rou123"
           }
         }
       },
@@ -46296,6 +47062,7 @@
         "properties": {
           "authenticated": { "type": "boolean", "example": true },
           "base64EncodedAuthenticationKey": { "type": "string", "example": "bWlmb3M6cGFzc3dvcmQ=" },
+          "isTwoFactorAuthenticationRequired": { "type": "boolean", "example": false },
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
           "officeName": { "type": "string", "example": "Head Office" },
           "organisationalRole": { "$ref": "#/components/schemas/EnumOptionData" },
@@ -46572,6 +47339,12 @@
           "middlename": { "type": "string", "example": "Client_MiddleName" },
           "mobileNo": { "type": "string", "example": "+353851239876" },
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
+          "savingsProductId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Savings product of the account opened automatically when the client is activated",
+            "example": 4
+          },
           "submittedOnDate": { "type": "string", "example": "04 March 2009" }
         }
       },
@@ -46932,6 +47705,20 @@
           "savingsId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
+      "PostFixedDepositAccountsCharges": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "number", "example": 100 },
+          "chargeId": { "type": "integer", "format": "int64", "example": 2 },
+          "dueDate": { "type": "string", "example": "29 April 2013" },
+          "feeInterval": { "type": "integer", "format": "int32", "example": 1 },
+          "feeOnMonthDay": {
+            "type": "string",
+            "description": "The recurring day an annual or monthly fee falls due",
+            "example": "04 March"
+          }
+        }
+      },
       "PostFixedDepositAccountsFixedDepositAccountIdTransactionsRequest": {
         "type": "object",
         "description": "PostFixedDepositAccountsFixedDepositAccountIdTransactionsRequest",
@@ -46970,6 +47757,10 @@
         "type": "object",
         "description": "PostFixedDepositAccountsRequest",
         "properties": {
+          "charges": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PostFixedDepositAccountsCharges" }
+          },
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "depositAmount": { "type": "number", "example": 5000 },
@@ -46985,6 +47776,11 @@
           "interestCalculationType": { "type": "integer", "format": "int32", "example": 1 },
           "interestCompoundingPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestPostingPeriodType": { "type": "integer", "format": "int32", "example": 4 },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "linkAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "locale": { "type": "string", "example": "en" },
           "lockinPeriodFrequency": { "type": "integer", "format": "int32", "example": 1 },
@@ -46995,6 +47791,11 @@
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 1 },
           "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 2 },
           "monthDayFormat": { "type": "string", "example": "dd MMMM" },
+          "nominalAnnualInterestRate": {
+            "type": "number",
+            "description": "Custom nominal annual interest rate to override product chart slabs",
+            "example": 5.0
+          },
           "preClosurePenalApplicable": { "type": "boolean", "example": true },
           "preClosurePenalInterest": { "type": "number", "example": 1.75 },
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
@@ -47051,7 +47852,9 @@
             "items": { "$ref": "#/components/schemas/PostFixedDepositProductsCharts" },
             "uniqueItems": true
           },
+          "closeDate": { "type": "string", "example": "10 July 2022" },
           "currencyCode": { "type": "string", "example": "USD" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "depositAmount": { "type": "number", "example": 100000 },
           "description": {
             "type": "string",
@@ -47089,6 +47892,7 @@
           "savingsControlAccountId": { "type": "integer", "format": "int64", "example": 2 },
           "savingsReferenceAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "shortName": { "type": "string", "example": "FD01" },
+          "startDate": { "type": "string", "example": "10 July 2022" },
           "taxGroupId": { "type": "integer", "format": "int64", "example": 1 },
           "transfersInSuspenseAccountId": { "type": "integer", "format": "int64", "example": 3 },
           "withHoldTax": { "type": "boolean", "example": false }
@@ -47447,6 +48251,7 @@
           "daysInMonthType": { "type": "integer", "format": "int32", "example": 1 },
           "daysInYearCustomStrategy": { "type": "string", "example": "FULL_LEAP_YEAR" },
           "daysInYearType": { "type": "integer", "format": "int32", "example": 1 },
+          "defaultDifferentialLendingRate": { "type": "number", "example": 0.0 },
           "deferredIncomeLiabilityAccountId": {
             "type": "integer",
             "format": "int64",
@@ -47470,8 +48275,20 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/LoanProductChargeToGLAccountMapper" }
           },
+          "firstRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "First due day of the month of a semi-monthly product, between 1 and 27.",
+            "example": 10
+          },
           "fixedLength": { "type": "integer", "format": "int32", "example": 10 },
           "fixedPrincipalPercentagePerInstallment": { "type": "number", "example": 5.5 },
+          "floatingRatesId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The floating rate the product follows, when isLinkedToFloatingInterestRates is true",
+            "example": 1
+          },
           "fundId": { "type": "integer", "format": "int64", "example": 3 },
           "fundSourceAccountId": { "type": "integer", "format": "int64", "example": 4 },
           "goodwillCreditAccountId": { "type": "integer", "format": "int64", "example": 48 },
@@ -47524,6 +48341,7 @@
           "installmentAmountInMultiplesOf": { "type": "integer", "format": "int32", "example": 1 },
           "interestCalculationPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestOnLoanAccountId": { "type": "integer", "format": "int64", "example": 34 },
+          "interestRateDifferential": { "type": "number", "example": 0.0 },
           "interestRateFrequencyType": { "type": "integer", "format": "int32", "example": 2 },
           "interestRatePerPeriod": { "type": "number", "format": "double", "example": 1.75 },
           "interestRateVariationsForBorrowerCycle": {
@@ -47541,6 +48359,7 @@
           "isArrearsBasedOnOriginalSchedule": { "type": "boolean", "example": false },
           "isCompoundingToBePostedAsTransaction": { "type": "boolean", "example": false },
           "isEqualAmortization": { "type": "boolean", "example": false },
+          "isFloatingInterestRateCalculationAllowed": { "type": "boolean", "example": true },
           "isInterestRecalculationEnabled": { "type": "boolean", "example": false },
           "isLinkedToFloatingInterestRates": { "type": "boolean", "example": false },
           "loanPortfolioAccountId": { "type": "integer", "format": "int64", "example": 8 },
@@ -47552,6 +48371,7 @@
             "description": "Percentage of the loan that guarantors must cover",
             "example": 50
           },
+          "maxDifferentialLendingRate": { "type": "number", "example": 50.0 },
           "maxInterestRatePerPeriod": { "type": "number", "format": "double", "example": 23.4 },
           "maxNumberOfRepayments": { "type": "integer", "format": "int32", "example": 1 },
           "maxPrincipal": { "type": "number", "format": "double", "example": 15000.0 },
@@ -47563,6 +48383,7 @@
             "example": 90
           },
           "merchantBuyDownFee": { "type": "boolean", "example": false },
+          "minDifferentialLendingRate": { "type": "number", "example": 0.0 },
           "minInterestRatePerPeriod": { "type": "number", "format": "double", "example": 0 },
           "minNumberOfRepayments": { "type": "integer", "format": "int32", "example": 1 },
           "minPrincipal": { "type": "number", "format": "double", "example": 5000.0 },
@@ -47586,6 +48407,11 @@
             "type": "number",
             "description": "Minimum percentage of the guarantee the borrower must provide from own funds",
             "example": 20
+          },
+          "monthEndDueDateStrategy": {
+            "type": "string",
+            "enum": ["LAST_DAY_OF_MONTH", "FIRST_DAY_OF_NEXT_MONTH"],
+            "example": "LAST_DAY_OF_MONTH"
           },
           "multiDisburseLoan": { "type": "boolean", "example": true },
           "name": { "type": "string", "example": "LP Accrual Accounting" },
@@ -47673,8 +48499,15 @@
           "repaymentFrequencyType": { "type": "integer", "format": "int64", "example": 2 },
           "repaymentStartDateType": { "type": "integer", "format": "int32", "example": 1 },
           "rescheduleStrategyMethod": { "type": "integer", "format": "int32", "example": 2 },
+          "secondRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.",
+            "example": 25
+          },
           "shortName": { "type": "string", "example": "LPAA" },
           "startDate": { "type": "string", "example": "10 July 2022" },
+          "supportedFeeRefundTypes": { "type": "array", "items": { "type": "string" } },
           "supportedInterestRefundTypes": { "type": "array", "items": { "type": "string" } },
           "syncExpectedWithDisbursementDate": {
             "type": "boolean",
@@ -47924,6 +48757,11 @@
             "description": "List of PostLoansLoanIdDisbursementData",
             "items": { "$ref": "#/components/schemas/PostLoansLoanIdDisbursementData" }
           },
+          "downPaymentFeeAmount": {
+            "type": "number",
+            "description": "Absolute amount, in the loan currency, of the down payment fee created for the down payment period of this disbursement; overrides the configured flat or percentage amount",
+            "example": 15.0
+          },
           "expectedDisbursementDate": { "type": "string", "example": "28 June 2022" },
           "externalId": { "type": "string", "example": "3e7791ce-aa10-11ec-b909-0242ac120002" },
           "fixedEmiAmount": { "type": "number", "example": 500.0 },
@@ -47948,6 +48786,11 @@
             "items": { "$ref": "#/components/schemas/PostLoansLoanIdPostDatedCheckData" }
           },
           "rejectedOnDate": { "type": "string", "example": "28 June 2022" },
+          "skipDownPaymentFee": {
+            "type": "boolean",
+            "description": "When true, active unpaid down payment fees due on the disbursement date are deactivated and not auto-collected",
+            "example": false
+          },
           "toLoanOfficerId": { "type": "integer", "format": "int64", "example": 2 },
           "transactionAmount": { "type": "number", "example": 5000.33 },
           "transactionDate": { "type": "string", "example": "31 March 2024" },
@@ -47972,7 +48815,12 @@
             "type": "string",
             "example": "b4f8fefd-a14d-4487-8d80-6f2fb0e07836"
           },
-          "subResourceId": { "type": "integer", "format": "int64", "example": 22 }
+          "subResourceId": { "type": "integer", "format": "int64", "example": 22 },
+          "subResources": {
+            "type": "array",
+            "description": "Additional secondary resources created by the command (e.g. interest and fee refunds)",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdSubResource" }
+          }
         }
       },
       "PostLoansLoanIdScheduleDeletedInstallment": {
@@ -48074,6 +48922,17 @@
           "waitingForDisbursal": { "type": "boolean", "example": false }
         }
       },
+      "PostLoansLoanIdSubResource": {
+        "type": "object",
+        "description": "Additional secondary resources created by the command (e.g. interest and fee refunds)",
+        "properties": {
+          "resourceExternalId": {
+            "type": "string",
+            "example": "b4f8fefd-a14d-4487-8d80-6f2fb0e07836"
+          },
+          "resourceId": { "type": "integer", "format": "int64", "example": 22 }
+        }
+      },
       "PostLoansLoanIdTransactionsRequest": {
         "type": "object",
         "description": "PostLoansLoanIdTransactionsRequest",
@@ -48133,7 +48992,12 @@
             "type": "string",
             "example": "95174ff9-1a75-4d72-a413-6f9b1cb988b7"
           },
-          "subResourceId": { "type": "integer", "format": "int64", "example": 22 }
+          "subResourceId": { "type": "integer", "format": "int64", "example": 22 },
+          "subResources": {
+            "type": "array",
+            "description": "Derived transactions created with the refund (interest and/or fee refund)",
+            "items": { "$ref": "#/components/schemas/PostLoansLoanIdTransactionsSubResource" }
+          }
         }
       },
       "PostLoansLoanIdTransactionsResponseChanges": {
@@ -48153,6 +49017,17 @@
           },
           "transactionAmount": { "type": "string", "example": "50,000.00" },
           "transactionDate": { "type": "string", "example": "28 June 2022" }
+        }
+      },
+      "PostLoansLoanIdTransactionsSubResource": {
+        "type": "object",
+        "description": "Derived transactions created with the refund (interest and/or fee refund)",
+        "properties": {
+          "resourceExternalId": {
+            "type": "string",
+            "example": "95174ff9-1a75-4d72-a413-6f9b1cb988b7"
+          },
+          "resourceId": { "type": "integer", "format": "int64", "example": 22 }
         }
       },
       "PostLoansLoanIdTransactionsTransactionIdRequest": {
@@ -48306,6 +49181,12 @@
           "enableInstallmentLevelDelinquency": { "type": "boolean", "example": false },
           "expectedDisbursementDate": { "type": "string", "example": "20 September 2011" },
           "externalId": { "type": "string", "example": "786444UUUYYH7" },
+          "firstRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "First due day of the month of a semi-monthly loan, between 1 and 27.",
+            "example": 10
+          },
           "fixedEmiAmount": { "type": "number", "example": 10.0 },
           "fixedLength": { "type": "integer", "format": "int32", "example": 1 },
           "fixedPrincipalPercentagePerInstallment": { "type": "number", "example": 5.5 },
@@ -48351,6 +49232,12 @@
             "type": "number",
             "description": "Maximum allowed outstanding balance"
           },
+          "monthEndDueDateStrategy": {
+            "type": "string",
+            "description": "Overrides the loan product's month end due date strategy for this loan. It has no effect on a loan whose repayments follow a meeting calendar.",
+            "enum": ["LAST_DAY_OF_MONTH", "FIRST_DAY_OF_NEXT_MONTH"],
+            "example": "FIRST_DAY_OF_NEXT_MONTH"
+          },
           "numberOfRepayments": { "type": "integer", "format": "int32", "example": 12 },
           "originators": {
             "type": "array",
@@ -48363,6 +49250,12 @@
           "repaymentFrequencyType": { "type": "integer", "format": "int32", "example": 2 },
           "repaymentStartDateType": { "type": "integer", "format": "int32", "example": 1 },
           "repaymentsStartingFromDate": { "type": "string", "example": "20 September 2011" },
+          "secondRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Second due day of the month of a semi-monthly loan, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.",
+            "example": 25
+          },
           "submittedOnDate": { "type": "string", "example": "20 September 2011" },
           "syncDisbursementWithMeeting": {
             "type": "boolean",
@@ -48506,6 +49399,117 @@
           "transactionType": { "type": "string", "example": "DEFAULT" }
         }
       },
+      "PostPayoffSchedulePreviewInstallment": {
+        "type": "object",
+        "properties": {
+          "dueDate": { "type": "string", "example": "2024-02-01" },
+          "fromDate": { "type": "string", "example": "2024-01-01" },
+          "installmentNumber": { "type": "integer", "format": "int32", "example": 1 },
+          "interestDue": { "type": "number", "example": 0.0 },
+          "outstandingPrincipalBalance": { "type": "number", "example": 83.33 },
+          "principalDue": { "type": "number", "example": 16.67 },
+          "totalDue": { "type": "number", "example": 16.67 }
+        }
+      },
+      "PostPayoffSchedulePreviewRequest": {
+        "type": "object",
+        "description": "PostPayoffSchedulePreviewRequest",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Amount disbursed on the start date. Must be greater than 0 and have no more decimal places than the schedule (decimalPlaces).",
+            "example": 1000
+          },
+          "annualNominalInterestRate": {
+            "type": "number",
+            "description": "Annual nominal interest rate as a percentage. Defaults to 0.",
+            "example": 7.0
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "Currency code. Defaults to the organisation currency when the organisation has exactly one; required otherwise.",
+            "example": "USD"
+          },
+          "dateFormat": {
+            "type": "string",
+            "description": "Format of startDate. Required with startDate.",
+            "example": "yyyy-MM-dd"
+          },
+          "daysInMonthType": {
+            "type": "integer",
+            "format": "int32",
+            "description": "1 (actual) or 30. Defaults to actual.",
+            "example": 1
+          },
+          "daysInYearType": {
+            "type": "integer",
+            "format": "int32",
+            "description": "1 (actual), 360, 364 or 365. Defaults to actual.",
+            "example": 1
+          },
+          "decimalPlaces": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Rounding scale, 0 to 6. Defaults to the currency's decimal places.",
+            "example": 2
+          },
+          "fixedPaymentAmount": {
+            "type": "number",
+            "description": "Amount paid each period until the amount is paid off. Must exceed every period's interest and have no more decimal places than the schedule (decimalPlaces). Exactly one of term and fixedPaymentAmount is required.",
+            "example": 200
+          },
+          "frequency": {
+            "type": "string",
+            "description": "Repayment frequency as a single-unit ISO-8601 period (months, weeks or days), e.g. P1M, P2W, P14D.",
+            "example": "P1M"
+          },
+          "interestMethod": {
+            "type": "string",
+            "description": "Only DECLINING_BALANCE is supported. Defaults to DECLINING_BALANCE.",
+            "example": "DECLINING_BALANCE"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Locale used to parse startDate and any numbers sent as strings. Required with startDate.",
+            "example": "en"
+          },
+          "startDate": {
+            "type": "string",
+            "description": "Disbursement and schedule start date, parsed with dateFormat and locale.",
+            "example": "2024-01-01"
+          },
+          "term": {
+            "type": "string",
+            "description": "Loan term as a single-unit ISO-8601 period (months, weeks or days). Must use the unit of frequency and be an exact multiple of it. Exactly one of term and fixedPaymentAmount is required.",
+            "example": "P6M"
+          }
+        }
+      },
+      "PostPayoffSchedulePreviewResponse": {
+        "type": "object",
+        "description": "PostPayoffSchedulePreviewResponse",
+        "properties": {
+          "amount": { "type": "number", "example": 100 },
+          "annualNominalInterestRate": { "type": "number", "example": 0 },
+          "currencyCode": { "type": "string", "example": "USD" },
+          "frequency": { "type": "string", "example": "P1M" },
+          "installments": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PostPayoffSchedulePreviewInstallment" }
+          },
+          "interestMethod": { "type": "string", "example": "DECLINING_BALANCE" },
+          "numberOfInstallments": { "type": "integer", "format": "int32", "example": 6 },
+          "startDate": { "type": "string", "example": "2024-01-01" },
+          "term": {
+            "type": "string",
+            "description": "Omitted in fixed-payment-amount mode.",
+            "example": "P6M"
+          },
+          "totalInterest": { "type": "number", "example": 0.0 },
+          "totalPrincipal": { "type": "number", "example": 100.0 },
+          "totalRepayment": { "type": "number", "example": 100.0 }
+        }
+      },
       "PostProductsChargesSelected": {
         "type": "object",
         "properties": { "id": { "type": "integer", "format": "int64", "example": 20 } }
@@ -48517,6 +49521,13 @@
           "fromDate": { "type": "string", "example": "04 May 2016" },
           "locale": { "type": "string", "example": "en" },
           "shareValue": { "type": "integer", "format": "int32", "example": 2 }
+        }
+      },
+      "PostProductsPaymentChannelToFundSourceMappings": {
+        "type": "object",
+        "properties": {
+          "fundSourceAccountId": { "type": "integer", "format": "int64", "example": 12 },
+          "paymentTypeId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
       "PostProductsTypeRequest": {
@@ -48558,6 +49569,14 @@
           },
           "name": { "type": "string", "example": "Share Product" },
           "nominalShares": { "type": "integer", "format": "int32", "example": 20 },
+          "paymentChannelToFundSourceMappings": {
+            "type": "array",
+            "description": "Optional with accountingRule=2 (cash based): routes the share reference entry to a payment type specific GL account",
+            "items": {
+              "$ref": "#/components/schemas/PostProductsPaymentChannelToFundSourceMappings"
+            },
+            "uniqueItems": true
+          },
           "shareEquityId": {
             "type": "integer",
             "format": "int64",
@@ -48742,6 +49761,11 @@
           "interestCompoundingPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestPostingPeriodType": { "type": "integer", "format": "int32", "example": 4 },
           "isCalendarInherited": { "type": "boolean", "example": false },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "locale": { "type": "string", "example": "en" },
           "lockinPeriodFrequency": { "type": "integer", "format": "int32", "example": 1 },
           "lockinPeriodFrequencyType": { "type": "integer", "format": "int32", "example": 2 },
@@ -48751,6 +49775,11 @@
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 1 },
           "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 2 },
           "monthDayFormat": { "type": "string", "example": "dd MMMM" },
+          "nominalAnnualInterestRate": {
+            "type": "number",
+            "description": "Custom nominal annual interest rate to override product chart slabs",
+            "example": 5.0
+          },
           "preClosurePenalApplicable": { "type": "boolean", "example": true },
           "preClosurePenalInterest": { "type": "number", "example": 1.75 },
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
@@ -48808,7 +49837,9 @@
             "items": { "$ref": "#/components/schemas/PostRecurringDepositProductsCharts" },
             "uniqueItems": true
           },
+          "closeDate": { "type": "string", "example": "10 July 2022" },
           "currencyCode": { "type": "string", "example": "USD" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "depositAmount": { "type": "number", "example": 10000 },
           "description": {
             "type": "string",
@@ -48848,6 +49879,7 @@
           "savingsControlAccountId": { "type": "integer", "format": "int64", "example": 2 },
           "savingsReferenceAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "shortName": { "type": "string", "example": "RD01" },
+          "startDate": { "type": "string", "example": "10 July 2022" },
           "taxGroupId": { "type": "integer", "format": "int64", "example": 1 },
           "transfersInSuspenseAccountId": { "type": "integer", "format": "int64", "example": 3 },
           "withHoldTax": { "type": "boolean", "example": false }
@@ -48950,7 +49982,8 @@
           "locale": { "type": "string", "example": "en" },
           "paymentTypeId": { "type": "integer", "format": "int64", "example": 1 },
           "transactionAmount": { "type": "number", "example": 500 },
-          "transactionDate": { "type": "string", "example": "01 March 2013" }
+          "transactionDate": { "type": "string", "example": "01 March 2013" },
+          "transactionTime": { "type": "string", "example": "02:00:00+05:30" }
         }
       },
       "PostSavingsAccountTransactionsRequest": {
@@ -48975,7 +50008,8 @@
             "items": { "$ref": "#/components/schemas/PostSavingsAccountsGsimSavings" }
           },
           "transactionAmount": { "type": "number", "example": 1000 },
-          "transactionDate": { "type": "string", "example": "27 March 2022" }
+          "transactionDate": { "type": "string", "example": "27 March 2022" },
+          "transactionTime": { "type": "string", "example": "14:30:00+05:30" }
         }
       },
       "PostSavingsAccountTransactionsResponse": {
@@ -49248,6 +50282,17 @@
         "description": "PostSavingsProductsResponse",
         "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 1 } }
       },
+      "PostShareProductDividendsRequest": {
+        "type": "object",
+        "description": "PostShareProductDividendsRequest",
+        "properties": {
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "dividendAmount": { "type": "number", "example": 50000 },
+          "dividendPeriodEndDate": { "type": "string", "example": "01 April 2016" },
+          "dividendPeriodStartDate": { "type": "string", "example": "01 January 2015" },
+          "locale": { "type": "string", "example": "en" }
+        }
+      },
       "PostStandingInstructionsResponse": {
         "type": "object",
         "description": "PostStandingInstructionsResponse",
@@ -49432,8 +50477,32 @@
           "dateFormat": { "type": "string", "example": "dd-MM-yyyy" },
           "description": { "type": "string", "example": "teller cash handling" },
           "endDate": { "type": "string", "format": "date" },
+          "hourEndTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "End hour of a part-day assignment; only used when isFullDay is false",
+            "example": 13
+          },
+          "hourStartTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start hour of a part-day assignment; only used when isFullDay is false",
+            "example": 9
+          },
           "isFullDay": { "type": "boolean", "example": true },
           "locale": { "type": "string", "example": "en" },
+          "minEndTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "End minute of a part-day assignment; only used when isFullDay is false",
+            "example": 30
+          },
+          "minStartTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start minute of a part-day assignment; only used when isFullDay is false",
+            "example": 0
+          },
           "staffId": { "type": "integer", "format": "int64", "example": 3 },
           "startDate": { "type": "string", "format": "date" }
         }
@@ -49444,6 +50513,59 @@
         "properties": {
           "resourceId": { "type": "integer", "format": "int64", "example": 1 },
           "subResourceId": { "type": "integer", "format": "int64", "example": 2 }
+        }
+      },
+      "PostTwoFactorInvalidateRequest": {
+        "type": "object",
+        "description": "PostTwoFactorInvalidateRequest",
+        "properties": {
+          "token": { "type": "string", "example": "aa3d4cfd-4bd8-4e65-97c3-2d1f5b1c7f9a" }
+        },
+        "required": ["token"]
+      },
+      "PostTwoFactorInvalidateResponse": {
+        "type": "object",
+        "description": "PostTwoFactorInvalidateResponse",
+        "properties": {
+          "resourceIdentifier": {
+            "type": "string",
+            "description": "The invalidated access token",
+            "example": "aa3d4cfd-4bd8-4e65-97c3-2d1f5b1c7f9a"
+          }
+        }
+      },
+      "PostTwoFactorRequestTokenResponse": {
+        "type": "object",
+        "description": "PostTwoFactorRequestTokenResponse",
+        "properties": {
+          "deliveryMethod": { "$ref": "#/components/schemas/GetTwoFactorDeliveryMethodsResponse" },
+          "extendedAccessToken": { "type": "boolean", "example": false },
+          "requestTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Epoch milliseconds",
+            "example": 1752236400000
+          },
+          "tokenLiveTimeInSec": { "type": "integer", "format": "int32", "example": 300 }
+        }
+      },
+      "PostTwoFactorValidateResponse": {
+        "type": "object",
+        "description": "PostTwoFactorValidateResponse",
+        "properties": {
+          "token": { "type": "string", "example": "aa3d4cfd-4bd8-4e65-97c3-2d1f5b1c7f9a" },
+          "validFrom": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Epoch milliseconds",
+            "example": 1752236400000
+          },
+          "validTo": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Epoch milliseconds",
+            "example": 1752322800000
+          }
         }
       },
       "PostUpdateRescheduleLoanChanges": {
@@ -50291,27 +51413,6 @@
           "productId": { "type": "integer", "format": "int64" }
         }
       },
-      "ProgressiveLoanInterestScheduleModel": {
-        "type": "object",
-        "properties": {
-          "copy": { "type": "boolean" },
-          "emirecalculationEnabled": { "type": "boolean" },
-          "empty": { "type": "boolean" },
-          "interestPauseForEmiCalculationEnabled": { "type": "boolean" },
-          "lastRepaymentPeriod": { "$ref": "#/components/schemas/RepaymentPeriod" },
-          "loanTermInDays": { "type": "integer", "format": "int32" },
-          "maturityDate": { "type": "string", "format": "date" },
-          "principalGraceLifted": { "type": "boolean" },
-          "startDate": { "type": "string", "format": "date" },
-          "totalCreditedPrincipal": { "$ref": "#/components/schemas/Money" },
-          "totalDueInterest": { "$ref": "#/components/schemas/Money" },
-          "totalDuePrincipal": { "$ref": "#/components/schemas/Money" },
-          "totalOutstandingPrincipal": { "$ref": "#/components/schemas/Money" },
-          "totalPaidInterest": { "$ref": "#/components/schemas/Money" },
-          "totalPaidPrincipal": { "$ref": "#/components/schemas/Money" }
-        },
-        "required": ["lastRepaymentPeriod"]
-      },
       "ProjectedAmortizationScheduleData": {
         "type": "object",
         "properties": {
@@ -50472,7 +51573,11 @@
           "applicationDate": { "type": "string", "example": "01 April 2016" },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "locale": { "type": "string", "example": "en" },
-          "requestedShares": { "type": "integer", "format": "int32", "example": 20 }
+          "requestedShares": {
+            "type": "string",
+            "description": "The server reports a changed share request with the literal \"Transaction\", not the count",
+            "example": "Transaction"
+          }
         }
       },
       "PutAccountsTypeAccountIdRequest": {
@@ -50480,6 +51585,10 @@
         "description": "PutAccountsTypeAccountIdRequest",
         "properties": {
           "applicationDate": { "type": "string", "example": "01 April 2016" },
+          "charges": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AccountChargesRequest" }
+          },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "locale": { "type": "string", "example": "en" },
           "requestedShares": { "type": "integer", "format": "int32", "example": 20 }
@@ -50812,6 +51921,14 @@
           }
         }
       },
+      "PutExternalAssetOwnerLoanAttributeRequest": {
+        "type": "object",
+        "description": "PutExternalAssetOwnerLoanAttributeRequest",
+        "properties": {
+          "attributeKey": { "type": "string", "example": "EXCLUDED_TRANSACTION_TYPES" },
+          "attributeValue": { "type": "string", "example": "BUY_DOWN_FEE,BUY_DOWN_FEE_ADJUSTMENT" }
+        }
+      },
       "PutExternalAssetOwnerLoanProductAttributeRequest": {
         "type": "object",
         "description": "PutExternalAssetOwnerLoanProductAttributeRequest",
@@ -50867,6 +51984,11 @@
           "interestCalculationType": { "type": "integer", "format": "int32", "example": 1 },
           "interestCompoundingPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestPostingPeriodType": { "type": "integer", "format": "int32", "example": 4 },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "linkAccountId": { "type": "integer", "format": "int64", "example": 1 },
           "locale": { "type": "string", "example": "en" },
           "lockinPeriodFrequency": { "type": "integer", "format": "int32", "example": 1 },
@@ -50877,6 +51999,11 @@
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 1 },
           "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 2 },
           "monthDayFormat": { "type": "string", "example": "dd MMMM" },
+          "nominalAnnualInterestRate": {
+            "type": "number",
+            "description": "Custom nominal annual interest rate to override product chart slabs",
+            "example": 5.0
+          },
           "preClosurePenalApplicable": { "type": "boolean", "example": true },
           "preClosurePenalInterest": { "type": "number", "example": 1.75 },
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
@@ -50907,18 +52034,23 @@
       "PutFixedDepositProductsChanges": {
         "type": "object",
         "properties": {
+          "closeDate": { "type": "string", "example": "10 July 2022" },
           "description": { "type": "string", "example": "Fixed deposit product new offerings" },
-          "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 }
+          "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 },
+          "startDate": { "type": "string", "example": "10 July 2022" }
         }
       },
       "PutFixedDepositProductsProductIdRequest": {
         "type": "object",
         "description": "PutFixedDepositProductsProductIdRequest",
         "properties": {
+          "closeDate": { "type": "string", "example": "10 July 2022" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "description": { "type": "string", "example": "Fixed deposit product new offerings" },
           "locale": { "type": "string", "example": "en" },
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 },
-          "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 1 }
+          "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 1 },
+          "startDate": { "type": "string", "example": "10 July 2022" }
         }
       },
       "PutFixedDepositProductsProductIdResponse": {
@@ -50996,7 +52128,11 @@
           "dateValue": { "type": "string", "example": "20 September 2011" },
           "enabled": { "type": "boolean", "example": true },
           "locale": { "type": "string", "example": "en" },
-          "stringValue": { "type": "string", "example": "random text" },
+          "stringValue": {
+            "type": "string",
+            "description": "Must be one of the configuration's allowedValues, or a comma-separated list of them if multipleValuesAllowed is true, when the configuration lists allowedValues",
+            "example": "random text"
+          },
           "value": { "type": "integer", "format": "int64", "example": 2 }
         }
       },
@@ -51204,6 +52340,12 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/LoanProductChargeToGLAccountMapper" }
           },
+          "firstRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "First due day of the month of a semi-monthly product, between 1 and 27.",
+            "example": 10
+          },
           "fixedLength": { "type": "integer", "format": "int32" },
           "fixedPrincipalPercentagePerInstallment": { "type": "number", "example": 5.5 },
           "fundId": { "type": "integer", "format": "int64", "example": 3 },
@@ -51294,6 +52436,11 @@
             "format": "int32",
             "example": 30
           },
+          "monthEndDueDateStrategy": {
+            "type": "string",
+            "enum": ["LAST_DAY_OF_MONTH", "FIRST_DAY_OF_NEXT_MONTH"],
+            "example": "LAST_DAY_OF_MONTH"
+          },
           "multiDisburseLoan": { "type": "boolean", "example": true },
           "name": { "type": "string", "example": "LP Accrual Accounting" },
           "numberOfRepaymentVariationsForBorrowerCycle": {
@@ -51366,8 +52513,15 @@
           "repaymentFrequencyType": { "type": "integer", "format": "int32", "example": 2 },
           "repaymentStartDateType": { "type": "integer", "format": "int32", "example": 1 },
           "rescheduleStrategyMethod": { "type": "integer", "format": "int32", "example": 2 },
+          "secondRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.",
+            "example": 25
+          },
           "shortName": { "type": "string", "example": "LPAA" },
           "startDate": { "type": "string", "example": "10 July 2022" },
+          "supportedFeeRefundTypes": { "type": "array", "items": { "type": "string" } },
           "supportedInterestRefundTypes": { "type": "array", "items": { "type": "string" } },
           "transactionProcessingStrategyCode": {
             "type": "string",
@@ -51524,6 +52678,7 @@
         "properties": {
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "expectedDisbursementDate": { "type": "string" },
+          "id": { "type": "integer", "format": "int64", "example": 1 },
           "interestType": { "type": "integer", "format": "int32", "example": 1 },
           "isEqualAmortization": { "type": "boolean", "example": true },
           "locale": { "type": "string", "example": "en" },
@@ -51581,6 +52736,12 @@
           "enableDownPayment": { "type": "boolean", "example": false },
           "enableInstallmentLevelDelinquency": { "type": "boolean", "example": false },
           "expectedDisbursementDate": { "type": "string", "example": "04 March 2014" },
+          "firstRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "First due day of the month of a semi-monthly loan, between 1 and 27.",
+            "example": 10
+          },
           "fixedLength": { "type": "integer", "format": "int32", "example": 1 },
           "fixedPrincipalPercentagePerInstallment": { "type": "number", "example": 5.5 },
           "fraud": { "type": "boolean", "example": true },
@@ -51601,6 +52762,12 @@
           "loanType": { "type": "string", "example": "individual" },
           "locale": { "type": "string", "example": "en" },
           "maxOutstandingLoanBalance": { "type": "integer", "format": "int64", "example": 1 },
+          "monthEndDueDateStrategy": {
+            "type": "string",
+            "description": "Overrides the loan product's month end due date strategy for this loan. It has no effect on a loan whose repayments follow a meeting calendar.",
+            "enum": ["LAST_DAY_OF_MONTH", "FIRST_DAY_OF_NEXT_MONTH"],
+            "example": "FIRST_DAY_OF_NEXT_MONTH"
+          },
           "numberOfRepayments": { "type": "integer", "format": "int32", "example": 10 },
           "principal": { "type": "integer", "format": "int64", "example": 5000 },
           "productId": { "type": "integer", "format": "int64", "example": 1 },
@@ -51609,6 +52776,12 @@
           "repaymentFrequencyNthDayType": { "type": "integer", "format": "int32", "example": 1 },
           "repaymentFrequencyType": { "type": "integer", "format": "int32", "example": 0 },
           "repaymentsStartingFromDate": { "type": "string" },
+          "secondRepaymentDayOfMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Second due day of the month of a semi-monthly loan, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.",
+            "example": 25
+          },
           "submittedOnDate": { "type": "string" },
           "transactionProcessingStrategyCode": {
             "type": "string",
@@ -51701,6 +52874,15 @@
         "properties": {
           "description": { "type": "string", "example": "Share Product Description." },
           "locale": { "type": "string", "example": "en" },
+          "paymentChannelToFundSourceMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostProductsPaymentChannelToFundSourceMappings"
+            },
+            "uniqueItems": true
+          },
+          "sharesIssued": { "type": "integer", "format": "int32", "example": 2000 },
+          "totalShares": { "type": "integer", "format": "int32", "example": 2000 },
           "unitPrice": { "type": "number", "format": "double", "example": 5.0 }
         }
       },
@@ -51772,6 +52954,11 @@
           "interestCompoundingPeriodType": { "type": "integer", "format": "int32", "example": 1 },
           "interestPostingPeriodType": { "type": "integer", "format": "int32", "example": 4 },
           "isCalendarInherited": { "type": "boolean", "example": false },
+          "isRateChartOverridden": {
+            "type": "boolean",
+            "description": "Determines whether product level interest rate chart is overridden by custom nominal annual interest rate",
+            "example": false
+          },
           "locale": { "type": "string", "example": "en" },
           "lockinPeriodFrequency": { "type": "integer", "format": "int32", "example": 1 },
           "lockinPeriodFrequencyType": { "type": "integer", "format": "int32", "example": 2 },
@@ -51781,6 +52968,11 @@
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 1 },
           "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 2 },
           "monthDayFormat": { "type": "string", "example": "dd MMMM" },
+          "nominalAnnualInterestRate": {
+            "type": "number",
+            "description": "Custom nominal annual interest rate to override product chart slabs",
+            "example": 5.0
+          },
           "preClosurePenalApplicable": { "type": "boolean", "example": true },
           "preClosurePenalInterest": { "type": "number", "example": 1.75 },
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
@@ -51812,18 +53004,23 @@
       "PutRecurringDepositProductsChanges": {
         "type": "object",
         "properties": {
+          "closeDate": { "type": "string", "example": "10 July 2022" },
           "description": { "type": "string", "example": "Recurring deposit product new offerings" },
-          "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 }
+          "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 },
+          "startDate": { "type": "string", "example": "10 July 2022" }
         }
       },
       "PutRecurringDepositProductsRequest": {
         "type": "object",
         "description": "PutRecurringDepositProductsRequest",
         "properties": {
+          "closeDate": { "type": "string", "example": "10 July 2022" },
+          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "description": { "type": "string", "example": "Recurring deposit product new offerings" },
           "locale": { "type": "string", "example": "en" },
           "minDepositTerm": { "type": "integer", "format": "int32", "example": 5 },
-          "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 1 }
+          "minDepositTermTypeId": { "type": "integer", "format": "int32", "example": 1 },
+          "startDate": { "type": "string", "example": "10 July 2022" }
         }
       },
       "PutRecurringDepositProductsResponse": {
@@ -52090,6 +53287,10 @@
       "PutTaxesComponentsChanges": {
         "type": "object",
         "properties": {
+          "creditAccountId": { "type": "integer", "format": "int64", "example": 4 },
+          "creditAccountType": { "type": "integer", "format": "int32", "example": 2 },
+          "debitAccountId": { "type": "integer", "format": "int64", "example": 4 },
+          "debitAccountType": { "type": "integer", "format": "int32", "example": 2 },
           "name": { "type": "string", "example": "tax component 2" },
           "percentage": { "type": "number", "format": "float", "example": 15 },
           "startDate": { "type": "string", "format": "date" }
@@ -52099,7 +53300,11 @@
         "type": "object",
         "description": "PutTaxesComponentsTaxComponentIdRequest",
         "properties": {
+          "creditAccountId": { "type": "integer", "format": "int64", "example": 4 },
+          "creditAccountType": { "type": "integer", "format": "int32", "example": 2 },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "debitAccountId": { "type": "integer", "format": "int64", "example": 4 },
+          "debitAccountType": { "type": "integer", "format": "int32", "example": 2 },
           "locale": { "type": "string", "example": "en" },
           "name": { "type": "string", "example": "tax component 2" },
           "percentage": { "type": "number", "format": "float", "example": 15 },
@@ -52218,8 +53423,32 @@
           "dateFormat": { "type": "string", "example": "dd-MM-yyyy" },
           "description": { "type": "string", "example": "Cashier updated." },
           "endDate": { "type": "string", "format": "date" },
+          "hourEndTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "End hour of a part-day assignment; only used when isFullDay is false",
+            "example": 13
+          },
+          "hourStartTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start hour of a part-day assignment; only used when isFullDay is false",
+            "example": 9
+          },
           "isFullDay": { "type": "boolean", "example": true },
           "locale": { "type": "string", "example": "en" },
+          "minEndTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "End minute of a part-day assignment; only used when isFullDay is false",
+            "example": 30
+          },
+          "minStartTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Start minute of a part-day assignment; only used when isFullDay is false",
+            "example": 0
+          },
           "staffId": { "type": "integer", "format": "int64", "example": 1 },
           "startDate": { "type": "string", "format": "date" }
         }
@@ -52242,6 +53471,53 @@
           "description": { "type": "string", "example": "Cashier updated." },
           "endDate": { "type": "string", "format": "date" },
           "locale": { "type": "string", "example": "en" }
+        }
+      },
+      "PutTwoFactorConfigurationRequest": {
+        "type": "object",
+        "description": "PutTwoFactorConfigurationRequest",
+        "properties": {
+          "access-token-live-time": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Seconds",
+            "example": 86400
+          },
+          "access-token-live-time-extended": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Seconds",
+            "example": 604800
+          },
+          "otp-delivery-email-body": {
+            "type": "string",
+            "example": "Hello {{username}}.\nYour OTP login token is {{token}}."
+          },
+          "otp-delivery-email-enable": { "type": "boolean", "example": true },
+          "otp-delivery-email-subject": {
+            "type": "string",
+            "example": "Fineract Two-Factor Authentication Token"
+          },
+          "otp-delivery-sms-enable": { "type": "boolean", "example": false },
+          "otp-delivery-sms-provider": { "type": "integer", "format": "int32", "example": 1 },
+          "otp-delivery-sms-text": {
+            "type": "string",
+            "example": "Your authentication token for Fineract is {{token}}."
+          },
+          "otp-token-length": { "type": "integer", "format": "int32", "example": 5 },
+          "otp-token-live-time": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Seconds",
+            "example": 300
+          }
+        }
+      },
+      "PutTwoFactorConfigurationResponse": {
+        "type": "object",
+        "description": "PutTwoFactorConfigurationResponse",
+        "properties": {
+          "changes": { "$ref": "#/components/schemas/PutTwoFactorConfigurationRequest" }
         }
       },
       "PutUpdateStandingInstructionChanges": {
@@ -52650,80 +53926,6 @@
           "productApply": { "type": "integer", "format": "int32" }
         }
       },
-      "RepaymentPeriod": {
-        "type": "object",
-        "properties": {
-          "calculatedDueInterest": { "$ref": "#/components/schemas/Money" },
-          "calculatedDuePrincipal": { "$ref": "#/components/schemas/Money" },
-          "capitalizedIncomePrincipal": { "$ref": "#/components/schemas/Money" },
-          "creditedAmounts": { "$ref": "#/components/schemas/Money" },
-          "creditedInterest": { "$ref": "#/components/schemas/Money" },
-          "creditedInterestMovedDueReAge": { "$ref": "#/components/schemas/Money" },
-          "creditedPrincipal": { "$ref": "#/components/schemas/Money" },
-          "creditedPrincipalMovedDueReAge": { "$ref": "#/components/schemas/Money" },
-          "currency": { "$ref": "#/components/schemas/MonetaryCurrency" },
-          "dueDate": { "type": "string", "format": "date" },
-          "dueInterest": { "$ref": "#/components/schemas/Money" },
-          "duePrincipal": { "$ref": "#/components/schemas/Money" },
-          "emi": { "$ref": "#/components/schemas/Money" },
-          "emiPlusCreditedAmountsPlusFutureUnrecognizedInterest": {
-            "$ref": "#/components/schemas/Money"
-          },
-          "firstInterestPeriod": { "$ref": "#/components/schemas/InterestPeriod" },
-          "firstRepaymentPeriod": { "type": "boolean" },
-          "fixedInterest": { "$ref": "#/components/schemas/Money" },
-          "fromDate": { "type": "string", "format": "date" },
-          "fullyPaid": { "type": "boolean" },
-          "futureUnrecognizedInterest": { "$ref": "#/components/schemas/Money" },
-          "initialBalanceForEmiRecalculation": { "$ref": "#/components/schemas/Money" },
-          "interestMovedDownward": { "type": "boolean" },
-          "interestMovedUpward": { "type": "boolean" },
-          "interestPaymentGrace": { "type": "boolean" },
-          "interestPeriods": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/InterestPeriod" }
-          },
-          "lastInterestPeriod": { "$ref": "#/components/schemas/InterestPeriod" },
-          "loanProductRelatedDetail": { "$ref": "#/components/schemas/ILoanConfigurationDetails" },
-          "mc": {
-            "type": "object",
-            "properties": {
-              "precision": { "type": "integer", "format": "int32" },
-              "roundingMode": {
-                "type": "string",
-                "enum": [
-                  "UP",
-                  "DOWN",
-                  "CEILING",
-                  "FLOOR",
-                  "HALF_UP",
-                  "HALF_DOWN",
-                  "HALF_EVEN",
-                  "UNNECESSARY"
-                ]
-              }
-            }
-          },
-          "originalEmi": { "$ref": "#/components/schemas/Money" },
-          "outstandingInterest": { "$ref": "#/components/schemas/Money" },
-          "outstandingLoanBalance": { "$ref": "#/components/schemas/Money" },
-          "outstandingPrincipal": { "$ref": "#/components/schemas/Money" },
-          "paidInterest": { "$ref": "#/components/schemas/Money" },
-          "paidPrincipal": { "$ref": "#/components/schemas/Money" },
-          "previous": { "$ref": "#/components/schemas/RepaymentPeriod" },
-          "principalPaymentGrace": { "type": "boolean" },
-          "rateFactorPlus1": { "type": "number" },
-          "reAged": { "type": "boolean" },
-          "reAgedEarlyRepaymentHolder": { "type": "boolean" },
-          "totalCapitalizedIncomeAmount": { "$ref": "#/components/schemas/Money" },
-          "totalCreditedAmount": { "$ref": "#/components/schemas/Money" },
-          "totalDisbursedAmount": { "$ref": "#/components/schemas/Money" },
-          "totalPaidAmount": { "$ref": "#/components/schemas/Money" },
-          "unrecognizedInterest": { "$ref": "#/components/schemas/Money" },
-          "zero": { "$ref": "#/components/schemas/Money" }
-        },
-        "required": ["calculatedDueInterest"]
-      },
       "RepaymentTransactionRequest": {
         "type": "object",
         "properties": {
@@ -53033,6 +54235,10 @@
           "restartFrequency": { "type": "integer", "format": "int32" },
           "restartFrequencyEnum": { "type": "integer", "format": "int32" },
           "savingsActivation": { "type": "boolean" },
+          "transactions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SavingsChargeTransactionData" }
+          },
           "withdrawalFee": { "type": "boolean" }
         }
       },
@@ -53096,11 +54302,13 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/StaffData" }
           },
+          "glAccountIdForIncomeFromInterest": { "type": "integer", "format": "int64" },
           "glAccountIdForInterestOnSavings": { "type": "integer", "format": "int64" },
           "glAccountIdForInterestPayable": { "type": "integer", "format": "int64" },
           "glAccountIdForInterestReceivable": { "type": "integer", "format": "int64" },
           "glAccountIdForOverdraftPorfolio": { "type": "integer", "format": "int64" },
           "glAccountIdForSavingsControl": { "type": "integer", "format": "int64" },
+          "glAccountIdForSavingsReference": { "type": "integer", "format": "int64" },
           "groupGeneralData": { "$ref": "#/components/schemas/GroupGeneralData" },
           "groupId": { "type": "integer", "format": "int64" },
           "groupName": { "type": "string" },
@@ -53356,6 +54564,7 @@
           },
           "transactionAmount": { "type": "number" },
           "transactionDate": { "type": "string", "format": "date" },
+          "transactionTime": { "type": "string", "example": "09:00:00Z" },
           "transactionType": { "$ref": "#/components/schemas/SavingsAccountTransactionEnumData" },
           "transfer": { "$ref": "#/components/schemas/AccountTransferData" },
           "waiveCharge": { "type": "boolean" },
@@ -53364,6 +54573,7 @@
           "waivePenaltyCharge": { "type": "boolean" },
           "waivePenaltyChargeAndNotReversed": { "type": "boolean" },
           "withHoldTaxAndNotReversed": { "type": "boolean" },
+          "withHoldTaxAndReversed": { "type": "boolean" },
           "withdrawal": { "type": "boolean" },
           "withdrawalFeeAndNotReversed": { "type": "boolean" }
         }
@@ -53438,6 +54648,19 @@
             "items": { "$ref": "#/components/schemas/GetSavingsAccountTransactionsPageItem" }
           },
           "total": { "type": "integer", "format": "int64", "example": 2 }
+        }
+      },
+      "SavingsChargeTransactionData": {
+        "type": "object",
+        "properties": {
+          "allocationId": { "type": "integer", "format": "int64" },
+          "amount": { "type": "number" },
+          "amountAllocated": { "type": "number" },
+          "date": { "type": "string", "format": "date" },
+          "paymentDetailData": { "$ref": "#/components/schemas/PaymentDetailData" },
+          "reversed": { "type": "boolean" },
+          "transactionId": { "type": "integer", "format": "int64" },
+          "transactionType": { "$ref": "#/components/schemas/SavingsAccountTransactionEnumData" }
         }
       },
       "SavingsHelper": { "type": "object" },
@@ -53827,6 +55050,7 @@
       "StandingInstructionCreationRequest": {
         "type": "object",
         "properties": {
+          "allowPartialTransfer": { "type": "boolean" },
           "amount": { "type": "string" },
           "dateFormat": { "type": "string" },
           "fromAccountId": { "type": "string" },
@@ -53855,6 +55079,7 @@
       "StandingInstructionUpdatesRequest": {
         "type": "object",
         "properties": {
+          "allowPartialTransfer": { "type": "boolean" },
           "amount": { "type": "string" },
           "dateFormat": { "type": "string" },
           "instructionType": { "type": "string" },
@@ -53965,6 +55190,7 @@
           "creditAccountType": { "$ref": "#/components/schemas/EnumOptionData" },
           "debitAccount": { "$ref": "#/components/schemas/GLAccountData" },
           "debitAccountType": { "$ref": "#/components/schemas/EnumOptionData" },
+          "editable": { "type": "boolean" },
           "glAccountOptions": {
             "type": "object",
             "additionalProperties": {
@@ -54188,11 +55414,13 @@
           "interestPaymentWaiver",
           "accrualActivity",
           "interestRefund",
+          "feeRefund",
           "accrualAdjustment",
           "capitalizedIncome",
           "capitalizedIncomeAmortization",
           "capitalizedIncomeAdjustment",
           "contractTermination",
+          "loanWithdrawal",
           "capitalizedIncomeAmortizationAdjustment",
           "buyDownFeeAmortization",
           "buyDownFeeAmortizationAdjustment"

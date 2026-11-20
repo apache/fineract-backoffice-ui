@@ -36,12 +36,17 @@ export * from './storage/storage.adapter';
 // does not isolate a library the application might swap — the generated client stays. It
 // isolates a *shape* the application does not control, regenerated on Fineract's cadence.
 export * from './api/accounting-closure.api';
+export * from './api/account-number-format.api';
+export * from './api/collection-sheet.api';
+export * from './api/gl-account.api';
 export * from './api/office.api';
 export * from './api/entity-notes.api';
 export * from './api/loan.api';
 export * from './api/loan-transaction.api';
 export * from './api/business-date.api';
 export * from './api/deposit-account.api';
+export * from './api/working-capital-loan.api';
+export * from './api/working-capital-loan-test-tools.api';
 export * from './api/deposit-product.api';
 export * from './api/staff.api';
 export * from './api/holiday-rescheduling-type';
@@ -49,6 +54,9 @@ export * from './api/holiday.api';
 export * from './api/teller.api';
 export * from './api/role.api';
 export * from './api/user.api';
+export * from './api/scheduler-job.api';
+export * from './api/share-dividend.api';
+export * from './api/audit.api';
 
 // The default implementations each token resolves to. Exported so a deployment swapping one
 // can name what it is replacing, and so a TestBed can ask for the real thing explicitly.
@@ -58,6 +66,9 @@ export { IonicOverlayAdapter } from './overlay/ionic-overlay.adapter';
 export { WebStorageAdapter } from './storage/web-storage.adapter';
 export { BrowserDownloadAdapter } from './download/browser-download.adapter';
 export { FineractAccountingClosureApi } from './api/fineract-accounting-closure.api';
+export { FineractAccountNumberFormatApi } from './api/fineract-account-number-format.api';
+export { FineractCollectionSheetApi } from './api/fineract-collection-sheet.api';
+export { FineractGlAccountApi } from './api/fineract-gl-account.api';
 export { FineractOfficeApi } from './api/fineract-office.api';
 export { FineractEntityNotesApi } from './api/fineract-entity-notes.api';
 export { FineractBusinessDateApi } from './api/fineract-business-date.api';
@@ -69,3 +80,6 @@ export { FineractHolidayApi } from './api/fineract-holiday.api';
 export { FineractTellerApi } from './api/fineract-teller.api';
 export { FineractRoleApi } from './api/fineract-role.api';
 export { FineractUserApi } from './api/fineract-user.api';
+export { FineractSchedulerJobApi } from './api/fineract-scheduler-job.api';
+export { FineractShareDividendApi } from './api/fineract-share-dividend.api';
+export { FineractAuditApi } from './api/fineract-audit.api';

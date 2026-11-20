@@ -38,6 +38,7 @@ import { GetFixedDepositProductsInterestPostingPeriodType } from './getFixedDepo
  */
 export interface GetFixedDepositProductsResponse { 
     accountingRule?: GetFixedDepositProductsAccountingRule;
+    closeDate?: string;
     currency?: GetFixedDepositProductsCurrency;
     description?: string;
     id?: number;
@@ -53,5 +54,7 @@ export interface GetFixedDepositProductsResponse {
     nominalAnnualInterestRate?: number;
     preClosurePenalApplicable?: boolean;
     shortName?: string;
+    startDate?: string;
+    status?: string;
 }
 

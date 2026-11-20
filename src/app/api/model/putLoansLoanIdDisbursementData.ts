@@ -28,6 +28,7 @@
 export interface PutLoansLoanIdDisbursementData { 
     dateFormat?: string;
     expectedDisbursementDate?: string;
+    id?: number;
     interestType?: number;
     isEqualAmortization?: boolean;
     locale?: string;

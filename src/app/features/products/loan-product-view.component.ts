@@ -84,7 +84,7 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
               <span class="label">{{ 'PRODUCTS.INTEREST_RATE' | appTranslate }}</span>
               <span class="value"
                 >{{ product()!.interestRatePerPeriod }}
-                {{ product()!.interestRateFrequencyType?.description }}</span
+                {{ product()!.interestRateFrequencyType?.value }}</span
               >
             </div>
             <div class="detail-item">
@@ -95,7 +95,7 @@ import { LOAN_SCHEDULE_TYPE } from './loan-schedule-type';
               <span class="label">{{ 'LOANS.REPAYMENT_EVERY' | appTranslate }}</span>
               <span class="value"
                 >{{ product()!.repaymentEvery }}
-                {{ product()!.repaymentFrequencyType?.description }}</span
+                {{ product()!.repaymentFrequencyType?.value }}</span
               >
             </div>
           </ion-card-content>

@@ -338,8 +338,8 @@ past the limit fails the build in a way that looks unrelated to your change.
 ### `offline-build`
 
 ```bash
-docker run --rm -v "$PWD":/workspace -w /workspace node:24-alpine@<digest> npm ci
-docker run --rm --network none -v "$PWD":/workspace -w /workspace node:24-alpine@<digest> \
+docker run --rm -v "$PWD":/workspace -w /workspace node:26-alpine@<digest> npm ci
+docker run --rm --network none -v "$PWD":/workspace -w /workspace node:26-alpine@<digest> \
   npm run build -- --configuration production
 ```
 
@@ -356,7 +356,7 @@ anything more — a compromised or unreachable registry already fails `npm ci`
 loudly on its own — and would only make the job flaky against registry hiccups
 that have nothing to do with what this job exists to catch.
 
-Both steps run inside the exact `node:24-alpine` image `deploy/Dockerfile`
+Both steps run inside the exact `node:26-alpine` image `deploy/Dockerfile`
 builds from, rather than installing on the runner's own Node and mounting the
 result into a container. `npm ci` resolves platform-specific native optional
 dependencies — `lightningcss` ships separate glibc and musl builds — so
@@ -470,8 +470,8 @@ because they have very different costs:
 
 | Job          | Fineract     | Shards | Cost per shard      |
 | ------------ | ------------ | ------ | ------------------- |
-| `mocked`     | not needed   | 4      | checkout + install  |
-| `backend`    | docker stack | 3      | + ~2 min stack boot |
+| `mocked`     | not needed   | 6      | checkout + install  |
+| `backend`    | docker stack | 5      | + ~2 min stack boot |
 | `two-factor` | its own      | 1      | + ~2 min stack boot |
 
 The split is defined in `playwright.config.ts` as projects, so `--project=mocked`
@@ -491,9 +491,16 @@ mutate real records and `backend.setup.ts` seeds reference data, so a shared ins
 make them order-dependent across shards. Playwright runs a project's `dependencies` in every
 shard, which is what makes per-shard seeding work without extra wiring.
 
-> **Branch protection** must require all four `E2E (mocked backend, shard n/4)` checks and
-> all three `E2E (real Fineract, shard n/3)` checks — never the `... report` jobs, which can
-> succeed while a shard failed.
+The counts were last set against a measured run: the 50-file backend suite over three shards
+finished in 6:52, 12:08 and 14:08, and the mocked suite over four in 6:12 to 9:23. Five and six
+spend the same runner minutes on a shorter wall clock. The ~2 min stack boot is a floor a
+backend shard pays whatever it runs, so past five it starts costing more than it saves —
+re-measure before moving either count rather than raising it on principle.
+
+> **Branch protection** must require all six `E2E (mocked backend, shard n/6)` checks and
+> all five `E2E (real Fineract, shard n/5)` checks — never the `... report` jobs, which can
+> succeed while a shard failed. Changing a shard count **renames those checks**, so the
+> required list has to be updated with it or the new shards run unrequired.
 
 ### What CI caches
 

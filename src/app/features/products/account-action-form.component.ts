@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslatePipe } from '../../core/adapters';
+import { I18N, TranslatePipe } from '../../core/adapters';
 import {
   IonCard,
   IonCardHeader,
@@ -55,7 +55,6 @@ import {
   FINERACT_DATE_FORMAT,
   FINERACT_LOCALE,
 } from '../../core/utils/date-formatter';
-import { I18N } from '../../core/adapters';
 import { MutationOutcomeService } from '../../core/services/mutation-outcome.service';
 
 @Component({

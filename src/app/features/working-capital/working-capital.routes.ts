@@ -100,6 +100,17 @@ export const WORKING_CAPITAL_ROUTES: Routes = [
       ),
   },
   {
+    // The module's landing screen: the only view that reads across loans rather than into one.
+    path: 'overview',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_WORKINGCAPITALLOAN' },
+    title: 'WC_PORTFOLIO.TITLE',
+    loadComponent: () =>
+      import('./portfolio/wc-portfolio-overview.component').then(
+        (m) => m.WcPortfolioOverviewComponent,
+      ),
+  },
+  {
     path: 'loans',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_WORKINGCAPITALLOAN' },
@@ -112,6 +123,15 @@ export const WORKING_CAPITAL_ROUTES: Routes = [
     data: { permissions: 'CREATE_WORKINGCAPITALLOAN' },
     loadComponent: () =>
       import('./loans/wc-loan-form.component').then((m) => m.WcLoanFormComponent),
+  },
+  {
+    // Before any `loans/:id/...` pattern, so an external id is never read as a numeric one.
+    path: 'loans/external/:externalId',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_WORKINGCAPITALLOAN' },
+    title: 'WC_LOANS.OPEN_BY_EXTERNAL_ID',
+    loadComponent: () =>
+      import('./loans/wc-loan-by-external-id.component').then((m) => m.WcLoanByExternalIdComponent),
   },
   {
     path: 'loans/view/:id',
@@ -181,6 +201,19 @@ export const WORKING_CAPITAL_ROUTES: Routes = [
     loadComponent: () =>
       import('./loans/wc-account-lock/wc-loan-account-lock.component').then(
         (m) => m.WcLoanAccountLockComponent,
+      ),
+  },
+  {
+    // `/v1/internal/**` tooling: served only under Fineract's test profile, so the route is
+    // matched only where a deployment opts in.
+    path: 'loans/test-tools',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_WORKINGCAPITALLOAN' },
+    canMatch: [developerToolsGuard],
+    title: 'WC_LOAN_TEST_TOOLS.TITLE',
+    loadComponent: () =>
+      import('./loans/wc-loan-test-tools/wc-loan-test-tools.component').then(
+        (m) => m.WcLoanTestToolsComponent,
       ),
   },
   {

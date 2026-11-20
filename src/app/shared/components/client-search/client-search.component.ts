@@ -48,7 +48,12 @@ import { TranslatePipe } from '../../../core/adapters';
   template: `
     <div class="client-search-wrapper">
       <ion-item fill="outline">
-        <ion-label position="stacked">{{ label() | appTranslate }}</ion-label>
+        <ion-label position="stacked"
+          >{{ label() | appTranslate }}
+          @if (required()) {
+            <span class="required-marker" aria-hidden="true">*</span>
+          }
+        </ion-label>
         <ion-input
           [attr.aria-label]="label() | appTranslate"
           type="text"
@@ -98,6 +103,10 @@ import { TranslatePipe } from '../../../core/adapters';
   `,
   styles: [
     `
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
       .client-search-wrapper {
         position: relative;
         width: 100%;

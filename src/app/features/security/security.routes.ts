@@ -73,6 +73,16 @@ export const SECURITY_ROUTES: Routes = [
       import('./audit-logs/audit-logs-list.component').then((m) => m.AuditLogsListComponent),
   },
   {
+    // The payload can carry personal data from any user's request, so the entry is gated
+    // exactly like the list. ALL_FUNCTIONS_READ satisfies it as it does every READ_ code.
+    path: 'audits/:auditId',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_AUDIT' },
+    title: 'AUDIT.ENTRY_DETAIL',
+    loadComponent: () =>
+      import('./audit-logs/audit-entry-view.component').then((m) => m.AuditEntryViewComponent),
+  },
+  {
     // Leftover bookmarks and docs used this path. Without an alias the catch-all
     // dumped people on the dashboard with no explanation.
     path: 'audit-trails',

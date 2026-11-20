@@ -26,7 +26,9 @@
 
 
 export interface PutRecurringDepositProductsChanges { 
+    closeDate?: string;
     description?: string;
     minDepositTerm?: number;
+    startDate?: string;
 }
 

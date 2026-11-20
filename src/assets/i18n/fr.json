@@ -1,10 +1,18 @@
 {
+  "BREADCRUMBS": {
+    "LOAN_ACCOUNT": "Compte de prêt {{accountNo}}",
+    "SAVINGS_ACCOUNT": "Compte d'épargne {{accountNo}}",
+    "FIXED_DEPOSIT": "Dépôt à terme {{accountNo}}",
+    "RECURRING_DEPOSIT": "Dépôt périodique {{accountNo}}",
+    "SHARE_ACCOUNT": "Compte de parts sociales {{accountNo}}"
+  },
   "license": "Apache-2.0",
   "app": {
     "title": "Fineract Backoffice UI",
     "shortTitle": "Fineract",
     "welcome": "Bienvenue dans Fineract Backoffice UI !",
     "logout": "Déconnexion",
+    "skipToMain": "Aller au contenu principal",
     "language": {
       "select": "Choisir la langue",
       "en": "Anglais",
@@ -74,6 +82,7 @@
     "workingCapital": "Fonds de roulement",
     "wcBreach": "Définitions de dépassement",
     "wcNearBreach": "Définitions de quasi-dépassement",
+    "wcOverview": "Vue du portefeuille",
     "wcLoans": "Prêts de fonds de roulement",
     "wcLoanProducts": "Produits de prêt",
     "loanOriginators": "Apporteurs de prêts",
@@ -259,7 +268,10 @@
     "PRODUCT": "Produit",
     "RENDER_TIME": "Temps d'affichage",
     "REQUIRED": "Ce champ est obligatoire",
+    "NOT_SET": "Non défini",
+    "CLEAR": "Effacer",
     "COMPLETE_REQUIRED_FIELDS": "Renseignez les champs obligatoires pour continuer",
+    "COMPLETE_FIELDS": "À compléter : {{fields}}",
     "RESET": "Réinitialiser",
     "RESULTS_FOUND": "{{count}} résultat(s) trouvé(s)",
     "RETRY": "Réessayer",
@@ -351,6 +363,7 @@
     "PREMATURE_CLOSE": "Clôturer avant l'échéance",
     "REACTIVATE_CLIENT": "Réactiver le client",
     "RECURRING_DEPOSIT": "Dépôt périodique",
+    "SHARE_ACCOUNT": "Compte de parts sociales",
     "REJECT": "Rejeter",
     "REJECTION_DATE": "Date de rejet",
     "REJECTION_REASON": "Motif du rejet",
@@ -547,6 +560,8 @@
     "CONFIRM_INACTIVATE": "Désactiver {{name}} ? Les frais ne seront plus appliqués à ce compte."
   },
   "LOANS": {
+    "REPAYMENT_START_DATE_NOT_SET": "Non renseignée",
+    "CLEAR_REPAYMENT_START_DATE": "Effacer la date de début",
     "ACCOUNT_NO": "N° de compte",
     "CLIENT_NAME": "Nom du client",
     "PRODUCT_NAME": "Nom du produit",
@@ -681,6 +696,8 @@
       "CLOSE_AS_RESCHEDULED": "Clôturer comme rééchelonné",
       "DISBURSE_TO_SAVINGS": "Décaisser vers l'épargne",
       "CHARGEBACK": "Rétrofacturation",
+      "CHARGEBACK_REPAYMENT": "Rétrofacturer le remboursement",
+      "VIEW_TRANSACTION": "Voir l'opération",
       "UNASSIGN_LOAN_OFFICER": "Retirer l'agent de crédit",
       "UNDO_LAST_DISBURSAL": "Défaire le dernier décaissement",
       "REVISE_APPROVED_AMOUNT": "Réviser le montant approuvé",
@@ -862,6 +879,8 @@
     "NET_CASH": "Espèces nettes"
   },
   "CLIENTS": {
+    "DATE_OF_BIRTH_NOT_SET": "Non renseignée",
+    "CLEAR_DATE_OF_BIRTH": "Effacer la date de naissance",
     "CREATE_CLIENT": "Créer un client",
     "CREATE_SUCCESS": "Client créé.",
     "UPDATE_SUCCESS": "Client mis à jour.",
@@ -954,6 +973,8 @@
     "EDIT_ADDRESS": "Modifier l'adresse",
     "EDIT_DOCUMENT": "Modifier le document",
     "EDIT_FAMILY_MEMBER": "Modifier le membre de la famille",
+    "FAMILY_MEMBER_ADDED": "Membre de la famille ajouté.",
+    "FAMILY_MEMBER_UPDATED": "Membre de la famille mis à jour.",
     "EDIT_IDENTIFIER": "Modifier la pièce d'identité",
     "EDIT_NOTE": "Modifier la note",
     "ACTIONS": {
@@ -1081,7 +1102,20 @@
     "REPEAT_PASSWORD": "Répéter le mot de passe",
     "ROLES": "Rôles",
     "PASSWORD_NEVER_EXPIRES": "Le mot de passe n'expire jamais",
-    "SEND_PASSWORD_TO_EMAIL": "Envoyer le mot de passe par e-mail"
+    "SEND_PASSWORD_TO_EMAIL": "Envoyer le mot de passe par e-mail",
+    "PASSWORD_POLICY": "Politique de mot de passe",
+    "PASSWORD_RULES_UNMET": "Ce mot de passe doit encore :",
+    "PASSWORDS_DO_NOT_MATCH": "Les deux mots de passe ne correspondent pas",
+    "PASSWORD_RULES": {
+      "LENGTH": "comporter de {{min}} à {{max}} caractères",
+      "UPPERCASE": "comporter une lettre majuscule",
+      "LOWERCASE": "comporter une lettre minuscule",
+      "DIGIT": "comporter un chiffre",
+      "SPECIAL": "comporter un caractère spécial",
+      "NO_SPACE": "ne contenir aucun espace",
+      "NO_REPEAT": "ne répéter aucun caractère deux fois de suite"
+    },
+    "CONFIRM_DELETE": "Supprimer le compte « {{username}} » ? L’utilisateur ne pourra plus se connecter."
   },
   "ORGANIZATION": {
     "STAFF": "Personnel",
@@ -1121,6 +1155,24 @@
     "MAKER_DATE_FROM": "Date d'initiation du",
     "MAKER_DATE_TO": "Date d'initiation au",
     "PROCESSING_RESULT": "Résultat du traitement"
+  },
+  "AUDIT": {
+    "ANY": "Tous",
+    "ENTRY_DETAIL": "Entrée d'audit",
+    "ENTRY_TITLE": "Entrée d'audit n° {{id}}",
+    "SUBRESOURCE_ID": "ID de la sous-ressource",
+    "MADE_ON": "Initié le",
+    "LINKED_RECORDS": "Enregistrements concernés",
+    "GROUP": "Groupe",
+    "LOAN": "Prêt",
+    "SAVINGS_ACCOUNT": "Compte d'épargne",
+    "PAYLOAD": "Contenu de la commande",
+    "NO_PAYLOAD": "Cette entrée n'a pas de contenu.",
+    "CLIENT_ID": "ID du client",
+    "LOAN_ID": "ID du prêt",
+    "NO_ACCESS": "Vous n'avez pas l'autorisation de consulter cette entrée d'audit.",
+    "NOT_FOUND": "Cette entrée d'audit n'existe pas ou n'appartient pas à votre agence.",
+    "LOAD_FAILED": "Impossible de charger l'entrée d'audit."
   },
   "SYSTEM": {
     "DATA_TABLES": "Tables de données",
@@ -1218,9 +1270,16 @@
     "IMPACT_NAV_LOST": "Écrans que ce rôle perd",
     "IMPACT_NAV_UNCHANGED": "Aucun écran n'apparaît ni ne disparaît du menu latéral : ces autorisations encadrent des actions au sein d'écrans déjà accessibles au rôle.",
     "CONFIRM_PERMISSIONS_TITLE": "Appliquer les modifications d'autorisations",
-    "CONFIRM_PERMISSIONS_MESSAGE": "Enregistrer ces autorisations pour le rôle « {{name}} » ? Toutes les personnes qui le détiennent seront concernées à leur prochaine connexion, sans en être informées."
+    "CONFIRM_PERMISSIONS_MESSAGE": "Enregistrer ces autorisations pour le rôle « {{name}} » ? Toutes les personnes qui le détiennent seront concernées à leur prochaine connexion, sans en être informées.",
+    "DISABLE": "Désactiver",
+    "ENABLE": "Activer",
+    "CONFIRM_DISABLE": "Désactiver le rôle « {{name}} » ? Il reste en l’état et cesse d’être proposé pour les nouveaux utilisateurs.",
+    "CONFIRM_ENABLE": "Activer le rôle « {{name}} » ? Il pourra de nouveau être attribué à des utilisateurs.",
+    "CONFIRM_DELETE": "Supprimer le rôle « {{name}} » ? Cette action est irréversible, et la plateforme la refuse tant qu’un utilisateur le détient."
   },
   "HELP": {
+    "EDIT_CLIENT_DESC": "Modifiez les informations de ce client.",
+    "CREATE_CLIENT_DESC": "Créez un client en choisissant son type et son agence, puis en saisissant ses informations.",
     "SEARCH_DESC": "Utilisez ce champ pour rechercher ou filtrer les enregistrements du tableau.",
     "CLIENTS_CONTRACTS_DESC": "Consultez et gérez tous les clients enregistrés et leurs contrats.",
     "LOANS_PORTFOLIO_DESC": "Suivez le portefeuille de prêts actifs et les demandes.",
@@ -1901,9 +1960,44 @@
     "DELETE": "Supprimer",
     "CONFIRM_DELETE": "Supprimer le produit de prêt de fonds de roulement “{{name}}” ?"
   },
+  "WC_PORTFOLIO": {
+    "TITLE": "Portefeuille de fonds de roulement",
+    "LOAD_FAILED": "Impossible de charger le portefeuille de fonds de roulement",
+    "EMPTY": "Aucun prêt de fonds de roulement pour le moment.",
+    "LOANS": "Prêts",
+    "OUTSTANDING": "Encours",
+    "DELINQUENT": "En souffrance",
+    "BREACH_PAST_DUE": "Dépassement échu",
+    "FLAGGED": "Passé en perte",
+    "ACROSS_LOANS": "sur {{count}} prêts",
+    "CHARGED_OFF_AND_FRAUD": "{{fraud}} signalés comme fraude",
+    "AGING_TITLE": "Ancienneté des impayés",
+    "AGING_BAND": "Jours de retard",
+    "AGING_CURRENT": "À jour",
+    "AGING_1_30": "1-30 jours",
+    "AGING_31_60": "31-60 jours",
+    "AGING_61_90": "61-90 jours",
+    "AGING_90_PLUS": "Plus de 90 jours",
+    "BY_STATUS": "Par statut",
+    "STATUS_UNKNOWN": "Non précisé",
+    "OTHER": "Autre",
+    "VIEW_ALL_LOANS": "Voir tous les prêts de fonds de roulement"
+  },
+  "WC_LOAN_TEST_TOOLS": {
+    "TITLE": "Outils de test des prêts FDR",
+    "TEST_ONLY": "Ces commandes utilisent les points de terminaison internes de Fineract, servis uniquement lorsque le backend exécute son profil de test. Sur tout autre déploiement, ils répondent 404.",
+    "LOAN_ID": "Identifiant du prêt",
+    "ACTIVATE": "Activer le prêt",
+    "REGENERATE_SCHEDULE": "Régénérer le tableau d'amortissement",
+    "NEXT_DELINQUENCY_PERIOD": "Générer la période d'impayé suivante",
+    "ACCEPTED": "La plateforme a accepté la commande."
+  },
   "WC_LOANS": {
     "CREATE": "Créer un prêt de fonds de roulement",
     "ACCOUNT_NO": "N° de compte",
+    "OPEN_BY_EXTERNAL_ID": "Ouvrir par identifiant externe",
+    "EXTERNAL_ID_NOT_FOUND": "Aucun prêt de fonds de roulement ne porte la référence {{externalId}}",
+    "LOOKUP_FAILED": "Impossible de rechercher cette référence",
     "CLIENT": "Client",
     "CLIENT_ID": "ID client",
     "PRODUCT": "Produit",
@@ -2342,7 +2436,28 @@
     "PERIOD_START_DATE": "Date de début de période",
     "PERIOD_END_DATE": "Date de fin de période",
     "DELETE": "Supprimer le dividende",
-    "CONFIRM_DELETE": "Supprimer le dividende de {{amount}} déclaré pour la période du {{startDate}} au {{endDate}} ?"
+    "CONFIRM_DELETE": "Supprimer le dividende de {{amount}} déclaré pour la période du {{startDate}} au {{endDate}} ?",
+    "STATUS_PENDING": "En attente",
+    "STATUS_APPROVED": "Approuvé",
+    "STATUS_POSTED": "Versé",
+    "STATUS_UNKNOWN": "Inconnu",
+    "DETAIL_TITLE": "Dividende",
+    "PERIOD": "Période",
+    "TOTAL_AMOUNT": "Montant total",
+    "ACCOUNTS": "Comptes",
+    "PAYOUTS_TITLE": "Versement par compte",
+    "ACCOUNT_NO": "N° de compte",
+    "CLIENT": "Client",
+    "SEARCH_ACCOUNT_NO": "Numéro de compte (correspondance exacte)",
+    "APPROVE": "Approuver",
+    "APPROVE_TITLE": "Approuver le dividende",
+    "CONFIRM_APPROVE": "Approuver un versement de {{amount}} à {{count}} comptes pour la période du {{startDate}} au {{endDate}} ? La tâche de versement des dividendes crédite ensuite le compte d'épargne lié à chaque compte.",
+    "APPROVED": "Dividende approuvé.",
+    "DELETED": "Dividende supprimé.",
+    "NOT_FOUND": "Ce dividende n'existe pas pour ce produit de parts.",
+    "NO_ACCESS": "Vous n'avez pas l'autorisation de consulter ce dividende.",
+    "LOAD_FAILED": "Le dividende n'a pas pu être chargé.",
+    "APPROVAL_SUBMITTED": "Votre approbation attend un vérificateur. Le dividende reste en attente jusqu'à son approbation."
   },
   "FIXED_DEPOSIT_TRANSACTIONS": {
     "AMOUNT": "Montant",
@@ -2514,7 +2629,14 @@
   },
   "EXTERNAL_SERVICES": {
     "TITLE": "Services externes",
-    "SERVICE": "Service"
+    "SERVICE": "Service",
+    "SMS_HELP": "La passerelle de messages par laquelle passent les campagnes SMS et les notifications SMS.",
+    "SECRET_SET": "Défini. Laissez vide pour le conserver.",
+    "SECRET_NOT_SET": "Non défini",
+    "NO_ACCESS": "Vous n'avez pas accès aux paramètres des services externes.",
+    "LOAD_FAILED": "Impossible de charger les paramètres de ce service.",
+    "SAVED": "Paramètres enregistrés.",
+    "NO_CHANGES": "Aucune modification."
   },
   "PASSWORD_PREFERENCES": {
     "TITLE": "Préférences de mot de passe"
@@ -2549,7 +2671,30 @@
     "SELECT_JOB": "Sélectionner une tâche",
     "SELECT_ALL": "Tout sélectionner",
     "RUN_SELECTED": "Exécuter la sélection",
-    "RUN_SELECTED_CONFIRM": "Exécuter maintenant {{count}} tâche(s) sélectionnée(s) ?"
+    "RUN_SELECTED_CONFIRM": "Exécuter maintenant {{count}} tâche(s) sélectionnée(s) ?",
+    "EDIT_JOB": "Modifier la tâche",
+    "DISPLAY_NAME": "Nom affiché",
+    "CRON_EXPRESSION": "Expression cron",
+    "CRON_HINT": "Format Quartz : seconde minute heure jour-du-mois mois jour-de-la-semaine [année]",
+    "NEXT_RUNS": "Prochaines exécutions (heure de ce navigateur)",
+    "CRON_FIELD_COUNT": "Saisissez 6 ou 7 champs séparés par des espaces : seconde, minute, heure, jour du mois, mois, jour de la semaine et une année facultative.",
+    "CRON_DAY_CONFLICT": "Utilisez ? dans un seul des champs jour du mois et jour de la semaine.",
+    "CRON_NEVER_FIRES": "Cette planification ne s'exécute jamais.",
+    "CRON_INVALID_FIELD": "Le champ {{field}} « {{value}} » n'est pas valide.",
+    "CRON_FIELD_SECOND": "seconde",
+    "CRON_FIELD_MINUTE": "minute",
+    "CRON_FIELD_HOUR": "heure",
+    "CRON_FIELD_DAY_OF_MONTH": "jour du mois",
+    "CRON_FIELD_MONTH": "mois",
+    "CRON_FIELD_DAY_OF_WEEK": "jour de la semaine",
+    "CRON_FIELD_YEAR": "année",
+    "CURRENTLY_RUNNING": "Cette tâche est en cours d'exécution. Elle pourra être modifiée une fois l'exécution terminée.",
+    "SCHEDULE_WARNING": "Modifier la planification ou désactiver la tâche change le moment où elle s'exécute pour tous les comptes qu'elle traite. Enregistrer pendant une exécution peut en lancer une seconde ; le formulaire vérifie donc à nouveau juste avant l'enregistrement.",
+    "LOAD_FAILED": "Impossible de charger cette tâche.",
+    "SAVED": "Tâche mise à jour.",
+    "NEXT_RUNS_IN_ZONE": "Prochaines exécutions (heure du locataire, {{zone}})",
+    "STARTED_RUNNING": "Cette tâche a démarré, rien n'a donc été enregistré. Rechargez la page une fois l'exécution terminée pour la modifier.",
+    "SUBMITTED_FOR_APPROVAL": "Soumis pour approbation. Fineract n'applique une modification de planification approuvée qu'après son redémarrage."
   },
   "PERMISSIONS": {
     "TITLE": "Autorisations de double validation",
@@ -2972,7 +3117,8 @@
     "CONFIG_JSON": "Configuration (JSON)",
     "SAVE": "Enregistrer la config.",
     "SUCCESS": "Configuration enregistrée.",
-    "PARSE_ERROR": "JSON invalide"
+    "PARSE_ERROR": "JSON invalide",
+    "LOAD_FAILED": "Impossible de charger la configuration à deux facteurs"
   },
   "SURVEY_RESPONSES": {
     "TITLE": "Réponses aux enquêtes",

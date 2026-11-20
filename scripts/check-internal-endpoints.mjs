@@ -72,6 +72,10 @@ const ALLOWED = new Map([
     'Progressive-loan schedule model, described by the spec as internal; route gated by developerToolsGuard',
   ],
   [
+    'src/app/core/adapters/api/fineract-working-capital-loan-test-tools.api.ts',
+    'Working-capital loan test commands behind one adapter; the only screen using it is gated by developerToolsGuard',
+  ],
+  [
     'src/app/features/working-capital/loans/wc-account-lock/wc-loan-account-lock.component.ts',
     'Places a working-capital loan lock; route gated by developerToolsGuard',
   ],

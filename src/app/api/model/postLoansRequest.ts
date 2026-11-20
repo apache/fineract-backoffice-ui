@@ -73,6 +73,10 @@ export interface PostLoansRequest {
     enableInstallmentLevelDelinquency?: boolean;
     expectedDisbursementDate?: string;
     externalId?: string;
+    /**
+     * First due day of the month of a semi-monthly loan, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedEmiAmount?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
@@ -113,6 +117,10 @@ export interface PostLoansRequest {
      * Maximum allowed outstanding balance
      */
     maxOutstandingLoanBalance?: number;
+    /**
+     * Overrides the loan product\'s month end due date strategy for this loan. It has no effect on a loan whose repayments follow a meeting calendar.
+     */
+    monthEndDueDateStrategy?: PostLoansRequest.MonthEndDueDateStrategyEnum;
     numberOfRepayments?: number;
     /**
      * Optional array of originators to associate with this loan. Each entry can reference an existing originator by \'id\' or \'externalId\'. If the global config \'enable_originator_creation_during_loan_application\' is enabled, non-existing originators will be auto-created using the provided details (name, typeId, channelTypeId).
@@ -124,6 +132,10 @@ export interface PostLoansRequest {
     repaymentFrequencyType?: number;
     repaymentStartDateType?: number;
     repaymentsStartingFromDate?: string;
+    /**
+     * Second due day of the month of a semi-monthly loan, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     submittedOnDate?: string;
     /**
      * Sync the disbursement date with the attached meeting
@@ -161,6 +173,11 @@ export namespace PostLoansRequest {
         FullLeapYearFeb29PeriodOnly: 'FULL_LEAP_YEAR, FEB_29_PERIOD_ONLY'
     } as const;
     export type DaysInYearCustomStrategyEnum = typeof DaysInYearCustomStrategyEnum[keyof typeof DaysInYearCustomStrategyEnum];
+    export const MonthEndDueDateStrategyEnum = {
+        LastDayOfMonth: 'LAST_DAY_OF_MONTH',
+        FirstDayOfNextMonth: 'FIRST_DAY_OF_NEXT_MONTH'
+    } as const;
+    export type MonthEndDueDateStrategyEnum = typeof MonthEndDueDateStrategyEnum[keyof typeof MonthEndDueDateStrategyEnum];
 }
 
 

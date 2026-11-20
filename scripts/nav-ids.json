@@ -26,7 +26,6 @@
     "campaigns.sms",
     "centers",
     "clients",
-    "clients.search",
     "collection-sheet",
     "dashboard",
     "fintech",
@@ -92,6 +91,7 @@
     "spm.survey-responses",
     "spm.surveys",
     "system",
+    "system.accountNumberFormats",
     "system.adhoc-query",
     "system.bulk-import",
     "system.business-dates",
@@ -133,8 +133,10 @@
     "working-capital.breach",
     "working-capital.cob-catchup",
     "working-capital.loan-products",
+    "working-capital.loan-test-tools",
     "working-capital.loans",
     "working-capital.near-breach",
+    "working-capital.overview",
     "working-capital.wc-cob-tools"
   ]
 }

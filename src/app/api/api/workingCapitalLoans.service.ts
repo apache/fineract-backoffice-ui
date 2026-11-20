@@ -1132,7 +1132,7 @@ export class WorkingCapitalLoansService extends BaseService {
 
     /**
      * Approve/Reject/Undo-approve/Disburse/Undo-disburse a Working Capital Loan by external id
-     * Mandatory command query parameter: approve, reject, undoapproval, disburse, or undodisbursal.
+     * Mandatory command query parameter: approve, reject, undoapproval, disburse, or undodisbursal. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint post /v1/working-capital-loans/external-id/{loanExternalId}
      * @param loanExternalId loanExternalId
      * @param command command
@@ -1225,7 +1225,7 @@ export class WorkingCapitalLoansService extends BaseService {
 
     /**
      * Approve/Reject/Undo-approve/Disburse/Undo-disburse a Working Capital Loan
-     * Mandatory command query parameter: approve, reject, undoapproval, disburse, or undodisbursal.
+     * Mandatory command query parameter: approve, reject, undoapproval, disburse, or undodisbursal. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint post /v1/working-capital-loans/{loanId}
      * @param loanId loanId
      * @param command command

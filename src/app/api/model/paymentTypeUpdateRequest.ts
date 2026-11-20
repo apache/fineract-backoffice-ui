@@ -29,7 +29,7 @@ export interface PaymentTypeUpdateRequest {
     codeName?: string;
     description?: string;
     isCashPayment?: boolean;
-    isSystemDefined: boolean;
+    isSystemDefined?: boolean;
     name: string;
     position?: number;
 }

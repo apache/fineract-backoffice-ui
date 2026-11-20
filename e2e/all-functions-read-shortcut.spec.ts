@@ -127,3 +127,82 @@ test.describe('ALL_FUNCTIONS_READ shortcut', () => {
     await expect(page.getByRole('button', { name: CREATE_CLIENT_BUTTON })).toBeVisible();
   });
 });
+
+async function mockAdminScreens(page: Page): Promise<string[]> {
+  const writes: string[] = [];
+  page.on('request', (request) => {
+    if (
+      request.method() !== 'GET' &&
+      /\/api\/v1\/(configurations|users|roles)/.test(request.url())
+    ) {
+      writes.push(`${request.method()} ${request.url()}`);
+    }
+  });
+  await page.route('**/api/v1/configurations*', (route) =>
+    route.fulfill({
+      json: { globalConfiguration: [{ id: 1, name: 'maker-checker', enabled: false, value: 0 }] },
+    }),
+  );
+  await page.route('**/api/v1/users*', (route) =>
+    route.fulfill({
+      json: [
+        {
+          id: 4,
+          username: 'auditor',
+          firstname: 'Audit',
+          lastname: 'User',
+          officeId: 1,
+          officeName: 'Head Office',
+          selectedRoles: [],
+        },
+      ],
+    }),
+  );
+  await page.route('**/api/v1/roles*', (route) =>
+    route.fulfill({
+      json: [{ id: 3, name: 'Auditor', description: 'Read only', disabled: false }],
+    }),
+  );
+  return writes;
+}
+
+test.describe('ALL_FUNCTIONS_READ on the admin screens', () => {
+  test('offers no write on Global Configurations, Users or Roles', async ({ page }) => {
+    const writes = await mockAdminScreens(page);
+    await login(page, ['ALL_FUNCTIONS_READ']);
+
+    await page.goto('/settings/configurations');
+    const toggle = page.getByTestId('config-toggle-1');
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByTestId('config-edit-1')).toHaveAttribute('aria-disabled', 'true');
+    await toggle.click({ force: true });
+    await page.getByTestId('config-edit-1').click({ force: true });
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await page.goto('/security/users');
+    await expect(page.getByText('auditor').first()).toBeVisible();
+    await expect(page.getByTestId('user-edit-4')).toHaveCount(0);
+
+    await page.goto('/security/roles');
+    await expect(page.getByText('Auditor').first()).toBeVisible();
+    await expect(page.getByTestId('role-edit-3')).toHaveCount(0);
+
+    expect(writes).toEqual([]);
+  });
+
+  test('ALL_FUNCTIONS still gets the toggles and the Edit actions', async ({ page }) => {
+    await mockAdminScreens(page);
+    await login(page, ['ALL_FUNCTIONS']);
+
+    await page.goto('/settings/configurations');
+    await expect(page.getByTestId('config-toggle-1')).not.toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByTestId('config-edit-1')).not.toHaveAttribute('aria-disabled', 'true');
+
+    await page.goto('/security/users');
+    await expect(page.getByTestId('user-edit-4')).toBeVisible();
+
+    await page.goto('/security/roles');
+    await expect(page.getByTestId('role-edit-3')).toBeVisible();
+  });
+});

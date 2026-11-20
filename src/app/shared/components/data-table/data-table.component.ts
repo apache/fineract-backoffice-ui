@@ -101,20 +101,20 @@ const NEXT_DIRECTION: Record<SortDirection, SortDirection> = {
     HasPermissionDirective,
   ],
   template: `
-    <ion-card class="data-table-card">
+    <ion-card class="data-table-card" data-testid="data-table-card">
       @if (isLoading()) {
         <div class="loading-overlay">
           <ion-spinner name="crescent" data-testid="data-table-spinner"></ion-spinner>
         </div>
       }
-      <ion-card-header>
-        <ion-card-title>
+      <ion-card-header class="data-table-header" data-testid="data-table-header">
+        <ion-card-title data-testid="data-table-title">
           {{ title() | appTranslate }}
           @if (helpTextKey()) {
             <app-help-icon [helpTextKey]="helpTextKey()"></app-help-icon>
           }
         </ion-card-title>
-        <div class="header-actions">
+        <div class="header-actions" data-testid="data-table-header-actions">
           @if (createButtonLabel()) {
             <ion-button
               data-testid="data-table-create"
@@ -258,6 +258,39 @@ const NEXT_DIRECTION: Record<SortDirection, SortDirection> = {
          attribute and a scoped tbody selector silently does not match it. It stayed
          display: table-row-group, shrank to its content, and the cards came out narrower than
          the page. */
+      .data-table-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-4);
+      }
+      .data-table-header ion-card-title {
+        flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--space-2);
+        max-width: 100%;
+      }
+      .header-actions:empty {
+        display: none;
+      }
+      @media (max-width: 768px) {
+        .data-table-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .header-actions {
+          justify-content: flex-start;
+        }
+      }
       /* The help icon describes the search field, so it has to sit beside it. The class carried
          no rule at all, which left it display: block — the icon wrapped onto its own line and
          rendered as a lone "?" under the search box, on every list screen using this component. */

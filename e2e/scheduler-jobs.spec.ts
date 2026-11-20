@@ -19,7 +19,8 @@
 
 /**
  * Covers the bulk-select + "Run Selected" affordance on the Scheduler Jobs list — ported from
- * web-app, which offers the same bulk trigger over its job list. Mocked throughout.
+ * web-app, which offers the same bulk trigger over its job list — and editing a job's schedule.
+ * Mocked throughout.
  */
 
 import { test, expect, Page } from './fixtures';
@@ -152,5 +153,107 @@ test.describe('Scheduler Jobs bulk run', () => {
     await confirmDialog(page).getByTestId('confirm-dialog-cancel').click();
 
     expect(ran).toBe(false);
+  });
+});
+
+test.describe('Scheduler Jobs edit', () => {
+  test("changes a job's schedule and active flag, refusing an invalid expression first", async ({
+    page,
+  }) => {
+    await mockSchedulerJobs(page);
+    const job = {
+      jobId: 1,
+      displayName: 'Update Loan Summary',
+      cronExpression: '0 0 0 1/1 * ? *',
+      active: true,
+      currentlyRunning: false,
+    };
+    let sent: unknown;
+    await page.route(/\/api\/v1\/jobs\/1(\?|$)/, async (route) => {
+      if (route.request().method() === 'PUT') {
+        sent = route.request().postDataJSON();
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ resourceId: 1, changes: {} }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(job),
+      });
+    });
+    await login(page);
+    await page.goto('/system/scheduler-jobs');
+
+    await page
+      .getByRole('row', { name: /Update Loan Summary/ })
+      .getByTestId('scheduler-job-edit')
+      .click();
+    await expect(page).toHaveURL('/system/scheduler-jobs/1/edit');
+
+    const cron = page.getByTestId('scheduler-job-cron');
+    await expect(cron).toHaveValue('0 0 0 1/1 * ? *');
+    await expect(page.getByTestId('scheduler-job-next-runs').locator('li')).toHaveCount(3);
+
+    // A Unix-style line: valid there, refused by Quartz because both day fields are set.
+    await cron.fill('0 30 1 * * *');
+    await expect(page.getByTestId('scheduler-job-cron-error')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled();
+
+    await cron.fill('0 30 1 * * ?');
+    await page.getByTestId('scheduler-job-active').uncheck();
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page).toHaveURL('/system/scheduler-jobs');
+    // Only what changed: the name was left alone, so it is not sent back.
+    expect(sent).toEqual({ cronExpression: '0 30 1 * * ?', active: false });
+  });
+
+  test('stays on the form when Fineract refuses the change', async ({ page }) => {
+    await mockSchedulerJobs(page);
+    const job = {
+      jobId: 1,
+      displayName: 'Update Loan Summary',
+      cronExpression: '0 0 0 1/1 * ? *',
+      active: true,
+      currentlyRunning: false,
+    };
+    await page.route(/\/api\/v1\/jobs\/1(\?|$)/, async (route) => {
+      if (route.request().method() === 'PUT') {
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            httpStatusCode: '400',
+            defaultUserMessage: 'Validation errors exist.',
+            errors: [
+              {
+                userMessageGlobalisationCode: 'validation.msg.schedulerjob.cronExpression.invalid',
+                defaultUserMessage:
+                  'The parameter `cronExpression` value is not a valid cron expression',
+                parameterName: 'cronExpression',
+              },
+            ],
+          }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(job),
+      });
+    });
+    await login(page);
+    await page.goto('/system/scheduler-jobs/1/edit');
+
+    await page.getByTestId('scheduler-job-active').uncheck();
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page).toHaveURL('/system/scheduler-jobs/1/edit');
+    await expect(page.getByRole('button', { name: 'Save' })).toBeEnabled();
   });
 });

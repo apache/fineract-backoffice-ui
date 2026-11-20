@@ -23,29 +23,13 @@
  * Do not edit the class manually.
  */
 
-import { Money } from './money';
-import { RepaymentPeriod } from './repaymentPeriod';
-import { InterestPeriodMc } from './interestPeriodMc';
 
 
-export interface InterestPeriod { 
-    balanceCorrectionAmount?: Money;
-    calculatedDueInterest?: number;
-    capitalizedIncomePrincipal?: Money;
-    creditedAmounts?: Money;
-    creditedInterest?: Money;
-    creditedPrincipal?: Money;
-    disbursementAmount?: Money;
-    dueDate: string;
-    firstInterestPeriod?: boolean;
-    fromDate: string;
-    length?: number;
-    lengthTillPeriodDueDate?: number;
-    mc?: InterestPeriodMc;
-    outstandingLoanBalance?: Money;
-    paused?: boolean;
-    rateFactor?: number;
-    rateFactorTillPeriodDueDate?: number;
-    repaymentPeriod?: RepaymentPeriod;
+/**
+ * Derived transactions created with the refund (interest and/or fee refund)
+ */
+export interface PostLoansLoanIdTransactionsSubResource { 
+    resourceExternalId?: string;
+    resourceId?: number;
 }
 

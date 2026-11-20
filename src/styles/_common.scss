@@ -563,3 +563,21 @@ ion-segment-button ion-label {
   line-height: 1;
   vertical-align: middle;
 }
+
+/**
+ * The form page container.
+ *
+ * Measured in `src/app`: 92 components declare this same rule in their own `styles`, at five
+ * different max-widths (600px ×54, 900px ×22, 800px ×9, 1000px ×4, 1200px ×3). That is a visual
+ * inconsistency as much as a duplication — #287.
+ *
+ * The width is a custom property rather than a set of modifier classes, so a form that needs a
+ * different one overrides a single value and keeps the padding and centring from here. The
+ * default is the width most forms already use. Converting the remaining ones is a two-line
+ * change each and is deliberately not done in bulk here.
+ */
+.app-form-container {
+  padding: 24px;
+  margin: 0 auto;
+  max-width: var(--app-form-max-width, 600px);
+}

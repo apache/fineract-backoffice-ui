@@ -29,7 +29,11 @@
  * PutTaxesComponentsTaxComponentIdRequest
  */
 export interface PutTaxesComponentsTaxComponentIdRequest { 
+    creditAccountId?: number;
+    creditAccountType?: number;
     dateFormat?: string;
+    debitAccountId?: number;
+    debitAccountType?: number;
     locale?: string;
     name?: string;
     percentage?: number;

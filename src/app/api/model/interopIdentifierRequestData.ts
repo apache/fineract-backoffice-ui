@@ -27,23 +27,5 @@
 
 export interface InteropIdentifierRequestData { 
     accountId: string;
-    idType: InteropIdentifierRequestData.IdTypeEnum;
-    idValue: string;
-    subIdOrType?: string;
 }
-export namespace InteropIdentifierRequestData {
-    export const IdTypeEnum = {
-        Msisdn: 'MSISDN',
-        Email: 'EMAIL',
-        PersonalId: 'PERSONAL_ID',
-        Business: 'BUSINESS',
-        Device: 'DEVICE',
-        AccountId: 'ACCOUNT_ID',
-        Iban: 'IBAN',
-        Alias: 'ALIAS',
-        Bban: 'BBAN'
-    } as const;
-    export type IdTypeEnum = typeof IdTypeEnum[keyof typeof IdTypeEnum];
-}
-
 

@@ -47,6 +47,10 @@ export interface PostLoansLoanIdRequest {
      * List of PostLoansLoanIdDisbursementData
      */
     disbursementData?: Array<PostLoansLoanIdDisbursementData>;
+    /**
+     * Absolute amount, in the loan currency, of the down payment fee created for the down payment period of this disbursement; overrides the configured flat or percentage amount
+     */
+    downPaymentFeeAmount?: number;
     expectedDisbursementDate?: string;
     externalId?: string;
     fixedEmiAmount?: number;
@@ -68,6 +72,10 @@ export interface PostLoansLoanIdRequest {
      */
     postDatedChecks?: Array<PostLoansLoanIdPostDatedCheckData>;
     rejectedOnDate?: string;
+    /**
+     * When true, active unpaid down payment fees due on the disbursement date are deactivated and not auto-collected
+     */
+    skipDownPaymentFee?: boolean;
     toLoanOfficerId?: number;
     transactionAmount?: number;
     transactionDate?: string;

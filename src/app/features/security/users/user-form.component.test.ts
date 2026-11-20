@@ -35,13 +35,22 @@ describe('UserFormComponent', () => {
     get: (id: number) => unknown;
     create: (draft: unknown) => unknown;
     update: (id: number, draft: unknown) => unknown;
+    passwordPolicy: () => unknown;
   }>;
   let routerSpy: SpyObj<Router>;
 
   beforeEach(async () => {
-    userApiSpy = createSpyObj(['template', 'get', 'create', 'update']);
+    userApiSpy = createSpyObj(['template', 'get', 'create', 'update', 'passwordPolicy']);
     routerSpy = createSpyObj(['navigate']);
 
+    // The tenant's active policy, as `GET /passwordpreferences` answers it — measured.
+    userApiSpy.passwordPolicy.mockReturnValue(
+      of({
+        key: 'strong',
+        description:
+          'Password must be 12 to 50 characters long, containing at least one uppercase letter, one lowercase letter, one numeric digit, and one special character, with no spaces or consecutive repeating characters',
+      }),
+    );
     userApiSpy.template.mockReturnValue(
       of({
         offices: [{ id: 1, name: 'Head Office' }],
@@ -137,6 +146,120 @@ describe('UserFormComponent', () => {
       const hint = fixture.nativeElement.querySelector('[data-testid="user-submit-hint"]');
       expect(hint).not.toBeNull();
       expect(hint!.textContent).toContain('COMMON.COMPLETE_REQUIRED_FIELDS');
+    });
+  });
+  /**
+   * The password half of the form, which is #753: the two fields were validated only for
+   * presence, so Save stayed enabled with mismatched values and the only feedback was the
+   * platform's 400 — a toast that also printed the password in clear text (#752).
+   */
+  describe('password validation (#753)', () => {
+    /** Satisfies every rule of the strong policy; the platform accepted this one, measured. */
+    const GOOD = 'Xq7!vTz3mKp9';
+
+    /**
+     * Blurs a field and settles the form.
+     *
+     * `NgModel` writes a changed `[ngModel]` input into its control in a microtask, so a
+     * signal set and a synchronous `detectChanges()` leave the control still empty — and the
+     * field reports "required" rather than the rule it actually breaks.
+     */
+    async function touch(testId: string): Promise<void> {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.nativeElement
+        .querySelector(`[data-testid="${CSS.escape(testId)}"]`)!
+        .dispatchEvent(new CustomEvent('ionBlur'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    }
+
+    it("shows the tenant's own policy as helper text rather than restating it", () => {
+      const hint = fixture.nativeElement.querySelector('[data-testid="user-password-policy"]');
+
+      expect(hint).not.toBeNull();
+      expect(hint!.textContent).toContain('12 to 50 characters long');
+    });
+
+    it('names the rules a password still fails, once the field has been touched', async () => {
+      component.password.set('passsword1A!x');
+      await touch('user-password-input');
+
+      // Rejected for its `ss` alone, which the platform's message never says.
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="user-password-rule-noRepeat"]'),
+      ).not.toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="user-password-rule-length"]'),
+      ).toBeNull();
+    });
+
+    it('says nothing about the rules until the field is touched', () => {
+      component.password.set('short');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[data-testid="user-password-error"]')).toBeNull();
+    });
+
+    it('reports a mismatch under the confirmation field', async () => {
+      component.password.set(GOOD);
+      component.repeatPassword.set('Different1!xyz');
+      await touch('user-repeat-password-input');
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="user-password-mismatch"]'),
+      ).not.toBeNull();
+      expect(component.passwordsMismatch()).toBe(true);
+    });
+
+    it('keeps Save out of reach while the passwords differ', () => {
+      component.password.set(GOOD);
+      component.repeatPassword.set('Different1!xyz');
+      fixture.detectChanges();
+
+      expect(component.passwordAcceptable()).toBe(false);
+    });
+
+    it('keeps Save out of reach while the policy is unmet', () => {
+      component.password.set('passsword1A!x');
+      component.repeatPassword.set('passsword1A!x');
+      fixture.detectChanges();
+
+      expect(component.passwordAcceptable()).toBe(false);
+    });
+
+    it('releases Save once both halves are right', () => {
+      component.password.set(GOOD);
+      component.repeatPassword.set(GOOD);
+      fixture.detectChanges();
+
+      expect(component.passwordAcceptable()).toBe(true);
+    });
+
+    it('submits nothing while the passwords are unacceptable, even on Enter', () => {
+      component.password.set(GOOD);
+      component.repeatPassword.set('Different1!xyz');
+
+      component.onSubmit();
+
+      expect(userApiSpy.create).not.toHaveBeenCalled();
+    });
+
+    /**
+     * With the platform mailing a generated password, the fields have nothing to validate and
+     * nothing to send: Fineract refuses a request that carries both, so they are not rendered.
+     */
+    it('drops the password fields, and the gate, when the platform is to mail one', () => {
+      component.sendPasswordToEmail.set(true);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('#user-password-input')).toBeNull();
+      expect(component.passwordAcceptable()).toBe(true);
+    });
+
+    it('asks the platform for the policy rather than hard-coding one', () => {
+      expect(userApiSpy.passwordPolicy).toHaveBeenCalled();
     });
   });
 });

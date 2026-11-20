@@ -42,6 +42,10 @@ export interface PostRecurringDepositAccountsRequest {
     interestCompoundingPeriodType?: number;
     interestPostingPeriodType?: number;
     isCalendarInherited?: boolean;
+    /**
+     * Determines whether product level interest rate chart is overridden by custom nominal annual interest rate
+     */
+    isRateChartOverridden?: boolean;
     locale?: string;
     lockinPeriodFrequency?: number;
     lockinPeriodFrequencyType?: number;
@@ -51,6 +55,10 @@ export interface PostRecurringDepositAccountsRequest {
     minDepositTerm?: number;
     minDepositTermTypeId?: number;
     monthDayFormat?: string;
+    /**
+     * Custom nominal annual interest rate to override product chart slabs
+     */
+    nominalAnnualInterestRate?: number;
     preClosurePenalApplicable?: boolean;
     preClosurePenalInterest?: number;
     preClosurePenalInterestOnTypeId?: number;

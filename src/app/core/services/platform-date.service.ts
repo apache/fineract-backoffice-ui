@@ -79,6 +79,9 @@ export class PlatformDateService {
   /** The platform's clock, as last reported by a response's `Date` header. */
   private readonly serverTime = signal<Date | null>(null);
 
+  /** How far the platform's clock is ahead of the browser's, as of the last response. */
+  private clockSkewMs = 0;
+
   /** Resolved once and shared, so five screens asking do not make five requests. */
   private resolution$: Observable<string> | null = null;
   private enabled$: Observable<boolean> | null = null;
@@ -103,6 +106,7 @@ export class PlatformDateService {
   recordServerTime(instant: Date): void {
     if (!Number.isNaN(instant.getTime())) {
       this.serverTime.set(instant);
+      this.clockSkewMs = instant.getTime() - Date.now();
     }
   }
 
@@ -129,6 +133,14 @@ export class PlatformDateService {
       // A misconfigured zone should not take the date with it.
       return toIsoDate(referenceDate);
     }
+  }
+
+  /**
+   * The current instant by the platform's clock: the browser's, corrected by the skew seen on
+   * the last response. Unlike the raw last `Date` header, it keeps moving between requests.
+   */
+  serverNow(): Date {
+    return new Date(Date.now() + this.clockSkewMs);
   }
 
   /** Today's platform date as an ISO `YYYY-MM-DD` string. */

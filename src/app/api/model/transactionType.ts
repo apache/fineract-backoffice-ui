@@ -56,11 +56,13 @@ export const TransactionType = {
     InterestPaymentWaiver: 'interestPaymentWaiver',
     AccrualActivity: 'accrualActivity',
     InterestRefund: 'interestRefund',
+    FeeRefund: 'feeRefund',
     AccrualAdjustment: 'accrualAdjustment',
     CapitalizedIncome: 'capitalizedIncome',
     CapitalizedIncomeAmortization: 'capitalizedIncomeAmortization',
     CapitalizedIncomeAdjustment: 'capitalizedIncomeAdjustment',
     ContractTermination: 'contractTermination',
+    LoanWithdrawal: 'loanWithdrawal',
     CapitalizedIncomeAmortizationAdjustment: 'capitalizedIncomeAmortizationAdjustment',
     BuyDownFeeAmortization: 'buyDownFeeAmortization',
     BuyDownFeeAmortizationAdjustment: 'buyDownFeeAmortizationAdjustment'

@@ -90,24 +90,108 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
 
 ### Component equivalents
 
-| Material (removed)                    | Ionic equivalent                                                         |
-| ------------------------------------- | ------------------------------------------------------------------------ |
-| `mat-card`                            | `ion-card` / `ion-card-header` / `ion-card-title` / `ion-card-content`   |
-| `mat-form-field` + `matInput`         | `ion-item fill="outline"` + `ion-label position="stacked"` + `ion-input` |
-| `mat-select` / `mat-option`           | `ion-select` / `ion-select-option`                                       |
-| `button mat-button`                   | `ion-button`                                                             |
-| `button mat-icon-button` + `mat-icon` | `ion-button fill="clear"` + `ion-icon slot="icon-only"`                  |
-| `mat-checkbox` / `mat-slide-toggle`   | `ion-checkbox` / `ion-toggle`                                            |
-| `mat-spinner`                         | `ion-spinner`                                                            |
-| `mat-progress-bar`                    | `ion-progress-bar`                                                       |
-| `mat-datepicker`                      | `ion-datetime-button` + `ion-modal` + `ion-datetime` (see below)         |
-| `matTooltip`                          | `[attr.title]`, or `[attr.aria-label]` on icon-only controls             |
-| `MatSnackBar`                         | `NotificationService` (see below)                                        |
-| `MatDialog`                           | `DialogService` (see below)                                              |
-| `mat-table` + `mat-paginator`         | the shared `app-data-table`, or `cdk-table` + `app-paginator` directly   |
+| Material (removed)                    | Ionic equivalent                                                       |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| `mat-card`                            | the shared `app-card` (see below)                                      |
+| `mat-form-field` + `matInput`         | the shared `app-form-field` + `ion-input` (see below)                  |
+| `mat-select` / `mat-option`           | `ion-select` / `ion-select-option`                                     |
+| `button mat-button`                   | `ion-button`                                                           |
+| `button mat-icon-button` + `mat-icon` | `ion-button fill="clear"` + `ion-icon slot="icon-only"`                |
+| `mat-checkbox` / `mat-slide-toggle`   | `ion-checkbox` / `ion-toggle`                                          |
+| `mat-spinner`                         | `ion-spinner`                                                          |
+| `mat-progress-bar`                    | `ion-progress-bar`                                                     |
+| `mat-datepicker`                      | the shared `app-date-field` (see below)                                |
+| `matTooltip`                          | `[attr.title]`, or `[attr.aria-label]` on icon-only controls           |
+| `MatSnackBar`                         | `NotificationService` (see below)                                      |
+| `MatDialog`                           | `DialogService` (see below)                                            |
+| `mat-table` + `mat-paginator`         | the shared `app-data-table`, or `cdk-table` + `app-paginator` directly |
 
 Ionic has **no tooltip component**. Use `[attr.title]` for hover text and always give icon-only
 buttons an `[attr.aria-label]`.
+
+### Form fields
+
+Use `app-form-field` (`src/app/ui/form-field/`). It renders the item, the label and the required
+marker, and shows the error you tell it to; you supply the control:
+
+```html
+<app-form-field
+  label="OFFICES.NAME"
+  [required]="true"
+  hint="HELP.OFFICE_NAME_DESC"
+  [showError]="nameModel.invalid && nameModel.touched"
+  errorTestId="office-name-error"
+>
+  <ion-input
+    name="name"
+    [(ngModel)]="office().name"
+    #nameModel="ngModel"
+    (ionBlur)="nameModel.control.markAsTouched()"
+    required
+    data-testid="office-name-input"
+  ></ion-input>
+</app-form-field>
+```
+
+**Do not write the old shape**, which this replaces:
+
+```html
+<!-- Wrong: the ion-label names nothing, so the aria-label is load-bearing. -->
+<ion-item fill="outline">
+  <ion-label position="stacked">{{ 'OFFICES.NAME' | appTranslate }}</ion-label>
+  <ion-input [attr.aria-label]="'OFFICES.NAME' | appTranslate" name="name"></ion-input>
+</ion-item>
+```
+
+In Ionic 8 a sibling `ion-label` is decorative: `getLabelledById()` in `@ionic/core` reads the
+control's own `label` property or its `label` slot and nothing else. That is why 633 controls
+carry an `[attr.aria-label]` — delete one as redundant and the field becomes unnamed.
+`app-form-field` puts its label in the control's `label` slot, so the association is real and no
+`aria-label` is needed. **Do not add one**: an `aria-label` suppresses the slotted label and
+takes the association back out.
+
+Controls keep their own `name` and `[(ngModel)]` — the wrapper projects them and does not own
+the value. Page containers use the shared `.app-form-container` class from
+`src/styles/_common.scss`, overriding `--app-form-max-width` where a form needs a different one,
+rather than re-declaring padding and centring.
+
+### Date fields
+
+Use `app-date-field` (`src/app/ui/date-field/`). It owns the whole
+`ion-datetime-button` + `ion-modal` + `ion-datetime` triad, and unlike `app-form-field` it owns
+the value too — three elements that must know each other's ids cannot be projected — so it is a
+`ControlValueAccessor` and `name` plus `[(ngModel)]` work on it directly:
+
+```html
+<app-date-field
+  label="OFFICES.OPENING_DATE"
+  [required]="true"
+  pickerId="openingDate-picker"
+  name="openingDate"
+  [ngModel]="openingDate()"
+  (ngModelChange)="openingDate.set($event)"
+></app-date-field>
+```
+
+`pickerId` must be unique on the page: the button resolves its picker through `getElementById`.
+Pass `[clearable]="true"` for an optional date, and `notSetLabel` to override the placeholder
+shown while there is no value — an unset `ion-datetime` otherwise renders _today_ on its button,
+which reads as a value the operator chose.
+
+The label is referenced with `aria-labelledby` rather than slotted: the focusable control here is
+a button, whose accessible name would otherwise be whatever date it shows.
+
+### Cards
+
+Use `app-card` (`src/app/ui/card/`) rather than the four Ionic card elements. The heading is a
+translation key, and is `heading` rather than `title` because a `title` input also lands on the
+host as the HTML `title` attribute and browsers render that as a hover tooltip:
+
+```html
+<app-card heading="WC_PORTFOLIO.BY_STATUS">
+  <!-- content -->
+</app-card>
+```
 
 ### Date pickers
 

@@ -20,9 +20,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { USER_API, TranslatePipe } from '../../../core/adapters';
+import { I18N, USER_API, TranslatePipe } from '../../../core/adapters';
 import type { AppUser } from '../../../core/adapters';
+import { AuthService } from '../../../core/services/auth.service';
+import { DialogService } from '../../../core/services/dialog.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../../shared';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
 /**
@@ -31,7 +36,14 @@ import { ButtonComponent } from '../../../ui/button/button.component';
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [TranslatePipe, DataTableComponent, CellTemplateDirective, ButtonComponent],
+  imports: [
+    TranslatePipe,
+    DataTableComponent,
+    CellTemplateDirective,
+    ButtonComponent,
+    HasPermissionDirective,
+    TooltipDirective,
+  ],
   template: `
     <app-data-table
       title="nav.users"
@@ -52,8 +64,27 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           intent="primary"
           icon="create-outline"
           [label]="'COMMON.EDIT' | appTranslate"
+          [attr.data-testid]="'user-edit-' + user.id"
           (click)="onEditUser(user)"
+          *appHasPermission="'UPDATE_USER'"
         />
+        <!--
+          Not offered on your own account. The platform does allow it, and an administrator who
+          deletes the account they are signed in with locks themselves out of the instance.
+        -->
+        @if (!isSelf(user)) {
+          <app-button
+            type="button"
+            emphasis="quiet"
+            intent="danger"
+            icon="trash-outline"
+            [label]="'COMMON.DELETE' | appTranslate"
+            [attr.data-testid]="'user-delete-' + user.id"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
+            (click)="onDeleteUser(user)"
+            *appHasPermission="'DELETE_USER'"
+          />
+        }
       </ng-template>
     </app-data-table>
   `,
@@ -61,6 +92,10 @@ import { ButtonComponent } from '../../../ui/button/button.component';
 export class UsersListComponent implements OnInit {
   private readonly userApi = inject(USER_API);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+  private readonly dialogs = inject(DialogService);
+  private readonly notifications = inject(NotificationService);
+  private readonly i18n = inject(I18N);
 
   readonly columns: ColumnDef[] = [
     { key: 'username', label: 'USERS.USERNAME', sortable: true },
@@ -90,5 +125,38 @@ export class UsersListComponent implements OnInit {
 
   onEditUser(user: AppUser): void {
     this.router.navigate(['/security/users/edit', user.id]);
+  }
+
+  /** Whether this row is the signed-in account, which may not delete itself. */
+  isSelf(user: AppUser): boolean {
+    return this.auth.currentUser()?.userId === user.id;
+  }
+
+  /**
+   * Deletes a user after confirmation.
+   *
+   * This is how access is withdrawn: Fineract has no disable for a user account, so a leaver's
+   * sign-in is removed rather than switched off (#755). The confirmation names the account,
+   * because the rows differ only by username.
+   */
+  onDeleteUser(user: AppUser): void {
+    if (this.isSelf(user)) return;
+
+    void this.dialogs
+      .confirm({
+        title: this.i18n.translate('COMMON.DELETE'),
+        message: this.i18n.translate('USERS.CONFIRM_DELETE', { username: user.username }),
+        destructive: true,
+      })
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.userApi.delete(user.id).subscribe({
+          next: () => {
+            void this.notifications.success(this.i18n.translate('COMMON.SUCCESS'));
+            this.loadUsers();
+          },
+          error: () => undefined,
+        });
+      });
   }
 }

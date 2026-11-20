@@ -43,7 +43,7 @@ import { GetRecurringDepositAccountsInterestPostingPeriodType } from './getRecur
  */
 export interface GetRecurringDepositAccountsAccountIdResponse { 
     accountChart?: GetRecurringDepositAccountsAccountChart;
-    accountNo?: number;
+    accountNo?: string;
     clientId?: number;
     clientName?: string;
     currency?: GetRecurringDepositAccountsCurrency;
@@ -58,6 +58,10 @@ export interface GetRecurringDepositAccountsAccountIdResponse {
     interestCalculationType?: GetRecurringDepositAccountsInterestCalculationType;
     interestCompoundingPeriodType?: GetRecurringDepositAccountsInterestCompoundingPeriodType;
     interestPostingPeriodType?: GetRecurringDepositAccountsInterestPostingPeriodType;
+    /**
+     * Determines whether product level interest rate chart is overridden by custom nominal annual interest rate
+     */
+    isRateChartOverridden?: boolean;
     mandatoryRecommendedDepositAmount?: number;
     maturityAmount?: number;
     maxDepositTerm?: number;

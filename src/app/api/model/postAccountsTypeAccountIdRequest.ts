@@ -31,6 +31,10 @@ import { PostAccountsRequestedShares } from './postAccountsRequestedShares';
  */
 export interface PostAccountsTypeAccountIdRequest { 
     /**
+     * command=applyadditionalshares, redeemshares, close
+     */
+    accountNumber?: string;
+    /**
      * command=activate
      */
     activatedDate?: string;
@@ -38,12 +42,36 @@ export interface PostAccountsTypeAccountIdRequest {
      * command=approve
      */
     approvedDate?: string;
+    /**
+     * command=applyadditionalshares, redeemshares, close
+     */
+    bankNumber?: string;
+    /**
+     * command=applyadditionalshares, redeemshares, close
+     */
+    checkNumber?: string;
+    /**
+     * command=close
+     */
+    closedDate?: string;
     dateFormat?: string;
     locale?: string;
     /**
      * command=approve
      */
     note?: string;
+    /**
+     * command=applyadditionalshares, redeemshares, close
+     */
+    paymentTypeId?: number;
+    /**
+     * command=applyadditionalshares, redeemshares, close
+     */
+    receiptNumber?: string;
     requestedShares?: Set<PostAccountsRequestedShares>;
+    /**
+     * command=applyadditionalshares, redeemshares, close
+     */
+    routingCode?: string;
 }
 

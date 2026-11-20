@@ -20,7 +20,7 @@ import { Component, inject, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { I18N, TranslatePipe } from '../../../core/adapters';
-import { ProgressiveLoanService, ProgressiveLoanInterestScheduleModel } from '../../../api';
+import { ProgressiveLoanService } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
   IonButton,
@@ -117,7 +117,16 @@ export class ProgressiveLoanModelComponent {
   private readonly i18n = inject(I18N);
 
   loanId = 0;
-  readonly model = signal<ProgressiveLoanInterestScheduleModel | null>(null);
+  /**
+   * The model as the endpoint now describes it: an untyped map.
+   *
+   * `ProgressiveLoanInterestScheduleModel` and `RepaymentPeriod` were dropped from the spec in
+   * the November 2026 sync, and `GET /internal/loan/{id}/model` is declared as
+   * `{ [key: string]: any }` in their place. This screen renders the model as JSON for support
+   * work, so nothing is lost here — but the type fidelity is, and a screen that wanted to read
+   * individual periods would now have to declare them itself.
+   */
+  readonly model = signal<Record<string, unknown> | null>(null);
   readonly isLoading = signal(false);
 
   loadModel(): void {

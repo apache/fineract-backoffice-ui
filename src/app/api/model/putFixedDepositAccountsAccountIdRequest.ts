@@ -40,6 +40,10 @@ export interface PutFixedDepositAccountsAccountIdRequest {
     interestCalculationType?: number;
     interestCompoundingPeriodType?: number;
     interestPostingPeriodType?: number;
+    /**
+     * Determines whether product level interest rate chart is overridden by custom nominal annual interest rate
+     */
+    isRateChartOverridden?: boolean;
     linkAccountId?: number;
     locale?: string;
     lockinPeriodFrequency?: number;
@@ -50,6 +54,10 @@ export interface PutFixedDepositAccountsAccountIdRequest {
     minDepositTerm?: number;
     minDepositTermTypeId?: number;
     monthDayFormat?: string;
+    /**
+     * Custom nominal annual interest rate to override product chart slabs
+     */
+    nominalAnnualInterestRate?: number;
     preClosurePenalApplicable?: boolean;
     preClosurePenalInterest?: number;
     preClosurePenalInterestOnTypeId?: number;

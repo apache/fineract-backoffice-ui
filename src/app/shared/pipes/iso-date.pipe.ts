@@ -20,7 +20,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 /**
- * An ISO `YYYY-MM-DD` date as the browser's locale writes it, or `'—'`.
+ * An ISO `YYYY-MM-DD` date or a Fineract `[year, month, day]` array as the browser's locale
+ * writes it, or `'—'`.
  *
  * For the dates the adapters model, which are date-only. Two things make this worth a pipe
  * rather than another `toLocaleDateString()` in another component:
@@ -32,6 +33,10 @@ import { Pipe, PipeTransform } from '@angular/core';
  *   cannot call one it does not have — which is why two transaction lists simply interpolated
  *   the value and printed Fineract's `[year, month, day]` as "2026,10,18".
  *
+ * Fineract also sends local dates as `[year, month, day]` arrays, even where the generated model
+ * types the field as a string. Those are read through the same local-time constructor rather than
+ * left to `new Date(array)`, which only works because V8 happens to parse `"2025,1,2"` leniently.
+ *
  * A value that is not a date-only string is passed to `Date` unchanged, so an instant or an
  * `ion-datetime` value still formats rather than disappearing.
  */
@@ -40,11 +45,20 @@ import { Pipe, PipeTransform } from '@angular/core';
   standalone: true,
 })
 export class IsoDatePipe implements PipeTransform {
-  transform(value: string | null | undefined): string {
+  transform(value: string | readonly number[] | null | undefined): string {
     if (!value) return '—';
 
-    const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-    const date = parts ? new Date(+parts[1], +parts[2] - 1, +parts[3]) : new Date(value);
+    let date: Date;
+    if (typeof value === 'string') {
+      const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+      date = parts ? new Date(+parts[1], +parts[2] - 1, +parts[3]) : new Date(value);
+    } else {
+      const [year, month, day] = value;
+      if (typeof year !== 'number' || typeof month !== 'number' || typeof day !== 'number') {
+        return '—';
+      }
+      date = new Date(year, month - 1, day);
+    }
     return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString();
   }
 }

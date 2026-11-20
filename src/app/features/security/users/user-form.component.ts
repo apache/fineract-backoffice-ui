@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -38,6 +38,8 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import type { NamedOption } from '../../../core/adapters';
+import { unmetRules } from '../../../core/security/password-policy';
+import type { PasswordPolicy, PasswordRule } from '../../../core/security/password-policy';
 
 /**
  * What the form holds while it is being filled.
@@ -54,10 +56,7 @@ interface UserFormModel {
   email: string;
   officeId: number | null;
   roles: number[];
-  password: string;
-  repeatPassword: string;
   passwordNeverExpires: boolean;
-  sendPasswordToEmail: boolean;
 }
 
 /**
@@ -273,7 +272,11 @@ interface UserFormModel {
                 }
               </div>
 
-              @if (!isEditMode()) {
+              <!--
+                Hidden when the platform is to mail a generated password: it refuses a request
+                that carries both, and a field that must be left blank is worse than no field.
+              -->
+              @if (!isEditMode() && !sendPasswordToEmail()) {
                 <div class="field">
                   <ion-item fill="outline">
                     <ion-label position="stacked"
@@ -284,29 +287,59 @@ interface UserFormModel {
                       [attr.aria-label]="'USERS.PASSWORD' | appTranslate"
                       type="password"
                       name="password"
-                      [(ngModel)]="user().password"
+                      autocomplete="new-password"
+                      [ngModel]="password()"
+                      (ngModelChange)="password.set($event)"
                       #passwordModel="ngModel"
                       (ionBlur)="passwordModel.control.markAsTouched()"
                       required
                       id="user-password-input"
                       data-testid="user-password-input"
-                      [attr.aria-invalid]="passwordModel.invalid && passwordModel.touched"
+                      [attr.aria-invalid]="unmetPasswordRules().length > 0 && passwordModel.touched"
                       [attr.aria-describedby]="
-                        passwordModel.invalid && passwordModel.touched
+                        unmetPasswordRules().length > 0 && passwordModel.touched
                           ? 'user-password-error'
-                          : null
+                          : 'user-password-policy'
                       "
                     ></ion-input>
                   </ion-item>
-                  @if (passwordModel.invalid && passwordModel.touched) {
+                  <!--
+                    The policy as the platform words it. Tenant-configurable, so it is read
+                    rather than restated: GET /passwordpreferences answers the active one.
+                  -->
+                  @if (passwordPolicy(); as policy) {
+                    <ion-note
+                      color="medium"
+                      class="field-hint"
+                      id="user-password-policy"
+                      data-testid="user-password-policy"
+                      >{{ 'USERS.PASSWORD_POLICY' | appTranslate }}:
+                      {{ policy.description }}</ion-note
+                    >
+                  }
+                  <!--
+                    Which rules this password still fails, rather than the whole policy again.
+                    The platform's own refusal lists every rule and names none of them, so a
+                    password rejected for a single repeated character reads as a wall of text.
+                  -->
+                  @if (unmetPasswordRules().length > 0 && passwordModel.touched) {
                     <ion-note
                       color="danger"
                       class="field-error"
                       id="user-password-error"
                       role="alert"
                       data-testid="user-password-error"
-                      >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
                     >
+                      {{ 'USERS.PASSWORD_RULES_UNMET' | appTranslate }}
+                      @for (rule of unmetPasswordRules(); track rule.id) {
+                        <span [attr.data-testid]="'user-password-rule-' + rule.id"
+                          >{{ rule.labelKey | appTranslate: rule.params }}
+                          @if (!$last) {
+                            ,
+                          }
+                        </span>
+                      }
+                    </ion-note>
                   }
                 </div>
 
@@ -320,23 +353,27 @@ interface UserFormModel {
                       [attr.aria-label]="'USERS.REPEAT_PASSWORD' | appTranslate"
                       type="password"
                       name="repeatPassword"
-                      [(ngModel)]="user().repeatPassword"
+                      autocomplete="new-password"
+                      [ngModel]="repeatPassword()"
+                      (ngModelChange)="repeatPassword.set($event)"
                       #repeatPasswordModel="ngModel"
                       (ionBlur)="repeatPasswordModel.control.markAsTouched()"
                       required
                       id="user-repeat-password-input"
                       data-testid="user-repeat-password-input"
                       [attr.aria-invalid]="
-                        repeatPasswordModel.invalid && repeatPasswordModel.touched
+                        (repeatPasswordModel.invalid || passwordsMismatch()) &&
+                        repeatPasswordModel.touched
                       "
                       [attr.aria-describedby]="
-                        repeatPasswordModel.invalid && repeatPasswordModel.touched
+                        (repeatPasswordModel.invalid || passwordsMismatch()) &&
+                        repeatPasswordModel.touched
                           ? 'user-repeat-password-error'
                           : null
                       "
                     ></ion-input>
                   </ion-item>
-                  @if (repeatPasswordModel.invalid && repeatPasswordModel.touched) {
+                  @if (repeatPasswordModel.touched && repeatPasswordModel.invalid) {
                     <ion-note
                       color="danger"
                       class="field-error"
@@ -344,6 +381,15 @@ interface UserFormModel {
                       role="alert"
                       data-testid="user-repeat-password-error"
                       >{{ 'COMMON.REQUIRED' | appTranslate }}</ion-note
+                    >
+                  } @else if (repeatPasswordModel.touched && passwordsMismatch()) {
+                    <ion-note
+                      color="danger"
+                      class="field-error"
+                      id="user-repeat-password-error"
+                      role="alert"
+                      data-testid="user-password-mismatch"
+                      >{{ 'USERS.PASSWORDS_DO_NOT_MATCH' | appTranslate }}</ion-note
                     >
                   }
                 </div>
@@ -394,7 +440,12 @@ interface UserFormModel {
                 {{ 'USERS.PASSWORD_NEVER_EXPIRES' | appTranslate }}
               </ion-checkbox>
 
-              <ion-checkbox name="sendPasswordToEmail" [(ngModel)]="user().sendPasswordToEmail">
+              <ion-checkbox
+                name="sendPasswordToEmail"
+                data-testid="user-send-password-to-email"
+                [ngModel]="sendPasswordToEmail()"
+                (ngModelChange)="sendPasswordToEmail.set($event)"
+              >
                 {{ 'USERS.SEND_PASSWORD_TO_EMAIL' | appTranslate }}
               </ion-checkbox>
             </div>
@@ -403,7 +454,12 @@ interface UserFormModel {
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
                 {{ 'COMMON.CANCEL' | appTranslate }}
               </ion-button>
-              <ion-button color="primary" type="submit" [disabled]="userForm.invalid || isSaving()">
+              <ion-button
+                color="primary"
+                type="submit"
+                data-testid="user-submit"
+                [disabled]="userForm.invalid || !passwordAcceptable() || isSaving()"
+              >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
                   {{ 'COMMON.SAVING' | appTranslate }}
@@ -412,7 +468,7 @@ interface UserFormModel {
                 }
               </ion-button>
             </div>
-            @if (userForm.invalid) {
+            @if (userForm.invalid || !passwordAcceptable()) {
               <ion-note
                 color="medium"
                 class="submit-hint"
@@ -489,14 +545,55 @@ export class UserFormComponent implements OnInit {
     email: '',
     officeId: null,
     roles: [],
-    password: '',
-    repeatPassword: '',
     passwordNeverExpires: false,
-    sendPasswordToEmail: false,
   });
 
   readonly offices = signal<NamedOption[]>([]);
   readonly availableRoles = signal<NamedOption[]>([]);
+
+  /**
+   * The password pair, and the mail-it-instead flag, as signals rather than fields of
+   * {@link user}.
+   *
+   * `[(ngModel)]="user().password"` mutates the object the signal holds, which never notifies
+   * the signal — so nothing derived from it would recompute, and the rule list below would
+   * never update as the user types. The same trap emptied the floating-rate editor (#815).
+   */
+  readonly password = signal('');
+  readonly repeatPassword = signal('');
+  readonly sendPasswordToEmail = signal(false);
+
+  /** The tenant's active policy, for the helper text and the rules below. `null` until read. */
+  readonly passwordPolicy = signal<PasswordPolicy | null>(null);
+
+  /**
+   * The rules this password still fails.
+   *
+   * Empty where no password is being set — an edit, or a generated one mailed to the user — so
+   * the gate below is about the fields that are actually on screen.
+   */
+  readonly unmetPasswordRules = computed<readonly PasswordRule[]>(() =>
+    this.isEditMode() || this.sendPasswordToEmail()
+      ? []
+      : unmetRules(this.password(), this.passwordPolicy()),
+  );
+
+  /** Whether the confirmation differs from the password. Silent until one has been typed. */
+  readonly passwordsMismatch = computed(
+    () => this.repeatPassword().length > 0 && this.password() !== this.repeatPassword(),
+  );
+
+  /**
+   * Whether the password half of this form can be submitted.
+   *
+   * Both halves are the platform's rules, checked here only so the user learns them from the
+   * form rather than one round trip at a time (#753). Fineract validates both again, and its
+   * refusal — which used to be the only feedback — carried the submitted password in clear
+   * text (#752).
+   */
+  readonly passwordAcceptable = computed(
+    () => this.unmetPasswordRules().length === 0 && !this.passwordsMismatch(),
+  );
 
   ngOnInit(): void {
     this.loadMetadata();
@@ -515,6 +612,12 @@ export class UserFormComponent implements OnInit {
       this.offices.set([...template.offices]);
       this.availableRoles.set([...template.roles]);
     });
+    // The policy, not a copy of it: it is tenant-configurable, and an unread one leaves the
+    // rules at their loosest rather than refusing a password the platform would have taken.
+    this.userApi.passwordPolicy().subscribe({
+      next: (policy) => this.passwordPolicy.set(policy),
+      error: () => this.passwordPolicy.set(null),
+    });
   }
 
   private loadUserData(): void {
@@ -527,18 +630,21 @@ export class UserFormComponent implements OnInit {
         email: member.email,
         officeId: member.officeId,
         roles: [...member.roleIds],
-        // Never prefilled: the create path's two password fields are not rendered in edit mode,
-        // and Fineract changes a password through its own endpoint.
-        password: '',
-        repeatPassword: '',
         passwordNeverExpires: member.passwordNeverExpires,
-        sendPasswordToEmail: false,
       });
+      // Never prefilled, and not rendered in edit mode either: Fineract changes a password
+      // through its own endpoint, which the profile screen owns.
+      this.password.set('');
+      this.repeatPassword.set('');
+      this.sendPasswordToEmail.set(false);
     });
   }
 
   onSubmit(): void {
     const form = this.user();
+    // Checked here as well as on the button: a form submitted by Enter does not consult the
+    // button's disabled state.
+    if (!this.passwordAcceptable()) return;
     // The Office select is `required`, so the submit button is disabled until it is set and
     // this cannot normally be reached. Checked anyway rather than coerced: `officeId: 0` is a
     // valid-looking id that belongs to no office, and Fineract would answer a 404 naming a
@@ -561,7 +667,7 @@ export class UserFormComponent implements OnInit {
           email: form.email,
           officeId: form.officeId,
           roleIds: form.roles,
-          sendPasswordToEmail: form.sendPasswordToEmail,
+          sendPasswordToEmail: this.sendPasswordToEmail(),
         })
         .subscribe(done);
     } else {
@@ -573,10 +679,10 @@ export class UserFormComponent implements OnInit {
           email: form.email,
           officeId: form.officeId,
           roleIds: form.roles,
-          password: form.password,
-          repeatPassword: form.repeatPassword,
+          password: this.password(),
+          repeatPassword: this.repeatPassword(),
           passwordNeverExpires: form.passwordNeverExpires,
-          sendPasswordToEmail: form.sendPasswordToEmail,
+          sendPasswordToEmail: this.sendPasswordToEmail(),
         })
         .subscribe(done);
     }

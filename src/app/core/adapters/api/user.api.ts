@@ -21,6 +21,7 @@ import { InjectionToken, inject } from '@angular/core';
 import type { Observable } from 'rxjs';
 
 import { FineractUserApi } from './fineract-user.api';
+import type { PasswordPolicy } from '../../security/password-policy';
 
 /** An application user — a sign-in account, not a staff member. */
 export interface AppUser {
@@ -98,6 +99,33 @@ export interface UserUpdate {
 export interface UserApi {
   /** Every user, as Fineract orders them. */
   list(): Observable<AppUser[]>;
+
+  /**
+   * The tenant's active password policy.
+   *
+   * `GET /passwordpreferences` answers the active one — `{ id, description, active, key }`,
+   * measured — and `null` here means the read failed or named nothing active. The forms show
+   * {@link PasswordPolicy.description} as helper text and check the rules the `key` selects
+   * before submitting, so the user does not learn the policy one round trip at a time (#753).
+   */
+  passwordPolicy(): Observable<PasswordPolicy | null>;
+
+  /**
+   * Changes a user's own password.
+   *
+   * `POST /users/{id}/pwd`, which is a different operation from {@link update} — that one
+   * carries no password at all.
+   */
+  changePassword(userId: number, password: string, repeatPassword: string): Observable<void>;
+
+  /**
+   * Deletes a user.
+   *
+   * The only way to withdraw an account from this application: Fineract has no disable for a
+   * user, so a leaver's access is cut by removing the account (#755). Editing their roles down
+   * to nothing, which is what the UI forced before, leaves a sign-in that still works.
+   */
+  delete(userId: number): Observable<void>;
 
   /** One user by id, which is what the edit form loads. */
   get(userId: number): Observable<AppUser>;

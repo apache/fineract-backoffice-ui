@@ -32,6 +32,8 @@ import { test, expect, Page } from './fixtures';
 const TENANT = 'default';
 const USER = 'mifos';
 const PASSWORD = 'password';
+/** Satisfies every rule of the platform's `strong` policy, which the profile mock declares. */
+const GOOD_PASSWORD = 'Xq7!vTz3mKp9';
 const TOTAL_CLIENTS = 54;
 const PAGE_SIZE = 10;
 
@@ -322,7 +324,8 @@ test.describe('Profile', () => {
         body: JSON.stringify({
           id: 2,
           key: 'strong',
-          description: 'At least eight characters with mixed case and a number',
+          description:
+            'Password must be 12 to 50 characters long, containing at least one uppercase letter, one lowercase letter, one numeric digit, and one special character, with no spaces or consecutive repeating characters',
           active: true,
         }),
       });
@@ -341,16 +344,28 @@ test.describe('Profile', () => {
 
     const newPassword = page.getByTestId('profile-new-password').locator('input');
     const repeatPassword = page.getByTestId('profile-repeat-password').locator('input');
+    const submit = page.getByTestId('profile-password-submit');
+    await expect(page.getByTestId('profile-password-policy')).toContainText(
+      '12 to 50 characters long',
+    );
+
+    // A password the tenant's policy refuses never leaves the browser: the platform's own
+    // refusal names no rule, and it used to come back carrying the password itself (#752).
     await newPassword.fill('Strong1!');
     await repeatPassword.fill('Strong1!');
-    await expect(page.getByTestId('profile-password-policy')).toContainText('At least eight');
-    await page.getByTestId('profile-password-submit').click();
+    await expect(page.getByTestId('profile-password-rule-length')).toBeVisible();
+    await expect(submit).toHaveJSProperty('disabled', true);
+
+    await newPassword.fill(GOOD_PASSWORD);
+    await repeatPassword.fill(GOOD_PASSWORD);
+    await expect(page.getByTestId('profile-password-rules')).toHaveCount(0);
+    await submit.click();
 
     await expect
       .poll(() => changeRequest)
       .toEqual({
-        password: 'Strong1!',
-        repeatPassword: 'Strong1!',
+        password: GOOD_PASSWORD,
+        repeatPassword: GOOD_PASSWORD,
       });
     await expect(page.getByText('Password changed successfully.')).toBeVisible();
     await expect(page.getByTestId('profile-new-password')).toHaveCount(0);

@@ -93,6 +93,7 @@ export interface LoanProductData {
     compoundingToBePostedAsTransaction?: boolean;
     creditAllocation?: Array<CreditAllocationData>;
     creditAllocationAllocationTypes?: Array<EnumOptionData>;
+    creditAllocationStrategyOptions?: Array<EnumOptionData>;
     creditAllocationTransactionTypes?: Array<EnumOptionData>;
     currency?: CurrencyData;
     currencyOptions?: Array<CurrencyData>;
@@ -119,6 +120,7 @@ export interface LoanProductData {
     equalAmortization?: boolean;
     externalId?: string;
     feeToIncomeAccountMappings?: Array<ChargeToGLAccountMapper>;
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     floatingInterestRateCalculationAllowed?: boolean;
@@ -178,6 +180,8 @@ export interface LoanProductData {
     minPrincipal?: number;
     minimumDaysBetweenDisbursalAndFirstRepayment?: number;
     minimumGap?: number;
+    monthEndDueDateStrategy?: StringEnumOptionData;
+    monthEndDueDateStrategyOptions?: Array<StringEnumOptionData>;
     multiDisburseLoan?: boolean;
     name?: string;
     numberOfRepaymentVariationsForBorrowerCycle?: Array<LoanProductBorrowerCycleVariationData>;
@@ -207,9 +211,12 @@ export interface LoanProductData {
     repaymentStartDateType?: EnumOptionData;
     repaymentStartDateTypeOptions?: Array<EnumOptionData>;
     rescheduleStrategyTypeOptions?: Array<EnumOptionData>;
+    secondRepaymentDayOfMonth?: number;
     shortName?: string;
     startDate?: string;
     status?: string;
+    supportedFeeRefundTypes?: Array<StringEnumOptionData>;
+    supportedFeeRefundTypesOptions?: Array<StringEnumOptionData>;
     supportedInterestRefundTypes?: Array<StringEnumOptionData>;
     supportedInterestRefundTypesOptions?: Array<StringEnumOptionData>;
     syncExpectedWithDisbursementDate?: boolean;

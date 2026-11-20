@@ -17,33 +17,31 @@
  * under the License.
  */
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { I18N, TranslatePipe } from '../../../core/adapters';
-import { ColumnDef, CellTemplateDirective } from '../../../shared';
+import {
+  I18N,
+  SHARE_DIVIDEND_API,
+  TranslatePipe,
+  type ShareDividend,
+} from '../../../core/adapters';
+import { ColumnDef, CellTemplateDirective, RequiresPermissionDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { formatArrayDate } from '../../../core/utils/date-formatter';
-import { SelfDividendService } from '../../../api';
+import { AuthService } from '../../../core/services/auth.service';
+import { ConfigService } from '../../../core/services/config.service';
 import { DialogService } from '../../../core/services/dialog.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
-/**
- * A single share dividend row as returned (within a paged envelope) by the share dividend
- * list endpoint. The endpoint is untyped (returns a JSON string), so a minimal local shape
- * captures the fields shown in the table.
- */
-interface ShareDividendRow {
-  id?: number;
-  amount?: number;
-  dividendPeriodStartDate?: unknown;
-  dividendPeriodEndDate?: unknown;
-}
+const STATUS_KEYS: Record<ShareDividend['status'], string> = {
+  pending: 'SHARE_DIVIDENDS.STATUS_PENDING',
+  approved: 'SHARE_DIVIDENDS.STATUS_APPROVED',
+  unknown: 'SHARE_DIVIDENDS.STATUS_UNKNOWN',
+};
 
 /**
  * Lists the dividends declared for a single share product. The share product id is read
- * from the route snapshot; create and delete actions operate within that product's dividend
- * collection.
+ * from the route snapshot; each row opens the dividend, and a pending one can be deleted here.
  */
 @Component({
   selector: 'app-share-dividends-list',
@@ -54,6 +52,7 @@ interface ShareDividendRow {
     CellTemplateDirective,
     ButtonComponent,
     TooltipDirective,
+    RequiresPermissionDirective,
   ],
   template: `
     <app-data-table
@@ -67,44 +66,70 @@ interface ShareDividendRow {
       [localLogic]="true"
       (create)="onCreate()"
     >
-      <ng-template appCellTemplate="dividendPeriodStartDate" let-row>
-        {{ formatDate(row.dividendPeriodStartDate) }}
+      <ng-template appCellTemplate="periodStartDate" let-row>
+        {{ row.periodStartDate ?? '-' }}
       </ng-template>
-      <ng-template appCellTemplate="dividendPeriodEndDate" let-row>
-        {{ formatDate(row.dividendPeriodEndDate) }}
+      <ng-template appCellTemplate="periodEndDate" let-row>
+        {{ row.periodEndDate ?? '-' }}
+      </ng-template>
+      <ng-template appCellTemplate="status" let-row>
+        {{ statusKey(row.status) | appTranslate }}
       </ng-template>
       <ng-template appCellTemplate="actions" let-row>
         <app-button
           type="button"
-          intent="danger"
           emphasis="quiet"
-          [label]="'COMMON.DELETE' | appTranslate"
-          icon="trash-outline"
-          [appTooltip]="'COMMON.DELETE' | appTranslate"
-          (click)="onDelete(row)"
+          data-testid="share-dividend-view"
+          [label]="'COMMON.VIEW' | appTranslate"
+          icon="eye-outline"
+          [appTooltip]="'COMMON.VIEW' | appTranslate"
+          [link]="['/products/shares', productId, 'dividends', row.id]"
         />
+        @if (row.status === 'pending') {
+          <app-button
+            type="button"
+            intent="danger"
+            emphasis="quiet"
+            data-testid="share-dividend-delete"
+            [label]="'COMMON.DELETE' | appTranslate"
+            icon="trash-outline"
+            [appTooltip]="'COMMON.DELETE' | appTranslate"
+            appRequiresPermission="DELETE_DIVIDEND_SHAREPRODUCT"
+            [disabled]="!canDelete()"
+            (click)="onDelete(row)"
+          />
+        }
       </ng-template>
     </app-data-table>
   `,
 })
 export class ShareDividendsListComponent implements OnInit {
-  private readonly selfDividendService = inject(SelfDividendService);
+  private readonly api = inject(SHARE_DIVIDEND_API);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
   private readonly i18n = inject(I18N);
+  private readonly auth = inject(AuthService);
+  private readonly config = inject(ConfigService);
 
   readonly columns: ColumnDef[] = [
-    { key: 'dividendPeriodStartDate', label: 'SHARE_DIVIDENDS.PERIOD_START_DATE', sortable: false },
-    { key: 'dividendPeriodEndDate', label: 'SHARE_DIVIDENDS.PERIOD_END_DATE', sortable: false },
+    { key: 'periodStartDate', label: 'SHARE_DIVIDENDS.PERIOD_START_DATE', sortable: false },
+    { key: 'periodEndDate', label: 'SHARE_DIVIDENDS.PERIOD_END_DATE', sortable: false },
     { key: 'amount', label: 'SHARE_DIVIDENDS.AMOUNT', sortable: true },
+    { key: 'status', label: 'COMMON.STATUS', sortable: false },
     { key: 'actions', label: 'COMMON.ACTIONS', sortable: false },
   ];
 
   productId!: number;
-  readonly dividends = signal<ShareDividendRow[]>([]);
+  readonly dividends = signal<ShareDividend[]>([]);
 
-  formatDate = formatArrayDate;
+  /** The directive marks only the host; this keeps the button itself disabled. */
+  readonly canDelete = computed(() => {
+    this.auth.currentUser();
+    return !this.config.rbacEnabled() || this.auth.hasPermission('DELETE_DIVIDEND_SHAREPRODUCT');
+  });
+
+  readonly statusKey = (status: ShareDividend['status']): string => STATUS_KEYS[status];
 
   ngOnInit(): void {
     this.productId = Number(this.route.snapshot.paramMap.get('productId'));
@@ -112,46 +137,32 @@ export class ShareDividendsListComponent implements OnInit {
   }
 
   load(): void {
-    this.selfDividendService.getShareproductProductIdDividend(this.productId).subscribe({
-      next: (data: string) => {
-        this.dividends.set(this.parseDividends(data));
-      },
+    this.api.list(this.productId).subscribe({
+      next: (rows) => this.dividends.set([...rows]),
       error: (err: unknown) => console.error('Failed to load share dividends', err),
     });
-  }
-
-  private parseDividends(data: string): ShareDividendRow[] {
-    if (!data) return [];
-    try {
-      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-      const rows = Array.isArray(parsed) ? parsed : (parsed?.pageItems ?? []);
-      return rows as ShareDividendRow[];
-    } catch {
-      return [];
-    }
   }
 
   onCreate(): void {
     this.router.navigate(['/products/shares', this.productId, 'dividends', 'create']);
   }
 
-  async onDelete(row: ShareDividendRow): Promise<void> {
-    if (!row.id) return;
+  async onDelete(row: ShareDividend): Promise<void> {
+    // Fineract refuses to delete an approved dividend; the button is not offered for one.
+    if (!row.id || row.status !== 'pending' || !this.canDelete()) return;
     const confirmed = await this.dialogService.confirm({
       title: this.i18n.translate('SHARE_DIVIDENDS.DELETE'),
       message: this.i18n.translate('SHARE_DIVIDENDS.CONFIRM_DELETE', {
         amount: row.amount ?? '',
-        startDate: this.formatDate(row.dividendPeriodStartDate),
-        endDate: this.formatDate(row.dividendPeriodEndDate),
+        startDate: row.periodStartDate ?? '-',
+        endDate: row.periodEndDate ?? '-',
       }),
       destructive: true,
     });
     if (!confirmed) return;
-    this.selfDividendService
-      .deleteShareproductProductIdDividendDividendId(this.productId, row.id)
-      .subscribe({
-        next: () => this.load(),
-        error: (err: unknown) => console.error('Failed to delete share dividend', err),
-      });
+    this.api.delete(this.productId, row.id).subscribe({
+      next: () => this.load(),
+      error: (err: unknown) => console.error('Failed to delete share dividend', err),
+    });
   }
 }

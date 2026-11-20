@@ -50,6 +50,7 @@ export interface GetLoansLoanIdLoanTransactionEnumData {
     goodwillCredit?: boolean;
     id?: number;
     initiateTransfer?: boolean;
+    loanWithdrawal?: boolean;
     merchantIssuedRefund?: boolean;
     payoutRefund?: boolean;
     recoveryRepayment?: boolean;

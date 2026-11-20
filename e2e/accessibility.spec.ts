@@ -105,7 +105,8 @@ const CREATE_OFFICE_DIALOG_BASELINE = new Set(IONIC_SELECT_ARIA_REQUIRED);
  *
  * `scrollable-region-focusable` on `main` is a genuine keyboard-access finding and is listed
  * here so it stays visible in the diff rather than disappearing. It is not caused by this
- * change: `.content-area` scrolls today and did before.
+ * change: `.content-area` scrolls today and did before. Axe names it `#main-content` since #746 gave
+ * `main` an id, because it fingerprints a node by its shortest unique selector.
  */
 const SHELL_BASELINE = new Set([
   'role-img-alt|.flip-rtl',
@@ -119,7 +120,7 @@ const SHELL_BASELINE = new Set([
   'role-img-alt|ion-icon[name="checkmark-circle-outline"]',
   'role-img-alt|.chart-card:nth-child(1) > ion-card-header > ion-card-title > ion-icon[name="pie-chart-outline"]',
   'role-img-alt|.chart-card:nth-child(2) > ion-card-header > ion-card-title > ion-icon[name="pie-chart-outline"]',
-  'scrollable-region-focusable|main',
+  'scrollable-region-focusable|#main-content',
 ]);
 
 function targetParts(target: unknown): string[] {

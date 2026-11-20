@@ -28,6 +28,7 @@ import { CreditAllocationOrder } from './creditAllocationOrder';
 
 export interface CreditAllocationData { 
     creditAllocationOrder?: Array<CreditAllocationOrder>;
+    creditAllocationStrategy?: string;
     transactionType?: string;
 }
 

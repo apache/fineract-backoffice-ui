@@ -23,15 +23,27 @@ import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { of } from 'rxjs';
 import { catchError, startWith, tap } from 'rxjs/operators';
-import { DataTableComponent, CellTemplateDirective, ColumnDef } from '../../shared';
-import { GeneralLedgerAccountService, GetGLAccountsResponse } from '../../api';
-import { TranslatePipe } from '../../core/adapters';
+import {
+  DataTableComponent,
+  CellTemplateDirective,
+  ColumnDef,
+  RequiresPermissionDirective,
+} from '../../shared';
+import { GL_ACCOUNT_API, I18N, TranslatePipe, type GlAccount } from '../../core/adapters';
+import { DialogService } from '../../core/services/dialog.service';
 import { ButtonComponent } from '../../ui/button/button.component';
 
 @Component({
   selector: 'app-chart-of-accounts',
   standalone: true,
-  imports: [DataTableComponent, CellTemplateDirective, TranslatePipe, NgClass, ButtonComponent],
+  imports: [
+    DataTableComponent,
+    CellTemplateDirective,
+    RequiresPermissionDirective,
+    TranslatePipe,
+    NgClass,
+    ButtonComponent,
+  ],
   template: `
     <app-data-table
       [hasError]="hasError()"
@@ -47,8 +59,8 @@ import { ButtonComponent } from '../../ui/button/button.component';
       (create)="onCreateAccount()"
     >
       <ng-template appCellTemplate="type" let-account>
-        <span class="type-tag" [ngClass]="account.type?.value?.toLowerCase()">
-          {{ account.type?.value }}
+        <span class="type-tag" [ngClass]="account.type.toLowerCase()">
+          {{ account.type }}
         </span>
       </ng-template>
 
@@ -60,6 +72,15 @@ import { ButtonComponent } from '../../ui/button/button.component';
           icon="create-outline"
           (click)="onEditAccount(account)"
           [label]="'ACCOUNTING.EDIT_ACCOUNT' | appTranslate"
+        />
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="danger"
+          icon="trash-outline"
+          appRequiresPermission="DELETE_GLACCOUNT"
+          (click)="onDeleteAccount(account)"
+          [label]="'ACCOUNTING.DELETE_ACCOUNT' | appTranslate"
         />
       </ng-template>
     </app-data-table>
@@ -105,8 +126,10 @@ export class ChartOfAccountsComponent {
    */
   readonly errorStatus = signal<number | null>(null);
 
-  private readonly glAccountService = inject(GeneralLedgerAccountService);
+  private readonly glAccountApi = inject(GL_ACCOUNT_API);
   private readonly router = inject(Router);
+  private readonly dialog = inject(DialogService);
+  private readonly i18n = inject(I18N);
 
   columns: ColumnDef[] = [
     { key: 'glCode', label: 'ACCOUNTING.GL_CODE', sortable: true },
@@ -116,7 +139,7 @@ export class ChartOfAccountsComponent {
     { key: 'actions', label: 'COMMON.ACTIONS', sortable: false },
   ];
 
-  readonly accounts = signal<GetGLAccountsResponse[]>([]);
+  readonly accounts = signal<GlAccount[]>([]);
 
   constructor() {
     this.loadAccounts();
@@ -127,8 +150,8 @@ export class ChartOfAccountsComponent {
   }
 
   private loadAccounts(): void {
-    this.glAccountService
-      .getGlaccounts()
+    this.glAccountApi
+      .list()
       .pipe(
         startWith([]),
         tap(() => {
@@ -150,7 +173,38 @@ export class ChartOfAccountsComponent {
     this.router.navigate(['/accounting/chart-of-accounts/create']);
   }
 
-  onEditAccount(account: GetGLAccountsResponse) {
+  onEditAccount(account: GlAccount) {
     this.router.navigate(['/accounting/chart-of-accounts/edit', account.id]);
+  }
+
+  /**
+   * Deletes a GL account.
+   *
+   * The confirmation states the platform's refusal conditions up front — children, journal
+   * entries, product mappings — rather than offering an action that looks available and then
+   * explaining why it was not. The refusal itself reaches the operator in Fineract's own words
+   * through the error interceptor, and the chart is reloaded only on success, so an account the
+   * platform kept is still on screen (#789).
+   */
+  async onDeleteAccount(account: GlAccount): Promise<void> {
+    const confirmed = await this.dialog.confirm({
+      title: this.i18n.translate('ACCOUNTING.DELETE_ACCOUNT'),
+      message: this.i18n.translate('ACCOUNTING.DELETE_ACCOUNT_CONFIRM'),
+      details: [
+        { label: this.i18n.translate('ACCOUNTING.GL_CODE'), value: account.glCode },
+        { label: this.i18n.translate('ACCOUNTING.ACCOUNT_NAME'), value: account.name },
+      ],
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    this.glAccountApi.delete(account.id).subscribe({
+      next: () => this.loadAccounts(),
+      error: (err: unknown) => {
+        console.error('Failed to delete the GL account', err);
+      },
+    });
   }
 }

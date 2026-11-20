@@ -2,7 +2,7 @@
 
 Apache Fineract is a secure, multi-tenanted microfinance platform. The goal of the Apache Fineract API is to empower developers to build apps on top of the Apache Fineract Platform. The [reference app](https://cui.fineract.dev) (username: mifos, password: password) works on the same demo tenant as the interactive links in this documentation. Until we complete the new REST API documentation you still have the legacy documentation available [here](https://fineract.apache.org/docs/legacy/). Please check [the current Fineract documentation](https://fineract.apache.org/docs/current/) for more information.
 
-The version of the OpenAPI document: 1.16.0-SNAPSHOT
+The version of the OpenAPI document: 1.17.0-SNAPSHOT
 
 ## Building
 

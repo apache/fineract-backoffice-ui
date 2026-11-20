@@ -41,6 +41,7 @@ import { GetInstructionTypeStandingInstructionSwagger } from './getInstructionTy
 
 export interface GetPageItemsStandingInstructionSwagger { 
     accountDetailId?: number;
+    allowPartialTransfer?: boolean;
     amount?: number;
     fromAccount?: GetFromAccountStandingInstructionSwagger;
     fromAccountType?: GetFromAccountTypeStandingInstructionSwagger;

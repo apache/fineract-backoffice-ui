@@ -32,6 +32,7 @@ import { GetClientTransactionsCurrency } from './getClientTransactionsCurrency';
  */
 export interface GetClientsClientIdTransactionsTransactionIdResponse { 
     amount?: number;
+    clientChargeId?: number;
     currency?: GetClientTransactionsCurrency;
     date?: string;
     id?: number;

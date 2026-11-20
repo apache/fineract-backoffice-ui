@@ -8,7 +8,13 @@
     "putAccountnumberformatsAccountNumberFormatId"
   ],
   "AccountTransfersService": ["getAccounttransfers", "postAccounttransfers"],
-  "AccountingClosureService": ["deleteGlclosuresGlClosureId", "getGlclosures", "postGlclosures"],
+  "AccountingClosureService": [
+    "deleteGlclosuresGlClosureId",
+    "getGlclosures",
+    "getGlclosuresGlClosureId",
+    "postGlclosures",
+    "putGlclosuresGlClosureId"
+  ],
   "AccountingRulesService": [
     "deleteAccountingrulesAccountingRuleId",
     "getAccountingrules",
@@ -25,7 +31,7 @@
     "postAdhocquery",
     "putAdhocqueryAdHocId"
   ],
-  "AuditsService": ["getAudits"],
+  "AuditsService": ["getAudits", "getAuditsAuditId", "getAuditsSearchtemplate"],
   "BatchAPIService": ["postBatches"],
   "BulkImportService": ["getImports", "getImportsDownloadOutputTemplate"],
   "BulkLoansService": ["getLoansLoanreassignmentTemplate", "postLoansLoanreassignment"],
@@ -55,6 +61,7 @@
     "putCentersCenterId"
   ],
   "ChargesService": [
+    "deleteChargesChargeId",
     "getCharges",
     "getChargesChargeId",
     "getChargesTemplate",
@@ -278,6 +285,7 @@
   ],
   "FundsService": ["getFunds", "getFundsFundId", "postFunds", "putFundsFundId"],
   "GeneralLedgerAccountService": [
+    "deleteGlaccountsGlAccountId",
     "getGlaccounts",
     "getGlaccountsDownloadtemplate",
     "getGlaccountsGlAccountId",
@@ -588,14 +596,22 @@
     "postRescheduleloans"
   ],
   "RolesService": [
+    "deleteRolesRoleId",
     "getRoles",
     "getRolesRoleId",
     "getRolesRoleIdPermissions",
     "postRoles",
+    "postRolesRoleId",
     "putRolesRoleId",
     "putRolesRoleIdPermissions"
   ],
-  "SCHEDULERJOBService": ["getJobs", "getJobsJobIdRunhistory", "postJobsJobId"],
+  "SCHEDULERJOBService": [
+    "getJobs",
+    "getJobsJobId",
+    "getJobsJobIdRunhistory",
+    "postJobsJobId",
+    "putJobsJobId"
+  ],
   "SMSService": [
     "deleteSmsResourceId",
     "getSms",
@@ -640,7 +656,9 @@
   "SelfDividendService": [
     "deleteShareproductProductIdDividendDividendId",
     "getShareproductProductIdDividend",
-    "postShareproductProductIdDividend"
+    "getShareproductProductIdDividendDividendId",
+    "postShareproductProductIdDividend",
+    "putShareproductProductIdDividendDividendId"
   ],
   "ShareAccountService": [
     "getAccountsType",
@@ -688,17 +706,20 @@
     "putTaxesGroupTaxGroupId"
   ],
   "TellerCashManagementService": [
+    "deleteTellersTellerId",
     "deleteTellersTellerIdCashiersCashierId",
     "getTellers",
     "getTellersTellerId",
     "getTellersTellerIdCashiers",
+    "getTellersTellerIdCashiersCashierId",
     "getTellersTellerIdCashiersCashierIdSummaryandtransactions",
     "getTellersTellerIdCashiersCashierIdTransactionsTemplate",
     "postTellers",
     "postTellersTellerIdCashiers",
     "postTellersTellerIdCashiersCashierIdAllocate",
     "postTellersTellerIdCashiersCashierIdSettle",
-    "putTellersTellerId"
+    "putTellersTellerId",
+    "putTellersTellerIdCashiersCashierId"
   ],
   "TemplatesService": [
     "deleteTemplatesTemplateId",
@@ -714,6 +735,7 @@
     "putTenantsTenantIdOidcConfig"
   ],
   "UsersService": [
+    "deleteUsersUserId",
     "getUsers",
     "getUsersDownloadtemplate",
     "getUsersTemplate",
@@ -786,11 +808,15 @@
   "WorkingCapitalLoansService": [
     "deleteWorkingCapitalLoansLoanId",
     "getWorkingCapitalLoans",
+    "getWorkingCapitalLoansExternalIdLoanExternalId",
     "getWorkingCapitalLoansLoanId",
     "getWorkingCapitalLoansLoanIdAmortizationSchedule",
     "getWorkingCapitalLoansLoanIdDelinquencyrangetags",
     "getWorkingCapitalLoansLoanIdRateChanges",
     "getWorkingCapitalLoansTemplate",
+    "postInternalWorkingCapitalLoansLoanIdActivate",
+    "postInternalWorkingCapitalLoansLoanIdAmortizationSchedule",
+    "postInternalWorkingCapitalLoansLoanIdGenerateNextDelinquencyPeriod",
     "postWorkingCapitalLoans",
     "postWorkingCapitalLoansLoanId",
     "putWorkingCapitalLoansLoanId",

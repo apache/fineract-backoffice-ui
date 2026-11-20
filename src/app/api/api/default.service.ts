@@ -47,6 +47,8 @@ import { ExternalEventResponse } from '../model/externalEventResponse';
 // @ts-ignore
 import { FormDataBodyPart } from '../model/formDataBodyPart';
 // @ts-ignore
+import { GetTwoFactorConfigurationResponse } from '../model/getTwoFactorConfigurationResponse';
+// @ts-ignore
 import { ImageCreateResponse } from '../model/imageCreateResponse';
 // @ts-ignore
 import { ImageDeleteResponse } from '../model/imageDeleteResponse';
@@ -56,6 +58,10 @@ import { LoanAuditFieldsData } from '../model/loanAuditFieldsData';
 import { PostEmailRequest } from '../model/postEmailRequest';
 // @ts-ignore
 import { PutEmailRequest } from '../model/putEmailRequest';
+// @ts-ignore
+import { PutTwoFactorConfigurationRequest } from '../model/putTwoFactorConfigurationRequest';
+// @ts-ignore
+import { PutTwoFactorConfigurationResponse } from '../model/putTwoFactorConfigurationResponse';
 // @ts-ignore
 import { SmsCampaignCreationDto } from '../model/smsCampaignCreationDto';
 // @ts-ignore
@@ -2420,9 +2426,9 @@ export class DefaultService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getTwofactorConfigure(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getTwofactorConfigure(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getTwofactorConfigure(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getTwofactorConfigure(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GetTwoFactorConfigurationResponse>;
+    public getTwofactorConfigure(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GetTwoFactorConfigurationResponse>>;
+    public getTwofactorConfigure(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GetTwoFactorConfigurationResponse>>;
     public getTwofactorConfigure(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -2458,7 +2464,7 @@ export class DefaultService extends BaseService {
 
         let localVarPath = `/v1/twofactor/configure`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<GetTwoFactorConfigurationResponse>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -3589,15 +3595,18 @@ export class DefaultService extends BaseService {
 
     /**
      * @endpoint put /v1/twofactor/configure
-     * @param body 
+     * @param putTwoFactorConfigurationRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putTwofactorConfigure(body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public putTwofactorConfigure(body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public putTwofactorConfigure(body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public putTwofactorConfigure(body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putTwofactorConfigure(putTwoFactorConfigurationRequest: PutTwoFactorConfigurationRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PutTwoFactorConfigurationResponse>;
+    public putTwofactorConfigure(putTwoFactorConfigurationRequest: PutTwoFactorConfigurationRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PutTwoFactorConfigurationResponse>>;
+    public putTwofactorConfigure(putTwoFactorConfigurationRequest: PutTwoFactorConfigurationRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PutTwoFactorConfigurationResponse>>;
+    public putTwofactorConfigure(putTwoFactorConfigurationRequest: PutTwoFactorConfigurationRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (putTwoFactorConfigurationRequest === null || putTwoFactorConfigurationRequest === undefined) {
+            throw new Error('Required parameter putTwoFactorConfigurationRequest was null or undefined when calling putTwofactorConfigure.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -3641,10 +3650,10 @@ export class DefaultService extends BaseService {
 
         let localVarPath = `/v1/twofactor/configure`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<PutTwoFactorConfigurationResponse>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: putTwoFactorConfigurationRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

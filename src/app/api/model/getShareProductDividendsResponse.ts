@@ -23,24 +23,14 @@
  * Do not edit the class manually.
  */
 
+import { GetShareProductDividendsPageItems } from './getShareProductDividendsPageItems';
 
 
-export interface InterestPeriodMc { 
-    precision?: number;
-    roundingMode?: InterestPeriodMc.RoundingModeEnum;
+/**
+ * GetShareProductDividendsResponse
+ */
+export interface GetShareProductDividendsResponse { 
+    pageItems?: Array<GetShareProductDividendsPageItems>;
+    totalFilteredRecords?: number;
 }
-export namespace InterestPeriodMc {
-    export const RoundingModeEnum = {
-        Up: 'UP',
-        Down: 'DOWN',
-        Ceiling: 'CEILING',
-        Floor: 'FLOOR',
-        HalfUp: 'HALF_UP',
-        HalfDown: 'HALF_DOWN',
-        HalfEven: 'HALF_EVEN',
-        Unnecessary: 'UNNECESSARY'
-    } as const;
-    export type RoundingModeEnum = typeof RoundingModeEnum[keyof typeof RoundingModeEnum];
-}
-
 

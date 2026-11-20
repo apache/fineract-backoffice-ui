@@ -23,8 +23,10 @@
  * Do not edit the class manually.
  */
 
+import { GetTaxesComponentsDebitAccount } from './getTaxesComponentsDebitAccount';
 import { GetTaxesComponentsCreditAccount } from './getTaxesComponentsCreditAccount';
 import { GetTaxesComponentsCreditAccountType } from './getTaxesComponentsCreditAccountType';
+import { GetTaxesComponentsDebitAccountType } from './getTaxesComponentsDebitAccountType';
 
 
 /**
@@ -33,6 +35,12 @@ import { GetTaxesComponentsCreditAccountType } from './getTaxesComponentsCreditA
 export interface GetTaxesComponentsResponse { 
     creditAccount?: GetTaxesComponentsCreditAccount;
     creditAccountType?: GetTaxesComponentsCreditAccountType;
+    debitAccount?: GetTaxesComponentsDebitAccount;
+    debitAccountType?: GetTaxesComponentsDebitAccountType;
+    /**
+     * false once the component is linked to a charge, savings product or savings account, or used in a tax transaction; then only name can be changed
+     */
+    editable?: boolean;
     id?: number;
     name?: string;
     percentage?: number;

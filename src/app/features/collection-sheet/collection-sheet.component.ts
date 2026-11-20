@@ -20,17 +20,17 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { PlatformDateService } from '../../core/services/platform-date.service';
 import { FormsModule } from '@angular/forms';
-import { JsonPipe } from '@angular/common';
-import { TranslatePipe } from '../../core/adapters';
+import { DecimalPipe } from '@angular/common';
 import {
-  CollectionSheetService,
-  OfficesService,
-  StaffService,
-  StaffData,
-  CollectionSheetRequest,
-  PostCollectionSheetResponse,
-} from '../../api';
-import { formatDateToFineract, FINERACT_DATE_FORMAT } from '../../core/utils/date-formatter';
+  COLLECTION_SHEET_API,
+  TranslatePipe,
+  type CollectionSheet,
+  type CollectionSheetCollections,
+  type CollectionSheetGroup,
+  type CollectionSheetLoanPayment,
+  type CollectionSheetSavingsPayment,
+} from '../../core/adapters';
+import { OfficesService, StaffService, StaffData } from '../../api';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   IonButton,
@@ -41,6 +41,7 @@ import {
   IonDatetime,
   IonDatetimeButton,
   IonItem,
+  IonInput,
   IonLabel,
   IonModal,
   IonSelect,
@@ -54,12 +55,13 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
   standalone: true,
   imports: [
     FormsModule,
-    JsonPipe,
+    DecimalPipe,
     TranslatePipe,
     IonButton,
     IonSpinner,
     IonItem,
     IonLabel,
+    IonInput,
     IonCardContent,
     IonCardHeader,
     IonCardTitle,
@@ -162,9 +164,139 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
             offer Save, so the operator was invited to save nothing.
           -->
           @if (hasSheet()) {
-            <pre class="json-output" data-testid="collection-sheet-results">{{
-              collectionData() | json
-            }}</pre>
+            <div data-testid="collection-sheet-results">
+              @for (group of sheet()!.groups; track group.groupId) {
+                <section class="sheet-group">
+                  <h4 class="group-heading">
+                    {{ group.groupName }}
+                    @if (group.staffName) {
+                      <span class="group-meta">{{ group.staffName }}</span>
+                    }
+                  </h4>
+
+                  <table class="sheet-table">
+                    <caption class="sr-only">
+                      {{
+                        group.groupName
+                      }}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">{{ 'COLLECTION_SHEET.CLIENT' | appTranslate }}</th>
+                        <th scope="col">{{ 'COLLECTION_SHEET.ACCOUNT' | appTranslate }}</th>
+                        <th scope="col">{{ 'COLLECTION_SHEET.PRODUCT' | appTranslate }}</th>
+                        <th scope="col" class="numeric">
+                          {{ 'COLLECTION_SHEET.DUE' | appTranslate }}
+                        </th>
+                        <th scope="col" class="numeric">
+                          {{ 'COLLECTION_SHEET.COLLECTED' | appTranslate }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (client of group.clients; track client.clientId) {
+                        @for (loan of client.loans; track loan.loanId) {
+                          <tr>
+                            <td>{{ client.clientName }}</td>
+                            <td>{{ loan.accountId }}</td>
+                            <td>{{ loan.productShortName }}</td>
+                            <td class="numeric">{{ loan.totalDue | number: '1.2-2' }}</td>
+                            <td class="numeric">
+                              <ion-input
+                                class="collect-input"
+                                type="number"
+                                inputmode="decimal"
+                                min="0"
+                                [attr.aria-label]="
+                                  ('COLLECTION_SHEET.COLLECTED' | appTranslate) +
+                                  ' ' +
+                                  loan.accountId
+                                "
+                                [attr.data-testid]="'collect-loan-' + loan.loanId"
+                                [value]="loanCollected()[loan.loanId] ?? 0"
+                                (ionInput)="onCollectLoan(loan.loanId, $event)"
+                              ></ion-input>
+                            </td>
+                          </tr>
+                        }
+                        @for (account of client.savings; track account.savingsId) {
+                          <tr>
+                            <td>{{ client.clientName }}</td>
+                            <td>{{ account.accountId }}</td>
+                            <td>{{ account.productName }}</td>
+                            <td class="numeric">{{ account.dueAmount | number: '1.2-2' }}</td>
+                            <td class="numeric">
+                              <!--
+                                Not editable when the sheet did not say which kind of deposit
+                                account this is: the save posts the type as an id, the sheet
+                                reports it as a phrase, and a deposit sent without one is
+                                accepted and then silently does nothing.
+                              -->
+                              @if (account.depositAccountTypeId === null) {
+                                <span
+                                  class="not-collectable"
+                                  [attr.data-testid]="
+                                    'collect-savings-blocked-' + account.savingsId
+                                  "
+                                  >{{ 'COLLECTION_SHEET.NOT_COLLECTABLE' | appTranslate }}</span
+                                >
+                              } @else {
+                                <ion-input
+                                  class="collect-input"
+                                  type="number"
+                                  inputmode="decimal"
+                                  min="0"
+                                  [attr.aria-label]="
+                                    ('COLLECTION_SHEET.COLLECTED' | appTranslate) +
+                                    ' ' +
+                                    account.accountId
+                                  "
+                                  [attr.data-testid]="'collect-savings-' + account.savingsId"
+                                  [value]="savingsCollected()[account.savingsId] ?? 0"
+                                  (ionInput)="onCollectSavings(account.savingsId, $event)"
+                                ></ion-input>
+                              }
+                            </td>
+                          </tr>
+                        }
+                        @if (client.loans.length === 0 && client.savings.length === 0) {
+                          <!-- Present at the meeting with nothing due. The row still belongs on
+                               the sheet: the officer has to see who was expected. -->
+                          <tr>
+                            <td>{{ client.clientName }}</td>
+                            <td colspan="2">{{ 'COLLECTION_SHEET.NOTHING_DUE' | appTranslate }}</td>
+                            <td class="numeric">{{ 0 | number: '1.2-2' }}</td>
+                            <td></td>
+                          </tr>
+                        }
+                      }
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th scope="row" colspan="3">
+                          {{ 'COLLECTION_SHEET.GROUP_TOTAL' | appTranslate }}
+                        </th>
+                        <td class="numeric" [attr.data-testid]="'group-total-' + group.groupId">
+                          {{ group.totalDue | number: '1.2-2' }}
+                        </td>
+                        <td class="numeric" [attr.data-testid]="'group-collected-' + group.groupId">
+                          {{ collectedFor(group) | number: '1.2-2' }}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </section>
+              }
+
+              <p class="sheet-total" data-testid="collection-sheet-total">
+                {{ 'COLLECTION_SHEET.SHEET_TOTAL' | appTranslate }}:
+                <strong>{{ sheet()!.totalDue | number: '1.2-2' }}</strong>
+              </p>
+              <p class="sheet-total" data-testid="collection-sheet-collected-total">
+                {{ 'COLLECTION_SHEET.COLLECTED_TOTAL' | appTranslate }}:
+                <strong>{{ collectedTotal() | number: '1.2-2' }}</strong>
+              </p>
+            </div>
           } @else {
             <p class="empty-state" role="status" data-testid="collection-sheet-empty">
               {{ 'COLLECTION_SHEET.NOTHING_DUE' | appTranslate }}
@@ -205,14 +337,55 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
         justify-content: center;
         padding: 32px;
       }
-      .json-output {
-        background: var(--surface-sunken);
-        color: var(--text-color);
-        padding: 16px;
+      .sheet-group {
+        margin-bottom: var(--space-5, 24px);
+      }
+      .group-heading {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-3, 12px);
+        margin: 0 0 var(--space-2, 8px);
+      }
+      .group-meta {
+        font-size: 0.85rem;
+        color: var(--ion-color-medium);
+      }
+      .sheet-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .sheet-table th,
+      .sheet-table td {
+        padding: var(--space-2, 8px);
+        border-bottom: 1px solid var(--ion-color-step-150, #e0e0e0);
+        text-align: left;
+      }
+      .sheet-table .numeric {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .sheet-total {
+        text-align: right;
+      }
+      .collect-input {
+        --padding-start: var(--space-2, 8px);
+        --padding-end: var(--space-2, 8px);
+        min-height: 32px;
+        text-align: right;
+        border: 1px solid var(--ion-color-step-150, #e0e0e0);
         border-radius: 4px;
-        overflow: auto;
-        max-height: 400px;
-        font-size: 12px;
+      }
+      .not-collectable {
+        font-size: 0.8rem;
+        color: var(--ion-color-medium);
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
       }
     `,
   ],
@@ -221,7 +394,7 @@ export class CollectionSheetComponent implements OnInit {
   /** See `createPickersReady` — the date buttons must not outrun their pickers. */
   readonly pickersReady = createPickersReady();
 
-  private collectionSheetService = inject(CollectionSheetService);
+  private readonly sheets = inject(COLLECTION_SHEET_API);
   /**
    * Today, as the platform reckons it: the business date when one governs, and the platform's
    * own clock otherwise. Fineract judges "the future" by that reckoning, so a date seeded from
@@ -234,10 +407,20 @@ export class CollectionSheetComponent implements OnInit {
 
   readonly generated = signal(false);
   readonly isLoading = signal(false);
-  readonly collectionData = signal<PostCollectionSheetResponse | null>(null);
+  readonly sheet = signal<CollectionSheet | null>(null);
+  /**
+   * What the officer says was collected, by loan id and by savings id.
+   *
+   * Seeded from the dues, because at most meetings the client pays what is owed and retyping
+   * every figure would be the slower path. Kept apart from {@link sheet} all the same: the dues
+   * are the platform's answer and these are the officer's, and only these are posted back.
+   */
+  readonly loanCollected = signal<Record<number, number>>({});
+  readonly savingsCollected = signal<Record<number, number>>({});
   transactionDate = this.platformDate.today();
   staffId: number | null = null;
-  request: CollectionSheetRequest = { locale: 'en' };
+  /** The filters the form collects. The adapter owns the date format and locale. */
+  request: { officeId?: number } = {};
 
   readonly offices = signal<{ id?: number; name?: string }[]>([]);
   readonly staff = signal<StaffData[]>([]);
@@ -248,10 +431,12 @@ export class CollectionSheetComponent implements OnInit {
    * `command=generate` answers 200 with an empty body when nothing is due in the period, which
    * `HttpClient` delivers as `null`.
    */
-  readonly hasSheet = computed(() => {
-    const data = this.collectionData();
-    return data !== null && data !== undefined && Object.keys(data).length > 0;
-  });
+  readonly hasSheet = computed(() => this.sheet() !== null);
+
+  /** Everything entered across the sheet, against the platform's total beside it. */
+  readonly collectedTotal = computed(() =>
+    (this.sheet()?.groups ?? []).reduce((sum, group) => sum + this.collectedFor(group), 0),
+  );
 
   ngOnInit(): void {
     this.officesService.getOffices().subscribe({
@@ -279,23 +464,22 @@ export class CollectionSheetComponent implements OnInit {
     });
   }
 
-  private buildBody(): CollectionSheetRequest {
+  private buildRequest() {
     return {
-      ...this.request,
+      officeId: this.request.officeId!,
       // Was collected by the form and then dropped on the floor: `staffId` is a field of its own
-      // rather than part of `request`, and this method spread `request` alone.
+      // rather than part of `request`, and the old body spread `request` alone.
       ...(this.staffId === null ? {} : { staffId: this.staffId }),
-      transactionDate: formatDateToFineract(this.transactionDate),
-      dateFormat: FINERACT_DATE_FORMAT,
+      transactionDate: this.transactionDate,
     };
   }
 
   generate(): void {
     this.isLoading.set(true);
-    const body = this.buildBody();
-    this.collectionSheetService.postCollectionsheet(body, 'generate').subscribe({
-      next: (res: PostCollectionSheetResponse) => {
-        this.collectionData.set(res);
+    this.sheets.generate(this.buildRequest()).subscribe({
+      next: (sheet) => {
+        this.sheet.set(sheet);
+        this.seedCollected(sheet);
         this.generated.set(true);
         this.isLoading.set(false);
       },
@@ -306,10 +490,83 @@ export class CollectionSheetComponent implements OnInit {
     });
   }
 
+  /** Flattened for the table: every client row, with the group it belongs to. */
+  rowsFor(group: CollectionSheetGroup) {
+    return group.clients;
+  }
+
+  /** What has been entered against one group, for the row under its table. */
+  collectedFor(group: CollectionSheetGroup): number {
+    const loans = this.loanCollected();
+    const savings = this.savingsCollected();
+    return group.clients.reduce(
+      (sum, client) =>
+        sum +
+        client.loans.reduce((loanSum, loan) => loanSum + (loans[loan.loanId] ?? 0), 0) +
+        client.savings.reduce(
+          (savingsSum, account) => savingsSum + (savings[account.savingsId] ?? 0),
+          0,
+        ),
+      0,
+    );
+  }
+
+  onCollectLoan(loanId: number, event: Event): void {
+    this.loanCollected.update((current) => ({ ...current, [loanId]: readAmount(event) }));
+  }
+
+  onCollectSavings(savingsId: number, event: Event): void {
+    this.savingsCollected.update((current) => ({ ...current, [savingsId]: readAmount(event) }));
+  }
+
+  /** Fills the inputs with what is due, which is what is usually paid. */
+  private seedCollected(sheet: CollectionSheet | null): void {
+    const loans: Record<number, number> = {};
+    const savings: Record<number, number> = {};
+    for (const group of sheet?.groups ?? []) {
+      for (const client of group.clients) {
+        for (const loan of client.loans) {
+          loans[loan.loanId] = loan.totalDue;
+        }
+        for (const account of client.savings) {
+          // Left at zero when the type is unknown: that row cannot be posted, and seeding it
+          // would put an amount in a total that no save will ever carry.
+          savings[account.savingsId] =
+            account.depositAccountTypeId === null ? 0 : account.dueAmount;
+        }
+      }
+    }
+    this.loanCollected.set(loans);
+    this.savingsCollected.set(savings);
+  }
+
+  /** The collections as the save command takes them: what was entered, not what was due. */
+  private buildCollections(): CollectionSheetCollections {
+    const loanAmounts = this.loanCollected();
+    const savingsAmounts = this.savingsCollected();
+    const loans: CollectionSheetLoanPayment[] = [];
+    const savings: CollectionSheetSavingsPayment[] = [];
+
+    for (const group of this.sheet()?.groups ?? []) {
+      for (const client of group.clients) {
+        for (const loan of client.loans) {
+          loans.push({ loanId: loan.loanId, amount: loanAmounts[loan.loanId] ?? 0 });
+        }
+        for (const account of client.savings) {
+          savings.push({
+            savingsId: account.savingsId,
+            amount: savingsAmounts[account.savingsId] ?? 0,
+            depositAccountTypeId: account.depositAccountTypeId,
+          });
+        }
+      }
+    }
+    return { loans, savings };
+  }
+
   save(): void {
     this.isLoading.set(true);
-    const body = this.buildBody();
-    this.collectionSheetService.postCollectionsheet(body, 'save').subscribe({
+    this.sheets.save(this.buildRequest(), this.buildCollections()).subscribe({
       next: () => {
         this.notifications.success('Collection sheet saved successfully');
         this.isLoading.set(false);
@@ -324,6 +581,21 @@ export class CollectionSheetComponent implements OnInit {
 
   back(): void {
     this.generated.set(false);
-    this.collectionData.set(null);
+    this.sheet.set(null);
+    this.loanCollected.set({});
+    this.savingsCollected.set({});
   }
+}
+
+/**
+ * The number out of an `ionInput` event.
+ *
+ * `detail.value` is a string, and an emptied box sends `''`, which `Number('')` reads as 0 —
+ * the right reading here, since clearing the box means nothing was collected.
+ */
+function readAmount(event: Event): number {
+  const detail = (event as CustomEvent<{ value?: string | number | null }>).detail;
+  const raw = detail?.value ?? (event.target as HTMLInputElement | null)?.value ?? '';
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }

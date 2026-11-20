@@ -21,8 +21,10 @@ import { Injectable, inject } from '@angular/core';
 import { map } from 'rxjs/operators';
 import type { Observable } from 'rxjs';
 
-import { UsersService } from '../../../api';
+import { PasswordPreferencesService, UsersService } from '../../../api';
+import { skipErrorToast } from '../../http/http-context';
 import type { GetUsersResponse, OfficeData, RoleData } from '../../../api';
+import type { PasswordPolicy } from '../../security/password-policy';
 import type {
   AppUser,
   NamedOption,
@@ -83,6 +85,7 @@ function required<T>(value: T | undefined, field: string): T {
 @Injectable({ providedIn: 'root' })
 export class FineractUserApi implements UserApi {
   private readonly users = inject(UsersService);
+  private readonly passwordPreferences = inject(PasswordPreferencesService);
 
   list(): Observable<AppUser[]> {
     return this.users.getUsers().pipe(map((response) => (response ?? []).map(mapUser)));
@@ -136,5 +139,44 @@ export class FineractUserApi implements UserApi {
         sendPasswordToEmail: update.sendPasswordToEmail,
       })
       .pipe(map(() => undefined));
+  }
+
+  /**
+   * The active password policy.
+   *
+   * Measured, `GET /passwordpreferences` answers a single object rather than a list — the
+   * list is `/passwordpreferences/template`, which carries all three with an `active` flag.
+   * Both shapes are handled because the generated method types this response as the template's,
+   * so a deployment that answers the list here still yields the active entry rather than
+   * nothing.
+   *
+   * The regex the platform enforces is not in either response. It appears only in the `args` of
+   * a rejected password, which carry the submitted password with it — see `errorInterceptor`'s
+   * sensitive-parameter list — so `password-policy.ts` mirrors the rules by `key`.
+   */
+  passwordPolicy(): Observable<PasswordPolicy | null> {
+    // No toast if this read fails: the policy is the form's helper text, not the operation the
+    // user asked for, and the rules fall back to their loosest set without it.
+    return this.passwordPreferences
+      .getPasswordpreferences('body', false, { context: skipErrorToast() })
+      .pipe(
+        map((response) => {
+          const candidates = Array.isArray(response) ? response : [response];
+          const active =
+            candidates.find((policy) => policy?.active) ??
+            (Array.isArray(response) ? null : response);
+          return active?.key ? { key: active.key, description: active.description ?? '' } : null;
+        }),
+      );
+  }
+
+  changePassword(userId: number, password: string, repeatPassword: string): Observable<void> {
+    return this.users
+      .postUsersUserIdPwd(userId, { password, repeatPassword })
+      .pipe(map(() => undefined));
+  }
+
+  delete(userId: number): Observable<void> {
+    return this.users.deleteUsersUserId(userId).pipe(map(() => undefined));
   }
 }

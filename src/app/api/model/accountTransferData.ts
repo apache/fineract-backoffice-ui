@@ -55,5 +55,6 @@ export interface AccountTransferData {
     transferAmount?: number;
     transferDate?: string;
     transferDescription?: string;
+    transferTime?: string;
 }
 

@@ -24,6 +24,7 @@
  */
 
 import { CurrencyData } from './currencyData';
+import { SavingsChargeTransactionData } from './savingsChargeTransactionData';
 import { ChargeData } from './chargeData';
 import { EnumOptionData } from './enumOptionData';
 
@@ -62,6 +63,7 @@ export interface SavingsAccountChargeData {
     restartFrequency?: number;
     restartFrequencyEnum?: number;
     savingsActivation?: boolean;
+    transactions?: Array<SavingsChargeTransactionData>;
     withdrawalFee?: boolean;
 }
 

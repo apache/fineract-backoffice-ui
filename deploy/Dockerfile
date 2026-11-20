@@ -23,7 +23,7 @@
 # ---------------------------------------------------------------------------------------------
 # Stage 1 — build the Angular application
 # ---------------------------------------------------------------------------------------------
-FROM node:24-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS build
+FROM node:26-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS build
 
 WORKDIR /app
 

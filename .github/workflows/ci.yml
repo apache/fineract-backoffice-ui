@@ -280,7 +280,7 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: 'npm'
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -348,7 +348,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           persist-credentials: false
-      # Both steps run inside the same node:24-alpine image deploy/Dockerfile builds from
+      # Both steps run inside the same node:26-alpine image deploy/Dockerfile builds from
       # (pinned to the same digest), rather than installing on the runner's own Node and mounting
       # the result into a container. `npm ci` resolves platform-specific native optional
       # dependencies — lightningcss ships separate glibc and musl builds — so installing on the
@@ -358,7 +358,7 @@ jobs:
       - name: 'Install dependencies (network allowed: registry only)'
         run: |
           docker run --rm -v "$PWD":/workspace -w /workspace \
-            node:24-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 \
+            node:26-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 \
             npm ci
       # `--network none` gives the container only a loopback interface — no registry, no CDN, no
       # font host, nothing. A build step that reaches for any of those fails here instead of
@@ -367,7 +367,7 @@ jobs:
       - name: Build with no network access
         run: |
           docker run --rm --network none -v "$PWD":/workspace -w /workspace \
-            node:24-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 \
+            node:26-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 \
             npm run build -- --configuration production
 
   compliance:
@@ -592,7 +592,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up JDK
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           java-version: '17'
           distribution: 'temurin'

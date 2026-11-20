@@ -29,6 +29,9 @@ export interface PutAccountsChanges {
     applicationDate?: string;
     dateFormat?: string;
     locale?: string;
-    requestedShares?: number;
+    /**
+     * The server reports a changed share request with the literal \"Transaction\", not the count
+     */
+    requestedShares?: string;
 }
 

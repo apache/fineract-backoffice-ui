@@ -214,7 +214,7 @@ export class SavingsChargesService extends BaseService {
 
     /**
      * Retrieve a Savings account Charge
-     * Retrieves a Savings account Charge  Example Requests:  /savingsaccounts/1/charges/5   /savingsaccounts/1/charges/5?fields&#x3D;name,amountOrPercentage
+     * Retrieves a Savings account Charge  Example Requests:  /savingsaccounts/1/charges/5   /savingsaccounts/1/charges/5?fields&#x3D;name,amountOrPercentage  Use associations&#x3D;transactions or associations&#x3D;all to include recorded transaction allocations, including reversed transactions and available payment details.
      * @endpoint get /v1/savingsaccounts/{savingsAccountId}/charges/{savingsAccountChargeId}
      * @param savingsAccountId savingsAccountId
      * @param savingsAccountChargeId savingsAccountChargeId

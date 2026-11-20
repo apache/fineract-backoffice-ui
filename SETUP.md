@@ -23,7 +23,7 @@ This guide provides instructions for setting up the Fineract Backoffice UI devel
 
 ## Prerequisites
 
-- **Node.js**: `>=22.22.3`.
+- **Node.js**: `>=26.0.0`.
 - **npm**: the package manager used by the committed lockfile.
 - **mkcert**: required only for the local HTTPS development server.
 

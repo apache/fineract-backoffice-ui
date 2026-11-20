@@ -105,6 +105,7 @@ export interface SavingsAccountTransactionData {
     taxDetails?: Array<TaxDetailsData>;
     transactionAmount?: number;
     transactionDate?: string;
+    transactionTime?: string;
     transactionType?: SavingsAccountTransactionEnumData;
     transfer?: AccountTransferData;
     waiveCharge?: boolean;
@@ -113,6 +114,7 @@ export interface SavingsAccountTransactionData {
     waivePenaltyCharge?: boolean;
     waivePenaltyChargeAndNotReversed?: boolean;
     withHoldTaxAndNotReversed?: boolean;
+    withHoldTaxAndReversed?: boolean;
     withdrawal?: boolean;
     withdrawalFeeAndNotReversed?: boolean;
 }

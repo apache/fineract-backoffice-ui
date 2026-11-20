@@ -50,11 +50,21 @@ const PERMISSION_ROWS = [
 
 describe('mapRole', () => {
   it('reads a role', () => {
-    expect(mapRole({ id: 3, name: 'Teller', description: 'Cash desk' })).toEqual({
+    expect(mapRole({ id: 3, name: 'Teller', description: 'Cash desk', disabled: false })).toEqual({
       id: 3,
       name: 'Teller',
       description: 'Cash desk',
+      disabled: false,
     });
+  });
+
+  /**
+   * `GET /roles` has always carried this — measured, the stock `Self Service User` role answers
+   * `disabled: true` — and the screen neither showed nor changed it until #755.
+   */
+  it('reads a disabled role as disabled, and silence as enabled', () => {
+    expect(mapRole({ id: 2, name: 'Self Service User', disabled: true }).disabled).toBe(true);
+    expect(mapRole({ id: 3, name: 'Teller' }).disabled).toBe(false);
   });
 
   it('refuses a role with no id rather than defaulting it', () => {
@@ -64,7 +74,7 @@ describe('mapRole', () => {
   });
 
   it('reads a missing name or description as empty, which the matrix can render', () => {
-    expect(mapRole({ id: 4 })).toEqual({ id: 4, name: '', description: '' });
+    expect(mapRole({ id: 4 })).toEqual({ id: 4, name: '', description: '', disabled: false });
   });
 });
 
@@ -105,6 +115,8 @@ describe('FineractRoleApi', () => {
       postRoles: vi.fn(),
       putRolesRoleId: vi.fn(),
       putRolesRoleIdPermissions: vi.fn(),
+      postRolesRoleId: vi.fn(),
+      deleteRolesRoleId: vi.fn(),
     };
     TestBed.configureTestingModule({
       providers: [FineractRoleApi, { provide: RolesService, useValue: roles }],
@@ -169,9 +181,11 @@ describe('FineractRoleApi', () => {
   });
 
   it('lists roles', async () => {
-    roles.getRoles!.mockReturnValue(of([{ id: 1, name: 'Super user', description: 'Everything' }]));
+    roles.getRoles!.mockReturnValue(
+      of([{ id: 1, name: 'Super user', description: 'Everything', disabled: false }]),
+    );
     expect(await firstValueFrom(api.list())).toEqual([
-      { id: 1, name: 'Super user', description: 'Everything' },
+      { id: 1, name: 'Super user', description: 'Everything', disabled: false },
     ]);
   });
 
@@ -185,5 +199,27 @@ describe('FineractRoleApi', () => {
     roles.putRolesRoleId!.mockReturnValue(of({}));
     await firstValueFrom(api.update(7, { description: 'Front desk' }));
     expect(roles.putRolesRoleId).toHaveBeenCalledWith(7, { description: 'Front desk' });
+  });
+
+  /**
+   * The command is a query parameter and the operation takes no body at all — measured,
+   * `POST /roles/{id}?command=disable` with no body and no content type answers `200`.
+   */
+  it('switches a role off and on by command', async () => {
+    roles.postRolesRoleId!.mockReturnValue(of({ resourceId: 7 }));
+
+    await firstValueFrom(api.setEnabled(7, false));
+    expect(roles.postRolesRoleId).toHaveBeenCalledWith(7, 'disable');
+
+    await firstValueFrom(api.setEnabled(7, true));
+    expect(roles.postRolesRoleId).toHaveBeenCalledWith(7, 'enable');
+  });
+
+  it('deletes a role', async () => {
+    roles.deleteRolesRoleId!.mockReturnValue(of({ resourceId: 7 }));
+
+    await firstValueFrom(api.delete(7));
+
+    expect(roles.deleteRolesRoleId).toHaveBeenCalledWith(7);
   });
 });

@@ -38,6 +38,7 @@ export interface GetWorkingCapitalLoanSummary {
      * Fees moved out of the outstanding balance by a charge waiver
      */
     feeWaived?: number;
+    overdueSinceDate?: string;
     overpayment?: number;
     penalty?: number;
     penaltyOutstanding?: number;
@@ -65,6 +66,7 @@ export interface GetWorkingCapitalLoanSummary {
     totalDiscountFeeAdjustment?: number;
     totalExpectedRepayment?: number;
     totalOutstanding?: number;
+    totalPayment?: number;
     totalRepayment?: number;
     unrealizedIncomeFromDiscountFee?: number;
 }

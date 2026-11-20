@@ -21,14 +21,19 @@ import { createSpyObj, SpyObj } from '../../testing/mocks';
 import { BUSINESS_DATE_API } from '../../core/adapters';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClientFormComponent } from './client-form.component';
+import { PlatformDateService } from '../../core/services/platform-date.service';
 import { ClientService, OfficesService } from '../../api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService } from '../../core/services/dialog.service';
-import { of, Observable } from 'rxjs';
+import { of, Observable, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideIonicTesting } from '../../testing/ionic-testing';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
-import { FakeOverlayAdapter, provideFakeAdapters } from '../../testing/adapters';
+import {
+  FakeBusinessDateApi,
+  FakeOverlayAdapter,
+  provideFakeAdapters,
+} from '../../testing/adapters';
 
 describe('ClientFormComponent', () => {
   const HEAD_OFFICE = 'Head Office';
@@ -106,6 +111,105 @@ describe('ClientFormComponent', () => {
       expect(component).toBeTruthy();
       expect(officesServiceSpy.getOffices).toHaveBeenCalled();
       expect(component.isEditMode()).toBe(false);
+    });
+
+    it('describes the create wizard rather than the clients list in its help', () => {
+      const help = fixture.nativeElement.querySelector('app-help-icon [data-testid="help-icon"]');
+      expect(help.getAttribute('aria-label')).toContain('HELP.CREATE_CLIENT_DESC');
+    });
+
+    it('renders an unset DOB placeholder instead of a fabricated date', () => {
+      component.pickersReady.set(true);
+      fixture.detectChanges();
+      const button = fixture.nativeElement.querySelector(
+        'ion-datetime-button[datetime="dateOfBirth-picker"]',
+      );
+      expect(component.dateOfBirth()).toBeNull();
+      expect(button.querySelector('[slot="date-target"]')?.textContent ?? '').toContain(
+        'CLIENTS.DATE_OF_BIRTH_NOT_SET',
+      );
+      expect(fixture.nativeElement.querySelector('[data-testid="clear-date-of-birth"]')).toBeNull();
+    });
+
+    it('clears a chosen create DOB without submitting and omits it from the request', () => {
+      clientServiceSpy.postClients.mockReturnValue(
+        of({ clientId: 10 }) as unknown as Observable<never>,
+      );
+      component.client.set({
+        firstname: 'Synthetic',
+        lastname: 'Client',
+        officeId: 1,
+        legalFormId: 1,
+      });
+      component.dateOfBirth.set('1990-01-05');
+      component.pickersReady.set(true);
+      fixture.detectChanges();
+      const clear = fixture.nativeElement.querySelector('[data-testid="clear-date-of-birth"]');
+      expect(clear).not.toBeNull();
+      clear.click();
+      fixture.detectChanges();
+      expect(component.dateOfBirth()).toBeNull();
+      expect(clientServiceSpy.postClients).not.toHaveBeenCalled();
+      component.onSubmit();
+      expect(clientServiceSpy.postClients.mock.calls[0][0]).not.toHaveProperty('dateOfBirth');
+    });
+
+    it('drops the prior DOB when clearing after a failed create request', () => {
+      clientServiceSpy.postClients
+        .mockReturnValueOnce(throwError(() => new Error('Synthetic failed save')))
+        .mockReturnValue(of({ clientId: 10 }) as unknown as Observable<never>);
+      component.client.set({
+        firstname: 'Synthetic',
+        lastname: 'Client',
+        officeId: 1,
+        legalFormId: 1,
+      });
+      component.dateOfBirth.set('1990-01-05');
+      component.onSubmit();
+      expect(component.isSaving()).toBe(false);
+      expect(clientServiceSpy.postClients.mock.calls[0][0]).toHaveProperty(
+        'dateOfBirth',
+        '05 January 1990',
+      );
+      fixture.detectChanges();
+      fixture.nativeElement.querySelector('[data-testid="clear-date-of-birth"]').click();
+      component.onSubmit();
+      expect(clientServiceSpy.postClients.mock.calls[1][0]).not.toHaveProperty('dateOfBirth');
+    });
+
+    it('preserves the selected DOB calendar day in the create payload', () => {
+      clientServiceSpy.postClients.mockReturnValue(
+        of({ clientId: 10 }) as unknown as Observable<never>,
+      );
+      component.client.set({
+        firstname: 'Synthetic',
+        lastname: 'Client',
+        officeId: 1,
+        legalFormId: 1,
+      });
+      component.dateOfBirth.set('1990-01-05');
+      component.pickersReady.set(true);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('[slot="date-target"]')).toBeNull();
+      component.onSubmit();
+      expect(clientServiceSpy.postClients.mock.calls[0][0]).toHaveProperty(
+        'dateOfBirth',
+        '05 January 1990',
+      );
+    });
+
+    it('describes editing client details rather than the clients list', () => {
+      component.isEditMode.set(true);
+      fixture.detectChanges();
+      const help = fixture.nativeElement.querySelector('app-help-icon [data-testid="help-icon"]');
+      expect(help.getAttribute('aria-label')).toContain('HELP.EDIT_CLIENT_DESC');
+    });
+
+    it('does not offer a create-only clear action while editing an existing DOB', () => {
+      component.isEditMode.set(true);
+      component.dateOfBirth.set('1990-01-05');
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('[data-testid="clear-date-of-birth"]')).toBeNull();
     });
 
     it('should open create office dialog and add new office', async () => {
@@ -201,6 +305,40 @@ describe('ClientFormComponent', () => {
       fixture.detectChanges();
       const hint = fixture.nativeElement.querySelector('[data-testid="client-form-step-hint"]');
       expect(hint).toBeTruthy();
+    });
+  });
+
+  describe('date of birth upper bound', () => {
+    const picker = () =>
+      fixture.nativeElement.querySelector('[data-testid="dateOfBirth-picker"]') as HTMLElement & {
+        max?: string;
+      };
+
+    it('uses the governing business date and keeps an unset birthday absent', async () => {
+      (TestBed.inject(BUSINESS_DATE_API) as FakeBusinessDateApi).businessDate = '2026-05-15';
+      fixture = TestBed.createComponent(ClientFormComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(picker().max).toBe('2026-05-15');
+      expect(component.dateOfBirth()).toBeNull();
+    });
+
+    it('uses the platform clock without a business date and preserves a chosen birthday', async () => {
+      const platformDate = TestBed.inject(PlatformDateService);
+      platformDate.recordServerTime(new Date('2026-05-15T12:00:00Z'));
+      fixture = TestBed.createComponent(ClientFormComponent);
+      component = fixture.componentInstance;
+      component.dateOfBirth.set('1990-01-05');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(picker().max).toBe('2026-05-15');
+      platformDate.recordServerTime(new Date('2026-05-16T12:00:00Z'));
+      fixture.detectChanges();
+      expect(picker().max).toBe('2026-05-16');
+      expect(component.dateOfBirth()).toBe('1990-01-05');
     });
   });
 

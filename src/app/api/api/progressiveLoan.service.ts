@@ -32,8 +32,6 @@ import { HttpClient, HttpHeaders, HttpParams,
 import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
-// @ts-ignore
-import { ProgressiveLoanInterestScheduleModel } from '../model/progressiveLoanInterestScheduleModel';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -123,9 +121,9 @@ export class ProgressiveLoanService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ProgressiveLoanInterestScheduleModel>;
-    public getInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ProgressiveLoanInterestScheduleModel>>;
-    public getInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ProgressiveLoanInterestScheduleModel>>;
+    public getInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<{ [key: string]: any; }>;
+    public getInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<{ [key: string]: any; }>>;
+    public getInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<{ [key: string]: any; }>>;
     public getInternalLoanProgressiveLoanIdModel(loanId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (loanId === null || loanId === undefined) {
             throw new Error('Required parameter loanId was null or undefined when calling getInternalLoanProgressiveLoanIdModel.');
@@ -164,7 +162,7 @@ export class ProgressiveLoanService extends BaseService {
 
         let localVarPath = `/v1/internal/loan/progressive/${this.configuration.encodeParam({name: "loanId", value: loanId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/model`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<ProgressiveLoanInterestScheduleModel>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<{ [key: string]: any; }>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -186,9 +184,9 @@ export class ProgressiveLoanService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ProgressiveLoanInterestScheduleModel>;
-    public postInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ProgressiveLoanInterestScheduleModel>>;
-    public postInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ProgressiveLoanInterestScheduleModel>>;
+    public postInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<{ [key: string]: any; }>;
+    public postInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<{ [key: string]: any; }>>;
+    public postInternalLoanProgressiveLoanIdModel(loanId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<{ [key: string]: any; }>>;
     public postInternalLoanProgressiveLoanIdModel(loanId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (loanId === null || loanId === undefined) {
             throw new Error('Required parameter loanId was null or undefined when calling postInternalLoanProgressiveLoanIdModel.');
@@ -227,7 +225,7 @@ export class ProgressiveLoanService extends BaseService {
 
         let localVarPath = `/v1/internal/loan/progressive/${this.configuration.encodeParam({name: "loanId", value: loanId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/model`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<ProgressiveLoanInterestScheduleModel>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<{ [key: string]: any; }>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

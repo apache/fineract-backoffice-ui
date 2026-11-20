@@ -24,6 +24,7 @@
  */
 
 import { PostalAddress } from './postalAddress';
+import { CommandProcessingSubResourceResult } from './commandProcessingSubResourceResult';
 import { IdDocument } from './idDocument';
 import { SubjectName } from './subjectName';
 import { ExternalId } from './externalId';
@@ -57,6 +58,7 @@ export interface InteropKycResponseData {
     savingsId?: number;
     subResourceExternalId?: ExternalId;
     subResourceId?: number;
+    subResources?: Array<CommandProcessingSubResourceResult>;
     subjectName?: SubjectName;
     transactionId?: string;
 }

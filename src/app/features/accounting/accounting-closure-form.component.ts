@@ -20,7 +20,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { PlatformDateService } from '../../core/services/platform-date.service';
 
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ACCOUNTING_CLOSURE_API, OFFICE_API, TranslatePipe } from '../../core/adapters';
 import type { Office } from '../../core/adapters';
@@ -33,6 +33,7 @@ import {
   IonCardTitle,
   IonDatetime,
   IonDatetimeButton,
+  IonInput,
   IonItem,
   IonLabel,
   IonModal,
@@ -67,6 +68,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
     IonSelect,
     IonDatetime,
     IonDatetimeButton,
+    IonInput,
     IonModal,
   ],
   template: `
@@ -74,7 +76,12 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
       <ion-card>
         <ion-card-header>
           <ion-card-title>
-            {{ 'ACCOUNTING_CLOSURES.CLOSE_ACCOUNTING_PERIOD' | appTranslate }}
+            {{
+              (isEdit()
+                ? 'ACCOUNTING_CLOSURES.EDIT_COMMENTS'
+                : 'ACCOUNTING_CLOSURES.CLOSE_ACCOUNTING_PERIOD'
+              ) | appTranslate
+            }}
             <app-help-icon [helpTextKey]="'HELP.ACCOUNTING_CLOSURES_DESC'"></app-help-icon>
           </ion-card-title>
         </ion-card-header>
@@ -82,43 +89,69 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
         <ion-card-content>
           <form #closureForm="ngForm" (ngSubmit)="onSubmit()" class="closure-form">
             <div class="form-grid">
-              <!-- Office -->
-              <ion-item fill="outline">
-                <ion-label position="stacked">Office</ion-label>
-                <ion-select
-                  aria-label="Office"
-                  interface="popover"
-                  name="officeId"
-                  [(ngModel)]="request.officeId"
-                  required
-                >
-                  @for (office of offices(); track office.id) {
-                    <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
-                  }
-                </ion-select>
-              </ion-item>
+              <!-- Office. Read-only when editing: the PUT body carries comments alone. -->
+              @if (isEdit()) {
+                <ion-item fill="outline">
+                  <ion-label position="stacked">Office</ion-label>
+                  <ion-input
+                    aria-label="Office"
+                    readonly
+                    [value]="officeName()"
+                    data-testid="closure-office-readonly"
+                  ></ion-input>
+                </ion-item>
+              } @else {
+                <ion-item fill="outline">
+                  <ion-label position="stacked">Office</ion-label>
+                  <ion-select
+                    aria-label="Office"
+                    interface="popover"
+                    name="officeId"
+                    [(ngModel)]="request.officeId"
+                    required
+                  >
+                    @for (office of offices(); track office.id) {
+                      <ion-select-option [value]="office.id">{{ office.name }}</ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+              }
 
-              <!-- Closing Date -->
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'ACCOUNTING_CLOSURES.CLOSING_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="closingDate-picker"></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="closingDate-picker"
-                      data-testid="closingDate-picker"
-                      presentation="date"
-                      name="closingDate"
-                      [(ngModel)]="closingDate"
-                      required
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
+              <!-- Closing Date. Immutable — see AccountingClosureApi.update. -->
+              @if (isEdit()) {
+                <ion-item fill="outline">
+                  <ion-label position="stacked">{{
+                    'ACCOUNTING_CLOSURES.CLOSING_DATE' | appTranslate
+                  }}</ion-label>
+                  <ion-input
+                    [attr.aria-label]="'ACCOUNTING_CLOSURES.CLOSING_DATE' | appTranslate"
+                    readonly
+                    [value]="closingDate"
+                    data-testid="closure-closing-date-readonly"
+                  ></ion-input>
+                </ion-item>
+              } @else {
+                <ion-item fill="outline">
+                  <ion-label position="stacked">{{
+                    'ACCOUNTING_CLOSURES.CLOSING_DATE' | appTranslate
+                  }}</ion-label>
+                  @if (pickersReady()) {
+                    <ion-datetime-button datetime="closingDate-picker"></ion-datetime-button>
+                  }
+                  <ion-modal [keepContentsMounted]="true">
+                    <ng-template>
+                      <ion-datetime
+                        id="closingDate-picker"
+                        data-testid="closingDate-picker"
+                        presentation="date"
+                        name="closingDate"
+                        [(ngModel)]="closingDate"
+                        required
+                      ></ion-datetime>
+                    </ng-template>
+                  </ion-modal>
+                </ion-item>
+              }
 
               <!-- Comments -->
               <ion-item fill="outline" class="full-width">
@@ -144,6 +177,11 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
                   Saving...
+                } @else if (isEdit()) {
+                  <!-- Not "Close Period": editing corrects a comment and closes nothing. The
+                       create label is left as it was, untranslated like the rest of this form's
+                       static text. -->
+                  {{ 'COMMON.SAVE' | appTranslate }}
                 } @else {
                   Close Period
                 }
@@ -181,6 +219,7 @@ export class AccountingClosureFormComponent implements OnInit {
   private readonly closureApi = inject(ACCOUNTING_CLOSURE_API);
   private readonly officeApi = inject(OFFICE_API);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   /**
    * Today, as the platform reckons it: the business date when one governs, and the platform's
    * own clock otherwise. Fineract judges "the future" by that reckoning, so a date seeded from
@@ -201,11 +240,55 @@ export class AccountingClosureFormComponent implements OnInit {
   closingDate = this.platformDate.today();
   readonly isSaving = signal(false);
 
+  /** True on `closures/edit/:id`, which corrects the comments of a closure already recorded. */
+  readonly isEdit = signal(false);
+  closureId = 0;
+  /** The closed office, for display only: editing cannot move a closure between offices. */
+  readonly officeName = signal('');
+
   ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.closureId = +id;
+      this.isEdit.set(true);
+      this.loadClosure();
+      // The office options are only needed by the select, which edit mode does not render.
+      return;
+    }
     this.officeApi.list().subscribe((data: Office[]) => this.offices.set(data));
   }
 
+  /**
+   * Loads the closure being corrected.
+   *
+   * Only the comments are editable, so the office and the closing date are read back for display
+   * and never sent again.
+   */
+  private loadClosure(): void {
+    this.closureApi.get(this.closureId).subscribe({
+      next: (closure) => {
+        this.request = { officeId: closure.officeId, comments: closure.comments ?? '' };
+        this.officeName.set(closure.officeName);
+        if (closure.closingDate) {
+          this.closingDate = closure.closingDate;
+        }
+      },
+      error: (err: unknown) => {
+        console.error('Failed to load the accounting closure', err);
+      },
+    });
+  }
+
   onSubmit() {
+    if (this.isEdit()) {
+      this.isSaving.set(true);
+      this.closureApi.update(this.closureId, this.request.comments).subscribe({
+        next: () => this.router.navigate(['/accounting/closures']),
+        error: () => this.isSaving.set(false),
+      });
+      return;
+    }
+
     if (this.request.officeId === undefined) return;
     this.isSaving.set(true);
 

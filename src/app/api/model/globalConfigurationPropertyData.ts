@@ -26,10 +26,18 @@
 
 
 export interface GlobalConfigurationPropertyData { 
+    /**
+     * The values stringValue is restricted to, in their canonical spelling. Matching ignores case and surrounding whitespace, and an update stores the canonical spelling. Omitted if the configuration is not restricted.
+     */
+    allowedValues?: Array<string>;
     dateValue?: string;
     description?: string;
     enabled?: boolean;
     id?: number;
+    /**
+     * Whether stringValue holds a comma-separated list of allowedValues instead of a single one. Omitted if the configuration is not restricted.
+     */
+    multipleValuesAllowed?: boolean;
     name?: string;
     stringValue?: string;
     trapDoor?: boolean;

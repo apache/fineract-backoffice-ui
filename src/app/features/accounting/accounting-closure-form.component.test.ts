@@ -22,7 +22,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountingClosureFormComponent } from './accounting-closure-form.component';
 import { ACCOUNTING_CLOSURE_API, OFFICE_API } from '../../core/adapters';
 import type { AccountingClosureApi, OfficeApi } from '../../core/adapters';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -34,9 +34,11 @@ describe('AccountingClosureFormComponent', () => {
   let closureApiSpy: SpyObj<AccountingClosureApi>;
   let officeApiSpy: SpyObj<OfficeApi>;
   let routerSpy: SpyObj<Router>;
+  /** Mutated by the edit suite before the shared `beforeEach` builds the TestBed. */
+  let routeParams: Record<string, string> = {};
 
   beforeEach(async () => {
-    closureApiSpy = createSpyObj(['list', 'create', 'remove']);
+    closureApiSpy = createSpyObj(['list', 'create', 'remove', 'get', 'update']);
     officeApiSpy = createSpyObj(['list']);
     routerSpy = createSpyObj(['navigate']);
 
@@ -47,10 +49,26 @@ describe('AccountingClosureFormComponent', () => {
         { provide: ACCOUNTING_CLOSURE_API, useValue: closureApiSpy },
         { provide: OFFICE_API, useValue: officeApiSpy },
         { provide: Router, useValue: routerSpy },
+        {
+          // No `:id`, so the form is in create mode. The edit suite below supplies one.
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap(routeParams) } },
+        },
         provideNoopAnimations(),
       ],
     }).compileComponents();
     officeApiSpy.list.mockReturnValue(of([]));
+    closureApiSpy.get.mockReturnValue(
+      of({
+        id: 7,
+        officeId: 1,
+        officeName: 'Head Office',
+        closingDate: '2026-09-30',
+        comments: 'Year-end close',
+        isClosed: true,
+      }),
+    );
+    closureApiSpy.update.mockReturnValue(of(undefined));
     fixture = TestBed.createComponent(AccountingClosureFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -111,5 +129,44 @@ describe('AccountingClosureFormComponent', () => {
       'ACCOUNTING_CLOSURES.CLOSE_ACCOUNTING_PERIOD',
       'ACCOUNTING_CLOSURES.CLOSING_DATE',
     ]);
+  });
+
+  /**
+   * Correcting a closure's comments (issue #789).
+   *
+   * `PUT /glclosures/{id}` carries comments and nothing else, so the office and the closing date
+   * are loaded for display and never sent back — the form renders them read-only rather than
+   * offering fields the platform would ignore.
+   */
+  describe('in edit mode', () => {
+    beforeAll(() => {
+      routeParams = { id: '7' };
+    });
+
+    afterAll(() => {
+      routeParams = {};
+    });
+
+    it('loads the closure it is correcting', () => {
+      expect(component.isEdit()).toBe(true);
+      expect(closureApiSpy.get).toHaveBeenCalledWith(7);
+      expect(component.request.comments).toBe('Year-end close');
+      expect(component.officeName()).toBe('Head Office');
+      expect(component.closingDate).toBe('2026-09-30');
+    });
+
+    it('sends only the comments, and does not close a second period', () => {
+      component.request.comments = 'Corrected: year-end close';
+
+      component.onSubmit();
+
+      expect(closureApiSpy.update).toHaveBeenCalledWith(7, 'Corrected: year-end close');
+      expect(closureApiSpy.create).not.toHaveBeenCalled();
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/accounting/closures']);
+    });
+
+    it('asks for no office list, since the office cannot change', () => {
+      expect(officeApiSpy.list).not.toHaveBeenCalled();
+    });
   });
 });

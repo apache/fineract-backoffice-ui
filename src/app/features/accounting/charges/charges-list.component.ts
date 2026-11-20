@@ -21,9 +21,15 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
-import { DataTableComponent, ColumnDef, CellTemplateDirective } from '../../../shared';
+import {
+  CellTemplateDirective,
+  ColumnDef,
+  DataTableComponent,
+  RequiresPermissionDirective,
+} from '../../../shared';
 import { ChargesService, ChargeData } from '../../../api';
-import { TranslatePipe } from '../../../core/adapters';
+import { DialogService } from '../../../core/services/dialog.service';
+import { I18N, TranslatePipe } from '../../../core/adapters';
 import { ButtonComponent } from '../../../ui/button/button.component';
 
 /**
@@ -37,6 +43,7 @@ import { ButtonComponent } from '../../../ui/button/button.component';
   imports: [
     DataTableComponent,
     CellTemplateDirective,
+    RequiresPermissionDirective,
     TranslatePipe,
     DecimalPipe,
     CurrencyPipe,
@@ -85,6 +92,15 @@ import { ButtonComponent } from '../../../ui/button/button.component';
           [label]="'COMMON.EDIT' | appTranslate"
           (click)="onEditCharge(charge)"
         />
+        <app-button
+          type="button"
+          emphasis="quiet"
+          intent="danger"
+          icon="trash-outline"
+          appRequiresPermission="DELETE_CHARGE"
+          [label]="'CHARGES.DELETE' | appTranslate"
+          (click)="onDeleteCharge(charge)"
+        />
       </ng-template>
     </app-data-table>
   `,
@@ -92,6 +108,8 @@ import { ButtonComponent } from '../../../ui/button/button.component';
 export class ChargesListComponent implements OnInit {
   private readonly chargesService = inject(ChargesService);
   private readonly router = inject(Router);
+  private readonly dialog = inject(DialogService);
+  private readonly i18n = inject(I18N);
 
   readonly columns: ColumnDef[] = [
     { key: 'name', label: 'COMMON.NAME', sortable: true },
@@ -131,5 +149,35 @@ export class ChargesListComponent implements OnInit {
 
   onEditCharge(charge: ChargeData): void {
     this.router.navigate(['/accounting/charges/edit', charge.id]);
+  }
+
+  /**
+   * Deletes a charge definition.
+   *
+   * Fineract refuses one still attached to a product or an account, and says which; that reaches
+   * the operator through the error interceptor. The confirmation states the condition up front,
+   * and the list reloads only on success so a charge the platform kept stays visible (#789).
+   */
+  async onDeleteCharge(charge: ChargeData): Promise<void> {
+    if (charge.id === undefined) {
+      return;
+    }
+
+    const confirmed = await this.dialog.confirm({
+      title: this.i18n.translate('CHARGES.DELETE'),
+      message: this.i18n.translate('CHARGES.DELETE_CONFIRM'),
+      details: [{ label: this.i18n.translate('COMMON.NAME'), value: charge.name ?? '' }],
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    this.chargesService.deleteChargesChargeId(charge.id).subscribe({
+      next: () => this.loadCharges(),
+      error: (err: unknown) => {
+        console.error('Failed to delete the charge definition', err);
+      },
+    });
   }
 }

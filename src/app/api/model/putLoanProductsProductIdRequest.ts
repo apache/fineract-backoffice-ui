@@ -89,6 +89,10 @@ export interface PutLoanProductsProductIdRequest {
     enableIncomeCapitalization?: boolean;
     enableInstallmentLevelDelinquency?: boolean;
     feeToIncomeAccountMappings?: Array<LoanProductChargeToGLAccountMapper>;
+    /**
+     * First due day of the month of a semi-monthly product, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     fundId?: number;
@@ -139,6 +143,7 @@ export interface PutLoanProductsProductIdRequest {
     minNumberOfRepayments?: number;
     minPrincipal?: number;
     minimumDaysBetweenDisbursalAndFirstRepayment?: number;
+    monthEndDueDateStrategy?: PutLoanProductsProductIdRequest.MonthEndDueDateStrategyEnum;
     multiDisburseLoan?: boolean;
     name?: string;
     numberOfRepaymentVariationsForBorrowerCycle?: Array<number>;
@@ -169,8 +174,13 @@ export interface PutLoanProductsProductIdRequest {
     repaymentFrequencyType?: number;
     repaymentStartDateType?: number;
     rescheduleStrategyMethod?: number;
+    /**
+     * Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     shortName?: string;
     startDate?: string;
+    supportedFeeRefundTypes?: Array<string>;
     supportedInterestRefundTypes?: Array<string>;
     transactionProcessingStrategyCode?: string;
     transfersInSuspenseAccountId?: number;
@@ -205,6 +215,11 @@ export namespace PutLoanProductsProductIdRequest {
         Interest: 'INTEREST'
     } as const;
     export type CapitalizedIncomeTypeEnum = typeof CapitalizedIncomeTypeEnum[keyof typeof CapitalizedIncomeTypeEnum];
+    export const MonthEndDueDateStrategyEnum = {
+        LastDayOfMonth: 'LAST_DAY_OF_MONTH',
+        FirstDayOfNextMonth: 'FIRST_DAY_OF_NEXT_MONTH'
+    } as const;
+    export type MonthEndDueDateStrategyEnum = typeof MonthEndDueDateStrategyEnum[keyof typeof MonthEndDueDateStrategyEnum];
 }
 
 

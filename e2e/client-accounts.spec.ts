@@ -24,7 +24,7 @@ const CLIENT_URL = `/clients/view/${CLIENT_ID}`;
 
 test.use({ video: 'on' });
 
-async function signIn(page: Page): Promise<void> {
+async function signIn(page: Page, permissions: string[] = ['ALL_FUNCTIONS']): Promise<void> {
   await page.route('**/config.json*', async (route) => {
     await route.fulfill({
       status: 200,
@@ -43,7 +43,7 @@ async function signIn(page: Page): Promise<void> {
         authenticated: true,
         officeId: 1,
         officeName: 'Head Office',
-        permissions: ['ALL_FUNCTIONS'],
+        permissions,
       }),
     });
   });
@@ -157,3 +157,47 @@ test('empty account tabs offer the matching creation action', async ({ page }, t
   await loanAction.click();
   await expect(page).toHaveURL('/loans/create?clientId=2001');
 });
+
+test('the client page links to its charges, its collateral and a new share account', async ({
+  page,
+}) => {
+  await signIn(page);
+  await mockClient(page);
+
+  await page.goto(CLIENT_URL);
+  await page.locator('#clientActionsMenu-trigger').click();
+  await page.getByTestId('client-charges-action').click();
+  await expect(page).toHaveURL(`/clients/${CLIENT_ID}/charges`);
+
+  await page.goto(CLIENT_URL);
+  await page.locator('#clientActionsMenu-trigger').click();
+  await page.getByTestId('client-collateral-action').click();
+  await expect(page).toHaveURL(`/clients/${CLIENT_ID}/collaterals`);
+
+  await page.goto(CLIENT_URL);
+  await page.locator('#createMenu-trigger').click();
+  await page.getByTestId('client-new-share-account-action').click();
+  await expect(page).toHaveURL(`/products/shares/create?clientId=${CLIENT_ID}`);
+});
+
+for (const { permissions, enabled } of [
+  { permissions: ['READ_CLIENT', 'ACTIVATE_CLIENT'], enabled: false },
+  { permissions: ['ALL_FUNCTIONS_READ'], enabled: true },
+]) {
+  test(`offers the client collateral to ${permissions.join(' + ')} only if it can read it`, async ({
+    page,
+  }) => {
+    await signIn(page, permissions);
+    await mockClient(page);
+
+    await page.goto(CLIENT_URL);
+    await page.locator('#clientActionsMenu-trigger').click();
+    const collateral = page.getByTestId('client-collateral-action');
+    await expect(collateral).toBeVisible();
+    if (enabled) {
+      await expect(collateral).not.toHaveAttribute('aria-disabled', 'true');
+    } else {
+      await expect(collateral).toHaveAttribute('aria-disabled', 'true');
+    }
+  });
+}

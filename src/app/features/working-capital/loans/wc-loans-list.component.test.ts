@@ -78,6 +78,20 @@ describe('WcLoansListComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/working-capital/loans/create']);
   });
 
+  it("opens a loan by the institution's own reference", () => {
+    component.onOpenByExternalId('  REF-1  ');
+
+    // Trimmed: a reference pasted from a spreadsheet arrives with whitespace, and the platform
+    // would read " REF-1 " as a different loan.
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/working-capital/loans/external', 'REF-1']);
+  });
+
+  it('does nothing on an empty reference', () => {
+    component.onOpenByExternalId(' '.repeat(3));
+
+    expect(routerSpy.navigate).not.toHaveBeenCalled();
+  });
+
   it('should navigate to the view with the loan id', () => {
     component.onView({ id: 3 });
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/working-capital/loans/view', 3]);

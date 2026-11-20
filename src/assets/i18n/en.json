@@ -1,10 +1,18 @@
 {
+  "BREADCRUMBS": {
+    "LOAN_ACCOUNT": "Loan Account {{accountNo}}",
+    "SAVINGS_ACCOUNT": "Savings Account {{accountNo}}",
+    "FIXED_DEPOSIT": "Fixed Deposit {{accountNo}}",
+    "RECURRING_DEPOSIT": "Recurring Deposit {{accountNo}}",
+    "SHARE_ACCOUNT": "Share Account {{accountNo}}"
+  },
   "license": "Apache-2.0",
   "app": {
     "title": "Fineract Backoffice UI",
     "shortTitle": "Fineract",
     "welcome": "Welcome to Fineract Backoffice UI!",
     "logout": "Logout",
+    "skipToMain": "Skip to main content",
     "language": {
       "select": "Select Language",
       "en": "English",
@@ -74,6 +82,7 @@
     "workingCapital": "Working Capital",
     "wcBreach": "Breach Definitions",
     "wcNearBreach": "Near-Breach Definitions",
+    "wcOverview": "Portfolio overview",
     "wcLoans": "Working Capital Loans",
     "wcLoanProducts": "Loan Products",
     "loanOriginators": "Loan Originators",
@@ -259,7 +268,10 @@
     "PRODUCT": "Product",
     "RENDER_TIME": "Render Time",
     "REQUIRED": "This field is required",
+    "NOT_SET": "Not set",
+    "CLEAR": "Clear",
     "COMPLETE_REQUIRED_FIELDS": "Complete the required fields to continue",
+    "COMPLETE_FIELDS": "Complete: {{fields}}",
     "RESET": "Reset",
     "RESULTS_FOUND": "{{count}} result(s) found",
     "RETRY": "Try again",
@@ -351,6 +363,7 @@
     "PREMATURE_CLOSE": "Close before maturity",
     "REACTIVATE_CLIENT": "Reactivate Client",
     "RECURRING_DEPOSIT": "Recurring Deposit",
+    "SHARE_ACCOUNT": "Share Account",
     "REJECT": "Reject",
     "REJECTION_DATE": "Rejection Date",
     "REJECTION_REASON": "Rejection Reason",
@@ -544,9 +557,13 @@
     "CONFIRM_PAY": "Pay {{amount}} against {{name}}?",
     "CONFIRM_WAIVE": "Waive {{amount}} of {{name}}? The charge is written off and will no longer be collected.",
     "CONFIRM_ADJUST": "Adjust {{name}} to a different amount?",
-    "CONFIRM_INACTIVATE": "Inactivate {{name}}? The charge stops being applied to this account."
+    "CONFIRM_INACTIVATE": "Inactivate {{name}}? The charge stops being applied to this account.",
+    "DELETE": "Delete Charge",
+    "DELETE_CONFIRM": "Delete this charge definition? Fineract refuses one that is still attached to a product or an account."
   },
   "LOANS": {
+    "REPAYMENT_START_DATE_NOT_SET": "Not set",
+    "CLEAR_REPAYMENT_START_DATE": "Clear repayment start date",
     "ACCOUNT_NO": "Account No",
     "CLIENT_NAME": "Client Name",
     "PRODUCT_NAME": "Product Name",
@@ -681,6 +698,8 @@
       "CLOSE_AS_RESCHEDULED": "Close as Rescheduled",
       "DISBURSE_TO_SAVINGS": "Disburse to Savings",
       "CHARGEBACK": "Chargeback",
+      "CHARGEBACK_REPAYMENT": "Charge Back Repayment",
+      "VIEW_TRANSACTION": "View Transaction",
       "UNASSIGN_LOAN_OFFICER": "Unassign Loan Officer",
       "UNDO_LAST_DISBURSAL": "Undo Last Disbursal",
       "REVISE_APPROVED_AMOUNT": "Revise Approved Amount",
@@ -859,9 +878,16 @@
     "CASHIER_TRANSACTIONS": "Cashier Transactions",
     "TOTAL_ALLOCATED": "Total Allocated",
     "TOTAL_SETTLED": "Total Settled",
-    "NET_CASH": "Net Cash"
+    "NET_CASH": "Net Cash",
+    "DELETE_TELLER": "Delete Teller",
+    "DELETE_TELLER_CONFIRM": "Delete this teller? Fineract refuses while it still holds cashiers or recorded cash transactions, so remove its cashiers first.",
+    "EDIT_CASHIER": "Edit Cashier Allocation",
+    "REMOVE_CASHIER": "Remove Cashier Allocation",
+    "REMOVE_CASHIER_CONFIRM": "Remove this cashier's allocation? The cash transactions already recorded against it stay on the teller's ledger. To change its period, hours or note, edit the allocation instead."
   },
   "CLIENTS": {
+    "DATE_OF_BIRTH_NOT_SET": "Not set",
+    "CLEAR_DATE_OF_BIRTH": "Clear date of birth",
     "CREATE_CLIENT": "Create Client",
     "CREATE_SUCCESS": "Client created.",
     "UPDATE_SUCCESS": "Client updated.",
@@ -919,6 +945,11 @@
     "LONGITUDE": "Longitude",
     "RELATIONSHIP": "Relationship",
     "GENDER": "Gender",
+    "CLIENT_TYPE": "Client Type",
+    "CLASSIFICATION": "Classification",
+    "GROUPS": "Groups",
+    "ACCOUNTS_OVERVIEW": "Accounts Overview",
+    "ACTIVE_COUNT": "Active / Total",
     "PROFESSION": "Profession",
     "MOBILE_NO": "Mobile No",
     "CREATED_BY": "Created By",
@@ -954,6 +985,8 @@
     "EDIT_ADDRESS": "Edit Address",
     "EDIT_DOCUMENT": "Edit Document",
     "EDIT_FAMILY_MEMBER": "Edit Family Member",
+    "FAMILY_MEMBER_ADDED": "Family member added.",
+    "FAMILY_MEMBER_UPDATED": "Family member updated.",
     "EDIT_IDENTIFIER": "Edit Identifier",
     "EDIT_NOTE": "Edit Note",
     "ACTIONS": {
@@ -1081,7 +1114,20 @@
     "REPEAT_PASSWORD": "Repeat Password",
     "ROLES": "Roles",
     "PASSWORD_NEVER_EXPIRES": "Password Never Expires",
-    "SEND_PASSWORD_TO_EMAIL": "Send Password To Email"
+    "SEND_PASSWORD_TO_EMAIL": "Send Password To Email",
+    "PASSWORD_POLICY": "Password policy",
+    "PASSWORD_RULES_UNMET": "This password must still:",
+    "PASSWORDS_DO_NOT_MATCH": "The two passwords do not match",
+    "PASSWORD_RULES": {
+      "LENGTH": "be {{min}} to {{max}} characters long",
+      "UPPERCASE": "include an uppercase letter",
+      "LOWERCASE": "include a lowercase letter",
+      "DIGIT": "include a digit",
+      "SPECIAL": "include a special character",
+      "NO_SPACE": "contain no spaces",
+      "NO_REPEAT": "repeat no character twice in a row"
+    },
+    "CONFIRM_DELETE": "Delete the account \"{{username}}\"? The user will no longer be able to sign in."
   },
   "ORGANIZATION": {
     "STAFF": "Staff",
@@ -1121,6 +1167,24 @@
     "MAKER_DATE_FROM": "Maker Date From",
     "MAKER_DATE_TO": "Maker Date To",
     "PROCESSING_RESULT": "Processing Result"
+  },
+  "AUDIT": {
+    "ANY": "Any",
+    "ENTRY_DETAIL": "Audit entry",
+    "ENTRY_TITLE": "Audit entry #{{id}}",
+    "SUBRESOURCE_ID": "Sub-resource ID",
+    "MADE_ON": "Made on",
+    "LINKED_RECORDS": "Affected records",
+    "GROUP": "Group",
+    "LOAN": "Loan",
+    "SAVINGS_ACCOUNT": "Savings account",
+    "PAYLOAD": "Command payload",
+    "NO_PAYLOAD": "This entry has no payload.",
+    "CLIENT_ID": "Client ID",
+    "LOAN_ID": "Loan ID",
+    "NO_ACCESS": "You do not have permission to view this audit entry.",
+    "NOT_FOUND": "This audit entry does not exist or is outside your office.",
+    "LOAD_FAILED": "The audit entry could not be loaded."
   },
   "SYSTEM": {
     "DATA_TABLES": "Data Tables",
@@ -1179,7 +1243,16 @@
     "CONFIRM_DELETE_DATA_TABLE": "Delete the data table “{{name}}”? The table and everything recorded in it are removed.",
     "EDIT_ENTRY": "Edit entry",
     "CONFIRM_DELETE_ENTRY": "This row is deleted outright; there is no undo.",
-    "REQUIRED_CUSTOM_DATA": "Required custom data"
+    "REQUIRED_CUSTOM_DATA": "Required custom data",
+    "ADD_ACCOUNT_NUMBER_FORMAT": "Add Format",
+    "ADD_ACCOUNT_NUMBER_FORMAT_PROMPT": "Choose the account type to number. Fineract keeps one format per type, so only the types without one are offered; the prefix is set on the row afterwards.",
+    "ACCOUNT_TYPE": "Account Type",
+    "NUMBER_PREFIX": "Prefix",
+    "NO_PREFIX": "No prefix",
+    "SET_PREFIX": "Set Prefix",
+    "SET_PREFIX_PROMPT": "The prefix goes in front of the generated sequence. Only the prefixes this account type allows are offered.",
+    "DELETE_ACCOUNT_NUMBER_FORMAT": "Delete Format",
+    "DELETE_ACCOUNT_NUMBER_FORMAT_CONFIRM": "Delete this format? The account numbers already issued keep theirs — this only changes how the next one is generated, which returns to the platform default."
   },
   "ACCOUNTING_RULES": {
     "CREATE": "Create Accounting Rule",
@@ -1218,9 +1291,16 @@
     "IMPACT_NAV_LOST": "Screens this role loses",
     "IMPACT_NAV_UNCHANGED": "No screen appears or disappears from the sidebar — these permissions gate actions within screens the role already reaches.",
     "CONFIRM_PERMISSIONS_TITLE": "Apply permission changes",
-    "CONFIRM_PERMISSIONS_MESSAGE": "Save these permissions for the role “{{name}}”? Everyone holding it is affected the next time they sign in, and no one is told."
+    "CONFIRM_PERMISSIONS_MESSAGE": "Save these permissions for the role “{{name}}”? Everyone holding it is affected the next time they sign in, and no one is told.",
+    "DISABLE": "Disable",
+    "ENABLE": "Enable",
+    "CONFIRM_DISABLE": "Disable the role \"{{name}}\"? It stays as it is, and stops being offered for new users.",
+    "CONFIRM_ENABLE": "Enable the role \"{{name}}\"? It can be assigned to users again.",
+    "CONFIRM_DELETE": "Delete the role \"{{name}}\"? This cannot be undone, and the platform refuses while any user still holds it."
   },
   "HELP": {
+    "EDIT_CLIENT_DESC": "Update this client's details.",
+    "CREATE_CLIENT_DESC": "Create a client by choosing a type and office, then entering their details.",
     "SEARCH_DESC": "Use this field to search or filter the table records.",
     "CLIENTS_CONTRACTS_DESC": "View and manage all registered clients and their contracts.",
     "LOANS_PORTFOLIO_DESC": "Monitor the active loan portfolio and applications.",
@@ -1409,7 +1489,8 @@
     "OPENING_BALANCES_DESC": "Carry the balances from your previous ledger into this one. Only available before the first journal entry is posted for the office.",
     "FREQUENT_POSTINGS_DESC": "Post a journal entry from a saved accounting rule, so recurring postings need only an amount and a date.",
     "REPORT_DEFINITIONS_DESC": "The catalogue behind the Reporting section: the SQL each report runs, the parameters it takes, and whether it is offered to users.",
-    "WORK_QUEUES_DESC": "The approvals a branch works through together: pending loans, loans awaiting disbursal, pending clients and reschedule requests. Each action is sent as one batch, and any record the platform refuses is named."
+    "WORK_QUEUES_DESC": "The approvals a branch works through together: pending loans, loans awaiting disbursal, pending clients and reschedule requests. Each action is sent as one batch, and any record the platform refuses is named.",
+    "ACCOUNT_NUMBER_FORMATS_DESC": "How Fineract numbers each kind of account: one format per account type, with an optional prefix such as the office or product short name in front of the sequence."
   },
   "REPORTS": {
     "NAME": "Report Name",
@@ -1461,7 +1542,9 @@
     "CLOSING_DATE": "Closing Date",
     "IS_CLOSED": "Is Closed",
     "COMMENTS": "Comments",
-    "CLOSE_ACCOUNTING_PERIOD": "Close Accounting Period"
+    "CLOSE_ACCOUNTING_PERIOD": "Close Accounting Period",
+    "EDIT_COMMENTS": "Edit Comments",
+    "REOPEN_CONFIRM": "Re-open this period? Entries can be posted into it again, and the closure is removed. To correct only the comments, edit them instead."
   },
   "JOURNAL_ENTRIES": {
     "CREATE": "Add Journal Entry",
@@ -1632,7 +1715,9 @@
     "DETAIL": "Detail",
     "ACCOUNT_NAME": "Account Name",
     "FINANCIAL_ACTIVITY": "Financial Activity",
-    "GL_ACCOUNT": "GL Account"
+    "GL_ACCOUNT": "GL Account",
+    "DELETE_ACCOUNT": "Delete Account",
+    "DELETE_ACCOUNT_CONFIRM": "Delete this ledger account? Fineract refuses an account that has child accounts, journal entries or product mappings — disable it through Edit instead if it has been used."
   },
   "MODULES": {
     "CLIENTS_CONTRACTS": "Clients & Contracts",
@@ -1901,9 +1986,44 @@
     "DELETE": "Delete",
     "CONFIRM_DELETE": "Delete working-capital loan product “{{name}}”?"
   },
+  "WC_PORTFOLIO": {
+    "TITLE": "Working Capital Portfolio",
+    "LOAD_FAILED": "Could not load the working-capital portfolio",
+    "EMPTY": "No working-capital loans yet.",
+    "LOANS": "Loans",
+    "OUTSTANDING": "Outstanding",
+    "DELINQUENT": "Delinquent",
+    "BREACH_PAST_DUE": "Breach past due",
+    "FLAGGED": "Charged off",
+    "ACROSS_LOANS": "across {{count}} loans",
+    "CHARGED_OFF_AND_FRAUD": "{{fraud}} flagged as fraud",
+    "AGING_TITLE": "Delinquency aging",
+    "AGING_BAND": "Days delinquent",
+    "AGING_CURRENT": "Current",
+    "AGING_1_30": "1-30 days",
+    "AGING_31_60": "31-60 days",
+    "AGING_61_90": "61-90 days",
+    "AGING_90_PLUS": "Over 90 days",
+    "BY_STATUS": "By status",
+    "STATUS_UNKNOWN": "Not stated",
+    "OTHER": "Other",
+    "VIEW_ALL_LOANS": "View all working-capital loans"
+  },
+  "WC_LOAN_TEST_TOOLS": {
+    "TITLE": "WC Loan Test Tools",
+    "TEST_ONLY": "These commands use Fineract's internal endpoints, which are served only when the backend runs its test profile. On any other deployment they answer 404.",
+    "LOAN_ID": "Loan ID",
+    "ACTIVATE": "Activate loan",
+    "REGENERATE_SCHEDULE": "Regenerate amortization schedule",
+    "NEXT_DELINQUENCY_PERIOD": "Generate next delinquency period",
+    "ACCEPTED": "The platform accepted the command."
+  },
   "WC_LOANS": {
     "CREATE": "Create Working Capital Loan",
     "ACCOUNT_NO": "Account No.",
+    "OPEN_BY_EXTERNAL_ID": "Open by external id",
+    "EXTERNAL_ID_NOT_FOUND": "No working-capital loan has the reference {{externalId}}",
+    "LOOKUP_FAILED": "Could not look up that reference",
     "CLIENT": "Client",
     "CLIENT_ID": "Client ID",
     "PRODUCT": "Product",
@@ -2156,7 +2276,16 @@
     "SAVE": "Save Collection Sheet",
     "BACK": "Back",
     "RESULTS": "Collection Results",
-    "NOTHING_DUE": "Nothing is due for this office on this date."
+    "NOTHING_DUE": "Nothing is due for this office on this date.",
+    "CLIENT": "Client",
+    "ACCOUNT": "Account",
+    "PRODUCT": "Product",
+    "DUE": "Due",
+    "GROUP_TOTAL": "Group total",
+    "SHEET_TOTAL": "Sheet total",
+    "COLLECTED": "Collected",
+    "COLLECTED_TOTAL": "Collected total",
+    "NOT_COLLECTABLE": "Not collectable"
   },
   "COLLATERAL_MANAGEMENT": {
     "CREATE": "Create Collateral",
@@ -2342,7 +2471,28 @@
     "PERIOD_START_DATE": "Period Start Date",
     "PERIOD_END_DATE": "Period End Date",
     "DELETE": "Delete Dividend",
-    "CONFIRM_DELETE": "Delete the dividend of {{amount}} declared for {{startDate}} to {{endDate}}?"
+    "CONFIRM_DELETE": "Delete the dividend of {{amount}} declared for {{startDate}} to {{endDate}}?",
+    "STATUS_PENDING": "Pending",
+    "STATUS_APPROVED": "Approved",
+    "STATUS_POSTED": "Posted",
+    "STATUS_UNKNOWN": "Unknown",
+    "DETAIL_TITLE": "Dividend",
+    "PERIOD": "Period",
+    "TOTAL_AMOUNT": "Total amount",
+    "ACCOUNTS": "Accounts",
+    "PAYOUTS_TITLE": "Payout per account",
+    "ACCOUNT_NO": "Account No.",
+    "CLIENT": "Client",
+    "SEARCH_ACCOUNT_NO": "Account number (exact match)",
+    "APPROVE": "Approve",
+    "APPROVE_TITLE": "Approve Dividend",
+    "CONFIRM_APPROVE": "Approve a payout of {{amount}} to {{count}} accounts for {{startDate}} to {{endDate}}? The dividend posting job then credits each account's linked savings account.",
+    "APPROVED": "Dividend approved.",
+    "DELETED": "Dividend deleted.",
+    "NOT_FOUND": "This dividend does not exist on the share product.",
+    "NO_ACCESS": "You do not have permission to view this dividend.",
+    "LOAD_FAILED": "The dividend could not be loaded.",
+    "APPROVAL_SUBMITTED": "Your approval is waiting for a checker. The dividend stays pending until it is approved."
   },
   "FIXED_DEPOSIT_TRANSACTIONS": {
     "AMOUNT": "Amount",
@@ -2514,7 +2664,14 @@
   },
   "EXTERNAL_SERVICES": {
     "TITLE": "External Services",
-    "SERVICE": "Service"
+    "SERVICE": "Service",
+    "SMS_HELP": "The message gateway that SMS campaigns and SMS notifications are sent through.",
+    "SECRET_SET": "Set. Leave blank to keep it.",
+    "SECRET_NOT_SET": "Not set",
+    "NO_ACCESS": "You don't have access to external service settings.",
+    "LOAD_FAILED": "The settings for this service couldn't be loaded.",
+    "SAVED": "Settings saved.",
+    "NO_CHANGES": "Nothing has changed."
   },
   "PASSWORD_PREFERENCES": {
     "TITLE": "Password Preferences"
@@ -2549,7 +2706,30 @@
     "SELECT_JOB": "Select job",
     "SELECT_ALL": "Select All",
     "RUN_SELECTED": "Run Selected",
-    "RUN_SELECTED_CONFIRM": "Run {{count}} selected job(s) now?"
+    "RUN_SELECTED_CONFIRM": "Run {{count}} selected job(s) now?",
+    "EDIT_JOB": "Edit Job",
+    "DISPLAY_NAME": "Display Name",
+    "CRON_EXPRESSION": "Cron Expression",
+    "CRON_HINT": "Quartz format: second minute hour day-of-month month day-of-week [year]",
+    "NEXT_RUNS": "Next runs (this browser's time)",
+    "CRON_FIELD_COUNT": "Enter 6 or 7 fields separated by spaces: second, minute, hour, day-of-month, month, day-of-week and an optional year.",
+    "CRON_DAY_CONFLICT": "Use ? in exactly one of day-of-month and day-of-week.",
+    "CRON_NEVER_FIRES": "This schedule never runs.",
+    "CRON_INVALID_FIELD": "The {{field}} field \"{{value}}\" is not valid.",
+    "CRON_FIELD_SECOND": "second",
+    "CRON_FIELD_MINUTE": "minute",
+    "CRON_FIELD_HOUR": "hour",
+    "CRON_FIELD_DAY_OF_MONTH": "day-of-month",
+    "CRON_FIELD_MONTH": "month",
+    "CRON_FIELD_DAY_OF_WEEK": "day-of-week",
+    "CRON_FIELD_YEAR": "year",
+    "CURRENTLY_RUNNING": "This job is running now. It can be edited once the run finishes.",
+    "SCHEDULE_WARNING": "Changing the schedule or deactivating the job changes when it runs for every account it processes. Saving while the job runs can let a second run start, so the form checks again just before saving.",
+    "LOAD_FAILED": "This job could not be loaded.",
+    "SAVED": "Job updated.",
+    "NEXT_RUNS_IN_ZONE": "Next runs (tenant time, {{zone}})",
+    "STARTED_RUNNING": "This job started running, so nothing was saved. Reload the page once the run finishes to edit it.",
+    "SUBMITTED_FOR_APPROVAL": "Submitted for approval. Fineract applies an approved schedule change only after it restarts."
   },
   "PERMISSIONS": {
     "TITLE": "Maker-Checker Permissions",
@@ -2972,7 +3152,8 @@
     "CONFIG_JSON": "Configuration (JSON)",
     "SAVE": "Save Config",
     "SUCCESS": "Config saved.",
-    "PARSE_ERROR": "Invalid JSON"
+    "PARSE_ERROR": "Invalid JSON",
+    "LOAD_FAILED": "Could not load the two-factor configuration"
   },
   "SURVEY_RESPONSES": {
     "TITLE": "Survey Responses",

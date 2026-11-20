@@ -19,15 +19,10 @@
 import { Component, OnInit, computed, signal, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { I18N, TranslatePipe } from '../../core/adapters';
-import {
-  GetPasswordPreferencesTemplateResponse,
-  GetUsersUserIdResponse,
-  PasswordPreferencesService,
-  RoleData,
-  UsersService,
-} from '../../api';
-import { skipErrorToast } from '../../core/http/http-context';
+import { I18N, TranslatePipe, USER_API } from '../../core/adapters';
+import { GetUsersUserIdResponse, RoleData, UsersService } from '../../api';
+import { unmetRules } from '../../core/security/password-policy';
+import type { PasswordPolicy, PasswordRule } from '../../core/security/password-policy';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import {
@@ -169,9 +164,27 @@ import {
                     </p>
                   }
 
-                  @if (passwordPolicyDescription(); as description) {
+                  @if (passwordPolicy(); as policy) {
                     <p class="password-policy" data-testid="profile-password-policy">
-                      {{ 'PROFILE.PASSWORD_POLICY' | appTranslate }}: {{ description }}
+                      {{ 'PROFILE.PASSWORD_POLICY' | appTranslate }}: {{ policy.description }}
+                    </p>
+                  }
+
+                  <!--
+                    Which rules the typed password still fails, rather than the policy again.
+                    The platform's refusal lists every rule and names none of them.
+                  -->
+                  @if (newPassword().length > 0 && unmetPasswordRules().length > 0) {
+                    <p class="password-error" role="alert" data-testid="profile-password-rules">
+                      {{ 'USERS.PASSWORD_RULES_UNMET' | appTranslate }}
+                      @for (rule of unmetPasswordRules(); track rule.id) {
+                        <span [attr.data-testid]="'profile-password-rule-' + rule.id"
+                          >{{ rule.labelKey | appTranslate: rule.params }}
+                          @if (!$last) {
+                            ,
+                          }
+                        </span>
+                      }
                     </p>
                   }
 
@@ -291,7 +304,7 @@ import {
 })
 export class UserProfileComponent implements OnInit {
   private readonly usersService = inject(UsersService);
-  private readonly passwordPreferencesService = inject(PasswordPreferencesService);
+  private readonly userApi = inject(USER_API);
   private readonly authService = inject(AuthService);
   private readonly notifications = inject(NotificationService);
   private readonly i18n = inject(I18N);
@@ -307,14 +320,26 @@ export class UserProfileComponent implements OnInit {
   readonly newPassword = signal('');
   readonly repeatPassword = signal('');
   readonly isChangingPassword = signal(false);
-  readonly passwordPolicyDescription = signal<string | null>(null);
+  readonly passwordPolicy = signal<PasswordPolicy | null>(null);
 
   readonly passwordsMismatch = computed(
     () => this.repeatPassword().length > 0 && this.newPassword() !== this.repeatPassword(),
   );
+
+  /**
+   * The rules this password still fails, from the tenant's own policy.
+   *
+   * The platform refuses a non-conforming password with every rule listed and none of them
+   * named, and that refusal used to carry the submitted password in clear text (#752). Named
+   * here, the user is told what to change before sending anything.
+   */
+  readonly unmetPasswordRules = computed<readonly PasswordRule[]>(() =>
+    unmetRules(this.newPassword(), this.passwordPolicy()),
+  );
+
   readonly canChangePassword = computed(
     () =>
-      this.newPassword().length > 0 &&
+      this.unmetPasswordRules().length === 0 &&
       this.newPassword() === this.repeatPassword() &&
       !this.isChangingPassword(),
   );
@@ -364,20 +389,15 @@ export class UserProfileComponent implements OnInit {
     if (userId == null || !this.canChangePassword()) return;
 
     this.isChangingPassword.set(true);
-    this.usersService
-      .postUsersUserIdPwd(userId, {
-        password: this.newPassword(),
-        repeatPassword: this.repeatPassword(),
-      })
-      .subscribe({
-        next: () => {
-          this.isChangingPassword.set(false);
-          this.changePasswordOpen.set(false);
-          this.resetPasswordForm();
-          void this.notifications.success(this.i18n.translate('PROFILE.PASSWORD_CHANGED'));
-        },
-        error: () => this.isChangingPassword.set(false),
-      });
+    this.userApi.changePassword(userId, this.newPassword(), this.repeatPassword()).subscribe({
+      next: () => {
+        this.isChangingPassword.set(false);
+        this.changePasswordOpen.set(false);
+        this.resetPasswordForm();
+        void this.notifications.success(this.i18n.translate('PROFILE.PASSWORD_CHANGED'));
+      },
+      error: () => this.isChangingPassword.set(false),
+    });
   }
 
   private resetPasswordForm(): void {
@@ -386,19 +406,10 @@ export class UserProfileComponent implements OnInit {
   }
 
   private loadPasswordPolicy(): void {
-    this.passwordPreferencesService
-      .getPasswordpreferences('body', false, { context: skipErrorToast() })
-      .subscribe({
-        next: (response) => {
-          const policies: GetPasswordPreferencesTemplateResponse[] = Array.isArray(response)
-            ? response
-            : [response];
-          this.passwordPolicyDescription.set(
-            policies.find((policy) => policy.active)?.description ?? null,
-          );
-        },
-        error: () => this.passwordPolicyDescription.set(null),
-      });
+    this.userApi.passwordPolicy().subscribe({
+      next: (policy) => this.passwordPolicy.set(policy),
+      error: () => this.passwordPolicy.set(null),
+    });
   }
 
   ngOnInit(): void {

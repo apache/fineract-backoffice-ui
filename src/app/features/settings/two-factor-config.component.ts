@@ -18,10 +18,16 @@
  */
 import { Component, OnInit, inject, signal } from '@angular/core';
 
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { DefaultService } from '../../api';
+import {
+  DefaultService,
+  type GetTwoFactorConfigurationResponse,
+  type PutTwoFactorConfigurationRequest,
+} from '../../api';
 import { I18N, TranslatePipe } from '../../core/adapters';
 import { NotificationService } from '../../core/services/notification.service';
+import { LoadErrorComponent } from '../../shared/components/load-error/load-error.component';
 import {
   IonButton,
   IonCard,
@@ -40,6 +46,7 @@ import {
   imports: [
     FormsModule,
     TranslatePipe,
+    LoadErrorComponent,
     IonButton,
     IonSpinner,
     IonTextarea,
@@ -64,7 +71,16 @@ import {
             </div>
           }
 
-          @if (!isLoading()) {
+          @if (!isLoading() && loadFailed()) {
+            <app-load-error
+              testId="two-factor-config-load-error"
+              [message]="'TWO_FACTOR_CONFIG.LOAD_FAILED' | appTranslate"
+              [actionLabel]="'COMMON.RETRY' | appTranslate"
+              (action)="loadConfig()"
+            ></app-load-error>
+          }
+
+          @if (!isLoading() && !loadFailed()) {
             <form (ngSubmit)="onSave()">
               <ion-item fill="outline" class="full-width">
                 <ion-label position="stacked">{{
@@ -132,11 +148,21 @@ export class TwoFactorConfigComponent implements OnInit {
   readonly configJson = signal('');
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
+  /** A load that failed for a reason other than "no configuration yet". */
+  readonly loadFailed = signal(false);
 
   ngOnInit(): void {
+    this.loadConfig();
+  }
+
+  loadConfig(): void {
     this.isLoading.set(true);
+    this.loadFailed.set(false);
     this.defaultService.getTwofactorConfigure().subscribe({
-      next: (raw: string) => {
+      // Typed as of the November 2026 spec sync; it used to be declared as a bare string. The
+      // both-shapes handling below stays: the declaration has changed once already, and reading
+      // an object as a string is how this screen would silently show "[object Object]".
+      next: (raw: GetTwoFactorConfigurationResponse | string) => {
         try {
           const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
           this.configJson.set(JSON.stringify(parsed, null, 2));
@@ -145,8 +171,20 @@ export class TwoFactorConfigComponent implements OnInit {
         }
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error: unknown) => {
         this.isLoading.set(false);
+        // A tenant with no configuration answers 404, which is an answer and not a failure: it
+        // means "create one", and the editor opens empty because that is how one is created.
+        // The OIDC screen reads 404 the same way, deliberately.
+        //
+        // Anything else did fail, and an empty editor is the worst thing to show for it — it
+        // reads as "this tenant has no second factor configured" and saves over whatever is
+        // really there. An error state with Retry instead, plus the toast the interceptor
+        // raises for a network failure (#749).
+        if ((error as HttpErrorResponse)?.status !== 404) {
+          this.loadFailed.set(true);
+          this.notifications.error(this.i18n.translate('TWO_FACTOR_CONFIG.LOAD_FAILED'));
+        }
       },
     });
   }
@@ -156,23 +194,27 @@ export class TwoFactorConfigComponent implements OnInit {
     try {
       parsed = JSON.parse(this.configJson());
     } catch {
-      this.i18n.translateAsync('TWO_FACTOR_CONFIG.PARSE_ERROR').subscribe((msg: string) => {
-        this.notifications.success(msg);
-      });
+      // `success` for a parse failure put "Invalid JSON" in a green toast.
+      this.notifications.error(this.i18n.translate('TWO_FACTOR_CONFIG.PARSE_ERROR'));
       return;
     }
 
     this.isSaving.set(true);
-    this.defaultService.putTwofactorConfigure(JSON.stringify(parsed)).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        this.i18n.translateAsync('TWO_FACTOR_CONFIG.SUCCESS').subscribe((msg: string) => {
-          this.notifications.success(msg);
-        });
-      },
-      error: () => {
-        this.isSaving.set(false);
-      },
-    });
+    // The editor is free-form JSON, so what the operator typed is checked for being parseable
+    // and then handed over as the request the endpoint now declares. The platform validates the
+    // keys; this screen does not pretend to know them.
+    this.defaultService
+      .putTwofactorConfigure(parsed as PutTwoFactorConfigurationRequest)
+      .subscribe({
+        next: () => {
+          this.isSaving.set(false);
+          this.i18n.translateAsync('TWO_FACTOR_CONFIG.SUCCESS').subscribe((msg: string) => {
+            this.notifications.success(msg);
+          });
+        },
+        error: () => {
+          this.isSaving.set(false);
+        },
+      });
   }
 }

@@ -39,7 +39,7 @@ import {
   PostClientsClientIdRequest,
   ShareAccountService,
 } from '../../api';
-import { StatusBadgeComponent, LoadErrorComponent } from '../../shared';
+import { StatusBadgeComponent, LoadErrorComponent, IsoDatePipe } from '../../shared';
 import { RequiresPermissionDirective } from '../../shared/directives/requires-permission.directive';
 import { createPermissionCheck } from '../../shared/utils/permission-check';
 import { skipErrorToast } from '../../core/http/http-context';
@@ -59,6 +59,7 @@ import {
   ClientSavingsAccountResult,
 } from './client-savings-account-dialog.component';
 import { CLIENT_STATUS, ClientServicingFields } from './client-servicing.model';
+import { ClientProfileFields } from './client-profile.model';
 import {
   formatDateToFineract,
   FINERACT_DATE_FORMAT,
@@ -70,7 +71,6 @@ import { ClientFamilyMembersListComponent } from './tabs/client-family-members-l
 import { ClientNotesListComponent } from './tabs/client-notes-list.component';
 import { ClientDocumentsListComponent } from './tabs/client-documents-list.component';
 import { ClientStandingInstructionsTabComponent } from './tabs/client-standing-instructions-tab.component';
-import { DateTimePipe } from '../../shared/pipes/date-time.pipe';
 import { EntityDatatablesComponent } from '../../shared/components/entity-datatables/entity-datatables.component';
 import { CdkTableModule } from '@angular/cdk/table';
 import { DialogService } from '../../core/services/dialog.service';
@@ -90,8 +90,43 @@ import {
   IonSegmentButton,
 } from '@ionic/angular/standalone';
 
-// The client accounts response includes amounts omitted by the generated model.
-export type ClientLoanAccountRow = GetClientsLoanAccounts & { originalLoan?: number };
+/**
+ * The client accounts response includes amounts omitted by the generated model: from Fineract's
+ * `LoanAccountSummaryData`, `originalLoan` is the principal and `loanBalance` what is still
+ * outstanding.
+ */
+export type ClientLoanAccountRow = GetClientsLoanAccounts & {
+  originalLoan?: number;
+  loanBalance?: number;
+};
+
+/** Likewise `accountBalance`, from `SavingsAccountSummaryData`. */
+export type ClientSavingsAccountRow = GetClientsSavingsAccounts & { accountBalance?: number };
+
+/** One line of the accounts overview card. */
+interface AccountsOverviewRow {
+  readonly tab: ClientTab;
+  readonly labelKey: string;
+  readonly active: number;
+  readonly total: number;
+  /** `null` when the accounts of this type do not share a currency — see `accountsOverview`. */
+  readonly amount: number | null;
+}
+
+/**
+ * Totals one account type, or `null` where the accounts do not share a currency.
+ *
+ * Compared by `currency.code` rather than the display symbol, which two currencies can share.
+ */
+function totalled<T extends { currency?: { code?: string } }>(
+  accounts: readonly T[],
+  amountOf: (account: T) => number | undefined,
+): number | null {
+  const currencies = new Set(accounts.map((account) => account.currency?.code ?? ''));
+  return currencies.size > 1
+    ? null
+    : accounts.reduce((sum, account) => sum + (amountOf(account) ?? 0), 0);
+}
 
 /** Shape the client action dialog resolves with. */
 interface ClientActionResult {
@@ -182,7 +217,7 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
     IonList,
     IonItem,
     TooltipDirective,
-    DateTimePipe,
+    IsoDatePipe,
   ],
   template: `
     <div class="view-container">
@@ -257,6 +292,8 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                   'ASSIGNSTAFF_CLIENT',
                   'UNASSIGNSTAFF_CLIENT',
                   'UPDATESAVINGSACCOUNT_CLIENT',
+                  'READ_CLIENTCHARGE',
+                  'ALL_FUNCTIONS_READ',
                 ]"
               >
                 <ion-icon name="settings-outline"></ion-icon>
@@ -442,6 +479,24 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                         <ion-label>{{ 'ACTIONS.UNDO_WITHDRAW_CLIENT' | appTranslate }}</ion-label>
                       </ion-item>
                     }
+                    <ion-item
+                      button
+                      (click)="onViewCharges()"
+                      data-testid="client-charges-action"
+                      appRequiresPermission="READ_CLIENTCHARGE"
+                    >
+                      <ion-icon slot="start" name="receipt-outline"></ion-icon>
+                      <ion-label>{{ 'CLIENT_CHARGES.TITLE' | appTranslate }}</ion-label>
+                    </ion-item>
+                    <ion-item
+                      button
+                      (click)="onViewCollateral()"
+                      data-testid="client-collateral-action"
+                      appRequiresPermission="ALL_FUNCTIONS_READ"
+                    >
+                      <ion-icon slot="start" name="shield-checkmark-outline"></ion-icon>
+                      <ion-label>{{ 'CLIENT_COLLATERAL.TITLE' | appTranslate }}</ion-label>
+                    </ion-item>
                   </ion-list>
                 </ng-template>
               </ion-popover>
@@ -481,6 +536,15 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                     >
                       <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
                       <ion-label>{{ 'ACTIONS.RECURRING_DEPOSIT' | appTranslate }}</ion-label>
+                    </ion-item>
+                    <ion-item
+                      button
+                      (click)="onCreateShare()"
+                      data-testid="client-new-share-account-action"
+                      appRequiresPermission="CREATE_SHAREACCOUNT"
+                    >
+                      <ion-icon slot="start" name="pie-chart-outline"></ion-icon>
+                      <ion-label>{{ 'ACTIONS.SHARE_ACCOUNT' | appTranslate }}</ion-label>
                     </ion-item>
                   </ion-list>
                 </ng-template>
@@ -557,12 +621,43 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       <span class="value">{{ client()?.lastname || '-' }}</span>
                     </div>
                     <div class="detail-item">
+                      <span class="label">{{ 'CLIENTS.DATE_OF_BIRTH' | appTranslate }}</span>
+                      <span class="value" data-testid="client-date-of-birth">{{
+                        profile().dateOfBirth | appIsoDate
+                      }}</span>
+                    </div>
+                    <div class="detail-item">
                       <span class="label">{{ 'COMMON.EXTERNAL_ID' | appTranslate }}</span>
                       <span class="value">{{ client()?.externalId || '-' }}</span>
                     </div>
+                    <!--
+                      Was the literal word "Person", whatever the client is. Fineract sends
+                      legalForm as an EnumOptionData, so an Entity client was labelled a
+                      person on its own details page.
+                    -->
                     <div class="detail-item">
                       <span class="label">{{ 'CLIENTS.LEGAL_FORM' | appTranslate }}</span>
-                      <span class="value">{{ 'CLIENTS.PERSON' | appTranslate }}</span>
+                      <span class="value" data-testid="client-legal-form">{{
+                        profile().legalForm?.value || '—'
+                      }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">{{ 'CLIENTS.GENDER' | appTranslate }}</span>
+                      <span class="value" data-testid="client-gender">{{
+                        profile().gender?.name || '—'
+                      }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">{{ 'CLIENTS.CLIENT_TYPE' | appTranslate }}</span>
+                      <span class="value" data-testid="client-type">{{
+                        profile().clientType?.name || '—'
+                      }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">{{ 'CLIENTS.CLASSIFICATION' | appTranslate }}</span>
+                      <span class="value" data-testid="client-classification">{{
+                        profile().clientClassification?.name || '—'
+                      }}</span>
                     </div>
                   </ion-card-content>
                 </ion-card>
@@ -580,15 +675,108 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
                       <span class="value">{{ client()?.emailAddress || '-' }}</span>
                     </div>
                     <div class="detail-item">
+                      <span class="label">{{ 'CLIENTS.MOBILE_NO' | appTranslate }}</span>
+                      <span class="value" data-testid="client-mobile-number">{{
+                        profile().mobileNo || '—'
+                      }}</span>
+                    </div>
+                    <div class="detail-item">
                       <span class="label">{{ 'COMMON.ACTIVATION_DATE' | appTranslate }}</span>
-                      <span class="value">{{ this.client()?.activationDate | dateTime }}</span>
+                      <span class="value">{{ this.client()?.activationDate | appIsoDate }}</span>
                     </div>
                     <div class="detail-item">
                       <span class="label">{{ 'CLIENTS.TIMELINE_SUBMITTED' | appTranslate }}</span>
                       <span class="value">{{
-                        this.client()?.timeline?.submittedOnDate | dateTime
+                        this.client()?.timeline?.submittedOnDate | appIsoDate
                       }}</span>
                     </div>
+                    <!--
+                      Group membership, which this page did not mention at all. Staff need it
+                      before opening an individual account for someone who is in a
+                      joint-liability group.
+                    -->
+                    <div class="detail-item">
+                      <span class="label">{{ 'CLIENTS.GROUPS' | appTranslate }}</span>
+                      <span class="value" data-testid="client-groups">
+                        @if (clientGroups().length === 0) {
+                          —
+                        } @else {
+                          @for (group of clientGroups(); track group.id) {
+                            @if (canViewGroups()) {
+                              <a
+                                class="clickable-link"
+                                [routerLink]="['/groups/view', group.id]"
+                                [attr.data-testid]="'client-group-' + group.id"
+                                >{{ group.name }}</a
+                              >
+                            } @else {
+                              <span [attr.data-testid]="'client-group-' + group.id">{{
+                                group.name
+                              }}</span>
+                            }
+                            @if (!$last) {
+                              <span class="group-separator">, </span>
+                            }
+                          }
+                        }
+                      </span>
+                    </div>
+                  </ion-card-content>
+                </ion-card>
+
+                <!--
+                  What the client owes and holds, in one place. Answering that used to mean
+                  opening up to four tabs and adding the rows up by eye.
+
+                  Shares are absent on purpose: they are not in GET /clients/{id}/accounts
+                  and are fetched only when their tab is opened, so a count here would either
+                  cost every client view an extra request or report a zero that is not one.
+                -->
+                <ion-card class="info-card accounts-overview">
+                  <ion-card-header>
+                    <ion-card-title>
+                      <ion-icon name="wallet-outline"></ion-icon>
+                      {{ 'CLIENTS.ACCOUNTS_OVERVIEW' | appTranslate }}
+                    </ion-card-title>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <table class="overview-table" data-testid="client-accounts-overview">
+                      <thead>
+                        <tr>
+                          <th scope="col">{{ 'COMMON.TYPE' | appTranslate }}</th>
+                          <th scope="col" class="numeric">
+                            {{ 'CLIENTS.ACTIVE_COUNT' | appTranslate }}
+                          </th>
+                          <th scope="col" class="numeric">{{ 'COMMON.TOTAL' | appTranslate }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (row of accountsOverview(); track row.tab) {
+                          <tr>
+                            <!--
+                              A label, not a control. It was an ion-button that switched to the
+                              matching tab, which duplicated the tab sitting directly above it
+                              and gave the page a second button accessibly named "Loan Accounts"
+                              beside the New Account menu's "Loan Account" — two controls one
+                              word apart, which is ambiguous to read out and was ambiguous to
+                              address: it broke the New Account locator in
+                              functional-coverage.spec.ts.
+                            -->
+                            <th scope="row">{{ row.labelKey | appTranslate }}</th>
+                            <td class="numeric" [attr.data-testid]="'overview-count-' + row.tab">
+                              {{ row.active }} / {{ row.total }}
+                            </td>
+                            <td class="numeric" [attr.data-testid]="'overview-amount-' + row.tab">
+                              @if (row.amount === null) {
+                                —
+                              } @else {
+                                {{ row.amount | number: '1.2-2' }}
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
                   </ion-card-content>
                 </ion-card>
               </div>
@@ -739,7 +927,12 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
               <ion-card class="table-card">
                 <ion-card-content>
                   @if (loanAccounts().length > 0) {
-                    <table cdk-table [dataSource]="loanAccounts()" class="full-width-table">
+                    <table
+                      cdk-table
+                      [dataSource]="loanAccounts()"
+                      class="full-width-table"
+                      data-testid="client-loan-accounts"
+                    >
                       <ng-container cdkColumnDef="accountNo">
                         <th cdk-header-cell *cdkHeaderCellDef>
                           {{ 'COMMON.ACCOUNT_NO' | appTranslate }}
@@ -965,9 +1158,19 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
           @if (activeTab() === TAB.shares) {
             <div class="tab-content">
               @if (shareAccounts().length === 0) {
-                <p class="empty-state" data-testid="client-share-accounts-empty">
-                  {{ 'CLIENTS.NO_SHARE_ACCOUNTS' | appTranslate }}
-                </p>
+                <div class="empty-state" data-testid="client-share-accounts-empty">
+                  <ion-icon name="pie-chart-outline"></ion-icon>
+                  <p>{{ 'CLIENTS.NO_SHARE_ACCOUNTS' | appTranslate }}</p>
+                  <ion-button
+                    color="primary"
+                    data-testid="client-create-share-account"
+                    (click)="onCreateShare()"
+                    appRequiresPermission="CREATE_SHAREACCOUNT"
+                  >
+                    <ion-icon slot="start" name="add-outline"></ion-icon>
+                    {{ 'SHARE_ACCOUNTS.CREATE' | appTranslate }}
+                  </ion-button>
+                </div>
               } @else {
                 <table class="accounts-table" data-testid="client-share-accounts">
                   <tbody>
@@ -1003,6 +1206,26 @@ export type ClientTab = (typeof CLIENT_TAB)[keyof typeof CLIENT_TAB];
   `,
   styles: [
     `
+      .accounts-overview .overview-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .overview-table th,
+      .overview-table td {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--ion-color-step-150, #e0e0e0);
+        text-align: left;
+      }
+      .overview-table .numeric {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .overview-table th[scope='row'] {
+        font-weight: 400;
+      }
+      .group-separator {
+        color: var(--text-muted);
+      }
       .view-container {
         padding: 24px;
         max-width: 1200px;
@@ -1180,9 +1403,14 @@ export class ClientViewComponent implements OnInit, OnDestroy {
   protected readonly canViewRecurringDeposit = createPermissionCheck(
     'READ_RECURRINGDEPOSITACCOUNT',
   );
+  protected readonly canViewGroups = createPermissionCheck('READ_GROUP');
 
   readonly clientId = signal(0);
   readonly client = signal<GetClientsClientIdResponse | null>(null);
+  /** Read-only identification fields omitted by the generated response model. */
+  readonly profile = computed<ClientProfileFields>(
+    () => (this.client() as unknown as ClientProfileFields | null) ?? {},
+  );
   /**
    * `'not-found'` covers both a missing client and one the caller lacks permission to see —
    * Fineract's 404 and 403 read the same to the user, and distinguishing them here would leak
@@ -1191,7 +1419,7 @@ export class ClientViewComponent implements OnInit, OnDestroy {
    */
   readonly loadError = signal<'not-found' | 'failed' | null>(null);
   readonly loanAccounts = signal<ClientLoanAccountRow[]>([]);
-  readonly savingsAccounts = signal<GetClientsSavingsAccounts[]>([]);
+  readonly savingsAccounts = signal<ClientSavingsAccountRow[]>([]);
   readonly shareAccounts = signal<ShareAccountRow[]>([]);
 
   /**
@@ -1206,10 +1434,55 @@ export class ClientViewComponent implements OnInit, OnDestroy {
     this.depositAccountsOfType(DEPOSIT_TYPE.recurring),
   );
 
-  private depositAccountsOfType(typeId: number): GetClientsSavingsAccounts[] {
+  private depositAccountsOfType(typeId: number): ClientSavingsAccountRow[] {
     return this.savingsAccounts().filter(
       (account) => (account.depositType?.id ?? DEPOSIT_TYPE.savings) === typeId,
     );
+  }
+
+  /** The groups this client belongs to, as `GET /clients/{id}` lists them. */
+  readonly clientGroups = computed(() =>
+    (this.client()?.groups ?? []).filter((group) => group.id !== undefined),
+  );
+
+  /**
+   * One row per account type: how many are active out of how many exist, and what they come to.
+   *
+   * The amounts are the platform's own per-account figures, `loanBalance` and `accountBalance`,
+   * both of which `GET /clients/{id}/accounts` returns and the generated models omit (#653).
+   * A type holding more than one currency reports no amount: 500 USD plus 500 INR is 1000 of
+   * nothing, and the per-account tables below still show each balance with its own symbol.
+   */
+  readonly accountsOverview = computed<AccountsOverviewRow[]>(() => {
+    const loans = this.loanAccounts();
+    return [
+      {
+        tab: CLIENT_TAB.loans,
+        labelKey: 'CLIENTS.LOAN_ACCOUNTS',
+        active: loans.filter((loan) => loan.status?.active === true).length,
+        total: loans.length,
+        amount: totalled(loans, (loan) => loan.loanBalance),
+      },
+      this.depositRow(CLIENT_TAB.savings, 'CLIENTS.SAVINGS_ACCOUNTS', this.plainSavingsAccounts()),
+      this.depositRow(CLIENT_TAB.deposits, 'CLIENTS.DEPOSIT_ACCOUNTS', [
+        ...this.fixedDepositAccounts(),
+        ...this.recurringDepositAccounts(),
+      ]),
+    ];
+  });
+
+  private depositRow(
+    tab: ClientTab,
+    labelKey: string,
+    accounts: readonly ClientSavingsAccountRow[],
+  ): AccountsOverviewRow {
+    return {
+      tab,
+      labelKey,
+      active: accounts.filter((account) => account.status?.active === true).length,
+      total: accounts.length,
+      amount: totalled(accounts, (account) => account.accountBalance),
+    };
   }
 
   savingsColumns = ['accountNo', 'productName', 'balance', 'status', 'actions'];
@@ -1613,6 +1886,20 @@ export class ClientViewComponent implements OnInit, OnDestroy {
     this.router.navigate(['/products/recurring-deposits/create'], {
       queryParams: { clientId: this.clientId() },
     });
+  }
+
+  onCreateShare() {
+    this.router.navigate(['/products/shares/create'], {
+      queryParams: { clientId: this.clientId() },
+    });
+  }
+
+  onViewCharges() {
+    this.router.navigate(['/clients', this.clientId(), 'charges']);
+  }
+
+  onViewCollateral() {
+    this.router.navigate(['/clients', this.clientId(), 'collaterals']);
   }
 
   onSavingsTransaction(accountId: number, command: string) {

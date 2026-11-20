@@ -28,6 +28,16 @@ export const SYSTEM_ROUTES: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'account-number-formats',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_ACCOUNTNUMBERFORMAT' },
+    title: 'nav.accountNumberFormats',
+    loadComponent: () =>
+      import('./account-number-formats/account-number-formats.component').then(
+        (m) => m.AccountNumberFormatsComponent,
+      ),
+  },
+  {
     path: 'data-tables',
     canActivate: [authGuard, permissionGuard],
     data: { permissions: 'READ_DATATABLE' },
@@ -435,6 +445,17 @@ export const SYSTEM_ROUTES: Routes = [
     loadComponent: () =>
       import('./scheduler-jobs/scheduler-jobs-list.component').then(
         (m) => m.SchedulerJobsListComponent,
+      ),
+  },
+  {
+    path: 'scheduler-jobs/:id/edit',
+    canActivate: [authGuard, permissionGuard],
+    // The form starts with GET /jobs/{id}, which Fineract refuses without READ_SCHEDULER.
+    data: { permissions: ['READ_SCHEDULER', 'UPDATE_SCHEDULER'], permissionsMatchAll: true },
+    title: 'SCHEDULER_JOBS.EDIT_JOB',
+    loadComponent: () =>
+      import('./scheduler-jobs/scheduler-job-form.component').then(
+        (m) => m.SchedulerJobFormComponent,
       ),
   },
   {

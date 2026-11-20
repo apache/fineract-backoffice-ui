@@ -48,6 +48,10 @@ export interface PutLoansLoanIdRequest {
     enableDownPayment?: boolean;
     enableInstallmentLevelDelinquency?: boolean;
     expectedDisbursementDate?: string;
+    /**
+     * First due day of the month of a semi-monthly loan, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     fraud?: boolean;
@@ -68,6 +72,10 @@ export interface PutLoansLoanIdRequest {
     loanType?: string;
     locale?: string;
     maxOutstandingLoanBalance?: number;
+    /**
+     * Overrides the loan product\'s month end due date strategy for this loan. It has no effect on a loan whose repayments follow a meeting calendar.
+     */
+    monthEndDueDateStrategy?: PutLoansLoanIdRequest.MonthEndDueDateStrategyEnum;
     numberOfRepayments?: number;
     principal?: number;
     productId?: number;
@@ -76,7 +84,19 @@ export interface PutLoansLoanIdRequest {
     repaymentFrequencyNthDayType?: number;
     repaymentFrequencyType?: number;
     repaymentsStartingFromDate?: string;
+    /**
+     * Second due day of the month of a semi-monthly loan, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     submittedOnDate?: string;
     transactionProcessingStrategyCode?: string;
 }
+export namespace PutLoansLoanIdRequest {
+    export const MonthEndDueDateStrategyEnum = {
+        LastDayOfMonth: 'LAST_DAY_OF_MONTH',
+        FirstDayOfNextMonth: 'FIRST_DAY_OF_NEXT_MONTH'
+    } as const;
+    export type MonthEndDueDateStrategyEnum = typeof MonthEndDueDateStrategyEnum[keyof typeof MonthEndDueDateStrategyEnum];
+}
+
 

@@ -388,6 +388,13 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
     labelKey: 'nav.workingCapital',
     children: [
       {
+        id: 'working-capital.overview',
+        route: '/working-capital/overview',
+        labelKey: 'nav.wcOverview',
+        icon: ICON_GRID_OUTLINE,
+        requiredPermissions: 'READ_WORKINGCAPITALLOAN',
+      },
+      {
         id: 'working-capital.loans',
         route: '/working-capital/loans',
         labelKey: 'nav.wcLoans',
@@ -421,6 +428,14 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
         requiredPermissions: 'READ_WORKINGCAPITALLOAN',
         labelKey: 'WC_LOAN_ACCOUNT_LOCK.TITLE',
         icon: ICON_LOCK_CLOSED_OUTLINE,
+        developerTool: true,
+      },
+      {
+        id: 'working-capital.loan-test-tools',
+        route: '/working-capital/loans/test-tools',
+        labelKey: 'WC_LOAN_TEST_TOOLS.TITLE',
+        icon: ICON_OPTIONS_OUTLINE,
+        requiredPermissions: 'READ_WORKINGCAPITALLOAN',
         developerTool: true,
       },
       {
@@ -893,6 +908,13 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
         requiredPermissions: 'READ_IMPORT',
         labelKey: 'nav.bulkImport',
         icon: 'cloud-upload-outline',
+      },
+      {
+        id: 'system.accountNumberFormats',
+        route: '/system/account-number-formats',
+        requiredPermissions: 'READ_ACCOUNTNUMBERFORMAT',
+        labelKey: 'nav.accountNumberFormats',
+        icon: 'barcode-outline',
       },
       {
         id: 'system.delinquency',

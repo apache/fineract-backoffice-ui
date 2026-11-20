@@ -97,6 +97,7 @@ api/offices.service.ts
 api/passwordManagement.service.ts
 api/passwordPreferences.service.ts
 api/paymentType.service.ts
+api/payoffSchedulePreview.service.ts
 api/periodicAccrualAccounting.service.ts
 api/permissions.service.ts
 api/povertyLine.service.ts
@@ -251,6 +252,7 @@ model/collateralProductUpdateResponse.ts
 model/collectionSheetRequest.ts
 model/columnFilterData.ts
 model/commandProcessingResult.ts
+model/commandProcessingSubResourceResult.ts
 model/component.ts
 model/componentData.ts
 model/configuredJobNamesDTO.ts
@@ -332,6 +334,8 @@ model/executeJobRequest.ts
 model/executeWorkingCapitalLoanTransactionCommandRequest.ts
 model/executeWorkingCapitalLoanTransactionCommandResponse.ts
 model/extensionData.ts
+model/externalAssetOwnerLoanAttributeData.ts
+model/externalAssetOwnerLoanAttributesData.ts
 model/externalAssetOwnerRequest.ts
 model/externalAssetOwnerSearchRequest.ts
 model/externalAssetOwnerTransferChangesData.ts
@@ -411,6 +415,8 @@ model/getAccountsCurrency.ts
 model/getAccountsLockPeriodTypeEnum.ts
 model/getAccountsPageItems.ts
 model/getAccountsPurchasedShares.ts
+model/getAccountsPurchasedSharesPaymentDetailData.ts
+model/getAccountsPurchasedSharesPaymentType.ts
 model/getAccountsPurchasedSharesStatus.ts
 model/getAccountsPurchasedSharesType.ts
 model/getAccountsStatus.ts
@@ -849,6 +855,7 @@ model/getSavingsAssetLiabilityType.ts
 model/getSavingsChargeCalculationType.ts
 model/getSavingsChargePaymentMode.ts
 model/getSavingsChargeTimeType.ts
+model/getSavingsChargeTransactionResponse.ts
 model/getSavingsChargesChargeTimeType.ts
 model/getSavingsChargesOptions.ts
 model/getSavingsCurrency.ts
@@ -899,7 +906,13 @@ model/getSavingsSummary.ts
 model/getSavingsTimeline.ts
 model/getSchedulerResponse.ts
 model/getSearchResponse.ts
+model/getShareDividendAccountData.ts
+model/getShareDividendStatus.ts
 model/getShareEquityId.ts
+model/getShareProductDividendDetailsPageItems.ts
+model/getShareProductDividendDetailsResponse.ts
+model/getShareProductDividendsPageItems.ts
+model/getShareProductDividendsResponse.ts
 model/getShareReferenceId.ts
 model/getShareSuspenseId.ts
 model/getStandingInstructionHistoryFromAccount.ts
@@ -917,6 +930,8 @@ model/getSurveyResponse.ts
 model/getSurveyResponseDatatableData.ts
 model/getTaxesComponentsCreditAccount.ts
 model/getTaxesComponentsCreditAccountType.ts
+model/getTaxesComponentsDebitAccount.ts
+model/getTaxesComponentsDebitAccountType.ts
 model/getTaxesComponentsResponse.ts
 model/getTaxesGroupResponse.ts
 model/getTaxesGroupTaxAssociations.ts
@@ -939,6 +954,8 @@ model/getTransactionsPaymentDetailData.ts
 model/getTranscationEnumData.ts
 model/getTransferTypeOptionsResponseStandingInstructionSwagger.ts
 model/getTransferTypeStandingInstructionSwagger.ts
+model/getTwoFactorConfigurationResponse.ts
+model/getTwoFactorDeliveryMethodsResponse.ts
 model/getUserDetailsResponse.ts
 model/getUsersResponse.ts
 model/getUsersTemplateResponse.ts
@@ -986,7 +1003,6 @@ model/hookGroupingData.ts
 model/hookTemplateData.ts
 model/hookUpdateRequest.ts
 model/hookUpdateResponse.ts
-model/iLoanConfigurationDetails.ts
 model/idDocument.ts
 model/imageCreateResponse.ts
 model/imageDeleteResponse.ts
@@ -995,8 +1011,6 @@ model/inlineJobRequest.ts
 model/inlineJobResponse.ts
 model/interestPauseRequestDto.ts
 model/interestPauseResponseDto.ts
-model/interestPeriod.ts
-model/interestPeriodMc.ts
 model/interestRateChartCreateRequest.ts
 model/interestRateChartCreateResponse.ts
 model/interestRateChartDeleteResponse.ts
@@ -1103,6 +1117,7 @@ model/models.ts
 model/monetaryCurrency.ts
 model/money.ts
 model/moneyData.ts
+model/moneyMc.ts
 model/multiPart.ts
 model/noteCreateRequest.ts
 model/noteCreateResponse.ts
@@ -1210,6 +1225,7 @@ model/postFinancialActivityAccountsRequest.ts
 model/postFinancialActivityAccountsResponse.ts
 model/postFixedDepositAccountsAccountIdRequest.ts
 model/postFixedDepositAccountsAccountIdResponse.ts
+model/postFixedDepositAccountsCharges.ts
 model/postFixedDepositAccountsFixedDepositAccountIdTransactionsRequest.ts
 model/postFixedDepositAccountsFixedDepositAccountIdTransactionsTransactionIdChanges.ts
 model/postFixedDepositAccountsFixedDepositAccountIdTransactionsTransactionIdResponse.ts
@@ -1271,9 +1287,11 @@ model/postLoansLoanIdSchedulePeriod.ts
 model/postLoansLoanIdScheduleRequest.ts
 model/postLoansLoanIdScheduleResponse.ts
 model/postLoansLoanIdStatus.ts
+model/postLoansLoanIdSubResource.ts
 model/postLoansLoanIdTransactionsRequest.ts
 model/postLoansLoanIdTransactionsResponse.ts
 model/postLoansLoanIdTransactionsResponseChanges.ts
+model/postLoansLoanIdTransactionsSubResource.ts
 model/postLoansLoanIdTransactionsTransactionIdRequest.ts
 model/postLoansOriginatorData.ts
 model/postLoansRepaymentSchedulePeriods.ts
@@ -1288,8 +1306,12 @@ model/postOrganisationCreditBureauRequest.ts
 model/postPaymentAllocation.ts
 model/postPaymentAllocationOrder.ts
 model/postPaymentAllocationRule.ts
+model/postPayoffSchedulePreviewInstallment.ts
+model/postPayoffSchedulePreviewRequest.ts
+model/postPayoffSchedulePreviewResponse.ts
 model/postProductsChargesSelected.ts
 model/postProductsMarketPricePeriods.ts
+model/postProductsPaymentChannelToFundSourceMappings.ts
 model/postProductsTypeRequest.ts
 model/postProductsTypeResponse.ts
 model/postProvisioningCriteriaRequest.ts
@@ -1334,6 +1356,7 @@ model/postSavingsAccountsSavingsAccountIdChargesSavingsAccountChargeIdResponse.t
 model/postSavingsCharges.ts
 model/postSavingsProductsRequest.ts
 model/postSavingsProductsResponse.ts
+model/postShareProductDividendsRequest.ts
 model/postStandingInstructionsResponse.ts
 model/postSurveySurveyNameApptableIdRequest.ts
 model/postSurveySurveyNameApptableIdResponse.ts
@@ -1350,6 +1373,10 @@ model/postTellersTellerIdCashiersCashierIdSettleRequest.ts
 model/postTellersTellerIdCashiersCashierIdSettleResponse.ts
 model/postTellersTellerIdCashiersRequest.ts
 model/postTellersTellerIdCashiersResponse.ts
+model/postTwoFactorInvalidateRequest.ts
+model/postTwoFactorInvalidateResponse.ts
+model/postTwoFactorRequestTokenResponse.ts
+model/postTwoFactorValidateResponse.ts
 model/postUpdateRescheduleLoanChanges.ts
 model/postUpdateRescheduleLoansRequest.ts
 model/postUpdateRescheduleLoansResponse.ts
@@ -1383,7 +1410,6 @@ model/productMixData.ts
 model/productMixDeleteResponse.ts
 model/productMixUpdateRequest.ts
 model/productMixUpdateResponse.ts
-model/progressiveLoanInterestScheduleModel.ts
 model/projectedAmortizationScheduleData.ts
 model/projectedAmortizationScheduleGenerateRequest.ts
 model/projectedAmortizationSchedulePaymentData.ts
@@ -1430,6 +1456,7 @@ model/putDataTablesResponse.ts
 model/putDelinquencyBucketResponse.ts
 model/putDelinquencyRangeResponse.ts
 model/putEmailRequest.ts
+model/putExternalAssetOwnerLoanAttributeRequest.ts
 model/putExternalAssetOwnerLoanProductAttributeRequest.ts
 model/putExternalServiceRequest.ts
 model/putFinancialActivityAccountsChanges.ts
@@ -1534,6 +1561,8 @@ model/putTellersResponseChanges.ts
 model/putTellersTellerIdCashiersCashierIdRequest.ts
 model/putTellersTellerIdCashiersCashierIdResponse.ts
 model/putTellersTellerIdCashiersCashierIdResponseChanges.ts
+model/putTwoFactorConfigurationRequest.ts
+model/putTwoFactorConfigurationResponse.ts
 model/putUpdateStandingInstructionChanges.ts
 model/putUsersUserIdRequest.ts
 model/putUsersUserIdResponse.ts
@@ -1550,7 +1579,6 @@ model/questionData.ts
 model/rate.ts
 model/rateData.ts
 model/rateRequest.ts
-model/repaymentPeriod.ts
 model/repaymentTransactionRequest.ts
 model/reportExportType.ts
 model/reportMailingJobRunHistoryData.ts
@@ -1577,6 +1605,7 @@ model/savingsAccountSummaryData.ts
 model/savingsAccountTransactionData.ts
 model/savingsAccountTransactionEnumData.ts
 model/savingsAccountTransactionsSearchResponse.ts
+model/savingsChargeTransactionData.ts
 model/savingsProductData.ts
 model/scorecard.ts
 model/scorecardData.ts

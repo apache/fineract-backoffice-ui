@@ -32,9 +32,16 @@ function csvField(value: unknown): string {
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-/** Renders `rows` as CSV text, headered by `columns` — the same shape a table renders on screen. */
-export function toCsv(columns: CsvColumn[], rows: readonly Record<string, unknown>[]): string {
+/**
+ * Renders `rows` as CSV text, headered by `columns` — the same shape a table renders on screen.
+ *
+ * Takes any object, not just `Record<string, unknown>`, so an adapter's interface-typed rows can
+ * be exported without being retyped first.
+ */
+export function toCsv(columns: CsvColumn[], rows: readonly object[]): string {
   const header = columns.map((c) => csvField(c.label)).join(',');
-  const lines = rows.map((row) => columns.map((c) => csvField(row[c.key])).join(','));
+  const lines = rows.map((row) =>
+    columns.map((c) => csvField((row as Record<string, unknown>)[c.key])).join(','),
+  );
   return [header, ...lines].join('\r\n');
 }

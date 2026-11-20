@@ -41,7 +41,7 @@ import { GetRecurringDepositAccountsInterestCompoundingPeriodType } from './getR
  * GetRecurringDepositAccountsResponse
  */
 export interface GetRecurringDepositAccountsResponse { 
-    accountNo?: number;
+    accountNo?: string;
     clientId?: number;
     clientName?: string;
     currency?: GetRecurringDepositAccountsCurrency;

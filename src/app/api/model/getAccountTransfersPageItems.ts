@@ -48,5 +48,6 @@ export interface GetAccountTransfersPageItems {
     transferAmount?: number;
     transferDate?: string;
     transferDescription?: string;
+    transferTime?: string;
 }
 

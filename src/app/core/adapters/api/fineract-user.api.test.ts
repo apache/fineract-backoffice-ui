@@ -21,7 +21,7 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
 
-import { UsersService } from '../../../api';
+import { PasswordPreferencesService, UsersService } from '../../../api';
 import { FineractUserApi, mapUser } from './fineract-user.api';
 
 /** `GET /users/1` on a running `apache/fineract:latest`. */
@@ -78,6 +78,7 @@ describe('mapUser', () => {
 
 describe('FineractUserApi', () => {
   let users: { [K in keyof UsersService]?: ReturnType<typeof vi.fn> };
+  let passwordPreferences: { getPasswordpreferences?: ReturnType<typeof vi.fn> };
   let api: FineractUserApi;
 
   beforeEach(() => {
@@ -87,9 +88,16 @@ describe('FineractUserApi', () => {
       getUsersTemplate: vi.fn(),
       postUsers: vi.fn(),
       putUsersUserId: vi.fn(),
+      postUsersUserIdPwd: vi.fn(),
+      deleteUsersUserId: vi.fn(),
     };
+    passwordPreferences = { getPasswordpreferences: vi.fn() };
     TestBed.configureTestingModule({
-      providers: [FineractUserApi, { provide: UsersService, useValue: users }],
+      providers: [
+        FineractUserApi,
+        { provide: UsersService, useValue: users },
+        { provide: PasswordPreferencesService, useValue: passwordPreferences },
+      ],
     });
     api = TestBed.inject(FineractUserApi);
   });
@@ -195,6 +203,71 @@ describe('FineractUserApi', () => {
     expect('username' in body).toBe(false);
     expect('password' in body).toBe(false);
     expect(body['roles']).toEqual([3, 4]);
+  });
+
+  /**
+   * The policy read, which `GET /passwordpreferences` answers as a **single object** — measured
+   * against a running Fineract. The generated method types this response as the template's,
+   * which is a list, so both shapes are handled: a deployment that answers the list here still
+   * yields the active entry rather than nothing.
+   */
+  it('reads the active password policy from a single-object response', async () => {
+    passwordPreferences.getPasswordpreferences!.mockReturnValue(
+      of({
+        id: 3,
+        key: 'strong',
+        active: true,
+        description: 'Password must be 12 to 50 characters long',
+      }),
+    );
+
+    expect(await firstValueFrom(api.passwordPolicy())).toEqual({
+      key: 'strong',
+      description: 'Password must be 12 to 50 characters long',
+    });
+  });
+
+  it('picks the active entry when the response is the whole list', async () => {
+    passwordPreferences.getPasswordpreferences!.mockReturnValue(
+      of([
+        { id: 1, key: 'simple', active: false, description: 'at least 1 character' },
+        { id: 3, key: 'strong', active: true, description: '12 to 50 characters' },
+      ] as never),
+    );
+
+    expect(await firstValueFrom(api.passwordPolicy())).toEqual({
+      key: 'strong',
+      description: '12 to 50 characters',
+    });
+  });
+
+  /**
+   * `null`, not a guess. The forms read an absent policy as the loosest rules, so a failed read
+   * cannot refuse a password the platform would have accepted.
+   */
+  it('answers null when nothing names a policy', async () => {
+    passwordPreferences.getPasswordpreferences!.mockReturnValue(of({}));
+
+    expect(await firstValueFrom(api.passwordPolicy())).toBeNull();
+  });
+
+  it('changes a password through its own endpoint, which the update does not carry', async () => {
+    users.postUsersUserIdPwd!.mockReturnValue(of({ resourceId: 4 }));
+
+    await firstValueFrom(api.changePassword(4, 'Xq7!vTz3mKp9', 'Xq7!vTz3mKp9'));
+
+    expect(users.postUsersUserIdPwd).toHaveBeenCalledWith(4, {
+      password: 'Xq7!vTz3mKp9',
+      repeatPassword: 'Xq7!vTz3mKp9',
+    });
+  });
+
+  it('deletes a user, which is how access is withdrawn', async () => {
+    users.deleteUsersUserId!.mockReturnValue(of({ resourceId: 4, officeId: 1 }));
+
+    await firstValueFrom(api.delete(4));
+
+    expect(users.deleteUsersUserId).toHaveBeenCalledWith(4);
   });
 
   it('reads a null user list as empty', async () => {

@@ -69,6 +69,7 @@ const BACKEND_SPECS = [
   'delinquency-configuration.spec.ts',
   'interest-rate-charts.spec.ts',
   'accounting-closure-backend.spec.ts',
+  'scheduler-job-edit-backend.spec.ts',
   'loan-repayment-gating.spec.ts',
   'savings-transaction-gating.spec.ts',
   'collection-sheet.spec.ts',
@@ -89,6 +90,8 @@ const BACKEND_SPECS = [
   'working-capital-rbac-backend.spec.ts',
   'loan-servicing-rbac-backend.spec.ts',
   'charge-servicing-backend.spec.ts',
+  'client-details-fields.spec.ts',
+  'client-family-member-backend.spec.ts',
   'client-transfer.spec.ts',
   'client-legal-form-search.spec.ts',
   'deposit-account-servicing.spec.ts',
@@ -112,6 +115,7 @@ const BACKEND_SPECS = [
   'savings-transaction-correction.spec.ts',
   'share-product-accounting.spec.ts',
   'teller-cash-management.spec.ts',
+  'account-number-formats-backend.spec.ts',
 ];
 
 export default defineConfig({

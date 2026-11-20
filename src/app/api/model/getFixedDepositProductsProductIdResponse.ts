@@ -43,6 +43,7 @@ import { GetFixedDepositProductsProductIdCurrency } from './getFixedDepositProdu
 export interface GetFixedDepositProductsProductIdResponse { 
     accountingMappings?: GetFixedDepositProductsProductIdAccountingMappings;
     activeChart?: GetFixedDepositProductsProductIdActiveChart;
+    closeDate?: string;
     currency?: GetFixedDepositProductsProductIdCurrency;
     description?: string;
     feeToIncomeAccountMappings?: Set<GetFixedDepositProductsProductIdFeeToIncomeAccountMappings>;
@@ -61,5 +62,7 @@ export interface GetFixedDepositProductsProductIdResponse {
     preClosurePenalInterest?: number;
     preClosurePenalInterestOnType?: GetFixedDepositProductsProductIdPreClosurePenalInterestOnType;
     shortName?: string;
+    startDate?: string;
+    status?: string;
 }
 

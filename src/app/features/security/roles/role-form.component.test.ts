@@ -69,7 +69,9 @@ describe('RoleFormComponent', () => {
 
     // No casts. Every one of these used to need `as unknown as ReturnType<RolesService[...]>`,
     // and a fixture shaped by a cast is a fixture nothing checks.
-    roleApi.get.mockReturnValue(of({ id: 7, name: 'Branch Officer', description: 'Front desk' }));
+    roleApi.get.mockReturnValue(
+      of({ id: 7, name: 'Branch Officer', description: 'Front desk', disabled: false }),
+    );
     roleApi.permissions.mockReturnValue(of(PERMISSIONS));
     roleApi.update.mockReturnValue(of(undefined));
     roleApi.setPermissions.mockReturnValue(of(undefined));

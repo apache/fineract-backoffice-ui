@@ -21,7 +21,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlatformDateService } from '../../core/services/platform-date.service';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
+import { ButtonComponent } from '../../ui/button/button.component';
 import { I18N, TranslatePipe } from '../../core/adapters';
 import { MutationOutcomeService } from '../../core/services/mutation-outcome.service';
 import { ClientSearchComponent } from '../../shared/components/client-search/client-search.component';
@@ -62,6 +63,7 @@ import {
   IonSelect,
   IonSelectOption,
   IonSpinner,
+  IonNote,
 } from '@ionic/angular/standalone';
 import {
   formatArrayDate,
@@ -70,6 +72,12 @@ import {
   FINERACT_LOCALE,
 } from '../../core/utils/date-formatter';
 import { createPickersReady } from '../../shared/utils/pickers-ready';
+import { toIsoFineractDate } from '../../core/adapters/api/fineract-date';
+
+// The loan read API exposes this date, but the generated response model omits it.
+type LoanResponseWithRepaymentDate = GetLoansLoanIdResponse & {
+  expectedFirstRepaymentOnDate?: string | number[] | null;
+};
 
 const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
@@ -78,11 +86,13 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
   standalone: true,
   imports: [
     FormsModule,
+    ButtonComponent,
     TranslatePipe,
     ClientSearchComponent,
     IonIcon,
     IonButton,
     IonSpinner,
+    IonNote,
     IonInput,
     IonItem,
     IonLabel,
@@ -147,7 +157,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                     [appTooltip]="'HELP.LOAN_PRODUCT_DESC' | appTranslate"
                     class="flex-grow"
                   >
-                    <ion-label position="stacked">{{ 'LOANS.PRODUCT' | appTranslate }}</ion-label>
+                    <ion-label position="stacked"
+                      >{{ 'LOANS.PRODUCT' | appTranslate
+                      }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                    >
                     <ion-select
                       [attr.aria-label]="'LOANS.PRODUCT' | appTranslate"
                       interface="popover"
@@ -189,7 +202,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Principal -->
                 <ion-item fill="outline" [appTooltip]="'HELP.PRINCIPAL_DESC' | appTranslate">
-                  <ion-label position="stacked">{{ 'LOANS.PRINCIPAL' | appTranslate }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'LOANS.PRINCIPAL' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-input
                     [attr.aria-label]="'LOANS.PRINCIPAL' | appTranslate"
                     type="number"
@@ -213,9 +229,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Submitted On -->
                 <ion-item fill="outline" [appTooltip]="'HELP.SUBMITTED_ON_DESC' | appTranslate">
-                  <ion-label position="stacked">{{
-                    'COMMON.SUBMITTED_ON' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'COMMON.SUBMITTED_ON' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   @if (pickersReady()) {
                     <ion-datetime-button datetime="submittedOnDate-picker"></ion-datetime-button>
                   }
@@ -239,9 +256,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                   fill="outline"
                   [appTooltip]="'HELP.EXPECTED_DISBURSEMENT_DESC' | appTranslate"
                 >
-                  <ion-label position="stacked">{{
-                    'LOANS.EXPECTED_DISBURSEMENT' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'LOANS.EXPECTED_DISBURSEMENT' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   @if (pickersReady()) {
                     <ion-datetime-button
                       datetime="expectedDisbursementDate-picker"
@@ -264,9 +282,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Term Frequency -->
                 <ion-item fill="outline" [appTooltip]="'HELP.TERM_FREQUENCY_DESC' | appTranslate">
-                  <ion-label position="stacked">{{
-                    'LOANS.TERM_FREQUENCY' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'LOANS.TERM_FREQUENCY' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-input
                     [attr.aria-label]="'LOANS.TERM_FREQUENCY' | appTranslate"
                     type="number"
@@ -278,7 +297,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Term Type -->
                 <ion-item fill="outline" [appTooltip]="'HELP.TERM_TYPE_DESC' | appTranslate">
-                  <ion-label position="stacked">{{ 'LOANS.TERM_TYPE' | appTranslate }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'LOANS.TERM_TYPE' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-select
                     [attr.aria-label]="'LOANS.TERM_TYPE' | appTranslate"
                     interface="popover"
@@ -303,9 +325,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Number of Repayments -->
                 <ion-item fill="outline" [appTooltip]="'HELP.REPAYMENTS_COUNT_DESC' | appTranslate">
-                  <ion-label position="stacked">{{
-                    'LOANS.REPAYMENTS_COUNT' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'LOANS.REPAYMENTS_COUNT' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-input
                     [attr.aria-label]="'LOANS.REPAYMENTS_COUNT' | appTranslate"
                     type="number"
@@ -317,9 +340,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Repayment Every -->
                 <ion-item fill="outline" [appTooltip]="'HELP.REPAYMENT_EVERY_DESC' | appTranslate">
-                  <ion-label position="stacked">{{
-                    'LOANS.REPAYMENT_EVERY' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'LOANS.REPAYMENT_EVERY' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-input
                     [attr.aria-label]="'LOANS.REPAYMENT_EVERY' | appTranslate"
                     type="number"
@@ -331,7 +355,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Repayment Frequency Type -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{ 'COMMON.FREQUENCY' | appTranslate }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'COMMON.FREQUENCY' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-select
                     [attr.aria-label]="'COMMON.FREQUENCY' | appTranslate"
                     interface="popover"
@@ -353,9 +380,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Interest Rate Per Period -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{
-                    'COMMON.INTEREST_RATE' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'COMMON.INTEREST_RATE' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-input
                     [attr.aria-label]="'COMMON.INTEREST_RATE' | appTranslate"
                     type="number"
@@ -367,9 +395,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Interest Type -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{
-                    'PRODUCTS.INTEREST_TYPE' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'PRODUCTS.INTEREST_TYPE' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-select
                     [attr.aria-label]="'PRODUCTS.INTEREST_TYPE' | appTranslate"
                     interface="popover"
@@ -388,9 +417,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Amortization Type -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{
-                    'PRODUCTS.AMORTIZATION_TYPE' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'PRODUCTS.AMORTIZATION_TYPE' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-select
                     [attr.aria-label]="'PRODUCTS.AMORTIZATION_TYPE' | appTranslate"
                     interface="popover"
@@ -409,9 +439,10 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
 
                 <!-- Interest Calculation Period Type -->
                 <ion-item fill="outline">
-                  <ion-label position="stacked">{{
-                    'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | appTranslate
-                  }}</ion-label>
+                  <ion-label position="stacked"
+                    >{{ 'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | appTranslate
+                    }}<span class="required-marker" aria-hidden="true">*</span></ion-label
+                  >
                   <ion-select
                     [attr.aria-label]="'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE' | appTranslate"
                     interface="popover"
@@ -486,9 +517,13 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                     'LOANS.REPAYMENTS_STARTING_FROM_DATE' | appTranslate
                   }}</ion-label>
                   @if (pickersReady()) {
-                    <ion-datetime-button
-                      datetime="repaymentsStartingFromDate-picker"
-                    ></ion-datetime-button>
+                    <ion-datetime-button datetime="repaymentsStartingFromDate-picker">
+                      @if (!repaymentsStartingFromDate && !storedRepaymentStartDate()) {
+                        <span slot="date-target">{{
+                          'LOANS.REPAYMENT_START_DATE_NOT_SET' | appTranslate
+                        }}</span>
+                      }
+                    </ion-datetime-button>
                   }
                   <ion-modal [keepContentsMounted]="true">
                     <ng-template>
@@ -497,10 +532,23 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                         data-testid="repaymentsStartingFromDate-picker"
                         presentation="date"
                         name="repaymentsStartingFromDate"
-                        [(ngModel)]="repaymentsStartingFromDate"
+                        [ngModel]="repaymentsStartingFromDate ?? storedRepaymentStartDate()"
+                        (ngModelChange)="repaymentsStartingFromDate = $event"
                       ></ion-datetime>
                     </ng-template>
                   </ion-modal>
+                  @if (!isEditMode() && repaymentsStartingFromDate) {
+                    <app-button
+                      type="button"
+                      intent="neutral"
+                      emphasis="quiet"
+                      size="small"
+                      data-testid="clear-repayment-start-date"
+                      (click)="repaymentsStartingFromDate = null"
+                    >
+                      {{ 'LOANS.CLEAR_REPAYMENT_START_DATE' | appTranslate }}
+                    </app-button>
+                  }
                 </ion-item>
 
                 @if (isProgressive()) {
@@ -523,13 +571,29 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
               </div>
 
               <div class="form-actions">
+                @if (missingRequiredFields(loanForm); as missing) {
+                  <ion-note
+                    color="medium"
+                    class="submit-hint"
+                    id="loan-submit-hint"
+                    data-testid="loan-submit-hint"
+                    aria-live="polite"
+                  >
+                    {{ 'COMMON.COMPLETE_FIELDS' | appTranslate: { fields: missing } }}
+                  </ion-note>
+                }
                 <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
                   {{ 'COMMON.CANCEL' | appTranslate }}
                 </ion-button>
                 <ion-button
                   color="primary"
                   type="submit"
-                  [disabled]="loanForm.invalid || isSaving()"
+                  [disabled]="loanForm.invalid || !loan().clientId || isSaving()"
+                  [attr.aria-describedby]="
+                    missingRequiredFields(loanForm) ? 'loan-submit-hint' : null
+                  "
+                  id="loan-submit-btn"
+                  data-testid="loan-submit-btn"
                 >
                   @if (isSaving()) {
                     <ion-spinner name="crescent"></ion-spinner>
@@ -569,6 +633,16 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
       }
       .flex-grow {
         flex-grow: 1;
+      }
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
+      .submit-hint {
+        display: block;
+        align-self: center;
+        text-align: end;
+        font-size: 0.8125rem;
       }
     `,
   ],
@@ -610,6 +684,7 @@ export class LoanFormComponent implements OnInit {
   readonly submittedOnDate = signal(this.platformDate.today());
   readonly expectedDisbursementDate = signal(this.platformDate.today());
   repaymentsStartingFromDate: string | null = null;
+  readonly storedRepaymentStartDate = signal<string | null>(null);
   readonly products = signal<GetLoanProductsResponse[]>([]);
   readonly selectedProductDetails = signal<GetLoanProductsProductIdResponse | null>(null);
 
@@ -738,7 +813,10 @@ export class LoanFormComponent implements OnInit {
   private loadLoanData() {
     if (!this.loanId) return;
     this.loansService.getLoansLoanId(this.loanId).subscribe({
-      next: (data: GetLoansLoanIdResponse) => {
+      next: (data: LoanResponseWithRepaymentDate) => {
+        // A loaded value is display state, not an officer-selected replacement.
+        this.repaymentsStartingFromDate = null;
+        this.storedRepaymentStartDate.set(toIsoFineractDate(data.expectedFirstRepaymentOnDate));
         const subDateArray = data.timeline?.submittedOnDate as unknown as number[];
         if (subDateArray) {
           this.submittedOnDate.set(formatArrayDate(subDateArray));
@@ -779,6 +857,57 @@ export class LoanFormComponent implements OnInit {
     });
   }
 
+  /**
+   * Which label belongs to which required control, for the summary beside Save.
+   *
+   * Keyed by the `name` on the control. Held here rather than derived from the template because
+   * the template is where a reviewer checks it, and the unit test holds the two sides together:
+   * it reads the form's own required controls and fails if one of them has no entry, so a field
+   * added or renamed without touching this map is reported rather than silently unnamed.
+   */
+  private readonly requiredFieldLabels: Record<string, string> = {
+    productId: 'LOANS.PRODUCT',
+    principal: 'LOANS.PRINCIPAL',
+    submittedOnDate: 'COMMON.SUBMITTED_ON',
+    expectedDisbursementDate: 'LOANS.EXPECTED_DISBURSEMENT',
+    loanTermFrequency: 'LOANS.TERM_FREQUENCY',
+    loanTermFrequencyType: 'LOANS.TERM_TYPE',
+    numberOfRepayments: 'LOANS.REPAYMENTS_COUNT',
+    repaymentEvery: 'LOANS.REPAYMENT_EVERY',
+    repaymentFrequencyType: 'COMMON.FREQUENCY',
+    interestRatePerPeriod: 'COMMON.INTEREST_RATE',
+    interestType: 'PRODUCTS.INTEREST_TYPE',
+    amortizationType: 'PRODUCTS.AMORTIZATION_TYPE',
+    interestCalculationPeriodType: 'PRODUCTS.INTEREST_CALCULATION_PERIOD_TYPE',
+  };
+
+  /**
+   * The fields standing between the operator and Save, named.
+   *
+   * `COMPLETE_REQUIRED_FIELDS` on its own — "Complete the required fields to continue" — is no
+   * use on a form of twenty controls where thirteen are required and the empty one is off
+   * screen. Naming them is the difference between reading the message and hunting the form.
+   *
+   * The client is listed first and by hand: `app-client-search` holds its own reactive control
+   * and never joins this `NgForm`, so the form's validity says nothing about it. That is also
+   * why Save now tests `loan().clientId` — without it the button enabled on a form with no
+   * client, and the platform refused the result.
+   *
+   * Empty string when nothing is missing, so the template's `@if` drops the note entirely.
+   */
+  missingRequiredFields(form: NgForm): string {
+    const missing: string[] = [];
+    if (!this.loan().clientId) {
+      missing.push(this.i18n.translate('COMMON.CLIENT_ID'));
+    }
+    for (const [name, label] of Object.entries(this.requiredFieldLabels)) {
+      if (form.controls[name]?.invalid) {
+        missing.push(this.i18n.translate(label));
+      }
+    }
+    return missing.join(', ');
+  }
+
   onSubmit() {
     this.isSaving.set(true);
 
@@ -788,6 +917,9 @@ export class LoanFormComponent implements OnInit {
       this.loan().repaymentsStartingFromDate = formatDateToFineract(
         this.repaymentsStartingFromDate,
       );
+    } else if (!this.isEditMode()) {
+      // A rejected create may have left a previously chosen date in the request object.
+      delete this.loan().repaymentsStartingFromDate;
     }
     this.loan().dateFormat = FINERACT_DATE_FORMAT;
     this.loan().locale = FINERACT_LOCALE;

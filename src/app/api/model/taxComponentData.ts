@@ -33,6 +33,7 @@ export interface TaxComponentData {
     creditAccountType?: EnumOptionData;
     debitAccount?: GLAccountData;
     debitAccountType?: EnumOptionData;
+    editable?: boolean;
     glAccountOptions?: { [key: string]: Array<GLAccountData>; };
     glAccountTypeOptions?: Array<EnumOptionData>;
     id?: number;

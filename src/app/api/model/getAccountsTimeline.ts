@@ -31,6 +31,8 @@ export interface GetAccountsTimeline {
     approvedByLastname?: string;
     approvedByUsername?: string;
     approvedDate?: string;
+    closedDate?: string;
+    rejectedDate?: string;
     submittedByFirstname?: string;
     submittedByLastname?: string;
     submittedByUsername?: string;

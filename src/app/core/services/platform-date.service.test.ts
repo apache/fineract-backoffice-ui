@@ -73,6 +73,11 @@ describe('PlatformDateService', () => {
   });
 
   describe('tenant timezone date resolution', () => {
+    // Only the fallback case moves the browser's clock, but the timers are installed for the
+    // whole block so no case can leave a fake clock behind for the next one.
+    beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: true }));
+    afterEach(() => vi.useRealTimers());
+
     it('does not read the business date at all when the feature is off', () => {
       // Measured: the rows persist after the feature is disabled and stop being maintained — a
       // tenant with it off still reported `BUSINESS_DATE 2026-10-17` on the 18th, and
@@ -90,12 +95,26 @@ describe('PlatformDateService', () => {
 
     it('prefers the platform clock over the browser clock', () => {
       // The browser is the one party whose opinion about "today" the platform does not share.
+      //
+      // With no tenant timezone configured the service renders the recorded instant in the
+      // browser's own zone — deliberately, since there is no other zone to render it in. So
+      // what this case can assert is that rendering of the *platform's* instant, not a fixed
+      // day: written as the literal '2026-08-15' it asserted the runner's UTC offset as well,
+      // and failed at UTC+14 (`Pacific/Kiritimati`), where 10:00Z is already the 16th.
+      //
+      // The browser's clock is moved to a different day than the platform's so the case still
+      // fails if the service ever reads `new Date()` in place of what the platform last said.
+      // That is the regression it exists for, and at the real clock it caught it only by
+      // accident of the two dates differing.
       tenantTimezone = '';
       setup();
-      service.recordServerTime(new Date('2026-08-15T10:00:00Z'));
+      const platformNow = new Date('2026-08-15T10:00:00Z');
+      vi.setSystemTime(new Date('2026-11-09T10:00:00Z'));
+      service.recordServerTime(platformNow);
 
-      expect(service.getTenantToday()).toBe('2026-08-15');
-      expect(service.today()).toBe('2026-08-15');
+      expect(service.getTenantToday()).toBe(toIsoDate(platformNow));
+      expect(service.today()).toBe(toIsoDate(platformNow));
+      expect(service.today()).not.toBe(toIsoDate(new Date()));
     });
 
     it('ignores an unreadable Date header rather than taking NaN for a date', () => {

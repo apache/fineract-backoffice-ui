@@ -107,6 +107,10 @@ export interface GetLoanProductsProductIdResponse {
     enableInstallmentLevelDelinquency?: boolean;
     externalId?: string;
     feeToIncomeAccountMappings?: Set<GetLoanFeeToIncomeAccountMappings>;
+    /**
+     * First due day of the month of a semi-monthly product, between 1 and 27.
+     */
+    firstRepaymentDayOfMonth?: number;
     fixedLength?: number;
     fixedPrincipalPercentagePerInstallment?: number;
     graceOnArrearsAgeing?: number;
@@ -138,6 +142,7 @@ export interface GetLoanProductsProductIdResponse {
     minNumberOfRepayments?: number;
     minPrincipal?: number;
     minimumGap?: number;
+    monthEndDueDateStrategy?: StringEnumOptionData;
     multiDisburseLoan?: boolean;
     name?: string;
     numberOfRepaymentVariationsForBorrowerCycle?: Array<number>;
@@ -154,8 +159,13 @@ export interface GetLoanProductsProductIdResponse {
     repaymentEvery?: number;
     repaymentFrequencyType?: GetLoanProductsRepaymentFrequencyType;
     repaymentStartDateType?: GetLoanProductsRepaymentStartDateType;
+    /**
+     * Second due day of the month of a semi-monthly product, between 2 and 31 and greater than the first one. A day the month lacks falls on its last day, so 31 is the last day of every month.
+     */
+    secondRepaymentDayOfMonth?: number;
     shortName?: string;
     status?: string;
+    supportedFeeRefundTypes?: Array<StringEnumOptionData>;
     supportedInterestRefundTypes?: Array<StringEnumOptionData>;
     transactionProcessingStrategyCode?: string;
     transactionProcessingStrategyName?: string;

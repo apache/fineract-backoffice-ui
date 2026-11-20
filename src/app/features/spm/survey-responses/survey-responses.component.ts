@@ -19,6 +19,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../core/adapters';
+import { LoadErrorComponent } from '../../../shared/components/load-error/load-error.component';
 import { SurveyService, PostSurveySurveyNameApptableIdRequest } from '../../../api';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CdkTableModule } from '@angular/cdk/table';
@@ -50,6 +51,7 @@ interface SurveyResponse {
   imports: [
     FormsModule,
     CdkTableModule,
+    LoadErrorComponent,
     TranslatePipe,
     IonButton,
     IonSpinner,
@@ -70,97 +72,114 @@ interface SurveyResponse {
         <ion-card-title>{{ 'SURVEY_RESPONSES.TITLE' | appTranslate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <!-- Step 1: Select survey + client -->
-        <div class="filter-row">
-          <ion-item fill="outline">
-            <ion-label position="stacked">{{ 'SURVEY_RESPONSES.SURVEY' | appTranslate }}</ion-label>
-            <ion-select
-              [attr.aria-label]="'SURVEY_RESPONSES.SURVEY' | appTranslate"
-              interface="popover"
-              [(ngModel)]="selectedSurveyName"
-            >
-              @for (s of surveys(); track s.name) {
-                <ion-select-option [value]="s.name">{{ s.name }}</ion-select-option>
-              }
-            </ion-select>
-          </ion-item>
+        @if (surveysFailed()) {
+          <!-- The survey list is what this screen is built on. Refused, the form below would
+               offer to load and submit responses for a survey the user may not even read, with
+               an empty picker as the only hint (#751). -->
+          <app-load-error
+            testId="survey-responses-load-error"
+            [message]="
+              (surveysForbidden() ? 'COMMON.ERRORS.LOAD_FORBIDDEN' : 'COMMON.ERRORS.LOAD_FAILED')
+                | appTranslate
+            "
+            [actionLabel]="surveysForbidden() ? '' : ('COMMON.RETRY' | appTranslate)"
+            (action)="loadSurveys()"
+          ></app-load-error>
+        } @else {
+          <!-- Step 1: Select survey + client -->
+          <div class="filter-row">
+            <ion-item fill="outline">
+              <ion-label position="stacked">{{
+                'SURVEY_RESPONSES.SURVEY' | appTranslate
+              }}</ion-label>
+              <ion-select
+                [attr.aria-label]="'SURVEY_RESPONSES.SURVEY' | appTranslate"
+                interface="popover"
+                [(ngModel)]="selectedSurveyName"
+              >
+                @for (s of surveys(); track s.name) {
+                  <ion-select-option [value]="s.name">{{ s.name }}</ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
 
-          <ion-item fill="outline">
+            <ion-item fill="outline">
+              <ion-label position="stacked">{{
+                'SURVEY_RESPONSES.CLIENT_ID' | appTranslate
+              }}</ion-label>
+              <ion-input
+                [attr.aria-label]="'SURVEY_RESPONSES.CLIENT_ID' | appTranslate"
+                type="number"
+                [(ngModel)]="clientId"
+              ></ion-input>
+            </ion-item>
+
+            <ion-button color="primary" (click)="loadResponses()" [disabled]="loading()">
+              {{ 'SURVEY_RESPONSES.LOAD' | appTranslate }}
+            </ion-button>
+          </div>
+
+          @if (loading()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          }
+
+          <!-- Step 2: Responses table -->
+          @if (responses().length > 0) {
+            <h3>{{ 'SURVEY_RESPONSES.RESPONSES' | appTranslate }}</h3>
+            <cdk-table [dataSource]="responses()" class="full-width">
+              <ng-container cdkColumnDef="id">
+                <cdk-header-cell *cdkHeaderCellDef>ID</cdk-header-cell>
+                <cdk-cell *cdkCellDef="let row">{{ row.id ?? row.entryId }}</cdk-cell>
+              </ng-container>
+
+              <ng-container cdkColumnDef="score">
+                <cdk-header-cell *cdkHeaderCellDef>Score</cdk-header-cell>
+                <cdk-cell *cdkCellDef="let row">{{ row.score }}</cdk-cell>
+              </ng-container>
+
+              <ng-container cdkColumnDef="date">
+                <cdk-header-cell *cdkHeaderCellDef>Date</cdk-header-cell>
+                <cdk-cell *cdkCellDef="let row">{{ row.date }}</cdk-cell>
+              </ng-container>
+
+              <ng-container cdkColumnDef="actions">
+                <cdk-header-cell *cdkHeaderCellDef>Actions</cdk-header-cell>
+                <cdk-cell *cdkCellDef="let row">
+                  <ion-button
+                    fill="clear"
+                    color="danger"
+                    (click)="deleteResponse(row.id ?? row.entryId)"
+                    [title]="'SURVEY_RESPONSES.DELETE' | appTranslate"
+                  >
+                    &#x1F5D1;
+                  </ion-button>
+                </cdk-cell>
+              </ng-container>
+
+              <cdk-header-row *cdkHeaderRowDef="displayedColumns"></cdk-header-row>
+              <cdk-row *cdkRowDef="let row; columns: displayedColumns"></cdk-row>
+            </cdk-table>
+          }
+
+          <hr class="divider" />
+
+          <!-- Step 3: Submit new response -->
+          <h3>{{ 'SURVEY_RESPONSES.SUBMIT_RESPONSE' | appTranslate }}</h3>
+          <ion-item fill="outline" class="full-width">
             <ion-label position="stacked">{{
-              'SURVEY_RESPONSES.CLIENT_ID' | appTranslate
+              'SURVEY_RESPONSES.RESPONSE_BODY' | appTranslate
             }}</ion-label>
-            <ion-input
-              [attr.aria-label]="'SURVEY_RESPONSES.CLIENT_ID' | appTranslate"
-              type="number"
-              [(ngModel)]="clientId"
-            ></ion-input>
+            <ion-textarea
+              [attr.aria-label]="'SURVEY_RESPONSES.RESPONSE_BODY' | appTranslate"
+              rows="6"
+              [ngModel]="responseBody()"
+              (ngModelChange)="responseBody.set($event)"
+            ></ion-textarea>
           </ion-item>
-
-          <ion-button color="primary" (click)="loadResponses()" [disabled]="loading()">
-            {{ 'SURVEY_RESPONSES.LOAD' | appTranslate }}
+          <ion-button color="secondary" (click)="submitResponse()" [disabled]="submitting()">
+            {{ 'SURVEY_RESPONSES.SUBMIT' | appTranslate }}
           </ion-button>
-        </div>
-
-        @if (loading()) {
-          <ion-spinner name="crescent"></ion-spinner>
         }
-
-        <!-- Step 2: Responses table -->
-        @if (responses().length > 0) {
-          <h3>{{ 'SURVEY_RESPONSES.RESPONSES' | appTranslate }}</h3>
-          <cdk-table [dataSource]="responses()" class="full-width">
-            <ng-container cdkColumnDef="id">
-              <cdk-header-cell *cdkHeaderCellDef>ID</cdk-header-cell>
-              <cdk-cell *cdkCellDef="let row">{{ row.id ?? row.entryId }}</cdk-cell>
-            </ng-container>
-
-            <ng-container cdkColumnDef="score">
-              <cdk-header-cell *cdkHeaderCellDef>Score</cdk-header-cell>
-              <cdk-cell *cdkCellDef="let row">{{ row.score }}</cdk-cell>
-            </ng-container>
-
-            <ng-container cdkColumnDef="date">
-              <cdk-header-cell *cdkHeaderCellDef>Date</cdk-header-cell>
-              <cdk-cell *cdkCellDef="let row">{{ row.date }}</cdk-cell>
-            </ng-container>
-
-            <ng-container cdkColumnDef="actions">
-              <cdk-header-cell *cdkHeaderCellDef>Actions</cdk-header-cell>
-              <cdk-cell *cdkCellDef="let row">
-                <ion-button
-                  fill="clear"
-                  color="danger"
-                  (click)="deleteResponse(row.id ?? row.entryId)"
-                  [title]="'SURVEY_RESPONSES.DELETE' | appTranslate"
-                >
-                  &#x1F5D1;
-                </ion-button>
-              </cdk-cell>
-            </ng-container>
-
-            <cdk-header-row *cdkHeaderRowDef="displayedColumns"></cdk-header-row>
-            <cdk-row *cdkRowDef="let row; columns: displayedColumns"></cdk-row>
-          </cdk-table>
-        }
-
-        <hr class="divider" />
-
-        <!-- Step 3: Submit new response -->
-        <h3>{{ 'SURVEY_RESPONSES.SUBMIT_RESPONSE' | appTranslate }}</h3>
-        <ion-item fill="outline" class="full-width">
-          <ion-label position="stacked">{{
-            'SURVEY_RESPONSES.RESPONSE_BODY' | appTranslate
-          }}</ion-label>
-          <ion-textarea
-            [attr.aria-label]="'SURVEY_RESPONSES.RESPONSE_BODY' | appTranslate"
-            rows="6"
-            [ngModel]="responseBody()"
-            (ngModelChange)="responseBody.set($event)"
-          ></ion-textarea>
-        </ion-item>
-        <ion-button color="secondary" (click)="submitResponse()" [disabled]="submitting()">
-          {{ 'SURVEY_RESPONSES.SUBMIT' | appTranslate }}
-        </ion-button>
       </ion-card-content>
     </ion-card>
   `,
@@ -199,7 +218,17 @@ export class SurveyResponsesComponent implements OnInit {
 
   displayedColumns = ['id', 'score', 'date', 'actions'];
 
+  readonly surveysFailed = signal(false);
+  /** True when the refusal was a 403, which no retry can get past. */
+  readonly surveysForbidden = signal(false);
+
   ngOnInit(): void {
+    this.loadSurveys();
+  }
+
+  loadSurveys(): void {
+    this.surveysFailed.set(false);
+    this.surveysForbidden.set(false);
     this.surveyService.getSurvey().subscribe({
       next: (list) => {
         const mapped = (list ?? []).map((s) => ({
@@ -208,7 +237,11 @@ export class SurveyResponsesComponent implements OnInit {
         }));
         this.surveys.set(mapped);
       },
-      error: () => this.surveys.set([]),
+      error: (err: unknown) => {
+        this.surveys.set([]);
+        this.surveysFailed.set(true);
+        this.surveysForbidden.set((err as { status?: number })?.status === 403);
+      },
     });
   }
 

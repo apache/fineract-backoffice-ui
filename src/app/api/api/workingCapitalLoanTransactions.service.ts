@@ -197,7 +197,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Get Working Capital Loan transaction template by loan external id
-     * Supported command query parameters: disburse, repayment, goodwillCredit, creditBalanceRefund, recoveryPayment, discountFee, discountFeeAdjustment, chargeOff, prepayLoan. The optional transactionDate quotes the balance as of that date, defaulting to the business date; only what is owed is scoped to it, so the amount stays net of every payment already made.
+     * Supported command query parameters: disburse, repayment, goodwillCredit, creditBalanceRefund, recoveryPayment, discountFee, discountFeeAdjustment, chargeOff, prepayLoan. The optional transactionDate quotes the balance as of that date, defaulting to the business date; only what is owed is scoped to it, so the amount stays net of every payment already made. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint get /v1/working-capital-loans/external-id/{loanExternalId}/transactions/template
      * @param loanExternalId loanExternalId
      * @param command command
@@ -576,7 +576,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Get Working Capital Loan transaction template by loan id
-     * Supported command query parameters: disburse, repayment, goodwillCredit, creditBalanceRefund, recoveryPayment, discountFee, discountFeeAdjustment, chargeOff, prepayLoan. The optional transactionDate quotes the balance as of that date, defaulting to the business date; only what is owed is scoped to it, so the amount stays net of every payment already made.
+     * Supported command query parameters: disburse, repayment, goodwillCredit, creditBalanceRefund, recoveryPayment, discountFee, discountFeeAdjustment, chargeOff, prepayLoan. The optional transactionDate quotes the balance as of that date, defaulting to the business date; only what is owed is scoped to it, so the amount stays net of every payment already made. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint get /v1/working-capital-loans/{loanId}/transactions/template
      * @param loanId loanId
      * @param command command
@@ -749,7 +749,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction by external id
-     * Supported command query parameter: repayment, creditBalanceRefund, payoutRefund, goodwillCredit, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff, undoWriteOff, recoveryPayment
+     * Supported command query parameter: repayment, creditBalanceRefund, payoutRefund, goodwillCredit, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff, undoWriteOff, recoveryPayment. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint post /v1/working-capital-loans/external-id/{loanExternalId}/transactions
      * @param loanExternalId loanExternalId
      * @param command command
@@ -842,7 +842,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction command by loan external id and transaction external id
-     * Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo
+     * Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint post /v1/working-capital-loans/external-id/{loanExternalId}/transactions/external-id/{transactionExternalId}
      * @param loanExternalId loanExternalId
      * @param transactionExternalId transactionExternalId
@@ -939,7 +939,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction command by loan external id and transaction id
-     * Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo
+     * Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint post /v1/working-capital-loans/external-id/{loanExternalId}/transactions/{transactionId}
      * @param loanExternalId loanExternalId
      * @param transactionId transactionId
@@ -1036,7 +1036,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction
-     * Supported command query parameter: repayment, creditBalanceRefund, payoutRefund, goodwillCredit, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff, undoWriteOff, recoveryPayment
+     * Supported command query parameter: repayment, creditBalanceRefund, payoutRefund, goodwillCredit, discountFee, discountFeeAdjustment, chargeOff, undoChargeOff, writeOff, undoWriteOff, recoveryPayment. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint post /v1/working-capital-loans/{loanId}/transactions
      * @param loanId loanId
      * @param command command
@@ -1129,7 +1129,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction command by loan id and transaction external id
-     * Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo
+     * Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint post /v1/working-capital-loans/{loanId}/transactions/external-id/{transactionExternalId}
      * @param loanId loanId
      * @param transactionExternalId transactionExternalId
@@ -1226,7 +1226,7 @@ export class WorkingCapitalLoanTransactionsService extends BaseService {
 
     /**
      * Execute Working Capital Loan transaction command by loan id and transaction id
-     * Supported command query parameter: adjust, discountFee, discountFeeAdjustment, undo
+     * Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.
      * @endpoint post /v1/working-capital-loans/{loanId}/transactions/{transactionId}
      * @param loanId loanId
      * @param transactionId transactionId

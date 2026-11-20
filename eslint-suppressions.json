@@ -50,11 +50,6 @@
       "count": 1
     }
   },
-  "src/app/features/accounting/chart-of-accounts.component.ts": {
-    "local/no-generated-api-import": {
-      "count": 1
-    }
-  },
   "src/app/features/accounting/financial-activity-mapping-form.component.ts": {
     "local/no-generated-api-import": {
       "count": 1
@@ -1618,16 +1613,6 @@
       "count": 1
     }
   },
-  "src/app/features/products/share-dividends/share-dividends-list.component.test.ts": {
-    "local/no-generated-api-import": {
-      "count": 1
-    }
-  },
-  "src/app/features/products/share-dividends/share-dividends-list.component.ts": {
-    "local/no-generated-api-import": {
-      "count": 1
-    }
-  },
   "src/app/features/products/shares/share-account-form.component.test.ts": {
     "local/no-generated-api-import": {
       "count": 1
@@ -1771,15 +1756,7 @@
       "count": 1
     }
   },
-  "src/app/features/security/audit-logs/audit-logs-list.component.test.ts": {
-    "local/no-generated-api-import": {
-      "count": 1
-    }
-  },
   "src/app/features/security/audit-logs/audit-logs-list.component.ts": {
-    "local/no-generated-api-import": {
-      "count": 1
-    },
     "local/no-vendor-ui-import": {
       "count": 1
     }

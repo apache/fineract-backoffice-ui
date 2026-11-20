@@ -23,7 +23,8 @@ import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { signal } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { UserProfileComponent } from './user-profile.component';
-import { PasswordPreferencesService, UsersService } from '../../api';
+import { UsersService } from '../../api';
+import { USER_API } from '../../core/adapters';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { provideIonicTesting } from '../../testing/ionic-testing';
@@ -43,20 +44,23 @@ describe('UserProfileComponent', () => {
   let fixture: ComponentFixture<UserProfileComponent>;
   let component: UserProfileComponent;
   let usersSpy: SpyObj<UsersService>;
-  let passwordPreferencesSpy: SpyObj<PasswordPreferencesService>;
+  let userApi: Record<string, ReturnType<typeof vi.fn>>;
   let notificationsSpy: SpyObj<NotificationService>;
 
   const setup = async (currentUser: { userId: number } | null) => {
-    usersSpy = createSpyObj<UsersService>(['getUsersUserId', 'postUsersUserIdPwd']);
-    passwordPreferencesSpy = createSpyObj<PasswordPreferencesService>(['getPasswordpreferences']);
-    passwordPreferencesSpy.getPasswordpreferences.mockReturnValue(
-      of({
-        id: 2,
-        key: 'strong',
-        description: 'At least eight characters with mixed case and a number',
-        active: true,
-      }) as never,
-    );
+    usersSpy = createSpyObj<UsersService>(['getUsersUserId']);
+    // The policy and the password change both go through the adapter now, which is what lets
+    // this screen share one set of rules with Create User.
+    userApi = {
+      passwordPolicy: vi.fn().mockReturnValue(
+        of({
+          key: 'strong',
+          description:
+            'Password must be 12 to 50 characters long, containing at least one uppercase letter, one lowercase letter, one numeric digit, and one special character, with no spaces or consecutive repeating characters',
+        }),
+      ),
+      changePassword: vi.fn().mockReturnValue(of(undefined)),
+    };
     notificationsSpy = createSpyObj<NotificationService>(['success', 'error']);
     notificationsSpy.success.mockResolvedValue(undefined);
     await TestBed.configureTestingModule({
@@ -65,7 +69,7 @@ describe('UserProfileComponent', () => {
         ...provideTranslateTesting(),
         provideIonicTesting(),
         { provide: UsersService, useValue: usersSpy },
-        { provide: PasswordPreferencesService, useValue: passwordPreferencesSpy },
+        { provide: USER_API, useValue: userApi },
         { provide: NotificationService, useValue: notificationsSpy },
         { provide: AuthService, useValue: { currentUser: signal(currentUser) } },
       ],
@@ -99,15 +103,13 @@ describe('UserProfileComponent', () => {
     usersSpy.getUsersUserId.mockReturnValue(of(USER) as never);
 
     fixture.detectChanges();
-    expect(passwordPreferencesSpy.getPasswordpreferences).not.toHaveBeenCalled();
+    expect(userApi['passwordPolicy']).not.toHaveBeenCalled();
     component.toggleChangePassword();
     fixture.detectChanges();
 
-    expect(passwordPreferencesSpy.getPasswordpreferences).toHaveBeenCalledTimes(1);
+    expect(userApi['passwordPolicy']).toHaveBeenCalledTimes(1);
     expect(component.changePasswordOpen()).toBe(true);
-    expect(component.passwordPolicyDescription()).toBe(
-      'At least eight characters with mixed case and a number',
-    );
+    expect(component.passwordPolicy()?.description).toContain('12 to 50 characters long');
     expect(
       fixture.nativeElement.querySelector('[data-testid="profile-new-password"]'),
     ).toBeTruthy();
@@ -122,8 +124,8 @@ describe('UserProfileComponent', () => {
 
     fixture.detectChanges();
     component.toggleChangePassword();
-    component.newPassword.set('Strong1!');
-    component.repeatPassword.set('Different1!');
+    component.newPassword.set('Xq7!vTz3mKp9');
+    component.repeatPassword.set('Different1!xyz');
     fixture.detectChanges();
 
     expect(component.passwordsMismatch()).toBe(true);
@@ -133,24 +135,45 @@ describe('UserProfileComponent', () => {
     ).toBeTruthy();
 
     component.onChangePassword();
-    expect(usersSpy.postUsersUserIdPwd).not.toHaveBeenCalled();
+    expect(userApi['changePassword']).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The same rules Create User checks, from the same policy. The platform's own refusal lists
+   * every rule and names none of them — and used to echo the password back with it (#752).
+   */
+  it('names the rules a password still fails before anything is sent', async () => {
+    await setup({ userId: 7 });
+    usersSpy.getUsersUserId.mockReturnValue(of(USER) as never);
+
+    fixture.detectChanges();
+    component.toggleChangePassword();
+    // Rejected for its repeated `ss` alone, under the strong policy.
+    component.newPassword.set('passsword1A!x');
+    component.repeatPassword.set('passsword1A!x');
+    fixture.detectChanges();
+
+    expect(component.unmetPasswordRules().map((rule) => rule.id)).toEqual(['noRepeat']);
+    expect(component.canChangePassword()).toBe(false);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="profile-password-rule-noRepeat"]'),
+    ).toBeTruthy();
+
+    component.onChangePassword();
+    expect(userApi['changePassword']).not.toHaveBeenCalled();
   });
 
   it('changes the password for the session user and closes the form', async () => {
     await setup({ userId: 7 });
     usersSpy.getUsersUserId.mockReturnValue(of(USER) as never);
-    usersSpy.postUsersUserIdPwd.mockReturnValue(of({}) as never);
 
     fixture.detectChanges();
     component.toggleChangePassword();
-    component.newPassword.set('Strong1!');
-    component.repeatPassword.set('Strong1!');
+    component.newPassword.set('Xq7!vTz3mKp9');
+    component.repeatPassword.set('Xq7!vTz3mKp9');
     component.onChangePassword();
 
-    expect(usersSpy.postUsersUserIdPwd).toHaveBeenCalledWith(7, {
-      password: 'Strong1!',
-      repeatPassword: 'Strong1!',
-    });
+    expect(userApi['changePassword']).toHaveBeenCalledWith(7, 'Xq7!vTz3mKp9', 'Xq7!vTz3mKp9');
     expect(component.changePasswordOpen()).toBe(false);
     expect(component.newPassword()).toBe('');
     expect(component.repeatPassword()).toBe('');

@@ -33,19 +33,75 @@ export interface AuditData {
     clientName?: string;
     commandAsJson?: string;
     entityName?: string;
+    groupId?: number;
     groupLevelName?: string;
     groupName?: string;
     id?: number;
     ip?: string;
     loanAccountNo?: string;
+    loanExternalId?: string;
     loanId?: number;
     madeOnDate?: string;
     maker?: string;
+    officeId?: number;
     officeName?: string;
     processingResult?: string;
+    productId?: number;
+    resourceExternalId?: string;
     resourceId?: number;
+    savingsAccountId?: number;
     savingsAccountNo?: string;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedClientId?: number;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedGroupId?: number;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedLoanExternalId?: string;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedLoanId?: number;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedOfficeId?: number;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedProductId?: number;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedResourceExternalId?: string;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedResourceId?: number;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedSavingsAccountId?: number;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedSubresourceExternalId?: string;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedSubresourceId?: number;
+    /**
+     * Identifier the command was submitted with. Null for commands that were processed, or failed, before submitted identifiers were kept.
+     */
+    submittedTransactionId?: string;
+    subresourceExternalId?: string;
     subresourceId?: number;
+    transactionId?: string;
     url?: string;
 }
 

@@ -32,6 +32,16 @@ import { HttpClient, HttpHeaders, HttpParams,
 import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
+// @ts-ignore
+import { GetTwoFactorDeliveryMethodsResponse } from '../model/getTwoFactorDeliveryMethodsResponse';
+// @ts-ignore
+import { PostTwoFactorInvalidateRequest } from '../model/postTwoFactorInvalidateRequest';
+// @ts-ignore
+import { PostTwoFactorInvalidateResponse } from '../model/postTwoFactorInvalidateResponse';
+// @ts-ignore
+import { PostTwoFactorRequestTokenResponse } from '../model/postTwoFactorRequestTokenResponse';
+// @ts-ignore
+import { PostTwoFactorValidateResponse } from '../model/postTwoFactorValidateResponse';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -55,9 +65,9 @@ export class TwoFactorService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getTwofactor(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public getTwofactor(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public getTwofactor(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public getTwofactor(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<GetTwoFactorDeliveryMethodsResponse>>;
+    public getTwofactor(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<GetTwoFactorDeliveryMethodsResponse>>>;
+    public getTwofactor(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<GetTwoFactorDeliveryMethodsResponse>>>;
     public getTwofactor(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -93,7 +103,7 @@ export class TwoFactorService extends BaseService {
 
         let localVarPath = `/v1/twofactor`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<GetTwoFactorDeliveryMethodsResponse>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -114,9 +124,9 @@ export class TwoFactorService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postTwofactor(deliveryMethod?: string, extendedToken?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public postTwofactor(deliveryMethod?: string, extendedToken?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public postTwofactor(deliveryMethod?: string, extendedToken?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public postTwofactor(deliveryMethod?: string, extendedToken?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostTwoFactorRequestTokenResponse>;
+    public postTwofactor(deliveryMethod?: string, extendedToken?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostTwoFactorRequestTokenResponse>>;
+    public postTwofactor(deliveryMethod?: string, extendedToken?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostTwoFactorRequestTokenResponse>>;
     public postTwofactor(deliveryMethod?: string, extendedToken?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
@@ -172,7 +182,7 @@ export class TwoFactorService extends BaseService {
 
         let localVarPath = `/v1/twofactor`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<PostTwoFactorRequestTokenResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters.toHttpParams(),
@@ -188,15 +198,18 @@ export class TwoFactorService extends BaseService {
 
     /**
      * @endpoint post /v1/twofactor/invalidate
-     * @param body 
+     * @param postTwoFactorInvalidateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postTwofactorInvalidate(body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public postTwofactorInvalidate(body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public postTwofactorInvalidate(body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
-    public postTwofactorInvalidate(body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postTwofactorInvalidate(postTwoFactorInvalidateRequest: PostTwoFactorInvalidateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostTwoFactorInvalidateResponse>;
+    public postTwofactorInvalidate(postTwoFactorInvalidateRequest: PostTwoFactorInvalidateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostTwoFactorInvalidateResponse>>;
+    public postTwofactorInvalidate(postTwoFactorInvalidateRequest: PostTwoFactorInvalidateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostTwoFactorInvalidateResponse>>;
+    public postTwofactorInvalidate(postTwoFactorInvalidateRequest: PostTwoFactorInvalidateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (postTwoFactorInvalidateRequest === null || postTwoFactorInvalidateRequest === undefined) {
+            throw new Error('Required parameter postTwoFactorInvalidateRequest was null or undefined when calling postTwofactorInvalidate.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -220,6 +233,7 @@ export class TwoFactorService extends BaseService {
 
         // to determine the Content-Type header
         const consumes: string[] = [
+            'application/json'
         ];
         const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
         if (httpContentTypeSelected !== undefined) {
@@ -239,10 +253,10 @@ export class TwoFactorService extends BaseService {
 
         let localVarPath = `/v1/twofactor/invalidate`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<PostTwoFactorInvalidateResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: postTwoFactorInvalidateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -260,9 +274,9 @@ export class TwoFactorService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postTwofactorValidate(token?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
-    public postTwofactorValidate(token?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
-    public postTwofactorValidate(token?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<string>>;
+    public postTwofactorValidate(token?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostTwoFactorValidateResponse>;
+    public postTwofactorValidate(token?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostTwoFactorValidateResponse>>;
+    public postTwofactorValidate(token?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostTwoFactorValidateResponse>>;
     public postTwofactorValidate(token?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
@@ -309,7 +323,7 @@ export class TwoFactorService extends BaseService {
 
         let localVarPath = `/v1/twofactor/validate`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<PostTwoFactorValidateResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters.toHttpParams(),

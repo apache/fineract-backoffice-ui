@@ -24,6 +24,7 @@
  */
 
 import { PostProductsMarketPricePeriods } from './postProductsMarketPricePeriods';
+import { PostProductsPaymentChannelToFundSourceMappings } from './postProductsPaymentChannelToFundSourceMappings';
 import { PostProductsChargesSelected } from './postProductsChargesSelected';
 
 
@@ -52,6 +53,10 @@ export interface PostProductsTypeRequest {
     minimumactiveperiodFrequencyType?: number;
     name?: string;
     nominalShares?: number;
+    /**
+     * Optional with accountingRule=2 (cash based): routes the share reference entry to a payment type specific GL account
+     */
+    paymentChannelToFundSourceMappings?: Set<PostProductsPaymentChannelToFundSourceMappings>;
     /**
      * Required with accountingRule=2 (cash based)
      */

@@ -99,6 +99,10 @@ export interface GetWorkingCapitalLoansLoanIdResponse {
     clientId?: number;
     clientName?: string;
     clientOfficeId?: number;
+    /**
+     * Client office name
+     */
+    clientOfficeName?: string;
     currency?: CurrencyData;
     delinquencyBucket?: GetDelinquencyBucket;
     /**

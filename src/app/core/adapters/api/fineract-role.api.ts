@@ -47,6 +47,9 @@ export function mapRole(payload: GetRolesResponse): Role {
     id: required(payload.id, 'id'),
     name: payload.name ?? '',
     description: payload.description ?? '',
+    // A role the payload says nothing about is enabled: that is what every role answers before
+    // anyone disables one, and reading silence as "off" would hide a usable role.
+    disabled: payload.disabled === true,
   };
 }
 
@@ -133,5 +136,21 @@ export class FineractRoleApi implements RoleApi {
       permissions[entry.code] = entry.selected;
     }
     return this.roles.putRolesRoleIdPermissions(roleId, { permissions }).pipe(map(() => undefined));
+  }
+
+  /**
+   * Switches a role on or off.
+   *
+   * The command is a query parameter and this operation takes no body at all — measured,
+   * `POST /roles/{id}?command=disable` with no body and no content type answers `200`.
+   */
+  setEnabled(roleId: number, enabled: boolean): Observable<void> {
+    return this.roles
+      .postRolesRoleId(roleId, enabled ? 'enable' : 'disable')
+      .pipe(map(() => undefined));
+  }
+
+  delete(roleId: number): Observable<void> {
+    return this.roles.deleteRolesRoleId(roleId).pipe(map(() => undefined));
   }
 }

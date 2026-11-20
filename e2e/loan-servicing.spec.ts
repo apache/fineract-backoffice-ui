@@ -85,10 +85,13 @@ test.describe('Loan servicing: notes and transaction adjustment', () => {
     const repaymentRow = page.getByRole('row', { name: /Repayment/ }).first();
     await expect(repaymentRow).toBeVisible({ timeout: 10000 });
 
+    // Both row actions are icon-only, so their accessible names are all a screen
+    // reader has to go on. Locating them by name keeps it that way: a permission
+    // gate once erased the chargeback button's name while leaving it visible.
+    await expect(repaymentRow.getByRole('button', { name: 'Charge Back Repayment' })).toBeVisible();
+
     // View: shows a full breakdown, not just the raw enum code.
-    // Click the ion-button, not the ion-icon inside it: the button's shadow-DOM
-    // native element sits above the icon and swallows the pointer event.
-    await repaymentRow.locator('ion-button:has(ion-icon[name="eye-outline"])').click();
+    await repaymentRow.getByRole('button', { name: 'View Transaction' }).click();
     const dialog = modalFor(page, 'app-transaction-detail-dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText('Repayment', { exact: true })).toBeVisible({ timeout: 10000 });

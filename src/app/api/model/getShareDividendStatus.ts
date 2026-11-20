@@ -23,25 +23,11 @@
  * Do not edit the class manually.
  */
 
-import { Money } from './money';
-import { RepaymentPeriod } from './repaymentPeriod';
 
 
-export interface ProgressiveLoanInterestScheduleModel { 
-    copy?: boolean;
-    emirecalculationEnabled?: boolean;
-    empty?: boolean;
-    interestPauseForEmiCalculationEnabled?: boolean;
-    lastRepaymentPeriod: RepaymentPeriod;
-    loanTermInDays?: number;
-    maturityDate?: string;
-    principalGraceLifted?: boolean;
-    startDate?: string;
-    totalCreditedPrincipal?: Money;
-    totalDueInterest?: Money;
-    totalDuePrincipal?: Money;
-    totalOutstandingPrincipal?: Money;
-    totalPaidInterest?: Money;
-    totalPaidPrincipal?: Money;
+export interface GetShareDividendStatus { 
+    code?: string;
+    id?: number;
+    value?: string;
 }
 

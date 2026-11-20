@@ -42,7 +42,7 @@ enforced server-side (see `security.md`).
 
 ## Setup and everyday workflow
 
-Use npm and the committed lockfile. The project requires Node `>=22.22.3`; do not require a global
+Use npm and the committed lockfile. The project requires Node `>=26.0.0`; do not require a global
 Angular CLI.
 
 ## Common commands

@@ -33,6 +33,9 @@ export interface PutGlobalConfigurationsRequest {
     dateValue?: string;
     enabled?: boolean;
     locale?: string;
+    /**
+     * Must be one of the configuration\'s allowedValues, or a comma-separated list of them if multipleValuesAllowed is true, when the configuration lists allowedValues
+     */
     stringValue?: string;
     value?: number;
 }

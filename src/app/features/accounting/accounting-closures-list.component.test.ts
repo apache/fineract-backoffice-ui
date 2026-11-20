@@ -18,6 +18,7 @@
  */
 
 import { createSpyObj, SpyObj } from '../../testing/mocks';
+import { DialogService } from '../../core/services/dialog.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountingClosuresListComponent } from './accounting-closures-list.component';
 import { ACCOUNTING_CLOSURE_API } from '../../core/adapters';
@@ -53,10 +54,13 @@ describe('AccountingClosuresListComponent', () => {
   let fixture: ComponentFixture<AccountingClosuresListComponent>;
   let closureApiSpy: SpyObj<AccountingClosureApi>;
   let routerSpy: SpyObj<Router>;
+  let dialogSpy: SpyObj<DialogService>;
 
   beforeEach(async () => {
-    closureApiSpy = createSpyObj(['list', 'create', 'remove']);
+    closureApiSpy = createSpyObj(['list', 'create', 'remove', 'get', 'update']);
     routerSpy = createSpyObj(['navigate']);
+    dialogSpy = createSpyObj<DialogService>(['open', 'confirm']);
+    dialogSpy.confirm.mockResolvedValue(true);
 
     await TestBed.configureTestingModule({
       imports: [AccountingClosuresListComponent],
@@ -64,6 +68,7 @@ describe('AccountingClosuresListComponent', () => {
         ...provideTranslateTesting(),
         { provide: ACCOUNTING_CLOSURE_API, useValue: closureApiSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: DialogService, useValue: dialogSpy },
         provideNoopAnimations(),
       ],
     }).compileComponents();
@@ -106,20 +111,23 @@ describe('AccountingClosuresListComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/accounting/closures/create']);
   });
 
-  it('should delete closure when confirmed', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+  it('should delete closure when confirmed', async () => {
     closureApiSpy.remove.mockReturnValue(of(undefined));
 
-    component.onDeleteClosure(CLOSURE);
+    await component.onDeleteClosure(CLOSURE);
 
+    const asked = dialogSpy.confirm.mock.lastCall![0];
+    expect(asked.destructive).toBe(true);
     expect(closureApiSpy.remove).toHaveBeenCalledWith(1);
     expect(closureApiSpy.list).toHaveBeenCalledTimes(2);
   });
 
-  it('leaves the period alone when the confirmation is dismissed', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
+  it('leaves the period alone when the confirmation is dismissed', async () => {
+    dialogSpy.confirm.mockResolvedValue(false);
 
-    component.onDeleteClosure(CLOSURE);
+    // Awaited, unlike before: the handler is async now, and without the await this assertion
+    // would pass whether or not the decline was honoured.
+    await component.onDeleteClosure(CLOSURE);
 
     expect(closureApiSpy.remove).not.toHaveBeenCalled();
   });
@@ -144,5 +152,15 @@ describe('AccountingClosuresListComponent', () => {
 
     expect(failedFixture.componentInstance.hasError()).toBe(false);
     expect(failedFixture.componentInstance.closures()).toEqual([CLOSURE]);
+  });
+
+  /**
+   * Correcting a closure's comments (issue #789). Before this the only remedy was to delete the
+   * closure — which re-opens the period — and close it again.
+   */
+  it('opens a closure for comment correction', () => {
+    component.onEditClosure(CLOSURE);
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/accounting/closures/edit', CLOSURE.id]);
   });
 });

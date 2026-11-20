@@ -54,6 +54,26 @@ interface WcLoanRow {
     TooltipDirective,
   ],
   template: `
+    <div class="external-lookup">
+      <label class="lookup-label" for="wc-external-id-input">
+        {{ 'WC_LOANS.OPEN_BY_EXTERNAL_ID' | appTranslate }}
+      </label>
+      <input
+        id="wc-external-id-input"
+        data-testid="wc-external-id-input"
+        type="search"
+        #externalId
+        (keyup.enter)="onOpenByExternalId(externalId.value)"
+      />
+      <app-button
+        type="button"
+        intent="neutral"
+        data-testid="wc-external-id-open"
+        (click)="onOpenByExternalId(externalId.value)"
+        >{{ 'COMMON.OPEN' | appTranslate }}</app-button
+      >
+    </div>
+
     <app-data-table
       title="nav.wcLoans"
       helpTextKey="HELP.WC_LOANS_DESC"
@@ -115,6 +135,19 @@ export class WcLoansListComponent implements OnInit {
         console.error('Failed to load working-capital loans', err);
       },
     });
+  }
+
+  /**
+   * Opens a loan by the reference the institution set on it.
+   *
+   * Navigation rather than a lookup here: the resolving screen owns the not-found and failure
+   * states, and arriving at `/working-capital/loans/external/<ref>` is then a shareable address
+   * for a loan nobody has the numeric id for.
+   */
+  onOpenByExternalId(externalId: string): void {
+    const reference = externalId.trim();
+    if (reference === '') return;
+    this.router.navigate(['/working-capital/loans/external', reference]);
   }
 
   onCreate(): void {

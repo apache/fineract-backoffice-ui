@@ -57,6 +57,7 @@ import {
   toIsoDate,
 } from '../../../core/utils/date-formatter';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 /**
  * The command each route segment posts to the transactions endpoint.
@@ -134,6 +135,7 @@ const DATED_COMMANDS = new Set([...AMOUNT_COMMANDS, 'prepay', 'chargeOff', 'writ
   selector: 'app-wc-loan-action-form',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     TranslatePipe,
     IonButton,
@@ -202,27 +204,13 @@ const DATED_COMMANDS = new Set([...AMOUNT_COMMANDS, 'prepay', 'chargeOff', 'writ
               }
 
               @if (command === 'disburse') {
-                <ion-item fill="outline">
-                  <ion-label position="stacked">{{
-                    'WC_LOANS.ACTIONS.EXPECTED_DISBURSEMENT_DATE' | appTranslate
-                  }}</ion-label>
-                  @if (pickersReady()) {
-                    <ion-datetime-button
-                      datetime="expectedDisbursementDate-picker"
-                    ></ion-datetime-button>
-                  }
-                  <ion-modal [keepContentsMounted]="true">
-                    <ng-template>
-                      <ion-datetime
-                        id="expectedDisbursementDate-picker"
-                        data-testid="expectedDisbursementDate-picker"
-                        presentation="date"
-                        name="expectedDisbursementDate"
-                        [(ngModel)]="expectedDisbursementDate"
-                      ></ion-datetime>
-                    </ng-template>
-                  </ion-modal>
-                </ion-item>
+                <app-date-field
+                  label="WC_LOANS.ACTIONS.EXPECTED_DISBURSEMENT_DATE"
+                  [required]="true"
+                  pickerId="expectedDisbursementDate-picker"
+                  name="expectedDisbursementDate"
+                  [(ngModel)]="expectedDisbursementDate"
+                ></app-date-field>
                 <ion-item fill="outline">
                   <ion-label position="stacked">{{
                     'WC_LOANS.ACTIONS.ACTUAL_DISBURSEMENT_DATE' | appTranslate

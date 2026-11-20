@@ -27,6 +27,16 @@ export interface Role {
   readonly id: number;
   readonly name: string;
   readonly description: string;
+  /**
+   * Whether the role is switched off.
+   *
+   * `GET /roles` has always carried this — measured, the stock `Self Service User` role answers
+   * `disabled: true` — and the roles screen neither showed it nor offered to change it, so a
+   * role created by mistake stayed in the picker for good (#755). `GET /users/template` already
+   * filters disabled roles out of the options a new user can be given, so switching one off is
+   * enough to keep it from being assigned again.
+   */
+  readonly disabled: boolean;
 }
 
 /**
@@ -147,6 +157,25 @@ export interface RoleApi {
    * merely discouraged.
    */
   setPermissions(roleId: number, selection: readonly PermissionSelection[]): Observable<void>;
+
+  /**
+   * Switches a role on or off.
+   *
+   * `POST /roles/{id}?command=disable|enable`, measured as answering `{ resourceId }` for both.
+   * This is the auditable way to withdraw a role: the role keeps its permissions and its
+   * history, and the platform stops offering it on `GET /users/template`.
+   */
+  setEnabled(roleId: number, enabled: boolean): Observable<void>;
+
+  /**
+   * Deletes a role.
+   *
+   * Refused while any user still holds it — measured, `DELETE /roles/{id}` answers `403`
+   * `error.msg.role.associated.with.users.deleted`, "Role with identifier 31 associated with
+   * users". That refusal reaches the user through `errorInterceptor`, which reports a
+   * domain-rule 403 in the platform's own words rather than as a permission problem.
+   */
+  delete(roleId: number): Observable<void>;
 }
 
 /** Injection token for the active {@link RoleApi}. Defaults to the Fineract implementation. */

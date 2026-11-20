@@ -49,6 +49,7 @@ import {
   formatDateToFineract,
 } from '../../../core/utils/date-formatter';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 const ACTIONS = WorkingCapitalLoanDelinquencyActionData.ActionEnum;
 const FREQUENCY_TYPES = WorkingCapitalLoanDelinquencyActionData.FrequencyTypeEnum;
@@ -64,6 +65,7 @@ const MINIMUM_PAYMENT_TYPES = WorkingCapitalLoanDelinquencyActionData.MinimumPay
   selector: 'app-wc-delinquency-action-form',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     TranslatePipe,
     IonButton,
@@ -137,25 +139,13 @@ const MINIMUM_PAYMENT_TYPES = WorkingCapitalLoanDelinquencyActionData.MinimumPay
             }
 
             @if (action === ACTIONS.Pause) {
-              <ion-item fill="outline">
-                <ion-label position="stacked">{{
-                  'WC_LOANS.DELINQUENCY_ACTION.END_DATE' | appTranslate
-                }}</ion-label>
-                @if (pickersReady()) {
-                  <ion-datetime-button datetime="endDate-picker"></ion-datetime-button>
-                }
-                <ion-modal [keepContentsMounted]="true">
-                  <ng-template>
-                    <ion-datetime
-                      id="endDate-picker"
-                      data-testid="endDate-picker"
-                      presentation="date"
-                      name="endDate"
-                      [(ngModel)]="endDate"
-                    ></ion-datetime>
-                  </ng-template>
-                </ion-modal>
-              </ion-item>
+              <app-date-field
+                label="WC_LOANS.DELINQUENCY_ACTION.END_DATE"
+                [required]="true"
+                pickerId="endDate-picker"
+                name="endDate"
+                [(ngModel)]="endDate"
+              ></app-date-field>
             }
 
             @if (action === ACTIONS.Reschedule) {

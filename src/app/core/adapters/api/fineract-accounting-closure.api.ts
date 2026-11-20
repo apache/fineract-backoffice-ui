@@ -99,6 +99,17 @@ export class FineractAccountingClosureApi implements AccountingClosureApi {
       .pipe(map(() => undefined));
   }
 
+  get(id: number): Observable<AccountingClosure> {
+    return this.closures
+      .getGlclosuresGlClosureId(id)
+      .pipe(map((response) => mapAccountingClosure(response)));
+  }
+
+  update(id: number, comments: string): Observable<void> {
+    // No `dateFormat` or `locale`: the body carries no date, so neither means anything here.
+    return this.closures.putGlclosuresGlClosureId(id, { comments }).pipe(map(() => undefined));
+  }
+
   remove(id: number): Observable<void> {
     return this.closures.deleteGlclosuresGlClosureId(id).pipe(map(() => undefined));
   }

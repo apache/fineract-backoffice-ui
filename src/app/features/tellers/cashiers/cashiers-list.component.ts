@@ -20,9 +20,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { Cashier, TELLER_API, TranslatePipe } from '../../../core/adapters';
+import { Cashier, I18N, TELLER_API, TranslatePipe } from '../../../core/adapters';
+import { DialogService } from '../../../core/services/dialog.service';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
-import { ColumnDef, CellTemplateDirective } from '../../../shared';
+import { ColumnDef, CellTemplateDirective, RequiresPermissionDirective } from '../../../shared';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 
@@ -35,6 +36,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
     IonIcon,
     DataTableComponent,
     CellTemplateDirective,
+    RequiresPermissionDirective,
     TooltipDirective,
   ],
   template: `
@@ -74,9 +76,22 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
         </ion-button>
         <ion-button
           fill="clear"
+          color="primary"
+          appRequiresPermission="UPDATECASHIERALLOCATION_TELLER"
+          [attr.aria-label]="'TELLERS.EDIT_CASHIER' | appTranslate"
+          [appTooltip]="'TELLERS.EDIT_CASHIER' | appTranslate"
+          (click)="onEditCashier(cashier)"
+          [id]="'edit-cashier-btn-' + cashier.id"
+          [attr.data-testid]="'edit-cashier-btn-' + cashier.id"
+        >
+          <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button
+          fill="clear"
           color="danger"
-          [attr.aria-label]="'COMMON.DELETE' | appTranslate"
-          [appTooltip]="'Remove Cashier Allocation'"
+          appRequiresPermission="DELETECASHIERALLOCATION_TELLER"
+          [attr.aria-label]="'TELLERS.REMOVE_CASHIER' | appTranslate"
+          [appTooltip]="'TELLERS.REMOVE_CASHIER' | appTranslate"
           (click)="onRemoveCashier(cashier)"
           [id]="'delete-cashier-btn-' + cashier.id"
           [attr.data-testid]="'delete-cashier-btn-' + cashier.id"
@@ -91,6 +106,8 @@ export class CashiersListComponent implements OnInit {
   private readonly tellerApi = inject(TELLER_API);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly dialog = inject(DialogService);
+  private readonly i18n = inject(I18N);
 
   tellerId = 0;
 
@@ -136,16 +153,34 @@ export class CashiersListComponent implements OnInit {
     this.router.navigate(['/tellers', this.tellerId, 'cashiers', cashier.id, 'transactions']);
   }
 
-  onRemoveCashier(cashier: Cashier): void {
-    if (confirm('Are you sure you want to remove this cashier allocation?')) {
-      this.tellerApi.removeCashier(this.tellerId, cashier.id).subscribe({
-        next: () => {
-          this.loadCashiers();
-        },
-        error: (err: unknown) => {
-          console.error('Failed to remove cashier allocation', err);
-        },
-      });
+  onEditCashier(cashier: Cashier): void {
+    this.router.navigate(['/tellers', this.tellerId, 'cashiers', cashier.id, 'edit']);
+  }
+
+  /**
+   * Removes a cashier's allocation.
+   *
+   * On `DialogService.confirm` rather than the browser's `confirm()`, which this used before: the
+   * native dialog cannot be translated, styled or tested like the rest, and it sat beside a
+   * destructive action that now has a translated confirmation of its own. Editing an allocation
+   * is the non-destructive alternative to removing and recreating one, which is what #786 added.
+   */
+  async onRemoveCashier(cashier: Cashier): Promise<void> {
+    const confirmed = await this.dialog.confirm({
+      title: this.i18n.translate('TELLERS.REMOVE_CASHIER'),
+      message: this.i18n.translate('TELLERS.REMOVE_CASHIER_CONFIRM'),
+      details: [{ label: this.i18n.translate('TELLERS.STAFF'), value: cashier.staffName }],
+      destructive: true,
+    });
+    if (!confirmed) {
+      return;
     }
+
+    this.tellerApi.removeCashier(this.tellerId, cashier.id).subscribe({
+      next: () => this.loadCashiers(),
+      error: (err: unknown) => {
+        console.error('Failed to remove cashier allocation', err);
+      },
+    });
   }
 }

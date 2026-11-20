@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { AccountChargesRequest } from './accountChargesRequest';
 
 
 /**
@@ -30,6 +31,7 @@
  */
 export interface PutAccountsTypeAccountIdRequest { 
     applicationDate?: string;
+    charges?: Array<AccountChargesRequest>;
     dateFormat?: string;
     locale?: string;
     requestedShares?: number;

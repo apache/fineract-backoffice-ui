@@ -46,6 +46,7 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { createPickersReady } from '../../../shared/utils/pickers-ready';
+import { DateFieldComponent } from '../../../ui/date-field/date-field.component';
 
 /**
  * Create / edit form for a loan guarantor. The guarantor-type options come from the
@@ -56,6 +57,7 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
   selector: 'app-guarantor-form',
   standalone: true,
   imports: [
+    DateFieldComponent,
     FormsModule,
     TranslatePipe,
     IonButton,
@@ -183,24 +185,14 @@ import { createPickersReady } from '../../../shared/utils/pickers-ready';
               ></ion-input>
             </ion-item>
 
-            <ion-item fill="outline">
-              <ion-label position="stacked">{{ 'GUARANTORS.DOB' | appTranslate }}</ion-label>
-              @if (pickersReady()) {
-                <ion-datetime-button datetime="dobDate-picker"></ion-datetime-button>
-              }
-              <ion-modal [keepContentsMounted]="true">
-                <ng-template>
-                  <ion-datetime
-                    id="dobDate-picker"
-                    data-testid="dobDate-picker"
-                    presentation="date"
-                    name="dobDate"
-                    [ngModel]="dobDate()"
-                    (ngModelChange)="dobDate.set($event)"
-                  ></ion-datetime>
-                </ng-template>
-              </ion-modal>
-            </ion-item>
+            <app-date-field
+              label="GUARANTORS.DOB"
+              pickerId="dobDate-picker"
+              [clearable]="true"
+              name="dobDate"
+              [ngModel]="dobDate()"
+              (ngModelChange)="dobDate.set($event)"
+            ></app-date-field>
 
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">

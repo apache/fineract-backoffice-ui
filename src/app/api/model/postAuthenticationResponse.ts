@@ -33,6 +33,7 @@ import { RoleData } from './roleData';
 export interface PostAuthenticationResponse { 
     authenticated?: boolean;
     base64EncodedAuthenticationKey?: string;
+    isTwoFactorAuthenticationRequired?: boolean;
     officeId?: number;
     officeName?: string;
     organisationalRole?: EnumOptionData;
