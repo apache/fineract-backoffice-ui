@@ -470,8 +470,8 @@ because they have very different costs:
 
 | Job          | Fineract     | Shards | Cost per shard      |
 | ------------ | ------------ | ------ | ------------------- |
-| `mocked`     | not needed   | 6      | checkout + install  |
-| `backend`    | docker stack | 5      | + ~2 min stack boot |
+| `mocked`     | not needed   | 4      | checkout + install  |
+| `backend`    | docker stack | 3      | + ~2 min stack boot |
 | `two-factor` | its own      | 1      | + ~2 min stack boot |
 
 The split is defined in `playwright.config.ts` as projects, so `--project=mocked`
@@ -491,14 +491,28 @@ mutate real records and `backend.setup.ts` seeds reference data, so a shared ins
 make them order-dependent across shards. Playwright runs a project's `dependencies` in every
 shard, which is what makes per-shard seeding work without extra wiring.
 
-The counts were last set against a measured run: the 50-file backend suite over three shards
-finished in 6:52, 12:08 and 14:08, and the mocked suite over four in 6:12 to 9:23. Five and six
-spend the same runner minutes on a shorter wall clock. The ~2 min stack boot is a floor a
-backend shard pays whatever it runs, so past five it starts costing more than it saves —
-re-measure before moving either count rather than raising it on principle.
+#### Why not more shards
 
-> **Branch protection** must require all six `E2E (mocked backend, shard n/6)` checks and
-> all five `E2E (real Fineract, shard n/5)` checks — never the `... report` jobs, which can
+These were raised to 6 and 5 and put back. The measurement is worth keeping, because the obvious
+reasoning is wrong:
+
+|                                   | 4 mocked / 3 backend | 6 mocked / 5 backend |
+| --------------------------------- | -------------------- | -------------------- |
+| Slowest backend shard             | 14:08                | 6:52                 |
+| Wait for the first shard to start | ~20s                 | ~12min               |
+| **Queued to last report**         | **16:15**            | **41:07**            |
+
+Per-shard duration improved. Total wall clock got two and a half times worse, and all of it was
+queue wait: these jobs run on a shared, contended runner pool, so asking for 11 concurrent E2E
+runners instead of 7 meant waiting for them. The extra parallelism cost more than it bought.
+
+So the figure to measure before changing these is **workflow-queued to last-report-completed**,
+not how long a shard takes. A faster shard that waits ten minutes for a runner is slower. The two
+runs compared above were at different times of day, so the wait is not purely a function of the
+count — but more concurrent jobs can only lengthen it, never shorten it.
+
+> **Branch protection** must require all four `E2E (mocked backend, shard n/4)` checks and
+> all three `E2E (real Fineract, shard n/3)` checks — never the `... report` jobs, which can
 > succeed while a shard failed. Changing a shard count **renames those checks**, so the
 > required list has to be updated with it or the new shards run unrequired.
 
