@@ -83,6 +83,7 @@ export interface GetLoansLoanIdSummary {
     totalCreditBalanceRefundReversed?: number;
     totalExpectedCostOfLoan?: number;
     totalExpectedRepayment?: number;
+    totalFeeRefund?: number;
     totalGoodwillCredit?: number;
     totalGoodwillCreditReversed?: number;
     totalInterestPaymentWaiver?: number;

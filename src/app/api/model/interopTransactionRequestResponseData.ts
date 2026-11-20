@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { CommandProcessingSubResourceResult } from './commandProcessingSubResourceResult';
 import { ExternalId } from './externalId';
 import { ExtensionData } from './extensionData';
 
@@ -51,6 +52,7 @@ export interface InteropTransactionRequestResponseData {
     state: InteropTransactionRequestResponseData.StateEnum;
     subResourceExternalId?: ExternalId;
     subResourceId?: number;
+    subResources?: Array<CommandProcessingSubResourceResult>;
     transactionCode: string;
     transactionId?: string;
 }

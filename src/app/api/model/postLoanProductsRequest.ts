@@ -213,6 +213,7 @@ export interface PostLoanProductsRequest {
     secondRepaymentDayOfMonth?: number;
     shortName?: string;
     startDate?: string;
+    supportedFeeRefundTypes?: Array<string>;
     supportedInterestRefundTypes?: Array<string>;
     /**
      * Force the actual disbursement date to match the expected disbursement date

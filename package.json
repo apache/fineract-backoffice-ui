@@ -97,7 +97,7 @@
     "@emnapi/core": "1.11.3",
     "@emnapi/runtime": "1.11.3",
     "@openapitools/openapi-generator-cli": "^2.40.1",
-    "@playwright/test": "^1.64.0",
+    "@playwright/test": "^1.65.0",
     "@softarc/native-federation-orchestrator": "^4.9.0",
     "angular-eslint": "^22.0.0",
     "eslint": "^9.39.4",
@@ -106,13 +106,13 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-security": "^4.2.1",
     "eslint-plugin-unicorn": "^65.0.1",
-    "jsdom": "^30.1.2",
+    "jsdom": "^31.0.0",
     "license-checker": "^25.0.1",
     "prettier": "^3.9.6",
     "prettier-plugin-organize-attributes": "^1.0.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "8.72.1",
-    "vitest": "^5.0.3"
+    "vitest": "^5.1.0"
   },
   "overrides": {
     "@openapitools/openapi-generator-cli": {

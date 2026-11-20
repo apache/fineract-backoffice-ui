@@ -19,12 +19,13 @@
 
 import { createSpyObj, SpyObj } from '../../../testing/mocks';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { of } from 'rxjs';
+import { BehaviorSubject, Subject, finalize, of, throwError } from 'rxjs';
 
 import { ShareAccountViewComponent } from './share-account-view.component';
 import { ShareAccountService } from '../../../api';
+import { BreadcrumbService } from '../../../core/services/breadcrumb.service';
 import { DialogService } from '../../../core/services/dialog.service';
 import { provideIonicTesting } from '../../../testing/ionic-testing';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
@@ -44,6 +45,7 @@ describe('ShareAccountViewComponent', () => {
   let component: ShareAccountViewComponent;
   let shareService: SpyObj<ShareAccountService>;
   let dialogService: SpyObj<DialogService>;
+  let routeParams: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   /** Shared, and only ever read: the submitted-on date the commands are floored on. */
   const SUBMITTED_TIMELINE = { submittedOnDate: [2026, 8, 9] };
@@ -63,6 +65,7 @@ describe('ShareAccountViewComponent', () => {
 
   async function setup(data: object): Promise<void> {
     TestBed.resetTestingModule();
+    routeParams = new BehaviorSubject(convertToParamMap({ id: '7' }));
 
     shareService = createSpyObj(['getAccountsTypeAccountId', 'postAccountsTypeAccountId']);
     shareService.getAccountsTypeAccountId.mockReturnValue(of(data) as never);
@@ -80,7 +83,7 @@ describe('ShareAccountViewComponent', () => {
         { provide: ShareAccountService, useValue: shareService },
         { provide: DialogService, useValue: dialogService },
         { provide: Router, useValue: { navigate: () => undefined } },
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '7' } } } },
+        { provide: ActivatedRoute, useValue: { paramMap: routeParams } },
       ],
     }).compileComponents();
 
@@ -129,13 +132,21 @@ describe('ShareAccountViewComponent', () => {
     expect('rejectedDate' in lastCommand().body).toBe(true);
   });
 
-  it('sends undoapproval with an empty body', async () => {
-    await setup(account({ id: 200, value: 'Approved', approved: true }));
+  it('sends undoapproval with an empty body and refreshes the account', async () => {
+    const owner = { clientId: 42, clientName: 'Jane Smith' };
+    await setup({ ...account({ id: 200, value: 'Approved', approved: true }), ...owner });
+    shareService.getAccountsTypeAccountId.mockReturnValueOnce(
+      of({ ...account(PENDING), ...owner }) as never,
+    );
 
     component.onUndoApproval();
     await fixture.whenStable();
 
     expect(lastCommand()).toEqual({ command: 'undoapproval', body: {} });
+    expect(shareService.getAccountsTypeAccountId).toHaveBeenCalledTimes(2);
+    expect(shareService.getAccountsTypeAccountId).toHaveBeenLastCalledWith(7, 'share');
+    expect(component.isPending()).toBe(true);
+    expect(TestBed.inject(BreadcrumbService).override()?.[1].url).toBe('/clients/view/42');
   });
 
   it('floors a command date at the date the platform stamped', async () => {
@@ -184,39 +195,105 @@ describe('ShareAccountViewComponent', () => {
     expect(shareService.postAccountsTypeAccountId).not.toHaveBeenCalled();
   });
 
-  it('surfaces a failed load rather than rendering an empty screen', async () => {
-    TestBed.resetTestingModule();
-    shareService = createSpyObj(['getAccountsTypeAccountId', 'postAccountsTypeAccountId']);
-    shareService.getAccountsTypeAccountId.mockReturnValue(
-      new (class {
-        subscribe(handlers: { error: () => void }) {
-          handlers.error();
-          return { unsubscribe: () => undefined };
-        }
-      })() as never,
-    );
-    await TestBed.configureTestingModule({
-      imports: [ShareAccountViewComponent],
-      providers: [
-        provideNoopAnimations(),
-        provideIonicTesting(),
-        ...provideTranslateTesting(),
-        { provide: ShareAccountService, useValue: shareService },
+  describe('account breadcrumbs and reloads', () => {
+    const ownedAccount = {
+      ...account(PENDING),
+      clientId: 42,
+      clientName: 'Jane Smith',
+    };
+
+    it('links the client and shows the share account number', async () => {
+      await setup(ownedAccount);
+
+      expect(TestBed.inject(BreadcrumbService).override()).toEqual([
+        { label: { kind: 'translation', key: 'nav.clients' }, url: '/clients' },
+        { label: { kind: 'text', text: 'Jane Smith' }, url: '/clients/view/42' },
         {
-          provide: DialogService,
-          useValue: createSpyObj(['confirm', 'open']),
+          label: {
+            kind: 'translation',
+            key: 'BREADCRUMBS.SHARE_ACCOUNT',
+            params: { accountNo: '000000007' },
+          },
         },
-        { provide: Router, useValue: { navigate: () => undefined } },
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '7' } } } },
-      ],
-    }).compileComponents();
+      ]);
+    });
 
-    fixture = TestBed.createComponent(ShareAccountViewComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    it('clears the owner trail when a reload lacks owner details', async () => {
+      await setup(ownedAccount);
+      shareService.getAccountsTypeAccountId.mockReturnValue(of(account(PENDING)) as never);
 
-    expect(component.hasError()).toBe(true);
-    expect(component.isLoading()).toBe(false);
+      component.loadAccount();
+
+      expect(TestBed.inject(BreadcrumbService).override()).toEqual([]);
+    });
+
+    it('cancels the previous load and ignores a late response after an ID change', async () => {
+      await setup(ownedAccount);
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      const first = new Subject<object>();
+      const second = new Subject<object>();
+      const cancelled = vi.fn();
+      shareService.getAccountsTypeAccountId.mockReturnValue(
+        first.pipe(finalize(cancelled)) as never,
+      );
+      component.loadAccount();
+      expect(cancelled).not.toHaveBeenCalled();
+
+      shareService.getAccountsTypeAccountId.mockReturnValue(second as never);
+      routeParams.next(convertToParamMap({ id: '8' }));
+
+      expect(cancelled).toHaveBeenCalledOnce();
+      expect(shareService.getAccountsTypeAccountId).toHaveBeenLastCalledWith(8, 'share');
+      expect(breadcrumbs.override()).toEqual([]);
+      expect(component.isLoading()).toBe(true);
+
+      second.next({ ...ownedAccount, id: 8, clientName: 'New owner', accountNo: '000000008' });
+      second.complete();
+      first.next({ ...ownedAccount, clientName: 'Stale owner' });
+
+      expect(component.account()?.id).toBe(8);
+      expect(component.isLoading()).toBe(false);
+      expect(breadcrumbs.override()?.[1].label).toEqual({ kind: 'text', text: 'New owner' });
+    });
+
+    it('surfaces a failed load, clears the old trail and accepts a retry', async () => {
+      await setup(ownedAccount);
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      shareService.getAccountsTypeAccountId.mockReturnValue(
+        throwError(() => new Error('Account unavailable')),
+      );
+
+      component.loadAccount();
+
+      expect(component.hasError()).toBe(true);
+      expect(component.isLoading()).toBe(false);
+      expect(breadcrumbs.override()).toEqual([]);
+
+      shareService.getAccountsTypeAccountId.mockReturnValue(of(ownedAccount) as never);
+      component.loadAccount();
+
+      expect(component.hasError()).toBe(false);
+      expect(component.account()?.clientName).toBe('Jane Smith');
+      expect(breadcrumbs.override()?.[1].url).toBe('/clients/view/42');
+    });
+
+    it('cancels a pending load and clears the trail on destruction', async () => {
+      await setup(ownedAccount);
+      const breadcrumbs = TestBed.inject(BreadcrumbService);
+      const response = new Subject<object>();
+      const cancelled = vi.fn();
+      shareService.getAccountsTypeAccountId.mockReturnValue(
+        response.pipe(finalize(cancelled)) as never,
+      );
+      component.loadAccount();
+
+      fixture.destroy();
+
+      expect(cancelled).toHaveBeenCalledOnce();
+      response.next({ ...ownedAccount, clientName: 'Late owner' });
+      expect(breadcrumbs.override()).toBeNull();
+      expect(component.account()?.clientName).toBe('Jane Smith');
+    });
   });
 
   describe('teardown', () => {

@@ -27,10 +27,11 @@ import {
   inject,
   signal,
   viewChildren,
+  DestroyRef,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { I18N, TranslatePipe } from '../../core/adapters';
-import { Observable, from } from 'rxjs';
+import { EMPTY, Observable, Subject, catchError, from, switchMap } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe, JsonPipe, NgClass } from '@angular/common';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
@@ -122,6 +123,9 @@ import {
   GetLoansLoanIdDisbursementDetails,
   LoanCollateralResponseData,
 } from '../../api';
+import { buildAccountBreadcrumbs } from '../../layout/breadcrumb';
+import { BreadcrumbService } from '../../core/services/breadcrumb.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * The tabs on this screen, named.
@@ -1939,6 +1943,9 @@ export class LoanViewComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
   private readonly i18n = inject(I18N);
+  private readonly breadcrumbService = inject(BreadcrumbService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly reloadLoan$ = new Subject<void>();
 
   readonly loanId = signal(0);
   readonly loan = signal<GetLoansLoanIdResponse | null>(null);
@@ -2262,7 +2269,8 @@ export class LoanViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.route.paramMap.subscribe((params) => {
+    this.observeLoanReloads();
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.loanId.set(+id);
@@ -2275,38 +2283,77 @@ export class LoanViewComponent implements OnInit, OnDestroy {
     for (const popover of this.popovers()) {
       void popover.dismiss().catch(() => false);
     }
+    this.breadcrumbService.clearOverride();
   }
 
-  loadLoanData() {
-    // Request associations so repayment schedule, charges, and transactions are returned
-    this.loansService.getLoansLoanId(this.loanId(), false, 'all').subscribe({
-      next: (data) => {
-        this.loan.set(data);
-        this.periods.set(data.repaymentSchedule?.periods || []);
-        this.transactions.set(data.transactions || []);
-        this.charges.set(data.charges || []);
-        // Only ask for what this loan can actually have. Both are progressive-engine features:
-        // fetching them for every loan meant two guaranteed-useless requests per cumulative loan
-        // view, with their failures swallowed so nothing ever surfaced the waste.
-        // Addressed by loan id, not external id. Both tabs used the `/loans/external-id/…`
-        // endpoints and so were gated on the loan *having* an external id — which is optional,
-        // so on a loan without one the tab still appeared (it keys off `enable…` alone) and sat
-        // permanently empty. The `enable…` flags are what keep this from being a wasted request.
-        if (data.enableBuyDownFee) {
-          this.buyDownFeesService.getLoansLoanIdBuydownFees(this.loanId()).subscribe({
-            next: (fees) => this.buyDownFees.set(fees ?? []),
-            error: () => this.buyDownFees.set([]),
-          });
-        }
-        if (data.enableIncomeCapitalization) {
-          this.capitalizedIncomeService.getLoansLoanIdCapitalizedIncomes(this.loanId()).subscribe({
-            next: (items) => this.capitalizedIncomes.set(items ?? []),
-            error: () => this.capitalizedIncomes.set([]),
-          });
-        }
-      },
-      error: (err) => console.error('Failed to load loan data', err),
-    });
+  loadLoanData(): void {
+    this.reloadLoan$.next();
+  }
+
+  private observeLoanReloads(): void {
+    this.reloadLoan$
+      .pipe(
+        switchMap(() => {
+          this.breadcrumbService.setOverride([]);
+          return this.loansService.getLoansLoanId(this.loanId(), false, 'all').pipe(
+            catchError((err) => {
+              console.error('Failed to load loan data', err);
+              return EMPTY;
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((data) => this.applyLoanData(data));
+  }
+
+  private applyLoanData(data: GetLoansLoanIdResponse): void {
+    this.loan.set(data);
+    this.periods.set(data.repaymentSchedule?.periods || []);
+    this.transactions.set(data.transactions || []);
+    this.charges.set(data.charges || []);
+    // Only ask for what this loan can actually have. Both are progressive-engine features:
+    // fetching them for every loan meant two guaranteed-useless requests per cumulative loan
+    // view, with their failures swallowed so nothing ever surfaced the waste.
+    // Addressed by loan id, not external id. Both tabs used the `/loans/external-id/…`
+    // endpoints and so were gated on the loan *having* an external id — which is optional,
+    // so on a loan without one the tab still appeared (it keys off `enable…` alone) and sat
+    // permanently empty. The `enable…` flags are what keep this from being a wasted request.
+    if (data.enableBuyDownFee) {
+      this.buyDownFeesService.getLoansLoanIdBuydownFees(this.loanId()).subscribe({
+        next: (fees) => this.buyDownFees.set(fees ?? []),
+        error: () => this.buyDownFees.set([]),
+      });
+    }
+    if (data.enableIncomeCapitalization) {
+      this.capitalizedIncomeService.getLoansLoanIdCapitalizedIncomes(this.loanId()).subscribe({
+        next: (items) => this.capitalizedIncomes.set(items ?? []),
+        error: () => this.capitalizedIncomes.set([]),
+      });
+    }
+
+    const group = 'group' in data ? data.group : undefined;
+    const groupOwner =
+      typeof group === 'object' &&
+      group !== null &&
+      'id' in group &&
+      typeof group.id === 'number' &&
+      'name' in group &&
+      typeof group.name === 'string' &&
+      group.name.trim().length > 0
+        ? { type: 'group' as const, id: group.id, name: group.name }
+        : null;
+
+    const owner =
+      data.clientId != null && data.clientName?.trim()
+        ? { type: 'client' as const, id: data.clientId, name: data.clientName }
+        : groupOwner;
+
+    if (owner && data.accountNo?.trim()) {
+      this.breadcrumbService.setOverride(
+        buildAccountBreadcrumbs({ owner, accountType: 'loan', accountNo: data.accountNo }),
+      );
+    }
   }
 
   loadDisbursementDetail() {

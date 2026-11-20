@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { CommandProcessingSubResourceResult } from './commandProcessingSubResourceResult';
 import { MoneyData } from './moneyData';
 import { ExternalId } from './externalId';
 import { ExtensionData } from './extensionData';
@@ -54,6 +55,7 @@ export interface InteropQuoteResponseData {
     state: InteropQuoteResponseData.StateEnum;
     subResourceExternalId?: ExternalId;
     subResourceId?: number;
+    subResources?: Array<CommandProcessingSubResourceResult>;
     transactionCode: string;
     transactionId?: string;
 }

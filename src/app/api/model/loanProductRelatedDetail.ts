@@ -75,6 +75,7 @@ export interface LoanProductRelatedDetail {
     repayEvery?: number;
     repaymentPeriodFrequencyType?: LoanProductRelatedDetail.RepaymentPeriodFrequencyTypeEnum;
     secondRepaymentDayOfMonth?: number;
+    supportedFeeRefundTypes?: Array<LoanProductRelatedDetail.SupportedFeeRefundTypesEnum>;
     supportedInterestRefundTypes?: Array<LoanProductRelatedDetail.SupportedInterestRefundTypesEnum>;
 }
 export namespace LoanProductRelatedDetail {
@@ -168,6 +169,11 @@ export namespace LoanProductRelatedDetail {
         SemiMonthly: 'SEMI_MONTHLY'
     } as const;
     export type RepaymentPeriodFrequencyTypeEnum = typeof RepaymentPeriodFrequencyTypeEnum[keyof typeof RepaymentPeriodFrequencyTypeEnum];
+    export const SupportedFeeRefundTypesEnum = {
+        MerchantIssuedRefund: 'MERCHANT_ISSUED_REFUND',
+        PayoutRefund: 'PAYOUT_REFUND'
+    } as const;
+    export type SupportedFeeRefundTypesEnum = typeof SupportedFeeRefundTypesEnum[keyof typeof SupportedFeeRefundTypesEnum];
     export const SupportedInterestRefundTypesEnum = {
         MerchantIssuedRefund: 'MERCHANT_ISSUED_REFUND',
         PayoutRefund: 'PAYOUT_REFUND'

@@ -56,6 +56,7 @@ export const TransactionType = {
     InterestPaymentWaiver: 'interestPaymentWaiver',
     AccrualActivity: 'accrualActivity',
     InterestRefund: 'interestRefund',
+    FeeRefund: 'feeRefund',
     AccrualAdjustment: 'accrualAdjustment',
     CapitalizedIncome: 'capitalizedIncome',
     CapitalizedIncomeAmortization: 'capitalizedIncomeAmortization',

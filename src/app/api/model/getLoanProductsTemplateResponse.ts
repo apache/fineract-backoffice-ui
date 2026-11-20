@@ -82,6 +82,7 @@ export interface GetLoanProductsTemplateResponse {
     chargeOffReasonOptions?: Array<GetLoanProductsChargeOffReasonOptions>;
     chargeOptions?: Set<GetLoanProductsChargeOptions>;
     creditAllocationAllocationTypes?: Array<EnumOptionData>;
+    creditAllocationStrategyOptions?: Array<EnumOptionData>;
     creditAllocationTransactionTypes?: Array<EnumOptionData>;
     currency?: GetLoanProductsTemplateCurrency;
     currencyOptions?: Set<GetLoanProductsCurrencyOptions>;
@@ -118,6 +119,8 @@ export interface GetLoanProductsTemplateResponse {
     repaymentFrequencyTypeOptions?: Set<GetLoanProductsRepaymentTemplateFrequencyType>;
     repaymentStartDateTypeOptions?: Set<GetLoanProductsRepaymentStartDateType>;
     rescheduleStrategyTypeOptions?: Set<GetLoanProductsRescheduleStrategyType>;
+    supportedFeeRefundTypes?: Array<StringEnumOptionData>;
+    supportedFeeRefundTypesOptions?: Array<StringEnumOptionData>;
     supportedInterestRefundTypes?: Array<StringEnumOptionData>;
     supportedInterestRefundTypesOptions?: Array<StringEnumOptionData>;
     transactionProcessingStrategyOptions?: Set<GetLoanProductsTransactionProcessingStrategyOptions>;

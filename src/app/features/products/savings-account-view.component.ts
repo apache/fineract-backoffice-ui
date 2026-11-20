@@ -25,8 +25,12 @@ import {
   OnInit,
   OnDestroy,
   viewChildren,
+  DestroyRef,
 } from '@angular/core';
-import { from } from 'rxjs';
+import { EMPTY, Subject, catchError, finalize, from, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BreadcrumbService } from '../../core/services/breadcrumb.service';
+import { buildAccountBreadcrumbs } from '../../layout/breadcrumb';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PlatformDateService } from '../../core/services/platform-date.service';
 import { I18N, TranslatePipe } from '../../core/adapters';
@@ -908,6 +912,10 @@ export class SavingsAccountViewComponent implements OnInit, OnDestroy {
   private readonly dialogService = inject(DialogService);
   private readonly i18n = inject(I18N);
 
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly breadcrumbService = inject(BreadcrumbService);
+  private readonly reloadAccount$ = new Subject<void>();
+
   accountId = 0;
   /**
    * Why the account is not on screen: absent, or the read failed. `null` once it is loaded.
@@ -948,7 +956,8 @@ export class SavingsAccountViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.route.paramMap.subscribe((params) => {
+    this.observeAccountReloads();
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.accountId = +id;
@@ -961,6 +970,7 @@ export class SavingsAccountViewComponent implements OnInit, OnDestroy {
     for (const popover of this.popovers()) {
       void popover.dismiss().catch(() => false);
     }
+    this.breadcrumbService.clearOverride();
   }
 
   /**
@@ -974,25 +984,55 @@ export class SavingsAccountViewComponent implements OnInit, OnDestroy {
    * error state with a working Try again, which is what the rest of the app does since #223.
    * A 404 or 403 gets the other branch: no retry, because repeating it cannot succeed.
    */
-  loadAccountData() {
-    this.isLoading.set(true);
-    this.savingsService
-      .getSavingsaccountsAccountId(this.accountId, false, undefined, 'all', 'body', false, {
-        context: skipErrorToast(),
-      })
-      .subscribe({
-        next: (data) => {
-          this.account.set(data);
-          this.transactions.set(data.transactions || []);
-          this.charges.set(data.charges || []);
+  loadAccountData(): void {
+    this.reloadAccount$.next();
+  }
+
+  private observeAccountReloads(): void {
+    this.reloadAccount$
+      .pipe(
+        switchMap(() => {
+          this.breadcrumbService.setOverride([]);
+          this.isLoading.set(true);
           this.loadError.set(null);
-          this.isLoading.set(false);
-        },
-        error: (error: HttpErrorResponse) => {
-          this.loadError.set(error.status === 404 || error.status === 403 ? 'not-found' : 'failed');
-          this.isLoading.set(false);
-        },
-      });
+          return this.savingsService
+            .getSavingsaccountsAccountId(this.accountId, false, undefined, 'all', 'body', false, {
+              context: skipErrorToast(),
+            })
+            .pipe(
+              catchError((error: HttpErrorResponse) => {
+                this.loadError.set(
+                  error.status === 404 || error.status === 403 ? 'not-found' : 'failed',
+                );
+                return EMPTY;
+              }),
+              finalize(() => this.isLoading.set(false)),
+            );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((data) => this.applyAccountData(data));
+  }
+
+  private applyAccountData(data: SavingsAccountData): void {
+    this.account.set(data);
+    this.transactions.set(data.transactions || []);
+    this.charges.set(data.charges || []);
+    this.loadError.set(null);
+
+    // JLG accounts can carry both IDs; prefer the individual client when one is available.
+    const owner =
+      data.clientId != null && data.clientName?.trim()
+        ? { type: 'client' as const, id: data.clientId, name: data.clientName }
+        : data.groupId != null && data.groupName?.trim()
+          ? { type: 'group' as const, id: data.groupId, name: data.groupName }
+          : null;
+
+    if (owner && data.accountNo?.trim()) {
+      this.breadcrumbService.setOverride(
+        buildAccountBreadcrumbs({ owner, accountType: 'savings', accountNo: data.accountNo }),
+      );
+    }
   }
 
   onTransaction(command: string) {
