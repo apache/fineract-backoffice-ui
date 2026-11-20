@@ -104,8 +104,19 @@ test.describe('Scheduler job edit against Fineract', () => {
     });
     expect(res.status()).toBe(400);
     const body = (await res.json()) as { errors?: { userMessageGlobalisationCode?: string }[] };
-    expect(body.errors?.map((error) => error.userMessageGlobalisationCode)).toContain(
-      'validation.msg.schedulerjob.cronExpression.invalid',
+    // Either code: the platform renamed this rule, and `apache/fineract:latest` is not pinned, so
+    // a run can meet either version. `validation.msg.schedulerjob.cronExpression.invalid` is what
+    // it answered until November 2026; `...job.update.assertion.cron-expression` is the assertion
+    // name it answers with now. What is being measured is that the platform refuses the
+    // expression and names a cron rule for it, which both codes do, so pinning one of them only
+    // dates the test. Nothing in the UI reads either code: the form refuses the expression before
+    // sending, and this exists to confirm the platform agrees.
+    expect(body.errors?.map((error) => error.userMessageGlobalisationCode)).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(
+          /^(validation\.msg\.schedulerjob\.cronExpression\.invalid|org\.apache\.fineract\.infrastructure\.job\.update\.assertion\.cron-expression)$/,
+        ),
+      ]),
     );
   });
 });
