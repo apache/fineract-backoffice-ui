@@ -60,6 +60,7 @@ export class DateTimePipe implements PipeTransform {
       hi: 'hi-IN',
       ko: 'ko-KR',
       fr: 'fr-FR',
+      es: 'es-ES',
     };
     return map[lang] || lang || 'en-US';
   }
