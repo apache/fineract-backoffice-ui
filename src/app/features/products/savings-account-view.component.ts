@@ -553,8 +553,57 @@ export type SavingsTab = (typeof SAVINGS_TAB)[keyof typeof SAVINGS_TAB];
                       {{ account()?.summary?.accountBalance || 0 | number: '1.2-2' }}
                     </span>
                   </div>
+                  @if (account()?.allowOverdraft) {
+                    <div class="detail-item">
+                      <span class="label">{{ 'SAVINGS.OVERDRAFT_LIMIT' | appTranslate }}</span>
+                      <span class="value" data-testid="savings-summary-overdraft-limit">
+                        {{ account()?.currency?.displaySymbol }}{{ account()?.overdraftLimit || 0 | number: '1.2-2' }}
+                      </span>
+                    </div>
+                  }
+                  <div class="detail-item">
+                    <span class="label">{{ 'SAVINGS.AVAILABLE_BALANCE' | appTranslate }}</span>
+                    <span class="value" data-testid="savings-summary-available-balance">
+                      {{ account()?.currency?.displaySymbol }}{{ (account()?.summary?.availableBalance ?? account()?.summary?.accountBalance ?? 0) | number: '1.2-2' }}
+                    </span>
+                  </div>
                 </ion-card-content>
               </ion-card>
+
+              @if (account()?.allowOverdraft) {
+                <ion-card class="info-card" data-testid="savings-overdraft-card">
+                  <ion-card-header>
+                    <ion-card-title>
+                      <ion-icon name="card-outline"></ion-icon>
+                      {{ 'SAVINGS.OVERDRAFT' | appTranslate }}
+                    </ion-card-title>
+                  </ion-card-header>
+                  <ion-card-content class="details-list">
+                    <div class="detail-item">
+                      <span class="label">{{ 'SAVINGS.OVERDRAFT_LIMIT' | appTranslate }}</span>
+                      <span class="value" data-testid="savings-overdraft-card-limit">
+                        {{ account()?.currency?.displaySymbol }}{{ account()?.overdraftLimit || 0 | number: '1.2-2' }}
+                      </span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">{{
+                        'SAVINGS.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT' | appTranslate
+                      }}</span>
+                      <span class="value" data-testid="savings-overdraft-card-rate">
+                        {{ account()?.nominalAnnualInterestRateOverdraft ?? 0 }}%
+                      </span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">{{
+                        'SAVINGS.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION' | appTranslate
+                      }}</span>
+                      <span class="value" data-testid="savings-overdraft-card-min-calc">
+                        {{ account()?.currency?.displaySymbol }}{{ account()?.minOverdraftForInterestCalculation || 0 | number: '1.2-2' }}
+                      </span>
+                    </div>
+                  </ion-card-content>
+                </ion-card>
+              }
             </div>
           </div>
         }
