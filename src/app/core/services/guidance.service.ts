@@ -76,9 +76,27 @@ const SEARCH_FILTER_SELECTOR = 'app-search-filter';
  */
 const ROUTE_TOURS: readonly { readonly match: RegExp; readonly key: string }[] = [
   { match: /^\/dashboard(\/|$)/, key: 'dashboard' },
+  // Working Capital, before the general entries below. It had no entry at all, so every one of
+  // its screens -- the portfolio overview, the loan record with its breach and delinquency
+  // actions, the two threshold catalogues -- opened the composed tour and was described as "this
+  // screen". The list and overview keys are anchored with `$` on purpose: `breach/create` is a
+  // form, and inheriting the list's steps would point them at a table that is not there. It
+  // falls through to `working-capital`, which is prose and lets the composition add the
+  // structure the form does have.
+  { match: /^\/working-capital\/overview$/, key: 'wc-overview' },
+  { match: /^\/working-capital\/loans\/view(\/|$)/, key: 'wc-loans-view' },
+  { match: /^\/working-capital\/loans\/(create|edit)(\/|$)/, key: 'wc-loans-form' },
+  { match: /^\/working-capital\/loans$/, key: 'wc-loans' },
+  { match: /^\/working-capital\/breach$/, key: 'wc-breach' },
+  { match: /^\/working-capital\/near-breach$/, key: 'wc-near-breach' },
+  { match: /^\/working-capital\/loan-products$/, key: 'wc-loan-products' },
+  { match: /^\/working-capital(\/|$)/, key: 'working-capital' },
   { match: /^\/clients\/view(\/|$)/, key: 'clients-view' },
   { match: /^\/clients(\/|$)/, key: 'clients' },
   { match: /^\/loans\/view(\/|$)/, key: 'loans-view' },
+  // Before `loans`, whose one anchored step points at `.filter-row` -- a list control the
+  // application form does not have, so pressing Guide on the form highlighted nothing.
+  { match: /^\/loans\/(create|edit)(\/|$)/, key: 'loans-form' },
   { match: /^\/loans(\/|$)/, key: 'loans' },
   { match: /^\/groups\/view(\/|$)/, key: 'groups-view' },
   { match: /^\/groups(\/|$)/, key: 'groups' },
@@ -433,6 +451,152 @@ export class GuidanceService {
       {
         titleKey: 'GUIDE.SYSTEM_TITLE',
         descriptionKey: 'GUIDE.SYSTEM_DESC',
+      },
+    ],
+    /**
+     * The loan application form.
+     *
+     * Anchored on the two fields that decide everything else and on the summary beside Save.
+     * The attribution step uses a grouped selector because the three optional sections and the
+     * note that stands in for them are never both on screen: the loan template answers the
+     * officer, purpose, fund, linked-account and charge lists only once a client and a product
+     * are both chosen, so before that there is a note where the sections will be. Same idiom as
+     * the shell tour's narrow-viewport steps -- whichever exists is what the step points at.
+     */
+    'loans-form': [
+      {
+        titleKey: 'GUIDE.LOANS_FORM_TITLE',
+        descriptionKey: 'GUIDE.LOANS_FORM_DESC',
+      },
+      {
+        titleKey: 'GUIDE.LOANS_FORM_CLIENT_TITLE',
+        descriptionKey: 'GUIDE.LOANS_FORM_CLIENT_DESC',
+        targetSelector: 'app-client-search',
+      },
+      {
+        titleKey: 'GUIDE.LOANS_FORM_PRODUCT_TITLE',
+        descriptionKey: 'GUIDE.LOANS_FORM_PRODUCT_DESC',
+        targetSelector: 'ion-select[name="productId"]',
+      },
+      {
+        titleKey: 'GUIDE.LOANS_FORM_ATTRIBUTION_TITLE',
+        descriptionKey: 'GUIDE.LOANS_FORM_ATTRIBUTION_DESC',
+        targetSelector: '[data-testid="loan-options-hint"], ion-select[name="loanOfficerId"]',
+      },
+      {
+        titleKey: 'GUIDE.LOANS_FORM_SUBMIT_TITLE',
+        descriptionKey: 'GUIDE.LOANS_FORM_SUBMIT_DESC',
+        targetSelector: '[data-testid="loan-submit-hint"], [data-testid="loan-submit-btn"]',
+      },
+    ],
+    /** Everything under `/working-capital` that has no tour of its own. Prose, so the */
+    /** composition appends whatever the screen in question actually has. */
+    'working-capital': [
+      {
+        titleKey: 'GUIDE.WC_TITLE',
+        descriptionKey: 'GUIDE.WC_DESC',
+      },
+    ],
+    'wc-overview': [
+      {
+        titleKey: 'GUIDE.WC_OVERVIEW_TITLE',
+        descriptionKey: 'GUIDE.WC_OVERVIEW_DESC',
+      },
+      {
+        titleKey: 'GUIDE.WC_OVERVIEW_AGING_TITLE',
+        descriptionKey: 'GUIDE.WC_OVERVIEW_AGING_DESC',
+        targetSelector: '[data-testid="wc-portfolio-aging"]',
+      },
+      {
+        titleKey: 'GUIDE.WC_OVERVIEW_STATUS_TITLE',
+        descriptionKey: 'GUIDE.WC_OVERVIEW_STATUS_DESC',
+        targetSelector: '[data-testid="wc-portfolio-status"]',
+      },
+    ],
+    'wc-loans': [
+      {
+        titleKey: 'GUIDE.WC_LOANS_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_DESC',
+      },
+      {
+        titleKey: 'GUIDE.WC_LOANS_EXTERNAL_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_EXTERNAL_DESC',
+        targetSelector: '[data-testid="wc-external-id-input"]',
+      },
+      {
+        titleKey: 'GUIDE.WC_LOANS_CREATE_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_CREATE_DESC',
+        targetSelector: HEADER_ACTIONS_SELECTOR,
+      },
+    ],
+    'wc-loans-view': [
+      {
+        titleKey: 'GUIDE.WC_LOANS_VIEW_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_VIEW_DESC',
+      },
+      {
+        titleKey: 'GUIDE.WC_LOANS_VIEW_TABS_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_VIEW_TABS_DESC',
+        targetSelector: TAB_GROUP_SELECTOR,
+      },
+      {
+        titleKey: 'GUIDE.WC_LOANS_VIEW_ACTIONS_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_VIEW_ACTIONS_DESC',
+        targetSelector: ACTIONS_AREA_SELECTOR,
+      },
+    ],
+    'wc-loans-form': [
+      {
+        titleKey: 'GUIDE.WC_LOANS_FORM_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_FORM_DESC',
+      },
+      {
+        titleKey: 'GUIDE.WC_LOANS_FORM_CLIENT_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_FORM_CLIENT_DESC',
+        targetSelector: 'ion-input[name="clientId"]',
+      },
+      {
+        titleKey: 'GUIDE.WC_LOANS_FORM_PRODUCT_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_FORM_PRODUCT_DESC',
+        targetSelector: 'ion-select[name="productId"]',
+      },
+      {
+        titleKey: 'GUIDE.WC_LOANS_FORM_SUBMIT_TITLE',
+        descriptionKey: 'GUIDE.WC_LOANS_FORM_SUBMIT_DESC',
+        targetSelector: '[data-testid="wc-loan-submit"]',
+      },
+    ],
+    'wc-breach': [
+      {
+        titleKey: 'GUIDE.WC_BREACH_TITLE',
+        descriptionKey: 'GUIDE.WC_BREACH_DESC',
+      },
+      {
+        titleKey: 'GUIDE.WC_BREACH_CREATE_TITLE',
+        descriptionKey: 'GUIDE.WC_BREACH_CREATE_DESC',
+        targetSelector: HEADER_ACTIONS_SELECTOR,
+      },
+    ],
+    'wc-near-breach': [
+      {
+        titleKey: 'GUIDE.WC_NEAR_BREACH_TITLE',
+        descriptionKey: 'GUIDE.WC_NEAR_BREACH_DESC',
+      },
+      {
+        titleKey: 'GUIDE.WC_NEAR_BREACH_CREATE_TITLE',
+        descriptionKey: 'GUIDE.WC_NEAR_BREACH_CREATE_DESC',
+        targetSelector: HEADER_ACTIONS_SELECTOR,
+      },
+    ],
+    'wc-loan-products': [
+      {
+        titleKey: 'GUIDE.WC_LOAN_PRODUCTS_TITLE',
+        descriptionKey: 'GUIDE.WC_LOAN_PRODUCTS_DESC',
+      },
+      {
+        titleKey: 'GUIDE.WC_LOAN_PRODUCTS_CREATE_TITLE',
+        descriptionKey: 'GUIDE.WC_LOAN_PRODUCTS_CREATE_DESC',
+        targetSelector: HEADER_ACTIONS_SELECTOR,
       },
     ],
   };

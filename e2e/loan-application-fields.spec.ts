@@ -218,6 +218,57 @@ test.describe('loan application fields', () => {
     await expect(page).toHaveURL(/\/loans\/view\/9$/);
   });
 
+  /**
+   * The Guide on this form, which the loans *list* tour used to answer.
+   *
+   * Its one anchored step points at `.filter-row`, so pressing Guide here outlined nothing --
+   * and a target that resolves to nothing is invisible from the outside: the card still renders,
+   * the counter still advances, and the only symptom is the missing outline. So this walks the
+   * tour and insists every step after the opening card has put the highlight on something.
+   *
+   * Both states of the screen matter. The three optional sections appear only once a client and a
+   * product are chosen, and before that there is a note where they will be, so the step that
+   * describes them carries a grouped selector and has to resolve either way.
+   */
+  async function walkTheGuide(page: Page) {
+    await page.locator('.tour-btn').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Driven off the step counter rather than off the Next button. Next rewrites the card in
+    // place, so reading the title straight after clicking can read the step just left -- which
+    // it did, recording one step twice and dropping the last.
+    const progress = page.locator('.guidance-card .progress-info');
+    const total = Number(/of (\d+)/.exec((await progress.textContent()) ?? '')?.[1]);
+    expect(total).toBeGreaterThan(1);
+
+    const seen: string[] = [];
+    for (let step = 1; step <= total; step++) {
+      await expect(progress).toHaveText(`Step ${step} of ${total}`);
+      seen.push((await page.locator('.guidance-card ion-card-title').textContent())?.trim() ?? '');
+      if (step > 1) await expect(page.locator('.guidance-highlight')).not.toHaveCount(0);
+      if (step < total) await page.getByRole('button', { name: 'Next' }).click();
+    }
+    await page.keyboard.press('Escape');
+    return seen;
+  }
+
+  test('the Guide on this form points at the form, in both of its states', async ({ page }) => {
+    await signIn(page);
+    await routeReferenceData(page);
+
+    await page.goto('/loans/create?clientId=7');
+    // Before a product: the sections are not on screen, and the note that stands in for them is.
+    await expect(page.getByTestId('loan-options-hint')).toBeVisible();
+    const before = await walkTheGuide(page);
+    expect(before[0]).toContain('Loan application');
+    expect(before).toContain('Ownership, linkage and charges');
+
+    await selectOption(page, 'Loan Product', 'Synthetic Loan');
+    await expect(page.getByTestId('loan-options-hint')).toHaveCount(0);
+    // After: the same step, now pointing at the sections themselves.
+    expect(await walkTheGuide(page)).toEqual(before);
+  });
+
   test('nothing left blank is sent, and a removed charge is not sent at all', async ({ page }) => {
     await signIn(page);
     await routeReferenceData(page, { accountLinkingOptions: [] });

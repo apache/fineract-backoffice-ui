@@ -484,7 +484,7 @@ describe('LoanFormComponent optional application fields', () => {
   const model = (selector: string): NgModel =>
     fixture.debugElement.query(By.css(selector)).injector.get(NgModel);
   const el = (testid: string): HTMLElement | null =>
-    fixture.nativeElement.querySelector(`[data-testid="${testid}"]`);
+    fixture.nativeElement.querySelector(`[data-testid="${CSS.escape(testid)}"]`);
   const takeCreate = () =>
     http.expectOne((request) => request.method === 'POST' && request.url.endsWith('/loans'));
   const takeTemplate = () => http.expectOne((request) => request.url.includes('/loans/template'));
@@ -544,7 +544,9 @@ describe('LoanFormComponent optional application fields', () => {
 
     const labels = (name: string) =>
       Array.from(
-        fixture.nativeElement.querySelectorAll(`ion-select[name="${name}"] ion-select-option`),
+        fixture.nativeElement.querySelectorAll(
+          `ion-select[name="${CSS.escape(name)}"] ion-select-option`,
+        ),
       ).map((option) => (option as HTMLElement).textContent?.trim());
 
     expect(labels('loanOfficerId')).toEqual(['Mittal, Synthetic', 'Flores, Synthetic']);
