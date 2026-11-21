@@ -229,7 +229,11 @@ export interface SavingsAccountFormPayload extends PostSavingsAccountsRequest {
                 <div class="form-grid">
                   <!-- Allow Overdraft Checkbox -->
                   <div class="field-container-checkbox">
-                    <ion-item lines="none" class="checkbox-item" [appTooltip]="'HELP.ALLOW_OVERDRAFT_DESC' | appTranslate">
+                    <ion-item
+                      lines="none"
+                      class="checkbox-item"
+                      [appTooltip]="'HELP.ALLOW_OVERDRAFT_DESC' | appTranslate"
+                    >
                       <ion-checkbox
                         name="allowOverdraft"
                         [ngModel]="allowOverdraft()"
@@ -246,7 +250,10 @@ export interface SavingsAccountFormPayload extends PostSavingsAccountsRequest {
                   @if (allowOverdraft()) {
                     <!-- Overdraft Limit -->
                     <div class="field-container">
-                      <ion-item fill="outline" [appTooltip]="'HELP.OVERDRAFT_LIMIT_DESC' | appTranslate">
+                      <ion-item
+                        fill="outline"
+                        [appTooltip]="'HELP.OVERDRAFT_LIMIT_DESC' | appTranslate"
+                      >
                         <ion-label position="stacked">
                           {{ 'SAVINGS.OVERDRAFT_LIMIT' | appTranslate }}
                           <span class="required-marker" aria-hidden="true">*</span>
@@ -264,20 +271,39 @@ export interface SavingsAccountFormPayload extends PostSavingsAccountsRequest {
                         ></ion-input>
                       </ion-item>
                       @if (productOverdraftMax() !== null && productOverdraftMax()! > 0) {
-                        <ion-note color="medium" class="field-hint" data-testid="savings-overdraft-max-hint">
-                          {{ 'SAVINGS.MAX_OVERDRAFT_LIMIT' | appTranslate: { max: productOverdraftMax() } }}
+                        <ion-note
+                          color="medium"
+                          class="field-hint"
+                          data-testid="savings-overdraft-max-hint"
+                        >
+                          {{
+                            'SAVINGS.MAX_OVERDRAFT_LIMIT'
+                              | appTranslate: { max: productOverdraftMax() }
+                          }}
                         </ion-note>
                       }
                       @if (isOverdraftLimitExceeded()) {
-                        <ion-note color="danger" class="field-error" data-testid="savings-overdraft-limit-error">
-                          {{ 'SAVINGS.OVERDRAFT_LIMIT_EXCEEDS_MAX' | appTranslate: { max: productOverdraftMax() } }}
+                        <ion-note
+                          color="danger"
+                          class="field-error"
+                          data-testid="savings-overdraft-limit-error"
+                        >
+                          {{
+                            'SAVINGS.OVERDRAFT_LIMIT_EXCEEDS_MAX'
+                              | appTranslate: { max: productOverdraftMax() }
+                          }}
                         </ion-note>
                       }
                     </div>
 
                     <!-- Nominal Annual Interest Rate Overdraft -->
                     <div class="field-container">
-                      <ion-item fill="outline" [appTooltip]="'HELP.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT_DESC' | appTranslate">
+                      <ion-item
+                        fill="outline"
+                        [appTooltip]="
+                          'HELP.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT_DESC' | appTranslate
+                        "
+                      >
                         <ion-label position="stacked">
                           {{ 'SAVINGS.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT' | appTranslate }}
                         </ion-label>
@@ -285,7 +311,9 @@ export interface SavingsAccountFormPayload extends PostSavingsAccountsRequest {
                           type="number"
                           name="nominalAnnualInterestRateOverdraft"
                           data-testid="savings-overdraft-rate"
-                          [attr.aria-label]="'SAVINGS.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT' | appTranslate"
+                          [attr.aria-label]="
+                            'SAVINGS.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT' | appTranslate
+                          "
                           [ngModel]="nominalAnnualInterestRateOverdraft()"
                           (ngModelChange)="onNominalAnnualInterestRateOverdraftChanged($event)"
                           [disabled]="!canEditOverdraft()"
@@ -296,7 +324,12 @@ export interface SavingsAccountFormPayload extends PostSavingsAccountsRequest {
 
                     <!-- Min Overdraft For Interest Calculation -->
                     <div class="field-container">
-                      <ion-item fill="outline" [appTooltip]="'HELP.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION_DESC' | appTranslate">
+                      <ion-item
+                        fill="outline"
+                        [appTooltip]="
+                          'HELP.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION_DESC' | appTranslate
+                        "
+                      >
                         <ion-label position="stacked">
                           {{ 'SAVINGS.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION' | appTranslate }}
                         </ion-label>
@@ -304,7 +337,9 @@ export interface SavingsAccountFormPayload extends PostSavingsAccountsRequest {
                           type="number"
                           name="minOverdraftForInterestCalculation"
                           data-testid="savings-overdraft-min-calc"
-                          [attr.aria-label]="'SAVINGS.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION' | appTranslate"
+                          [attr.aria-label]="
+                            'SAVINGS.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION' | appTranslate
+                          "
                           [ngModel]="minOverdraftForInterestCalculation()"
                           (ngModelChange)="onMinOverdraftForInterestCalculationChanged($event)"
                           [disabled]="!canEditOverdraft()"
@@ -458,9 +493,7 @@ export class SavingsAccountFormComponent implements OnInit {
     this.authService.hasPermission('UPDATE_SAVINGSACCOUNT'),
   );
   readonly canEditOverdraft = computed(() => !this.isEditMode() || this.hasUpdatePermission());
-  readonly overdraftPermission = computed(() =>
-    this.isEditMode() ? 'UPDATE_SAVINGSACCOUNT' : [],
-  );
+  readonly overdraftPermission = computed(() => (this.isEditMode() ? 'UPDATE_SAVINGSACCOUNT' : []));
 
   readonly isOverdraftLimitExceeded = computed(() => {
     if (!this.allowOverdraft()) return false;

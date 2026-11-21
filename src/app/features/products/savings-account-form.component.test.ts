@@ -219,7 +219,9 @@ describe('SavingsAccountFormComponent interest rate', () => {
       .expectOne((request) => request.method === 'GET' && request.url.endsWith('/savingsproducts'))
       .flush([PRODUCT]);
 
-    const productReqs = http.match((c) => c.method === 'GET' && c.url.endsWith('/savingsproducts/42'));
+    const productReqs = http.match(
+      (c) => c.method === 'GET' && c.url.endsWith('/savingsproducts/42'),
+    );
     for (const req of productReqs) {
       req.flush({ id: 42, allowOverdraft: false });
     }
@@ -297,10 +299,13 @@ describe('SavingsAccountFormComponent overdraft', () => {
     fixture.detectChanges();
   }
 
-  function chooseProduct(product: typeof PRODUCT_WITH_OVERDRAFT | typeof PRODUCT_WITHOUT_OVERDRAFT): void {
+  function chooseProduct(
+    product: typeof PRODUCT_WITH_OVERDRAFT | typeof PRODUCT_WITHOUT_OVERDRAFT,
+  ): void {
     component.onProductChanged(product.id);
     const req = http.expectOne(
-      (candidate) => candidate.method === 'GET' && candidate.url.endsWith(`/savingsproducts/${product.id}`),
+      (candidate) =>
+        candidate.method === 'GET' && candidate.url.endsWith(`/savingsproducts/${product.id}`),
     );
     req.flush(product);
     fixture.detectChanges();
@@ -319,7 +324,8 @@ describe('SavingsAccountFormComponent overdraft', () => {
   function submitEdit(accountId = 77): Record<string, unknown> {
     component.onSubmit();
     const req = http.expectOne(
-      (candidate) => candidate.method === 'PUT' && candidate.url.endsWith(`/savingsaccounts/${accountId}`),
+      (candidate) =>
+        candidate.method === 'PUT' && candidate.url.endsWith(`/savingsaccounts/${accountId}`),
     );
     const body = req.request.body as Record<string, unknown>;
     req.flush({ resourceId: accountId });

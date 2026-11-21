@@ -1915,7 +1915,12 @@
     "sso": {
       "button": "Iniciar sesión con tu proveedor de identidad",
       "divider": "o",
-      "notImplemented": "El inicio de sesión con tu proveedor de identidad aún no está disponible. Usa tu nombre de usuario y contraseña a continuación."
+      "unreachable": "No se pudo contactar con el proveedor de identidad. Vuelve a intentarlo o ponte en contacto con un administrador.",
+      "completing": "Iniciando tu sesión…",
+      "failed": "El inicio de sesión con tu proveedor de identidad falló. Vuelve a intentarlo.",
+      "userDetailsNotFound": "Te has autenticado, pero el servidor no puede identificar a los usuarios que inician sesión con un proveedor de identidad. Pide a un administrador que habilite los datos de usuario de OpenID Connect en el servidor de Fineract.",
+      "userDetailsFailed": "Te has autenticado, pero el servidor no aceptó tu cuenta. Pide a un administrador que compruebe que tu usuario existe y tiene un rol.",
+      "backToLogin": "Volver al inicio de sesión"
     }
   },
   "idle": {

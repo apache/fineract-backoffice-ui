@@ -668,19 +668,21 @@ describe('SavingsAccountViewComponent', () => {
       const host = fixture.nativeElement as HTMLElement;
       const overdraftCard = host.querySelector('[data-testid="savings-overdraft-card"]');
       expect(overdraftCard).not.toBeNull();
-      expect(host.querySelector('[data-testid="savings-overdraft-card-limit"]')?.textContent).toContain(
-        '500.00',
-      );
-      expect(host.querySelector('[data-testid="savings-overdraft-card-rate"]')?.textContent).toContain(
-        '12%',
-      );
+      expect(
+        host.querySelector('[data-testid="savings-overdraft-card-limit"]')?.textContent,
+      ).toContain('500.00');
+      expect(
+        host.querySelector('[data-testid="savings-overdraft-card-rate"]')?.textContent,
+      ).toContain('12%');
       expect(
         host.querySelector('[data-testid="savings-overdraft-card-min-calc"]')?.textContent,
       ).toContain('50.00');
 
       const summaryLimit = host.querySelector('[data-testid="savings-summary-overdraft-limit"]');
       expect(summaryLimit?.textContent).toContain('500.00');
-      const availableBalance = host.querySelector('[data-testid="savings-summary-available-balance"]');
+      const availableBalance = host.querySelector(
+        '[data-testid="savings-summary-available-balance"]',
+      );
       expect(availableBalance?.textContent).toContain('1,500.00');
     });
 
@@ -696,7 +698,9 @@ describe('SavingsAccountViewComponent', () => {
       const host = fixture.nativeElement as HTMLElement;
       expect(host.querySelector('[data-testid="savings-overdraft-card"]')).toBeNull();
       expect(host.querySelector('[data-testid="savings-summary-overdraft-limit"]')).toBeNull();
-      expect(host.querySelector('[data-testid="savings-summary-available-balance"]')).not.toBeNull();
+      expect(
+        host.querySelector('[data-testid="savings-summary-available-balance"]'),
+      ).not.toBeNull();
     });
   });
 });
