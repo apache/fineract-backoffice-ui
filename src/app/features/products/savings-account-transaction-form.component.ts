@@ -134,7 +134,8 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
                       [attr.aria-label]="'COMMON.TRANSACTION_AMOUNT' | appTranslate"
                       type="number"
                       name="transactionAmount"
-                      [(ngModel)]="transaction.transactionAmount"
+                      [ngModel]="transactionAmount()"
+                      (ngModelChange)="transactionAmount.set($event)"
                       #transactionAmountModel="ngModel"
                       (ionBlur)="transactionAmountModel.control.markAsTouched()"
                       required
@@ -338,6 +339,17 @@ export class SavingsAccountTransactionFormComponent implements OnInit {
   transaction: PostSavingsAccountTransactionsRequest = {};
   /** Note bound separately as it might not be in the direct model */
   note = '';
+  /**
+   * The amount, held in a signal rather than on `transaction` because a correction fills it in
+   * from the transaction being corrected.
+   *
+   * Writing a plain field bound with `[(ngModel)]` from the HTTP callback landed inside a change
+   * detection pass that had already checked that binding, so Angular raised NG0100
+   * (`ExpressionChangedAfterItHasBeenCheckedError`) and dropped the write: the input stayed empty
+   * and the operator was shown a blank amount on a form whose whole purpose is to correct one.
+   * A signal write schedules its own pass instead, which is why `transactionDate` above is one.
+   */
+  readonly transactionAmount = signal<number | null>(null);
   readonly transactionDate = signal(this.platformDate.today());
   readonly paymentTypeOptions = signal<Record<string, unknown>[]>([]);
 
@@ -369,7 +381,7 @@ export class SavingsAccountTransactionFormComponent implements OnInit {
       .subscribe({
         next: (transaction) => {
           const raw = transaction as unknown as Record<string, unknown>;
-          this.transaction.transactionAmount = raw['amount'] as number;
+          this.transactionAmount.set((raw['amount'] as number | undefined) ?? null);
           const paymentDetail = raw['paymentDetailData'] as Record<string, unknown> | undefined;
           const paymentType = paymentDetail?.['paymentType'] as Record<string, unknown> | undefined;
           if (paymentType?.['id'] !== undefined) {
@@ -408,6 +420,7 @@ export class SavingsAccountTransactionFormComponent implements OnInit {
 
     const formattedDate = toIsoDate(this.transactionDate());
 
+    this.transaction.transactionAmount = this.transactionAmount() ?? undefined;
     this.transaction.transactionDate = formattedDate;
     this.transaction.dateFormat = 'yyyy-MM-dd';
     this.transaction.locale = 'en';

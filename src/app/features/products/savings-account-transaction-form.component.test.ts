@@ -117,7 +117,7 @@ describe('SavingsAccountTransactionFormComponent', () => {
 
   it('sends amount, payment type, and note for a deposit', () => {
     const { component, transactionSpy } = createComponent('deposit');
-    component.transaction.transactionAmount = 500;
+    component.transactionAmount.set(500);
     component.transaction.paymentTypeId = 1;
     component.note = 'Cash deposit';
 
@@ -183,7 +183,7 @@ describe('SavingsAccountTransactionFormComponent modify', () => {
   it('prefills the amount, the date and the payment type the operator did not change', () => {
     const { component } = createComponent('modify', 11);
 
-    expect(component.transaction.transactionAmount).toBe(250);
+    expect(component.transactionAmount()).toBe(250);
     expect(component.transaction.paymentTypeId).toBe(3);
     // `date` arrives as [y, m, d]; the picker binds a YYYY-MM-DD string.
     expect(component.transactionDate()).toBe('2026-10-15');
@@ -195,7 +195,7 @@ describe('SavingsAccountTransactionFormComponent modify', () => {
    */
   it('posts to the transaction, not to the account collection', () => {
     const { component, transactionSpy } = createComponent('modify', 11);
-    component.transaction.transactionAmount = 400;
+    component.transactionAmount.set(400);
 
     component.onSubmit();
 
@@ -215,7 +215,7 @@ describe('SavingsAccountTransactionFormComponent modify', () => {
 
   it('leaves a new deposit posting to the collection', () => {
     const { component, transactionSpy } = createComponent('deposit');
-    component.transaction.transactionAmount = 100;
+    component.transactionAmount.set(100);
 
     component.onSubmit();
 
