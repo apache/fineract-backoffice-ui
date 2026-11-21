@@ -74,6 +74,10 @@ const UNRESTRICTED = new Map([
     'Landing page after sign-in; must stay reachable or a refused user has nowhere to go',
   ],
   ['/forbidden', 'The refusal page; gating it on a permission would make refusal itself refusable'],
+  [
+    '/auth/callback',
+    'Return from the identity provider; reached before there is a session to hold permissions',
+  ],
   ['/auth/forgot-password', 'Password recovery; by definition reached without a usable session'],
   ['/profile', "The signed-in user's own account"],
   ['/notifications', "The signed-in user's own notifications"],
