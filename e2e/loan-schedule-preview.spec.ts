@@ -152,17 +152,9 @@ const previewBtn = (page: Page) => page.getByTestId('loan-preview-btn');
 /**
  * Whether the preview action is offered.
  *
- * Read off `aria-disabled`, as `expectRefused` in `utils/ui-rbac.ts` does, and **not** with
- * Playwright's disabled matchers, because of which element the locator resolves to.
- * `getByTestId` finds the `ion-button` host, and `disabled` is not a native property there --
- * Ionic renders the real `button` in the host's shadow root and disables that. So on the host
- * the disabled matcher never holds and, worse, the enabled one passes whichever state the
- * control is in, which is an assertion that cannot fail.
- *
- * `page.getByRole('button', { name: ... })` resolves the inner native button instead, where the
- * matchers do work -- which is why the Save assertions in the sibling specs are sound. The
- * preview action is addressed by test id, so it is checked the way a host element has to be.
- * Same family as #514, where `ion-button` hoists `aria-*` off the host onto that inner button.
+ * `getByTestId` resolves the `ion-button` host, where `disabled` is not a native property --
+ * Ionic disables the real button in the shadow root. So the disabled matcher never holds there
+ * and the enabled one passes whatever the state is. `getByRole` would resolve the inner button.
  */
 async function expectPreviewOffered(page: Page, offered: boolean): Promise<void> {
   await expect(previewBtn(page)).toBeVisible();

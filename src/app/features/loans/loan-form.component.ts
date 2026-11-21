@@ -198,17 +198,10 @@ interface SelectedCharge {
 }
 
 /**
- * One row of a calculated schedule.
+ * One row of a calculated schedule, as `POST /loans?command=calculateLoanSchedule` answers it.
  *
- * Measured against `POST /loans?command=calculateLoanSchedule`. The platform's own
- * `GetLoansLoanIdRepaymentPeriod` describes a schedule read back from a loan that exists, and
- * carries paid, in-advance and outstanding amounts that are all zero before anything is saved,
- * so the preview declares only the fields a calculation actually answers.
- *
- * The first row is the **disbursement**, not an instalment: it has no `period` number and no
- * `fromDate`, carries `principalDisbursed`, and all its dues are zero. Six repayments come back
- * as seven rows, which is why {@link LoanFormComponent.previewInstalments} filters on `period`
- * rather than dropping the first element by index.
+ * The first row is the disbursement, not an instalment: no `period` number, and every due
+ * zero. Six repayments come back as seven rows.
  */
 interface SchedulePeriod {
   period?: number;
@@ -223,11 +216,8 @@ interface SchedulePeriod {
 }
 
 /**
- * What the calculation answers.
- *
- * `totalOutstanding`, `totalPrincipalPaid` and `totalCredits` come back too and are deliberately
- * absent here: they describe payments against a live loan and are zero for an unsaved one, so
- * showing them would invite an officer to read meaning into a zero.
+ * What the calculation answers. `totalOutstanding`, `totalPrincipalPaid` and `totalCredits` come
+ * back too, and are left out: they describe payments against a loan that exists.
  */
 interface CalculatedSchedule {
   currency?: { code?: string; displaySymbol?: string };
@@ -1343,21 +1333,14 @@ export class LoanFormComponent implements OnInit {
   /** What the platform said when it refused to calculate. */
   readonly previewError = signal<string | null>(null);
   /**
-   * The form as it stood when the preview was calculated.
-   *
-   * Compared with the form's current value to tell whether the schedule on screen still
-   * describes the terms on screen. Held as a plain field rather than a signal because the form
-   * model is mutated in place -- `[(ngModel)]="loan().principal"` writes through the signal's
-   * object without replacing it -- so a `computed` over `loan()` would never re-run.
+   * The form as it stood when the preview was calculated. A plain field, not a signal: the model
+   * is mutated in place, so a `computed` over `loan()` would never re-run.
    */
   private previewedTerms: string | null = null;
 
   /**
-   * The instalments, without the disbursement row the platform puts first.
-   *
-   * Filtered on `period` rather than by dropping element zero: the disbursement row is the one
-   * without a period number, and trusting its position would silently mis-slice a schedule whose
-   * shape changes -- a down payment, for instance, is its own row.
+   * The instalments, without the disbursement row. Filtered on `period` rather than by position:
+   * a down payment is its own row too.
    */
   readonly previewInstalments = computed(() =>
     (this.schedulePreview()?.periods ?? []).filter((period) => period.period !== undefined),
@@ -1491,14 +1474,8 @@ export class LoanFormComponent implements OnInit {
     });
   }
 
-  /**
-   * Empties the option lists, and only when they hold something.
-   *
-   * An unconditional `set({})` publishes a new object every time it is called, so a failed load
-   * on a form that never had any options still re-renders the whole section for no change. The
-   * template is also asked for on every client and product change, and this runs on each of
-   * them.
-   */
+  /** Empties the option lists, and only when they hold something: an unconditional `set({})`
+   * publishes a new object every time and re-renders the section for no change. */
   private clearApplicationTemplate(): void {
     if (Object.keys(this.applicationTemplate()).length > 0) {
       this.applicationTemplate.set({});
@@ -1757,15 +1734,10 @@ export class LoanFormComponent implements OnInit {
   }
 
   /**
-   * Fills in everything the platform needs that the form does not bind directly.
+   * Fills in everything the platform needs that the form does not bind directly. Shared with the
+   * schedule preview, so the schedule is calculated from the body that will be submitted.
    *
-   * Shared with the schedule preview, which sends this same body to
-   * `POST /loans?command=calculateLoanSchedule`. Keeping one builder is the point: a schedule
-   * calculated from a different payload than the one that gets submitted is a preview of a
-   * different loan, which is worse than no preview at all.
-   *
-   * @param forUpdate - Whether this payload is bound for `PUT /loans/{id}`, which accepts a
-   *   narrower set of parameters than the create and calculate commands.
+   * @param forUpdate - `PUT /loans/{id}` accepts fewer parameters than create and calculate.
    */
   private buildLoanPayload(forUpdate: boolean): void {
     this.loan().submittedOnDate = formatDateToFineract(this.submittedOnDate());
@@ -1880,12 +1852,8 @@ export class LoanFormComponent implements OnInit {
   }
 
   /**
-   * The terms the calculation depends on, as one comparable string.
-   *
-   * Taken from the form's own value, so a control added later is covered without being listed
-   * here -- including the per-charge amount and due-date inputs, which are controls of this form.
-   * `chargeToAdd` is excluded: it is the picker for the add button, not a term of the loan, and
-   * leaving it in marked a schedule stale for choosing something and then thinking better of it.
+   * The terms the calculation depends on. Taken from the form's value, so a control added later
+   * is covered. `chargeToAdd` is the add picker, not a term, so it is excluded.
    */
   private termsFingerprint(form: NgForm): string {
     const value = { ...(form.value as Record<string, unknown>) };
@@ -1898,12 +1866,7 @@ export class LoanFormComponent implements OnInit {
     return formatDateToFineract(period.dueDate);
   }
 
-  /**
-   * The instalment amount to lead the summary with.
-   *
-   * The first instalment's total. On an equal-instalment loan every row matches but the last,
-   * which carries the rounding, so this is the figure an affordability conversation turns on.
-   */
+  /** The first instalment's total: the figure an affordability conversation turns on. */
   readonly previewInstalmentAmount = computed(
     () => this.previewInstalments()[0]?.totalDueForPeriod ?? null,
   );
@@ -1923,14 +1886,11 @@ export class LoanFormComponent implements OnInit {
   }
 
   /**
-   * Calculates the schedule for the terms on screen, without creating anything.
+   * Calculates the schedule for the terms on screen, creating nothing.
    *
-   * `POST /loans?command=calculateLoanSchedule` takes the same body as the create command and
-   * persists nothing, so this sends exactly what Save would send. It needs the required terms to
-   * be filled in: asked with `principal` missing or null the platform answers **200 with a
-   * schedule of all zeroes** rather than an error, and an officer shown "0.00 over 0
-   * instalments" would reasonably read it as a broken screen. So the button is gated on the same
-   * summary that gates Save, and a response with no instalments is reported rather than drawn.
+   * Asked with `principal` missing the platform answers 200 and a schedule of all zeroes rather
+   * than an error, so the action is gated on the same summary that gates Save and a response
+   * carrying no instalments is reported rather than drawn.
    */
   onPreviewSchedule(form: NgForm): void {
     if (this.missingRequiredFields(form)) return;
@@ -1974,15 +1934,9 @@ export class LoanFormComponent implements OnInit {
   /**
    * What to tell the officer about a refused calculation.
    *
-   * The platform does not reliably say which field is at fault, which is why this does not try
-   * to decorate one. Measured:
-   *
-   *   - a negative principal answers 403 `validation.msg.domain.rule.violation`, and the only
-   *     error it carries names `parameterName: "id"` -- not `principal`;
-   *   - `repaymentEvery: 0` answers `error.msg.invalid.request.body` with no parameter at all.
-   *
-   * So the platform's own message is shown whole, and the field is named only when the platform
-   * names one this form actually has a label for.
+   * The platform does not reliably name the field: a negative principal reports
+   * `parameterName: "id"`, and a malformed value reports no parameter at all. So its message is
+   * shown whole, and a field is named only when it names one this form has a label for.
    */
   private describeCalculationFailure(failure: unknown): string {
     const body = (failure as { error?: unknown })?.error as

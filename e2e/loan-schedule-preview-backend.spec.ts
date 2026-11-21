@@ -35,7 +35,7 @@
  *     six repayments come back as seven rows.
  */
 
-import { test, expect } from './fixtures';
+import { test, expect, type Page } from './fixtures';
 import { login } from './utils/fineract-login';
 import {
   API_BASE,
@@ -81,6 +81,19 @@ const comparable = (period: SchedulePeriod) => ({
   interestDue: period.interestDue,
   totalDueForPeriod: period.totalDueForPeriod,
 });
+
+/**
+ * Presses Preview once the form will act on it. The action refuses while a required term is
+ * empty, and a product's defaults reach the controls a cycle after its fetch resolves.
+ *
+ * Read off `aria-disabled`: the test id is on the `ion-button` host, and Ionic renders the real
+ * button in its shadow root, so the enabled matcher passes there whatever the state is.
+ */
+async function pressPreview(page: Page): Promise<void> {
+  const button = page.getByTestId('loan-preview-btn');
+  await expect(button).not.toHaveAttribute('aria-disabled', 'true', { timeout: 20_000 });
+  await button.click();
+}
 
 test('the calculation answers zeroes rather than an error for incomplete terms', async () => {
   const client = await seedClient(api, 'E2E791');
@@ -132,8 +145,9 @@ test('the previewed instalments are the ones the created loan gets', async ({ pa
     (response) =>
       response.request().method() === 'POST' &&
       new URL(response.url()).searchParams.get('command') === 'calculateLoanSchedule',
+    { timeout: 30_000 },
   );
-  await page.getByTestId('loan-preview-btn').click();
+  await pressPreview(page);
   const previewed = (await (await calculation).json()) as {
     periods?: SchedulePeriod[];
     totalInterestCharged?: number;
@@ -173,13 +187,13 @@ test('a preview creates nothing, so the client has no loans until Save', async (
 
   await page.goto(`/loans/create?clientId=${client.clientId}`);
   await selectOption(page, 'Loan Product', product.productName);
-  await page.getByTestId('loan-preview-btn').click();
+  await pressPreview(page);
   await expect(page.getByTestId('loan-preview-schedule')).toBeVisible();
 
   // Previewing twice, with a term changed in between, must still create nothing.
   await page.locator('ion-input[name="principal"]').locator('input').fill('2000');
   await expect(page.getByTestId('loan-preview-stale')).toBeVisible();
-  await page.getByTestId('loan-preview-btn').click();
+  await pressPreview(page);
   await expect(page.getByTestId('loan-preview-stale')).toHaveCount(0);
 
   const accounts = await api.get(`${API_BASE}/clients/${client.clientId}/accounts`);

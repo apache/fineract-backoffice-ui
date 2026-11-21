@@ -54,7 +54,11 @@ export async function selectOption(
       if (attempt === 4) throw err;
     }
   }
-  await option.click();
+  // A long popover is sized to its contents and positioned `fixed`, so the document cannot be
+  // scrolled to reach a row near the bottom and the click retries "outside of the viewport"
+  // until the test's budget is gone. Scrolling the popover's own scroller is what moves it.
+  await option.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+  await option.click({ timeout: 15_000 });
   // The alert interface needs an explicit confirmation; the popover selects on click.
   const confirm = overlay.getByRole('button', { name: /^(ok|done)$/i });
   if (await confirm.count()) await confirm.first().click();
