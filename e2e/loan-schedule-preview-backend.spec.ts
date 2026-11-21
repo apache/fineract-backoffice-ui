@@ -44,7 +44,6 @@ import {
   seedClient,
   seedLoanProduct,
 } from './utils/seed-api';
-import { selectOption } from './utils/select-option';
 import type { APIRequestContext } from '@playwright/test';
 
 test.describe.configure({ mode: 'serial', timeout: 240_000 });
@@ -81,6 +80,21 @@ const comparable = (period: SchedulePeriod) => ({
   interestDue: period.interestDue,
   totalDueForPeriod: period.totalDueForPeriod,
 });
+
+/**
+ * Chooses the seeded product without going through the picker.
+ *
+ * The picker lists every product in the tenant, and on CI the newest sits at the bottom of a
+ * list thousands of pixels long. Choosing one through it is covered by
+ * `loan-application-fields-backend.spec.ts`; this spec is about the schedule, so it sets the
+ * control and lets the form react exactly as it does to a choice.
+ */
+async function chooseSeededProduct(page: Page): Promise<void> {
+  await page.locator('ion-select[name="productId"]').evaluate((select, id) => {
+    (select as HTMLElement & { value: unknown }).value = id;
+    select.dispatchEvent(new CustomEvent('ionChange', { detail: { value: id }, bubbles: true }));
+  }, product.productId);
+}
 
 /**
  * Presses Preview once the form will act on it. The action refuses while a required term is
@@ -138,7 +152,7 @@ test('the previewed instalments are the ones the created loan gets', async ({ pa
   await login(page);
 
   await page.goto(`/loans/create?clientId=${client.clientId}`);
-  await selectOption(page, 'Loan Product', product.productName);
+  await chooseSeededProduct(page);
 
   // Capture what the platform calculated, as the officer sees it.
   const calculation = page.waitForResponse(
@@ -186,7 +200,7 @@ test('a preview creates nothing, so the client has no loans until Save', async (
   await login(page);
 
   await page.goto(`/loans/create?clientId=${client.clientId}`);
-  await selectOption(page, 'Loan Product', product.productName);
+  await chooseSeededProduct(page);
   await pressPreview(page);
   await expect(page.getByTestId('loan-preview-schedule')).toBeVisible();
 
