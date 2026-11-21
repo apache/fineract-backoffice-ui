@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlatformDateService } from '../../core/services/platform-date.service';
@@ -27,12 +27,15 @@ import { ClientSearchComponent } from '../../shared/components/client-search/cli
 import { MutationOutcomeService } from '../../core/services/mutation-outcome.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
+import { AuthService } from '../../core/services/auth.service';
+import { RequiresPermissionDirective } from '../../shared/directives/requires-permission.directive';
 import {
   IonButton,
   IonCard,
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
+  IonCheckbox,
   IonDatetime,
   IonDatetimeButton,
   IonIcon,
@@ -40,6 +43,7 @@ import {
   IonItem,
   IonLabel,
   IonModal,
+  IonNote,
   IonSelect,
   IonSelectOption,
   IonSpinner,
@@ -59,6 +63,20 @@ import {
 } from '../../core/utils/date-formatter';
 import { createPickersReady } from '../../shared/utils/pickers-ready';
 
+/**
+ * Account form payload including fields not present in the generated API request model.
+ *
+ * Generated models omit `nominalAnnualInterestRate` and the overdraft fields. This local interface
+ * avoids hand-editing `src/app/api`, which is overwritten on weekly OpenAPI sync.
+ */
+export interface SavingsAccountFormPayload extends PostSavingsAccountsRequest {
+  nominalAnnualInterestRate?: number;
+  allowOverdraft?: boolean;
+  overdraftLimit?: number;
+  nominalAnnualInterestRateOverdraft?: number;
+  minOverdraftForInterestCalculation?: number;
+}
+
 @Component({
   selector: 'app-savings-account-form',
   standalone: true,
@@ -76,12 +94,15 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
     IonCardHeader,
     IonCardTitle,
     IonCard,
+    IonCheckbox,
+    IonNote,
     IonSelectOption,
     IonSelect,
     IonDatetime,
     IonDatetimeButton,
     IonModal,
     TooltipDirective,
+    RequiresPermissionDirective,
   ],
   template: `
     <div class="form-container">
@@ -193,6 +214,109 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               </ion-item>
             </div>
 
+            <!-- Overdraft Section (separate group, shown only when product allows overdraft) -->
+            @if (productAllowsOverdraft()) {
+              <fieldset
+                class="form-fieldset overdraft-group"
+                data-testid="savings-overdraft-group"
+                [appRequiresPermission]="overdraftPermission()"
+              >
+                <legend class="fieldset-legend">
+                  <ion-icon name="card-outline" aria-hidden="true"></ion-icon>
+                  {{ 'SAVINGS.OVERDRAFT' | appTranslate }}
+                </legend>
+
+                <div class="form-grid">
+                  <!-- Allow Overdraft Checkbox -->
+                  <div class="field-container-checkbox">
+                    <ion-item lines="none" class="checkbox-item" [appTooltip]="'HELP.ALLOW_OVERDRAFT_DESC' | appTranslate">
+                      <ion-checkbox
+                        name="allowOverdraft"
+                        [ngModel]="allowOverdraft()"
+                        (ngModelChange)="onAllowOverdraftChanged($event)"
+                        [disabled]="!canEditOverdraft()"
+                        [appRequiresPermission]="overdraftPermission()"
+                        data-testid="savings-allow-overdraft"
+                      >
+                        {{ 'SAVINGS.ALLOW_OVERDRAFT' | appTranslate }}
+                      </ion-checkbox>
+                    </ion-item>
+                  </div>
+
+                  @if (allowOverdraft()) {
+                    <!-- Overdraft Limit -->
+                    <div class="field-container">
+                      <ion-item fill="outline" [appTooltip]="'HELP.OVERDRAFT_LIMIT_DESC' | appTranslate">
+                        <ion-label position="stacked">
+                          {{ 'SAVINGS.OVERDRAFT_LIMIT' | appTranslate }}
+                          <span class="required-marker" aria-hidden="true">*</span>
+                        </ion-label>
+                        <ion-input
+                          type="number"
+                          name="overdraftLimit"
+                          data-testid="savings-overdraft-limit"
+                          [attr.aria-label]="'SAVINGS.OVERDRAFT_LIMIT' | appTranslate"
+                          [ngModel]="overdraftLimit()"
+                          (ngModelChange)="onOverdraftLimitChanged($event)"
+                          [required]="true"
+                          [disabled]="!canEditOverdraft()"
+                          [appRequiresPermission]="overdraftPermission()"
+                        ></ion-input>
+                      </ion-item>
+                      @if (productOverdraftMax() !== null && productOverdraftMax()! > 0) {
+                        <ion-note color="medium" class="field-hint" data-testid="savings-overdraft-max-hint">
+                          {{ 'SAVINGS.MAX_OVERDRAFT_LIMIT' | appTranslate: { max: productOverdraftMax() } }}
+                        </ion-note>
+                      }
+                      @if (isOverdraftLimitExceeded()) {
+                        <ion-note color="danger" class="field-error" data-testid="savings-overdraft-limit-error">
+                          {{ 'SAVINGS.OVERDRAFT_LIMIT_EXCEEDS_MAX' | appTranslate: { max: productOverdraftMax() } }}
+                        </ion-note>
+                      }
+                    </div>
+
+                    <!-- Nominal Annual Interest Rate Overdraft -->
+                    <div class="field-container">
+                      <ion-item fill="outline" [appTooltip]="'HELP.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT_DESC' | appTranslate">
+                        <ion-label position="stacked">
+                          {{ 'SAVINGS.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT' | appTranslate }}
+                        </ion-label>
+                        <ion-input
+                          type="number"
+                          name="nominalAnnualInterestRateOverdraft"
+                          data-testid="savings-overdraft-rate"
+                          [attr.aria-label]="'SAVINGS.NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT' | appTranslate"
+                          [ngModel]="nominalAnnualInterestRateOverdraft()"
+                          (ngModelChange)="onNominalAnnualInterestRateOverdraftChanged($event)"
+                          [disabled]="!canEditOverdraft()"
+                          [appRequiresPermission]="overdraftPermission()"
+                        ></ion-input>
+                      </ion-item>
+                    </div>
+
+                    <!-- Min Overdraft For Interest Calculation -->
+                    <div class="field-container">
+                      <ion-item fill="outline" [appTooltip]="'HELP.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION_DESC' | appTranslate">
+                        <ion-label position="stacked">
+                          {{ 'SAVINGS.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION' | appTranslate }}
+                        </ion-label>
+                        <ion-input
+                          type="number"
+                          name="minOverdraftForInterestCalculation"
+                          data-testid="savings-overdraft-min-calc"
+                          [attr.aria-label]="'SAVINGS.MIN_OVERDRAFT_FOR_INTEREST_CALCULATION' | appTranslate"
+                          [ngModel]="minOverdraftForInterestCalculation()"
+                          (ngModelChange)="onMinOverdraftForInterestCalculationChanged($event)"
+                          [disabled]="!canEditOverdraft()"
+                          [appRequiresPermission]="overdraftPermission()"
+                        ></ion-input>
+                      </ion-item>
+                    </div>
+                  }
+                </div>
+              </fieldset>
+            }
+
             <div class="form-actions">
               <ion-button fill="clear" type="button" (click)="onCancel()" [disabled]="isSaving()">
                 {{ 'COMMON.CANCEL' | appTranslate }}
@@ -200,7 +324,7 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
               <ion-button
                 color="primary"
                 type="submit"
-                [disabled]="accountForm.invalid || isSaving()"
+                [disabled]="accountForm.invalid || isSaving() || isOverdraftInvalid()"
               >
                 @if (isSaving()) {
                   <ion-spinner name="crescent"></ion-spinner>
@@ -240,6 +364,50 @@ import { createPickersReady } from '../../shared/utils/pickers-ready';
       .flex-grow {
         flex-grow: 1;
       }
+      .form-fieldset {
+        border: 1px solid var(--ion-color-light-shade, #e0e0e0);
+        border-radius: 8px;
+        padding: 16px;
+        margin: 8px 0;
+      }
+      .fieldset-legend {
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 0 8px;
+        color: var(--ion-color-dark, #222);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .field-container-checkbox {
+        display: flex;
+        align-items: center;
+        min-height: 56px;
+      }
+      .checkbox-item {
+        --padding-start: 0;
+        width: 100%;
+      }
+      .field-container {
+        display: flex;
+        flex-direction: column;
+      }
+      .field-hint {
+        display: block;
+        padding-inline-start: 4px;
+        margin-top: 4px;
+        font-size: 0.8125rem;
+      }
+      .field-error {
+        display: block;
+        padding-inline-start: 4px;
+        margin-top: 4px;
+        font-size: 0.8125rem;
+      }
+      .required-marker {
+        color: var(--ion-color-danger, #eb445a);
+        margin-inline-start: 2px;
+      }
     `,
   ],
 })
@@ -254,6 +422,7 @@ export class SavingsAccountFormComponent implements OnInit {
   private readonly platformDate = inject(PlatformDateService);
   private readonly notifications = inject(NotificationService);
   private readonly mutationOutcome = inject(MutationOutcomeService);
+  private readonly authService = inject(AuthService);
   private readonly i18n = inject(I18N);
 
   private readonly LIST_PATH = '/products/savings-accounts';
@@ -274,6 +443,40 @@ export class SavingsAccountFormComponent implements OnInit {
   readonly interestRate = signal<number | null>(null);
   readonly submittedOnDate = signal(this.platformDate.today());
   readonly products = signal<GetSavingsProductsResponse[]>([]);
+
+  // Overdraft state
+  readonly productAllowsOverdraft = signal(false);
+  readonly productOverdraftMax = signal<number | null>(null);
+
+  readonly allowOverdraft = signal(false);
+  readonly overdraftLimit = signal<number | null>(null);
+  readonly nominalAnnualInterestRateOverdraft = signal<number | null>(null);
+  readonly minOverdraftForInterestCalculation = signal<number | null>(null);
+
+  /** In edit mode, updating overdraft fields requires UPDATE_SAVINGSACCOUNT. */
+  readonly hasUpdatePermission = computed(() =>
+    this.authService.hasPermission('UPDATE_SAVINGSACCOUNT'),
+  );
+  readonly canEditOverdraft = computed(() => !this.isEditMode() || this.hasUpdatePermission());
+  readonly overdraftPermission = computed(() =>
+    this.isEditMode() ? 'UPDATE_SAVINGSACCOUNT' : [],
+  );
+
+  readonly isOverdraftLimitExceeded = computed(() => {
+    if (!this.allowOverdraft()) return false;
+    const limit = this.overdraftLimit();
+    const max = this.productOverdraftMax();
+    return limit !== null && max !== null && max > 0 && limit > max;
+  });
+
+  readonly isOverdraftInvalid = computed(() => {
+    if (!this.productAllowsOverdraft() || !this.allowOverdraft()) return false;
+    const limit = this.overdraftLimit();
+    if (limit === null || limit === undefined || Number.isNaN(limit)) return true;
+    const max = this.productOverdraftMax();
+    if (max !== null && max > 0 && limit > max) return true;
+    return false;
+  });
 
   ngOnInit(): void {
     this.seedPlatformDates();
@@ -328,23 +531,78 @@ export class SavingsAccountFormComponent implements OnInit {
         // The product may have been chosen before its list arrived — a client-scoped route
         // carries `clientId`, and nothing stops the user picking a product first either.
         this.prefillRateFromProduct(this.account().productId);
+        if (!this.isEditMode() && this.account().productId) {
+          this.loadProductOverdraftConfig(this.account().productId, true);
+        }
       },
       error: () => this.notifications.error('Operation failed. Please try again.'),
     });
   }
 
   /**
-   * Chooses a product, and takes its interest rate with it.
-   *
-   * The rate comes out of the product list this form has already loaded: `GET /savingsproducts`
-   * carries each product's `nominalAnnualInterestRate` — measured, a product configured at 3.75%
-   * reports 3.75 there — so no extra request is needed. (The *deposit* product lists are the
-   * opposite case, reporting `0` for every product because a term deposit's rate lives in its
-   * chart; see `DepositProductSummary`.)
+   * Chooses a product, and takes its interest rate and overdraft rules with it.
    */
   onProductChanged(productId: number | undefined): void {
     this.account.update((account) => ({ ...account, productId }));
     this.prefillRateFromProduct(productId);
+    this.loadProductOverdraftConfig(productId, true);
+  }
+
+  onAllowOverdraftChanged(value: boolean): void {
+    this.allowOverdraft.set(Boolean(value));
+  }
+
+  onOverdraftLimitChanged(value: unknown): void {
+    this.overdraftLimit.set(
+      value === '' || value === null || value === undefined ? null : Number(value),
+    );
+  }
+
+  onNominalAnnualInterestRateOverdraftChanged(value: unknown): void {
+    this.nominalAnnualInterestRateOverdraft.set(
+      value === '' || value === null || value === undefined ? null : Number(value),
+    );
+  }
+
+  onMinOverdraftForInterestCalculationChanged(value: unknown): void {
+    this.minOverdraftForInterestCalculation.set(
+      value === '' || value === null || value === undefined ? null : Number(value),
+    );
+  }
+
+  private loadProductOverdraftConfig(productId: number | undefined, applyPrefill: boolean): void {
+    if (productId === undefined || productId === null) {
+      this.productAllowsOverdraft.set(false);
+      this.productOverdraftMax.set(null);
+      return;
+    }
+
+    this.productService.getSavingsproductsProductId(productId).subscribe({
+      next: (product) => {
+        const allowsOverdraft = Boolean(product.allowOverdraft);
+        this.productAllowsOverdraft.set(allowsOverdraft);
+        this.productOverdraftMax.set(
+          typeof product.overdraftLimit === 'number' && product.overdraftLimit > 0
+            ? product.overdraftLimit
+            : null,
+        );
+
+        if (applyPrefill && allowsOverdraft && !this.isEditMode()) {
+          this.allowOverdraft.set(true);
+          this.overdraftLimit.set(product.overdraftLimit ?? null);
+          this.nominalAnnualInterestRateOverdraft.set(
+            product.nominalAnnualInterestRateOverdraft ?? null,
+          );
+          this.minOverdraftForInterestCalculation.set(
+            product.minOverdraftForInterestCalculation ?? null,
+          );
+        }
+      },
+      error: () => {
+        this.productAllowsOverdraft.set(false);
+        this.productOverdraftMax.set(null);
+      },
+    });
   }
 
   /** A rate the user types stands, including a deliberate 0%, which is a rate an institution may mean. */
@@ -369,13 +627,28 @@ export class SavingsAccountFormComponent implements OnInit {
         if (dateArray) {
           this.submittedOnDate.set(formatArrayDate(dateArray));
         }
+        const productId = data.savingsProductId ?? data.productId;
         this.account.set({
           clientId: data.clientId,
-          productId: data.savingsProductId,
+          productId,
         });
         // `?? null`, not `|| 0`: an account deliberately opened at 0% must stay at 0% when it
         // is edited, and an account with no override must not acquire one.
         this.interestRate.set(data.nominalAnnualInterestRate ?? null);
+
+        // On edit, prefill overdraft fields from SavingsAccountData
+        this.allowOverdraft.set(Boolean(data.allowOverdraft));
+        this.overdraftLimit.set(data.overdraftLimit ?? null);
+        this.nominalAnnualInterestRateOverdraft.set(
+          data.nominalAnnualInterestRateOverdraft ?? null,
+        );
+        this.minOverdraftForInterestCalculation.set(
+          data.minOverdraftForInterestCalculation ?? null,
+        );
+
+        if (productId) {
+          this.loadProductOverdraftConfig(productId, false);
+        }
       },
       error: () => this.notifications.error('Operation failed. Please try again.'),
     });
@@ -388,15 +661,30 @@ export class SavingsAccountFormComponent implements OnInit {
     this.account().dateFormat = FINERACT_DATE_FORMAT;
     this.account().locale = FINERACT_LOCALE;
 
-    // Cast to Record to add missing properties to the payload.
-    //
-    // The rate is sent only when there is one. Fineract treats it as an account-level override,
-    // so omitting it is how the account is opened at the product's own rate — and sending `0`
-    // because the form had no value is how every account came to earn nothing (#761).
+    // Cast to SavingsAccountFormPayload to support properties omitted in generated OpenAPI models.
     const rate = this.interestRate();
-    const payload: Record<string, unknown> = {
+
+    const canEditOverdraft = !this.isEditMode() || this.hasUpdatePermission();
+    const overdraftPayload: Partial<SavingsAccountFormPayload> =
+      this.productAllowsOverdraft() && canEditOverdraft
+        ? this.allowOverdraft()
+          ? {
+              allowOverdraft: true,
+              overdraftLimit: this.overdraftLimit() ?? undefined,
+              nominalAnnualInterestRateOverdraft:
+                this.nominalAnnualInterestRateOverdraft() ?? undefined,
+              minOverdraftForInterestCalculation:
+                this.minOverdraftForInterestCalculation() ?? undefined,
+            }
+          : this.isEditMode()
+            ? { allowOverdraft: false }
+            : {}
+        : {};
+
+    const payload: SavingsAccountFormPayload = {
       ...this.account(),
       ...(rate === null ? {} : { nominalAnnualInterestRate: rate }),
+      ...overdraftPayload,
     };
 
     if (this.isEditMode() && this.accountId) {
