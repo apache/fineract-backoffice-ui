@@ -19,6 +19,7 @@
 
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
+import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlatformDateService } from '../../core/services/platform-date.service';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -74,6 +75,7 @@ import {
 } from '../../core/utils/date-formatter';
 import { createPickersReady } from '../../shared/utils/pickers-ready';
 import { toIsoFineractDate } from '../../core/adapters/api/fineract-date';
+import { skipErrorToast } from '../../core/http/http-context';
 
 // The loan read API exposes this date, but the generated response model omits it.
 type LoanResponseWithRepaymentDate = GetLoansLoanIdResponse & {
@@ -196,6 +198,39 @@ interface SelectedCharge {
 }
 
 /**
+ * One row of a calculated schedule, as `POST /loans?command=calculateLoanSchedule` answers it.
+ *
+ * The first row is the disbursement, not an instalment: no `period` number, and every due
+ * zero. Six repayments come back as seven rows.
+ */
+interface SchedulePeriod {
+  period?: number;
+  dueDate?: number[] | string;
+  daysInPeriod?: number;
+  principalDue?: number;
+  principalLoanBalanceOutstanding?: number;
+  interestDue?: number;
+  feeChargesDue?: number;
+  penaltyChargesDue?: number;
+  totalDueForPeriod?: number;
+}
+
+/**
+ * What the calculation answers. `totalOutstanding`, `totalPrincipalPaid` and `totalCredits` come
+ * back too, and are left out: they describe payments against a loan that exists.
+ */
+interface CalculatedSchedule {
+  currency?: { code?: string; displaySymbol?: string };
+  loanTermInDays?: number;
+  periods?: SchedulePeriod[];
+  totalPrincipalExpected?: number;
+  totalInterestCharged?: number;
+  totalFeeChargesCharged?: number;
+  totalPenaltyChargesCharged?: number;
+  totalRepaymentExpected?: number;
+}
+
+/**
  * Charge timings the platform refuses without a due date of their own.
  *
  * Measured, not inferred: a `specifiedDueDate` charge submitted as `{chargeId, amount}` comes
@@ -217,6 +252,7 @@ const CHARGE_TIMINGS_NEEDING_DUE_DATE = new Set([
   selector: 'app-loan-form',
   standalone: true,
   imports: [
+    DecimalPipe,
     FormsModule,
     ButtonComponent,
     TranslatePipe,
@@ -914,6 +950,177 @@ const CHARGE_TIMINGS_NEEDING_DUE_DATE = new Set([
                 }
               }
 
+              <!--
+                The schedule these terms produce, before the application exists. Its own section
+                rather than a step, so changing a term and recalculating does not mean walking
+                back through a wizard.
+              -->
+              <h3 class="section-heading">{{ 'LOANS.PREVIEW_SECTION' | appTranslate }}</h3>
+              <div class="preview-actions">
+                <ion-button
+                  fill="outline"
+                  size="small"
+                  type="button"
+                  [disabled]="!!missingRequiredFields(loanForm) || isCalculating()"
+                  data-testid="loan-preview-btn"
+                  (click)="onPreviewSchedule(loanForm)"
+                >
+                  @if (isCalculating()) {
+                    <ion-spinner name="crescent"></ion-spinner>
+                    {{ 'LOANS.PREVIEW_CALCULATING' | appTranslate }}
+                  } @else if (schedulePreview()) {
+                    {{ 'LOANS.PREVIEW_RECALCULATE' | appTranslate }}
+                  } @else {
+                    {{ 'LOANS.PREVIEW_SCHEDULE' | appTranslate }}
+                  }
+                </ion-button>
+                @if (missingRequiredFields(loanForm)) {
+                  <!--
+                    Asked with a term missing, the platform answers 200 and a schedule of all
+                    zeroes rather than an error, so this says why the button is out of reach
+                    instead of letting an officer read zeroes as the answer.
+                  -->
+                  <ion-note color="medium" class="field-note" data-testid="loan-preview-hint">
+                    {{ 'LOANS.PREVIEW_NEEDS_TERMS' | appTranslate }}
+                  </ion-note>
+                }
+              </div>
+
+              @if (previewError()) {
+                <ion-note
+                  color="danger"
+                  class="field-note"
+                  data-testid="loan-preview-error"
+                  aria-live="polite"
+                  >{{ previewError() }}</ion-note
+                >
+              }
+
+              @if (schedulePreview(); as schedule) {
+                @if (isPreviewStale(loanForm)) {
+                  <ion-note
+                    color="warning"
+                    class="field-note"
+                    data-testid="loan-preview-stale"
+                    aria-live="polite"
+                  >
+                    {{ 'LOANS.PREVIEW_STALE' | appTranslate }}
+                  </ion-note>
+                }
+
+                <dl class="preview-summary" data-testid="loan-preview-summary">
+                  <div>
+                    <dt>{{ 'LOANS.PREVIEW_INSTALMENT' | appTranslate }}</dt>
+                    <dd data-testid="loan-preview-instalment">
+                      {{ previewInstalmentAmount() | number: '1.2-2' }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'LOANS.PREVIEW_INSTALMENTS' | appTranslate }}</dt>
+                    <dd data-testid="loan-preview-count">{{ previewInstalments().length }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'LOANS.PREVIEW_TOTAL_PRINCIPAL' | appTranslate }}</dt>
+                    <dd>{{ schedule.totalPrincipalExpected | number: '1.2-2' }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'LOANS.PREVIEW_TOTAL_INTEREST' | appTranslate }}</dt>
+                    <dd data-testid="loan-preview-interest">
+                      {{ schedule.totalInterestCharged | number: '1.2-2' }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'LOANS.PREVIEW_TOTAL_FEES' | appTranslate }}</dt>
+                    <dd>{{ schedule.totalFeeChargesCharged | number: '1.2-2' }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'LOANS.PREVIEW_TOTAL_REPAYABLE' | appTranslate }}</dt>
+                    <dd data-testid="loan-preview-repayable">
+                      {{ schedule.totalRepaymentExpected | number: '1.2-2' }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'LOANS.PREVIEW_FIRST_DUE' | appTranslate }}</dt>
+                    <dd>{{ previewFirstDue() }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'LOANS.PREVIEW_LAST_DUE' | appTranslate }}</dt>
+                    <dd>{{ previewLastDue() }}</dd>
+                  </div>
+                </dl>
+
+                <div class="preview-table-scroll">
+                  <table class="overview-table" data-testid="loan-preview-schedule">
+                    <caption class="sr-only">
+                      {{
+                        'LOANS.PREVIEW_TABLE_CAPTION' | appTranslate
+                      }}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">{{ 'LOANS.PREVIEW_PERIOD' | appTranslate }}</th>
+                        <th scope="col">{{ 'LOANS.CHARGE_DUE_DATE' | appTranslate }}</th>
+                        <th scope="col" class="numeric">
+                          {{ 'LOANS.REPAYMENT_SCHEDULE_HEADERS.PRINCIPAL_DUE' | appTranslate }}
+                        </th>
+                        <th scope="col" class="numeric">
+                          {{ 'LOANS.REPAYMENT_SCHEDULE_HEADERS.INTEREST' | appTranslate }}
+                        </th>
+                        <th scope="col" class="numeric">
+                          {{ 'LOANS.REPAYMENT_SCHEDULE_HEADERS.FEES' | appTranslate }}
+                        </th>
+                        <th scope="col" class="numeric">
+                          {{ 'LOANS.REPAYMENT_SCHEDULE_HEADERS.PENALTIES' | appTranslate }}
+                        </th>
+                        <th scope="col" class="numeric">
+                          {{ 'LOANS.REPAYMENT_SCHEDULE_HEADERS.DUE' | appTranslate }}
+                        </th>
+                        <th scope="col" class="numeric">
+                          {{ 'LOANS.REPAYMENT_SCHEDULE_HEADERS.BALANCE_OF_LOAN' | appTranslate }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (period of previewInstalments(); track period.period) {
+                        <tr [attr.data-testid]="'loan-preview-period-' + period.period">
+                          <td>{{ period.period }}</td>
+                          <td>{{ periodDueDate(period) }}</td>
+                          <td class="numeric">{{ period.principalDue | number: '1.2-2' }}</td>
+                          <td class="numeric">{{ period.interestDue | number: '1.2-2' }}</td>
+                          <td class="numeric">{{ period.feeChargesDue | number: '1.2-2' }}</td>
+                          <td class="numeric">{{ period.penaltyChargesDue | number: '1.2-2' }}</td>
+                          <td class="numeric">{{ period.totalDueForPeriod | number: '1.2-2' }}</td>
+                          <td class="numeric">
+                            {{ period.principalLoanBalanceOutstanding | number: '1.2-2' }}
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th scope="row" colspan="2">{{ 'COMMON.TOTAL' | appTranslate }}</th>
+                        <td class="numeric">
+                          {{ schedule.totalPrincipalExpected | number: '1.2-2' }}
+                        </td>
+                        <td class="numeric">
+                          {{ schedule.totalInterestCharged | number: '1.2-2' }}
+                        </td>
+                        <td class="numeric">
+                          {{ schedule.totalFeeChargesCharged | number: '1.2-2' }}
+                        </td>
+                        <td class="numeric">
+                          {{ schedule.totalPenaltyChargesCharged | number: '1.2-2' }}
+                        </td>
+                        <td class="numeric">
+                          {{ schedule.totalRepaymentExpected | number: '1.2-2' }}
+                        </td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              }
+
               <div class="form-actions">
                 @if (missingRequiredFields(loanForm); as missing) {
                   <ion-note
@@ -982,6 +1189,58 @@ const CHARGE_TIMINGS_NEEDING_DUE_DATE = new Set([
       }
       .flex-grow {
         flex-grow: 1;
+      }
+      .preview-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .preview-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px 16px;
+        margin: 0 0 12px;
+      }
+      .preview-summary dt {
+        font-size: 12px;
+        color: var(--ion-color-medium);
+      }
+      .preview-summary dd {
+        margin: 0;
+        font-weight: 600;
+      }
+      /* The schedule is eight columns wide; on a phone it scrolls rather than wrapping. */
+      .preview-table-scroll {
+        overflow-x: auto;
+      }
+      .overview-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .overview-table th,
+      .overview-table td {
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--ion-color-light-shade);
+        text-align: left;
+        white-space: nowrap;
+      }
+      .overview-table .numeric {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
       .section-heading {
         margin: 8px 0 4px;
@@ -1068,6 +1327,25 @@ export class LoanFormComponent implements OnInit {
   chargeToAdd: number | null = null;
 
   /** The charges not already on the application, so the add list never offers a duplicate. */
+  /** The calculated schedule for the terms on screen, or null when none has been asked for. */
+  readonly schedulePreview = signal<CalculatedSchedule | null>(null);
+  readonly isCalculating = signal(false);
+  /** What the platform said when it refused to calculate. */
+  readonly previewError = signal<string | null>(null);
+  /**
+   * The form as it stood when the preview was calculated. A plain field, not a signal: the model
+   * is mutated in place, so a `computed` over `loan()` would never re-run.
+   */
+  private previewedTerms: string | null = null;
+
+  /**
+   * The instalments, without the disbursement row. Filtered on `period` rather than by position:
+   * a down payment is its own row too.
+   */
+  readonly previewInstalments = computed(() =>
+    (this.schedulePreview()?.periods ?? []).filter((period) => period.period !== undefined),
+  );
+
   /** Charges whose timing the platform will not accept without a date, still missing one. */
   readonly chargesMissingDueDate = computed(() =>
     this.selectedCharges().filter((charge) => charge.requiresDueDate && !charge.dueDate),
@@ -1196,14 +1474,8 @@ export class LoanFormComponent implements OnInit {
     });
   }
 
-  /**
-   * Empties the option lists, and only when they hold something.
-   *
-   * An unconditional `set({})` publishes a new object every time it is called, so a failed load
-   * on a form that never had any options still re-renders the whole section for no change. The
-   * template is also asked for on every client and product change, and this runs on each of
-   * them.
-   */
+  /** Empties the option lists, and only when they hold something: an unconditional `set({})`
+   * publishes a new object every time and re-renders the section for no change. */
   private clearApplicationTemplate(): void {
     if (Object.keys(this.applicationTemplate()).length > 0) {
       this.applicationTemplate.set({});
@@ -1438,7 +1710,36 @@ export class LoanFormComponent implements OnInit {
 
   onSubmit() {
     this.isSaving.set(true);
+    this.buildLoanPayload(this.isEditMode());
 
+    if (this.isEditMode() && this.loanId) {
+      this.loansService
+        .putLoansLoanId(this.loanId, this.loan() as PutLoansLoanIdRequest)
+        .subscribe({
+          next: (response) => {
+            this.isSaving.set(false);
+            this.mutationOutcome.complete({
+              response,
+              successMessage: this.i18n.translate('LOANS.UPDATE_SUCCESS'),
+              recordRoute: (id) => ['/loans/view', id],
+              recordId: this.loanId ?? undefined,
+              fallbackRoute: [this.LIST_PATH],
+            });
+          },
+          error: () => this.isSaving.set(false),
+        });
+      return;
+    }
+    this.submitNewApplication();
+  }
+
+  /**
+   * Fills in everything the platform needs that the form does not bind directly. Shared with the
+   * schedule preview, so the schedule is calculated from the body that will be submitted.
+   *
+   * @param forUpdate - `PUT /loans/{id}` accepts fewer parameters than create and calculate.
+   */
+  private buildLoanPayload(forUpdate: boolean): void {
     this.loan().submittedOnDate = formatDateToFineract(this.submittedOnDate());
     this.loan().expectedDisbursementDate = formatDateToFineract(this.expectedDisbursementDate());
     if (this.repaymentsStartingFromDate) {
@@ -1452,7 +1753,7 @@ export class LoanFormComponent implements OnInit {
     this.loan().dateFormat = FINERACT_DATE_FORMAT;
     this.loan().locale = FINERACT_LOCALE;
 
-    if (this.isEditMode()) {
+    if (forUpdate) {
       // The update command does not take this one, and refuses the whole update over it:
       //
       //     PUT /loans/{id}  interestRecognitionOnDisbursementDate: false
@@ -1494,24 +1795,10 @@ export class LoanFormComponent implements OnInit {
     ) {
       this.loan().transactionProcessingStrategyCode = ADVANCED_PAYMENT_ALLOCATION_STRATEGY;
     }
+  }
 
-    if (this.isEditMode() && this.loanId) {
-      this.loansService
-        .putLoansLoanId(this.loanId, this.loan() as PutLoansLoanIdRequest)
-        .subscribe({
-          next: (response) => {
-            this.isSaving.set(false);
-            this.mutationOutcome.complete({
-              response,
-              successMessage: this.i18n.translate('LOANS.UPDATE_SUCCESS'),
-              recordRoute: (id) => ['/loans/view', id],
-              recordId: this.loanId ?? undefined,
-              fallbackRoute: [this.LIST_PATH],
-            });
-          },
-          error: () => this.isSaving.set(false),
-        });
-    } else {
+  private submitNewApplication(): void {
+    {
       this.loansService.postLoans(this.loan()).subscribe({
         next: (response) => {
           this.isSaving.set(false);
@@ -1562,6 +1849,109 @@ export class LoanFormComponent implements OnInit {
       // Read against the `dateFormat`/`locale` that `onSubmit` has already set on the request.
       ...(charge.dueDate ? { dueDate: formatDateToFineract(charge.dueDate) } : {}),
     }));
+  }
+
+  /**
+   * The terms the calculation depends on. Taken from the form's value, so a control added later
+   * is covered. `chargeToAdd` is the add picker, not a term, so it is excluded.
+   */
+  private termsFingerprint(form: NgForm): string {
+    const value = { ...(form.value as Record<string, unknown>) };
+    delete value['chargeToAdd'];
+    return JSON.stringify(value);
+  }
+
+  /** A period's due date, in the readable form the rest of this form uses. */
+  periodDueDate(period: SchedulePeriod): string {
+    return formatDateToFineract(period.dueDate);
+  }
+
+  /** The first instalment's total: the figure an affordability conversation turns on. */
+  readonly previewInstalmentAmount = computed(
+    () => this.previewInstalments()[0]?.totalDueForPeriod ?? null,
+  );
+  readonly previewFirstDue = computed(() => {
+    const instalments = this.previewInstalments();
+    return instalments.length > 0 ? this.periodDueDate(instalments[0]) : '';
+  });
+  readonly previewLastDue = computed(() => {
+    const instalments = this.previewInstalments();
+    const last = instalments.at(-1);
+    return last ? this.periodDueDate(last) : '';
+  });
+
+  /** Whether the schedule on screen still describes the terms on screen. */
+  isPreviewStale(form: NgForm): boolean {
+    return this.schedulePreview() !== null && this.termsFingerprint(form) !== this.previewedTerms;
+  }
+
+  /**
+   * Calculates the schedule for the terms on screen, creating nothing.
+   *
+   * Asked with `principal` missing the platform answers 200 and a schedule of all zeroes rather
+   * than an error, so the action is gated on the same summary that gates Save and a response
+   * carrying no instalments is reported rather than drawn.
+   */
+  onPreviewSchedule(form: NgForm): void {
+    if (this.missingRequiredFields(form)) return;
+
+    this.isCalculating.set(true);
+    this.previewError.set(null);
+    this.buildLoanPayload(false);
+    const terms = this.termsFingerprint(form);
+
+    this.loansService
+      .postLoans(this.loan() as PostLoansRequest, 'calculateLoanSchedule', 'body', false, {
+        // This screen renders the refusal itself, beside the action that caused it. Without
+        // this the operator is told twice: once inline, and once by a global toast carrying the
+        // platform's raw wording -- "Errors contain reason for domain rule violation" across
+        // the Save button. Found by driving the form, not by any test.
+        context: skipErrorToast(),
+      })
+      .subscribe({
+        next: (response) => {
+          this.isCalculating.set(false);
+          const schedule = (response ?? {}) as unknown as CalculatedSchedule;
+          const instalments = (schedule.periods ?? []).filter((p) => p.period !== undefined);
+          if (instalments.length === 0) {
+            this.schedulePreview.set(null);
+            this.previewError.set(this.i18n.translate('LOANS.PREVIEW_NO_INSTALMENTS'));
+            return;
+          }
+          this.schedulePreview.set(schedule);
+          this.previewedTerms = terms;
+        },
+        error: (failure: unknown) => {
+          this.isCalculating.set(false);
+          // The entered values are deliberately untouched: the officer has to be able to read the
+          // complaint and fix one field, not retype the application.
+          this.schedulePreview.set(null);
+          this.previewError.set(this.describeCalculationFailure(failure));
+        },
+      });
+  }
+
+  /**
+   * What to tell the officer about a refused calculation.
+   *
+   * The platform does not reliably name the field: a negative principal reports
+   * `parameterName: "id"`, and a malformed value reports no parameter at all. So its message is
+   * shown whole, and a field is named only when it names one this form has a label for.
+   */
+  private describeCalculationFailure(failure: unknown): string {
+    const body = (failure as { error?: unknown })?.error as
+      | {
+          errors?: { parameterName?: string; defaultUserMessage?: string }[];
+          defaultUserMessage?: string;
+        }
+      | undefined;
+    const first = body?.errors?.[0];
+    const message = first?.defaultUserMessage ?? body?.defaultUserMessage;
+    if (!message) {
+      return this.i18n.translate('LOANS.PREVIEW_FAILED');
+    }
+    const label = first?.parameterName ? this.requiredFieldLabels[first.parameterName] : undefined;
+    return label ? `${this.i18n.translate(label)}: ${message}` : message;
   }
 
   onCancel() {

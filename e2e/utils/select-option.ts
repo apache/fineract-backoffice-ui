@@ -54,7 +54,23 @@ export async function selectOption(
       if (attempt === 4) throw err;
     }
   }
-  await option.click();
+  // A long list overflows the popover by thousands of pixels -- measured at 9,223px for the last
+  // of 184 options -- and Playwright's own scroll cannot reach it, so the click would retry
+  // "outside of the viewport" until its budget ran out. Scrolling has to be repeated rather than
+  // done once: the popover's entrance animation, or a re-render of the options, puts the list
+  // back to the top, which is why a single scroll held locally and not on CI.
+  await expect
+    .poll(
+      () =>
+        option.evaluate((element) => {
+          element.scrollIntoView({ block: 'center' });
+          const box = element.getBoundingClientRect();
+          return box.top >= 0 && box.bottom <= window.innerHeight;
+        }),
+      { timeout: 10_000 },
+    )
+    .toBe(true);
+  await option.click({ timeout: 15_000 });
   // The alert interface needs an explicit confirmation; the popover selects on click.
   const confirm = overlay.getByRole('button', { name: /^(ok|done)$/i });
   if (await confirm.count()) await confirm.first().click();

@@ -28,6 +28,7 @@ import { provideFakeAdapters } from '../../testing/adapters';
 import { provideTranslateTesting } from '../../testing/i18n-testing';
 import { provideIonicTesting } from '../../testing/ionic-testing';
 import { ClientSearchComponent } from '../../shared/components/client-search/client-search.component';
+import { SKIP_ERROR_TOAST } from '../../core/http/http-context';
 import { LoanFormComponent } from './loan-form.component';
 
 describe('LoanFormComponent optional repayment date', () => {
@@ -904,5 +905,337 @@ describe('LoanFormComponent optional application fields', () => {
       fundId: 5,
     });
     update.flush({ loanId: 7 });
+  });
+});
+
+/**
+ * The schedule an officer could not see until the application existed: #791.
+ *
+ * `POST /loans?command=calculateLoanSchedule` takes the same body as the create command and
+ * persists nothing, so the preview is exact. Three things are worth pinning, and all three were
+ * measured against a running platform rather than reasoned about:
+ *
+ *   - the body is the one Save would send, built by the same code;
+ *   - the first period is the **disbursement**, not an instalment, so six repayments arrive as
+ *     seven rows;
+ *   - asked with a term missing the platform answers **200 and a schedule of zeroes**, not an
+ *     error, which is why the button is gated and an empty calculation is reported.
+ */
+describe('LoanFormComponent schedule preview', () => {
+  let fixture: ComponentFixture<LoanFormComponent>;
+  let component: LoanFormComponent;
+  let http: HttpTestingController;
+
+  /** A product whose defaults fill every required term, so the preview is reachable. */
+  const PRODUCT = {
+    id: 1,
+    name: 'Synthetic product',
+    principal: 10_000,
+    numberOfRepayments: 6,
+    repaymentEvery: 1,
+    repaymentFrequencyType: { id: 2 },
+    interestRatePerPeriod: 12,
+    interestType: { id: 0 },
+    amortizationType: { id: 1 },
+    interestCalculationPeriodType: { id: 1 },
+    transactionProcessingStrategyCode: 'mifos-standard-strategy',
+  };
+
+  /** The shape the platform answers: a disbursement row, then one row per instalment. */
+  const SCHEDULE = {
+    currency: { code: 'USD', displaySymbol: '$' },
+    loanTermInDays: 180,
+    totalPrincipalExpected: 10_000,
+    totalInterestCharged: 4593.53,
+    totalFeeChargesCharged: 0,
+    totalPenaltyChargesCharged: 0,
+    totalRepaymentExpected: 14_593.53,
+    periods: [
+      // No `period` number and no `fromDate`: this is the disbursement.
+      { dueDate: [2026, 11, 21], principalDisbursed: 10_000, totalDueForPeriod: 0 },
+      {
+        period: 1,
+        dueDate: [2026, 12, 21],
+        daysInPeriod: 30,
+        principalDue: 1232.26,
+        interestDue: 1200,
+        feeChargesDue: 0,
+        penaltyChargesDue: 0,
+        totalDueForPeriod: 2432.26,
+        principalLoanBalanceOutstanding: 8767.74,
+      },
+      {
+        period: 2,
+        dueDate: [2027, 1, 21],
+        daysInPeriod: 31,
+        principalDue: 1380.13,
+        interestDue: 1052.13,
+        feeChargesDue: 0,
+        penaltyChargesDue: 0,
+        totalDueForPeriod: 2432.26,
+        principalLoanBalanceOutstanding: 7387.61,
+      },
+    ],
+  };
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [LoanFormComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        ...provideFakeAdapters().providers,
+        ...provideTranslateTesting(),
+        provideIonicTesting(),
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            queryParams: of({ clientId: '7' }),
+            paramMap: new BehaviorSubject(convertToParamMap({})),
+          },
+        },
+      ],
+    }).compileComponents();
+    http = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(LoanFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    http.expectOne((request) => request.url.endsWith('/loanproducts')).flush([PRODUCT]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+  afterEach(() => {
+    // The client lookup and the application template belong to #792's journey, not this one.
+    for (const request of http.match(() => true)) request.flush({});
+    http.verify();
+  });
+
+  const settle = async () => {
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
+  const el = (testid: string): HTMLElement | null =>
+    fixture.nativeElement.querySelector(`[data-testid="${CSS.escape(testid)}"]`);
+  const form = (): NgForm =>
+    fixture.debugElement.query(By.css('form')).injector.get<NgForm>(NgForm);
+  const previewButton = () =>
+    el('loan-preview-btn') as (HTMLElement & { disabled: boolean }) | null;
+  const takeCalculation = () =>
+    http.expectOne(
+      (request) =>
+        request.method === 'POST' &&
+        request.url.endsWith('/loans') &&
+        request.params.get('command') === 'calculateLoanSchedule',
+    );
+
+  /** Choose the product, which fills every required term from its own defaults. */
+  async function chooseProduct() {
+    fixture.debugElement
+      .query(By.css('ion-select[name="productId"]'))
+      .injector.get(NgModel)
+      .control.setValue(1);
+    await settle();
+    http.expectOne((request) => request.url.endsWith('/loanproducts/1')).flush(PRODUCT);
+    await settle();
+    // Twice on purpose. Applying the product's defaults replaces the `loan` signal's object, and
+    // `ngModel` writes those values into the controls on the cycle after that, so one pass leaves
+    // the template's `[disabled]` evaluated against a form that was still empty.
+    await settle();
+  }
+
+  async function preview(body: object = SCHEDULE) {
+    previewButton()?.click();
+    await settle();
+    const request = takeCalculation();
+    request.flush(body);
+    await settle();
+    return request;
+  }
+
+  it('asks for a calculation with the body Save would have posted, and creates nothing', async () => {
+    await chooseProduct();
+    const request = await preview();
+
+    // The calculate command, not the create command.
+    expect(request.request.params.get('command')).toBe('calculateLoanSchedule');
+    expect(request.request.body).toMatchObject({
+      clientId: 7,
+      productId: 1,
+      principal: 10_000,
+      numberOfRepayments: 6,
+      loanType: 'individual',
+      dateFormat: 'dd MMMM yyyy',
+      locale: 'en',
+    });
+    // Nothing was created: the only POST to /loans carried the command.
+    http.expectNone(
+      (candidate) =>
+        candidate.method === 'POST' &&
+        candidate.url.endsWith('/loans') &&
+        candidate.params.get('command') !== 'calculateLoanSchedule',
+    );
+  });
+
+  it('shows the instalments without counting the disbursement as one of them', async () => {
+    await chooseProduct();
+    await preview();
+
+    // Three periods came back; two of them are instalments.
+    expect(component.previewInstalments().length).toBe(2);
+    expect(el('loan-preview-count')?.textContent?.trim()).toBe('2');
+    expect(el('loan-preview-period-1')).not.toBeNull();
+    expect(el('loan-preview-period-2')).not.toBeNull();
+    // The disbursement row has no period number, so it is not drawn as an instalment.
+    expect(el('loan-preview-period-undefined')).toBeNull();
+
+    const row = el('loan-preview-period-1');
+    expect(row?.textContent).toContain('21 December 2026');
+    expect(row?.textContent).toContain('1,232.26');
+    expect(el('loan-preview-instalment')?.textContent).toContain('2,432.26');
+    expect(el('loan-preview-interest')?.textContent).toContain('4,593.53');
+    expect(el('loan-preview-repayable')?.textContent).toContain('14,593.53');
+  });
+
+  it('keeps the preview out of reach until the terms it needs are filled in', async () => {
+    // No product yet, so required terms are empty.
+    expect(previewButton()?.disabled).toBe(true);
+    expect(el('loan-preview-hint')).not.toBeNull();
+    // Pressing it anyway asks for nothing: the platform would answer 200 and a zero schedule.
+    previewButton()?.click();
+    await settle();
+    http.expectNone((request) => request.params.get('command') === 'calculateLoanSchedule');
+
+    await chooseProduct();
+    expect(previewButton()?.disabled).toBe(false);
+    expect(el('loan-preview-hint')).toBeNull();
+  });
+
+  it('reports a calculation that came back with no instalments', async () => {
+    await chooseProduct();
+    // What the platform answers for incomplete terms: 200, and only the disbursement row.
+    await preview({
+      ...SCHEDULE,
+      totalPrincipalExpected: 0,
+      totalRepaymentExpected: 0,
+      periods: [{ dueDate: [2026, 11, 21], principalDisbursed: 0 }],
+    });
+
+    expect(component.schedulePreview()).toBeNull();
+    expect(el('loan-preview-schedule')).toBeNull();
+    expect(el('loan-preview-error')?.textContent).toContain('LOANS.PREVIEW_NO_INSTALMENTS');
+  });
+
+  it('marks the schedule stale when a term changes, and clears it on recalculation', async () => {
+    await chooseProduct();
+    await preview();
+    expect(component.isPreviewStale(form())).toBe(false);
+    expect(el('loan-preview-stale')).toBeNull();
+
+    form().controls['principal'].setValue(12_000);
+    await settle();
+
+    // The schedule is still on screen -- it is the last true answer -- but it is labelled.
+    expect(component.isPreviewStale(form())).toBe(true);
+    expect(el('loan-preview-stale')).not.toBeNull();
+    expect(el('loan-preview-schedule')).not.toBeNull();
+    expect(previewButton()?.textContent).toContain('LOANS.PREVIEW_RECALCULATE');
+
+    const again = await preview();
+    expect(again.request.body).toMatchObject({ principal: 12_000 });
+    expect(component.isPreviewStale(form())).toBe(false);
+    expect(el('loan-preview-stale')).toBeNull();
+  });
+
+  it('does not call a charge picker a change of terms', async () => {
+    await chooseProduct();
+    await preview();
+
+    // `chargeToAdd` selects what the add button would add. Choosing one and thinking better of
+    // it does not alter the loan, so it must not invalidate a calculated schedule.
+    component.chargeToAdd = 3;
+    await settle();
+    expect(component.isPreviewStale(form())).toBe(false);
+  });
+
+  it('keeps every entered value when the platform refuses, and repeats what it said', async () => {
+    await chooseProduct();
+    form().controls['principal'].setValue(-5);
+    await settle();
+
+    previewButton()?.click();
+    await settle();
+    takeCalculation().flush(
+      {
+        userMessageGlobalisationCode: 'validation.msg.domain.rule.violation',
+        errors: [
+          {
+            // The platform names `id` here, not `principal`. Measured.
+            parameterName: 'id',
+            userMessageGlobalisationCode:
+              'error.msg.loanschedule.emi.amount.must.be.greter.than.interest',
+            defaultUserMessage: 'EMI amount must be greater than the interest',
+          },
+        ],
+      },
+      { status: 403, statusText: 'Forbidden' },
+    );
+    await settle();
+
+    expect(component.schedulePreview()).toBeNull();
+    expect(el('loan-preview-error')?.textContent).toContain(
+      'EMI amount must be greater than the interest',
+    );
+    // The entered values survive, so one field can be corrected rather than all of them retyped.
+    expect(form().controls['principal'].value).toBe(-5);
+    expect(form().controls['numberOfRepayments'].value).toBe(6);
+    expect(component.isCalculating()).toBe(false);
+  });
+
+  it('names the field when the platform names one this form knows', async () => {
+    await chooseProduct();
+    previewButton()?.click();
+    await settle();
+    takeCalculation().flush(
+      {
+        errors: [
+          {
+            parameterName: 'numberOfRepayments',
+            defaultUserMessage: 'must be greater than 0',
+          },
+        ],
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
+    await settle();
+
+    // Prefixed with the label the form already uses for that control, from `requiredFieldLabels`.
+    expect(el('loan-preview-error')?.textContent).toContain('LOANS.REPAYMENTS_COUNT');
+    expect(el('loan-preview-error')?.textContent).toContain('must be greater than 0');
+  });
+
+  it('renders the refusal itself rather than letting the global toast say it twice', async () => {
+    await chooseProduct();
+    previewButton()?.click();
+    await settle();
+
+    // `errorInterceptor` toasts every failed request unless the call site says it will show the
+    // failure. This one does, inline and beside the action, so the token has to be set or the
+    // operator reads the same refusal twice -- once in place, once in the platform's own raw
+    // wording over the Save button.
+    const request = takeCalculation();
+    expect(request.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
+    request.flush({}, { status: 500, statusText: 'Server Error' });
+    await settle();
+  });
+
+  it('falls back to its own words when the platform explains nothing', async () => {
+    await chooseProduct();
+    previewButton()?.click();
+    await settle();
+    takeCalculation().flush({}, { status: 500, statusText: 'Server Error' });
+    await settle();
+
+    expect(el('loan-preview-error')?.textContent).toContain('LOANS.PREVIEW_FAILED');
   });
 });
