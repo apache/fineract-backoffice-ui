@@ -25,6 +25,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { createSpyObj } from '../../../testing/mocks';
 import { provideTranslateTesting } from '../../../testing/i18n-testing';
 import { expectLookedUp } from '../../../testing/translated-text';
+import { CAMPAIGNS_ROUTES } from '../campaigns.routes';
 import { EMAIL_TAB, EmailMessagesComponent } from './email-messages.component';
 
 describe('EmailMessagesComponent', () => {
@@ -54,5 +55,35 @@ describe('EmailMessagesComponent', () => {
     fixture.detectChanges();
 
     expectLookedUp(fixture.nativeElement, ['EMAIL_MESSAGES.CONFIGURATION_JSON']);
+  });
+
+  it.each([EMAIL_TAB.messages, EMAIL_TAB.pending, EMAIL_TAB.sent, EMAIL_TAB.failed])(
+    'renders the %s list as a native table with an empty state',
+    (tab) => {
+      fixture.componentInstance.onTabChange(tab);
+      fixture.detectChanges();
+      const root: HTMLElement = fixture.nativeElement;
+
+      expect(root.querySelector('cdk-table')).toBeNull();
+      expect(root.querySelector('table[cdk-table] tr[cdk-header-row]')).not.toBeNull();
+      expect(root.querySelector('table[cdk-table] tr.no-data-row')).not.toBeNull();
+      expectLookedUp(root, ['COMMON.ID', 'COMMON.NO_DATA']);
+    },
+  );
+
+  it('translates the message headers and labels the delete action', () => {
+    fixture.componentInstance.messages.set([
+      { id: 7, to: 'a@example.org', subject: 'Hi', status: 'pending' },
+    ]);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+
+    expectLookedUp(root, ['COMMON.ID', 'COMMON.STATUS', 'COMMON.ACTIONS']);
+    expect(root.querySelector('tr[cdk-row] ion-button')?.getAttribute('aria-label')).toBeTruthy();
+  });
+
+  it('gives the route a title', () => {
+    const route = CAMPAIGNS_ROUTES.find((r) => r.path === 'email-messages');
+    expect(route?.title).toBe('EMAIL_MESSAGES.TITLE');
   });
 });
