@@ -174,11 +174,22 @@ describe('CHARGE_COMMAND_PERMISSIONS', () => {
 });
 
 describe('SAVINGS_COMMAND_PERMISSIONS', () => {
-  it('maps deposit and withdrawal to their transaction_savings codes', () => {
+  it('maps each form command to the code its handler declares', () => {
     expect(SAVINGS_COMMAND_PERMISSIONS).toEqual({
       deposit: 'DEPOSIT_SAVINGSACCOUNT',
       withdrawal: 'WITHDRAWAL_SAVINGSACCOUNT',
+      // `modify` rather than `adjust`: the command spelling is
+      // SavingsApiConstants.COMMAND_ADJUST_TRANSACTION, while the code comes from
+      // SavingsTransactionAdjustmentCommandHandler's @CommandType annotation.
+      modify: 'ADJUSTTRANSACTION_SAVINGSACCOUNT',
     });
+  });
+
+  it('leaves reverse out, because nothing resolves a gate from this map for it', () => {
+    // A row action on the account view, not a form route: it is gated on the button with
+    // REVERSETRANSACTION_SAVINGSACCOUNT. An entry here would be dead, and an exact-match
+    // assertion is what keeps one from being added without a route to use it.
+    expect(SAVINGS_COMMAND_PERMISSIONS).not.toHaveProperty('reverse');
   });
 
   it('never maps a command to UPDATE_SAVINGSACCOUNT', () => {

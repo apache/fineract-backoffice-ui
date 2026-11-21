@@ -191,13 +191,27 @@ export const CHARGE_COMMAND_PERMISSIONS = {
  * Savings commands, keyed by the `:command` segment of
  * `/products/savings-accounts/:accountId/transactions/:command`.
  *
- * Only the two the application links to. `postInterestAsOn` is served by the same form but is
+ * Only the ones the application links to. `postInterestAsOn` is served by the same form but is
  * unmapped — see the table above; neither its apparent code nor the one the route used to
  * declare authorises it, so there is nothing here to state honestly.
+ *
+ * `modify` needed no probe, for the reason the Working Capital map below did not: Fineract's
+ * command dispatcher derives the permission from the handler's own annotation, and
+ * `SavingsTransactionAdjustmentCommandHandler` declares
+ * `@CommandType(entity = "SAVINGSACCOUNT", action = "ADJUSTTRANSACTION")`. The command spelling
+ * is `SavingsApiConstants.COMMAND_ADJUST_TRANSACTION`, which is the string `modify` rather than
+ * `adjust` — the one place this pairing is not guessable from either half. The code is present
+ * in `scripts/permission-codes.json`, the catalogue taken from a running platform.
+ *
+ * `reverse` is deliberately absent. It is a row action on the account view, not a form route, so
+ * nothing resolves a gate from this map for it; it is gated on the button with
+ * `REVERSETRANSACTION_SAVINGSACCOUNT`, from
+ * `ReverseTransactionSavingsAccountCommandHandler`'s annotation. An entry here would be dead.
  */
 export const SAVINGS_COMMAND_PERMISSIONS: Readonly<Record<string, string>> = {
   deposit: 'DEPOSIT_SAVINGSACCOUNT',
   withdrawal: 'WITHDRAWAL_SAVINGSACCOUNT',
+  modify: 'ADJUSTTRANSACTION_SAVINGSACCOUNT',
 };
 
 /**

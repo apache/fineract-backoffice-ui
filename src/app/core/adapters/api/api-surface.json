@@ -633,6 +633,7 @@
   ],
   "SavingsAccountTransactionsService": [
     "getSavingsaccountsSavingsIdTransactionsTemplate",
+    "getSavingsaccountsSavingsIdTransactionsTransactionId",
     "postSavingsaccountsSavingsIdTransactions",
     "postSavingsaccountsSavingsIdTransactionsTransactionId"
   ],
