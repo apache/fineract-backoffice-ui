@@ -48,8 +48,50 @@ describe('GuidanceService', () => {
       ['/products/shares', 'shares'],
       ['/products/shares/create', 'shares-create'],
       ['/accounting/chart-of-accounts', 'accounting'],
+      // The application form had the loans *list* tour, whose one anchored step points at a
+      // filter row the form does not have.
+      ['/loans/create', 'loans-form'],
+      ['/loans/edit/7', 'loans-form'],
+      // Working Capital had no entry at all, so every screen under it opened the composed tour
+      // and was described as "this screen".
+      ['/working-capital/overview', 'wc-overview'],
+      ['/working-capital/loans', 'wc-loans'],
+      ['/working-capital/loans/view/7', 'wc-loans-view'],
+      ['/working-capital/loans/create', 'wc-loans-form'],
+      ['/working-capital/loans/edit/7', 'wc-loans-form'],
+      ['/working-capital/breach', 'wc-breach'],
+      ['/working-capital/near-breach', 'wc-near-breach'],
+      ['/working-capital/loan-products', 'wc-loan-products'],
     ])('sends %s to the %s tour', (url, expected) => {
       expect(service.tourKeyFor(url)).toBe(expected);
+    });
+
+    /**
+     * The catalogue tours point at a data table and a create button. A form sitting under the
+     * same prefix has neither, so it must not inherit them: it falls through to the section's
+     * prose tour, which the composition then fits to whatever that screen does have.
+     */
+    it.each([
+      '/working-capital/breach/create',
+      '/working-capital/breach/edit/3',
+      '/working-capital/near-breach/create',
+      '/working-capital/loan-products/create',
+      '/working-capital/loans/1/charge',
+      '/working-capital/loans/1/breach-action',
+    ])('gives %s the section tour rather than a catalogue tour', (url) => {
+      expect(service.tourKeyFor(url)).toBe('working-capital');
+    });
+
+    it('fits the section tour to the form it is opened on', () => {
+      // Prose only, so `withStructure` appends the steps for what is actually on screen.
+      service.startTour('/working-capital/breach/create', {
+        titleKey: 'nav.workingCapital',
+        has: (selector) => selector === 'form',
+      });
+      const steps = service.activeSteps();
+      expect(steps[0].titleKey).toBe('GUIDE.WC_TITLE');
+      // The form step, and nothing about a table or a create button.
+      expect(steps.slice(1).map((step) => step.targetSelector)).toEqual(['form']);
     });
 
     it("composes a tour for a screen with no hand-written one, rather than reusing another screen's", () => {
@@ -236,6 +278,8 @@ describe('GuidanceService', () => {
         '/clients/view/1',
         '/loans',
         '/loans/view/1',
+        '/loans/create',
+        '/loans/edit/1',
         '/groups',
         '/groups/view/1',
         '/centers',
@@ -248,6 +292,16 @@ describe('GuidanceService', () => {
         '/reporting',
         '/organization',
         '/system',
+        '/working-capital',
+        '/working-capital/overview',
+        '/working-capital/loans',
+        '/working-capital/loans/view/1',
+        '/working-capital/loans/create',
+        '/working-capital/loans/edit/1',
+        '/working-capital/breach',
+        '/working-capital/breach/create',
+        '/working-capital/near-breach',
+        '/working-capital/loan-products',
         '/nothing-in-particular',
       ].flatMap((url) => {
         service.startTour(url);

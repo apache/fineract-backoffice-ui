@@ -57,6 +57,13 @@ async function signIn(page: Page): Promise<void> {
   await page.route(/\/api\/v1\/(clients|loans|savingsaccounts)\?/, (route) =>
     route.fulfill({ json: { pageItems: [], totalFilteredRecords: 0 } }),
   );
+  // The loan form asks for the application template once a client and a product are both
+  // chosen (#792), which every case here does. Left unanswered it escapes to the dev server,
+  // 502s, and `retryInterceptor` re-sends it with exponential backoff for several seconds --
+  // and that churn, arriving mid-dismiss, leaves the date picker on screen and fails an
+  // assertion about dates. The option lists are not this spec's subject, so an empty template
+  // is enough; what matters is that nothing here reaches the network.
+  await page.route('**/api/v1/loans/template**', (route) => route.fulfill({ json: {} }));
 
   await page.goto('/login');
   await page.locator('#tenantId').fill('default');

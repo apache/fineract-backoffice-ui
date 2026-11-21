@@ -799,6 +799,7 @@ export async function seedLoanProduct(
   api: APIRequestContext,
   namePrefix = 'E2ESeed',
   isProgressive = false,
+  chargeIds: readonly number[] = [],
 ): Promise<SeededLoanProduct> {
   const suffix = seedSuffix();
   const productName = `${namePrefix} Product ${suffix}`;
@@ -845,8 +846,74 @@ export async function seedLoanProduct(
       },
     ];
   }
+  if (chargeIds.length > 0) {
+    // `{id}` and nothing else: the product stores which charges apply, and the amounts and names
+    // are the charges' own. This is why a loan application reads the names it shows from the
+    // loan template's `chargeOptions` rather than from the product.
+    body['charges'] = chargeIds.map((id) => ({ id }));
+  }
   const { resourceId } = await post<{ resourceId: number }>(api, '/loanproducts', body);
   return { productId: resourceId, productName };
+}
+
+export interface SeededFund {
+  fundId: number;
+  fundName: string;
+}
+
+/**
+ * A fund for a loan to be drawn against.
+ *
+ * A fresh Fineract ships none, so the loan template answers an empty `fundOptions` and the
+ * field can never be filled.
+ */
+export async function seedFund(
+  api: APIRequestContext,
+  namePrefix = 'E2EFund',
+): Promise<SeededFund> {
+  const fundName = `${namePrefix} ${seedSuffix()}`;
+  const { resourceId } = await post<{ resourceId: number }>(api, '/funds', { name: fundName });
+  return { fundId: resourceId, fundName };
+}
+
+/**
+ * An **active** savings account belonging to a client that already exists.
+ *
+ * Distinct from {@link seedSubmittedSavingsAccount}, which seeds a client of its own: a loan can
+ * only be linked to a savings account of the same client, and only an active one is offered.
+ */
+export async function seedActiveSavingsAccountForClient(
+  api: APIRequestContext,
+  clientId: number,
+  namePrefix = 'E2ELinked',
+): Promise<{ savingsId: number; accountNo: string; productName: string }> {
+  const suffix = seedSuffix();
+  const productName = `${namePrefix} Savings ${suffix}`;
+  const { resourceId: productId } = await post<{ resourceId: number }>(api, '/savingsproducts', {
+    name: productName,
+    shortName: `L${suffix.slice(-3).toUpperCase()}`,
+    description: 'Seeded so a loan application has an account to link',
+    currencyCode: 'USD',
+    digitsAfterDecimal: 2,
+    inMultiplesOf: 0,
+    nominalAnnualInterestRate: 5,
+    interestCompoundingPeriodType: 1,
+    interestPostingPeriodType: 4,
+    interestCalculationType: 1,
+    interestCalculationDaysInYearType: 365,
+    accountingRule: 1,
+    locale: LOCALE,
+  });
+  const { savingsId } = await post<{ savingsId: number }>(api, '/savingsaccounts', {
+    clientId,
+    productId,
+    submittedOnDate: fineractDate(),
+    dateFormat: DATE_FORMAT,
+    locale: LOCALE,
+  });
+  await activateSavingsAccount(api, savingsId);
+  const account = await get<{ accountNo: string }>(api, `/savingsaccounts/${savingsId}`);
+  return { savingsId, accountNo: account.accountNo, productName };
 }
 
 export interface SeededLoan extends SeededClient, SeededLoanProduct {

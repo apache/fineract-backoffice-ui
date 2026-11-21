@@ -63,6 +63,28 @@ pressing Guide on Accounting, Reports, Organization or any other unlisted route 
 first line was "Welcome to Fineract Backoffice … the key areas of the dashboard", over a screen
 that was not a dashboard. A fallback can only say things that are true everywhere.
 
+### A section with a form under it
+
+Three of the Working Capital patterns end in `$` rather than `(\/|$)`:
+
+```ts
+{ match: /^\/working-capital\/breach$/, key: 'wc-breach' },
+```
+
+`/working-capital/breach` is a catalogue, and its tour points at a data table and a create button.
+`/working-capital/breach/create` is a form with neither. An unanchored pattern would hand the form
+the catalogue's steps, and the highlight would land on nothing — the same defect as the selectors
+in [Selectors that do not work here](#selectors-that-do-not-work-here), reached from the other
+direction.
+
+So the form falls through to `working-capital`, which is prose with no `targetSelector` anywhere.
+That is what makes `withStructure()` apply: it appends the steps for what the screen _does_ have,
+so the form gets its own form step rather than someone else's table step. Prefer this to writing a
+tour per form.
+
+The same reasoning gives `/loans/create` and `/loans/edit/:id` their own `loans-form` tour instead
+of the loans list tour, whose one anchored step points at `.filter-row`.
+
 ## The composed tour
 
 A composed tour is assembled at the moment Guide is pressed, from two sources.
@@ -209,6 +231,13 @@ steps that describe them use grouped selectors — `.system-info, #header-overfl
 `.tour-btn, #header-overflow`. Whichever exists at this width resolves, so the step points at where
 the control actually is.
 
+The same idiom covers a screen with two states rather than two widths. On the loan application
+form, the officer, purpose, fund, linked-account and charge sections appear only once a client and
+a product are both chosen, because that is when the loan template can answer them; before that
+there is a note in their place. One step describes both, as
+`[data-testid="loan-options-hint"], ion-select[name="loanOfficerId"]`, instead of one step that
+highlights nothing half the time.
+
 ## Accessibility
 
 The card is a `role="dialog"` with `aria-labelledby="guidance-title"` and
@@ -266,3 +295,8 @@ every tour and asserts that:
 If you add a step, those assertions are the ones that will tell you about a typo. What they cannot
 tell you is whether the selector matches the element you meant — for that, open the screen and
 press Guide.
+
+**Adding a tour means adding its URL to that spec**, in the `allSteps()` list. The walk is over
+URLs written out by hand, not over the `tours` record, so a tour whose route is missing from the
+list is checked by none of the assertions above — including the one that would have caught a
+missing translation key.

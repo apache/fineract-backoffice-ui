@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlatformDateService } from '../../core/services/platform-date.service';
@@ -29,6 +29,7 @@ import { ClientSearchComponent } from '../../shared/components/client-search/cli
 import {
   LoansService,
   PostLoansRequest,
+  PostLoansRequestChargeData,
   PutLoansLoanIdRequest,
   LoanProductsService,
   GetLoanProductsResponse,
@@ -80,6 +81,137 @@ type LoanResponseWithRepaymentDate = GetLoansLoanIdResponse & {
 };
 
 const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
+
+/**
+ * The three attributes Fineract accepts on an application and the generated model does not declare.
+ *
+ * `POST /loans` and `PUT /loans/{loanId}` both take `loanOfficerId`, `loanPurposeId` and `fundId`,
+ * and the loan template offers the options for all three. `PostLoansRequest` declares none of them
+ * — the same class of gap as #653 — while `linkAccountId`, `createStandingInstructionAtDisbursement`
+ * and `charges` are declared and need no widening here.
+ */
+type LoanApplicationRequest = PostLoansRequest & {
+  loanOfficerId?: number;
+  loanPurposeId?: number;
+  fundId?: number;
+};
+
+/**
+ * The option lists the loan template carries, with the field each one is labelled by.
+ *
+ * Measured against a running Fineract rather than read off the generated response model, because
+ * the label field differs per list and getting it wrong shows the operator a row of blanks:
+ * an officer is `displayName` ("Officer, Tpl"), a purpose is a code value so it is `name` rather
+ * than `value`, a fund is `{id, name}` and nothing else, a linkable account carries `accountNo`
+ * and `productName`, and a charge carries its own `amount` and whether it is a `penalty`.
+ *
+ * The lists arrive only when the request names both a client and a product; with either missing,
+ * the template answers `productOptions` and little else, which is why {@link loadApplicationTemplate}
+ * waits for both.
+ */
+interface LoanOfficerOption {
+  id?: number;
+  displayName?: string;
+}
+interface NamedOption {
+  id?: number;
+  name?: string;
+}
+interface LinkableAccountOption {
+  id?: number;
+  accountNo?: string;
+  productName?: string;
+}
+interface ChargeOption {
+  id?: number;
+  name?: string;
+  amount?: number;
+  penalty?: boolean;
+  chargeTimeType?: { id?: number; code?: string; value?: string };
+}
+interface LoanApplicationTemplate {
+  loanOfficerOptions?: LoanOfficerOption[];
+  loanPurposeOptions?: NamedOption[];
+  fundOptions?: NamedOption[];
+  accountLinkingOptions?: LinkableAccountOption[];
+  chargeOptions?: ChargeOption[];
+}
+
+/**
+ * The charges already on a loan, for an edit.
+ *
+ * Read defensively: the loan response's charge rows carry the label and timing this form shows,
+ * and the generated `charges` item type declares almost none of it.
+ */
+function readLoanCharges(loan: GetLoansLoanIdResponse): SelectedCharge[] {
+  const rows = (loan.charges ?? []) as unknown as {
+    chargeId?: number;
+    id?: number;
+    name?: string;
+    amount?: number;
+    penalty?: boolean;
+    dueDate?: string | number[];
+    chargeTimeType?: { code?: string; value?: string };
+  }[];
+  return rows
+    .map((row) => ({
+      chargeId: (row.chargeId ?? row.id) as number,
+      name: row.name ?? '',
+      amount: row.amount ?? null,
+      penalty: row.penalty === true,
+      timing: row.chargeTimeType?.value ?? '',
+      dueDate: toIsoFineractDate(row.dueDate),
+      requiresDueDate: CHARGE_TIMINGS_NEEDING_DUE_DATE.has(row.chargeTimeType?.code ?? ''),
+    }))
+    .filter((row) => row.chargeId !== undefined);
+}
+
+/**
+ * The `loanType` the platform will take back on an update.
+ *
+ * Mandatory on `PUT /loans/{id}`: without it the update is refused outright, 400
+ * `validation.msg.loan.loanType.cannot.be.blank`, so editing a loan application failed whatever
+ * was changed. The edit mapping never carried it, and nothing caught that -- a mocked save
+ * answers whatever the client asks it to, and this is the platform's rule.
+ *
+ * The two sides disagree on the shape: the response states it as an enum,
+ * `{ id: 1, code: 'accountType.individual', value: 'Individual' }`, while the request wants the
+ * bare word. Hence the last segment of the code, with the form's own default behind it.
+ */
+function readLoanType(loan: GetLoansLoanIdResponse): string {
+  const code = (loan as unknown as { loanType?: { code?: string } }).loanType?.code;
+  return code?.split('.').pop() || 'individual';
+}
+
+/** A charge on the application being built: the catalogue entry, plus the amount as edited. */
+interface SelectedCharge {
+  chargeId: number;
+  name: string;
+  amount: number | null;
+  penalty: boolean;
+  timing: string;
+  /** `YYYY-MM-DD`, as `<ion-input type="date">` holds it. */
+  dueDate: string | null;
+  requiresDueDate: boolean;
+}
+
+/**
+ * Charge timings the platform refuses without a due date of their own.
+ *
+ * Measured, not inferred: a `specifiedDueDate` charge submitted as `{chargeId, amount}` comes
+ * back 403 `error.msg.loanCharge.cannot.be.added.as.specified.due.date.outside.range`, naming
+ * the submission date, so the platform has no usable default to fall back on and the date has to
+ * be asked for. The disbursement date is itself outside that range; the same charge is accepted
+ * with a date inside the schedule.
+ *
+ * Keyed on the code rather than the numeric id, which is what the response labels a timing with
+ * and what the Fineract enum is named after.
+ */
+const CHARGE_TIMINGS_NEEDING_DUE_DATE = new Set([
+  'chargeTimeType.specifiedDueDate',
+  'chargeTimeType.annualFee',
+  'chargeTimeType.monthlyFee',
+]);
 
 @Component({
   selector: 'app-loan-form',
@@ -134,7 +266,7 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                     [label]="'COMMON.CLIENT_ID' | appTranslate"
                     [required]="true"
                     [initialClientId]="loan().clientId || null"
-                    (clientSelected)="loan().clientId = $event"
+                    (clientSelected)="onClientSelected($event)"
                     class="flex-grow"
                   >
                   </app-client-search>
@@ -570,6 +702,218 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 }
               </div>
 
+              <!--
+                Ownership, linkage and charges. Every control here is optional, so none is marked
+                required and none belongs in requiredFieldLabels; the options arrive from the loan
+                template, which answers them only once a client and a product are both chosen.
+              -->
+              @if (!loan().clientId || !loan().productId) {
+                <ion-note color="medium" class="field-note" data-testid="loan-options-hint">
+                  {{ 'LOANS.OPTIONS_NEED_CLIENT_AND_PRODUCT' | appTranslate }}
+                </ion-note>
+              } @else {
+                <h3 class="section-heading">{{ 'LOANS.OWNERSHIP_SECTION' | appTranslate }}</h3>
+                <div class="form-grid">
+                  <ion-item fill="outline" [appTooltip]="'HELP.LOAN_OFFICER_DESC' | appTranslate">
+                    <ion-label position="stacked">{{
+                      'LOANS.LOAN_OFFICER' | appTranslate
+                    }}</ion-label>
+                    <ion-select
+                      [attr.aria-label]="'LOANS.LOAN_OFFICER' | appTranslate"
+                      interface="popover"
+                      name="loanOfficerId"
+                      data-testid="loan-officer-select"
+                      [(ngModel)]="loan().loanOfficerId"
+                    >
+                      @for (officer of applicationTemplate().loanOfficerOptions; track officer.id) {
+                        <ion-select-option [value]="officer.id">{{
+                          officer.displayName
+                        }}</ion-select-option>
+                      }
+                    </ion-select>
+                  </ion-item>
+
+                  <ion-item fill="outline" [appTooltip]="'HELP.LOAN_PURPOSE_DESC' | appTranslate">
+                    <ion-label position="stacked">{{
+                      'LOANS.LOAN_PURPOSE' | appTranslate
+                    }}</ion-label>
+                    <ion-select
+                      [attr.aria-label]="'LOANS.LOAN_PURPOSE' | appTranslate"
+                      interface="popover"
+                      name="loanPurposeId"
+                      data-testid="loan-purpose-select"
+                      [(ngModel)]="loan().loanPurposeId"
+                    >
+                      @for (purpose of applicationTemplate().loanPurposeOptions; track purpose.id) {
+                        <ion-select-option [value]="purpose.id">{{
+                          purpose.name
+                        }}</ion-select-option>
+                      }
+                    </ion-select>
+                  </ion-item>
+
+                  <ion-item fill="outline" [appTooltip]="'HELP.LOAN_FUND_DESC' | appTranslate">
+                    <ion-label position="stacked">{{ 'LOANS.FUND' | appTranslate }}</ion-label>
+                    <ion-select
+                      [attr.aria-label]="'LOANS.FUND' | appTranslate"
+                      interface="popover"
+                      name="fundId"
+                      data-testid="loan-fund-select"
+                      [(ngModel)]="loan().fundId"
+                    >
+                      @for (fund of applicationTemplate().fundOptions; track fund.id) {
+                        <ion-select-option [value]="fund.id">{{ fund.name }}</ion-select-option>
+                      }
+                    </ion-select>
+                  </ion-item>
+                </div>
+
+                <h3 class="section-heading">{{ 'LOANS.LINKAGE_SECTION' | appTranslate }}</h3>
+                @if (applicationTemplate().accountLinkingOptions?.length) {
+                  <div class="form-grid">
+                    <ion-item
+                      fill="outline"
+                      [appTooltip]="'HELP.LINKED_SAVINGS_DESC' | appTranslate"
+                    >
+                      <ion-label position="stacked">{{
+                        'LOANS.LINKED_SAVINGS' | appTranslate
+                      }}</ion-label>
+                      <ion-select
+                        [attr.aria-label]="'LOANS.LINKED_SAVINGS' | appTranslate"
+                        interface="popover"
+                        name="linkAccountId"
+                        data-testid="loan-linked-account-select"
+                        [(ngModel)]="loan().linkAccountId"
+                      >
+                        @for (
+                          account of applicationTemplate().accountLinkingOptions;
+                          track account.id
+                        ) {
+                          <ion-select-option [value]="account.id">{{
+                            'LOANS.ACCOUNT_OPTION'
+                              | appTranslate
+                                : { accountNo: account.accountNo, product: account.productName }
+                          }}</ion-select-option>
+                        }
+                      </ion-select>
+                    </ion-item>
+                  </div>
+                  @if (loan().linkAccountId) {
+                    <ion-checkbox
+                      labelPlacement="end"
+                      name="createStandingInstructionAtDisbursement"
+                      data-testid="loan-standing-instruction-checkbox"
+                      [(ngModel)]="loan().createStandingInstructionAtDisbursement"
+                    >
+                      {{ 'LOANS.STANDING_INSTRUCTION_AT_DISBURSEMENT' | appTranslate }}
+                    </ion-checkbox>
+                  }
+                } @else {
+                  <ion-note
+                    color="medium"
+                    class="field-note"
+                    data-testid="loan-no-linkable-accounts"
+                  >
+                    {{ 'LOANS.NO_LINKABLE_ACCOUNTS' | appTranslate }}
+                  </ion-note>
+                }
+
+                <h3 class="section-heading">{{ 'LOANS.CHARGES_SECTION' | appTranslate }}</h3>
+                @if (selectedCharges().length === 0) {
+                  <ion-note color="medium" class="field-note" data-testid="loan-no-charges">
+                    {{ 'LOANS.NO_CHARGES' | appTranslate }}
+                  </ion-note>
+                } @else {
+                  @for (charge of selectedCharges(); track charge.chargeId) {
+                    <div class="charge-row" [attr.data-testid]="'loan-charge-' + charge.chargeId">
+                      <span class="charge-name">{{ charge.name }}</span>
+                      @if (charge.penalty) {
+                        <ion-chip color="warning">{{ 'LOANS.PENALTY' | appTranslate }}</ion-chip>
+                      }
+                      @if (charge.timing) {
+                        <ion-note color="medium">{{ charge.timing }}</ion-note>
+                      }
+                      <ion-item fill="outline" class="charge-amount">
+                        <ion-label position="stacked">{{
+                          'COMMON.AMOUNT' | appTranslate
+                        }}</ion-label>
+                        <ion-input
+                          type="number"
+                          [attr.aria-label]="
+                            'LOANS.CHARGE_AMOUNT_FOR' | appTranslate: { charge: charge.name }
+                          "
+                          [name]="'chargeAmount-' + charge.chargeId"
+                          [attr.data-testid]="'loan-charge-amount-' + charge.chargeId"
+                          [ngModel]="charge.amount"
+                          (ngModelChange)="onChargeAmountChange(charge.chargeId, $event)"
+                        ></ion-input>
+                      </ion-item>
+                      @if (charge.requiresDueDate) {
+                        <ion-item fill="outline" class="charge-amount">
+                          <ion-label position="stacked">{{
+                            'LOANS.CHARGE_DUE_DATE' | appTranslate
+                          }}</ion-label>
+                          <ion-input
+                            type="date"
+                            [attr.aria-label]="
+                              'LOANS.CHARGE_DUE_DATE_FOR' | appTranslate: { charge: charge.name }
+                            "
+                            [name]="'chargeDueDate-' + charge.chargeId"
+                            [attr.data-testid]="'loan-charge-due-date-' + charge.chargeId"
+                            [ngModel]="charge.dueDate"
+                            (ngModelChange)="onChargeDueDateChange(charge.chargeId, $event)"
+                          ></ion-input>
+                        </ion-item>
+                      }
+                      <ion-button
+                        fill="clear"
+                        type="button"
+                        color="danger"
+                        [attr.aria-label]="
+                          'LOANS.REMOVE_CHARGE' | appTranslate: { charge: charge.name }
+                        "
+                        [attr.data-testid]="'loan-charge-remove-' + charge.chargeId"
+                        (click)="onRemoveCharge(charge.chargeId)"
+                      >
+                        <ion-icon name="trash-outline"></ion-icon>
+                      </ion-button>
+                    </div>
+                  }
+                }
+                @if (addableCharges().length) {
+                  <div class="field-container-row">
+                    <ion-item fill="outline" class="flex-grow">
+                      <ion-label position="stacked">{{
+                        'LOANS.ADD_CHARGE' | appTranslate
+                      }}</ion-label>
+                      <ion-select
+                        [attr.aria-label]="'LOANS.ADD_CHARGE' | appTranslate"
+                        interface="popover"
+                        name="chargeToAdd"
+                        data-testid="loan-charge-add-select"
+                        [(ngModel)]="chargeToAdd"
+                      >
+                        @for (option of addableCharges(); track option.id) {
+                          <ion-select-option [value]="option.id">{{
+                            option.name
+                          }}</ion-select-option>
+                        }
+                      </ion-select>
+                    </ion-item>
+                    <ion-button
+                      fill="clear"
+                      type="button"
+                      [disabled]="!chargeToAdd"
+                      [attr.aria-label]="'LOANS.ADD_CHARGE' | appTranslate"
+                      data-testid="loan-charge-add-btn"
+                      (click)="onAddCharge()"
+                    >
+                      <ion-icon color="primary" name="add-circle-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+                }
+              }
+
               <div class="form-actions">
                 @if (missingRequiredFields(loanForm); as missing) {
                   <ion-note
@@ -588,7 +932,12 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
                 <ion-button
                   color="primary"
                   type="submit"
-                  [disabled]="loanForm.invalid || !loan().clientId || isSaving()"
+                  [disabled]="
+                    loanForm.invalid ||
+                    !loan().clientId ||
+                    chargesMissingDueDate().length > 0 ||
+                    isSaving()
+                  "
                   [attr.aria-describedby]="
                     missingRequiredFields(loanForm) ? 'loan-submit-hint' : null
                   "
@@ -634,6 +983,29 @@ const OPERATION_FAILED_MESSAGE = 'Operation failed. Please try again.';
       .flex-grow {
         flex-grow: 1;
       }
+      .section-heading {
+        margin: 8px 0 4px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .field-note {
+        display: block;
+        padding: 0 4px;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .charge-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .charge-name {
+        font-weight: 500;
+      }
+      .charge-amount {
+        min-width: 140px;
+      }
       .required-marker {
         color: var(--ion-color-danger, #eb445a);
         margin-inline-start: 2px;
@@ -666,7 +1038,7 @@ export class LoanFormComponent implements OnInit {
   readonly isEditMode = signal(false);
   readonly isSaving = signal(false);
 
-  readonly loan = signal<PostLoansRequest>({
+  readonly loan = signal<LoanApplicationRequest>({
     loanType: 'individual',
   });
 
@@ -688,6 +1060,25 @@ export class LoanFormComponent implements OnInit {
   readonly products = signal<GetLoanProductsResponse[]>([]);
   readonly selectedProductDetails = signal<GetLoanProductsProductIdResponse | null>(null);
 
+  /** The template's option lists, empty until a client and a product are both chosen. */
+  readonly applicationTemplate = signal<LoanApplicationTemplate>({});
+  /** The charges on this application, seeded from the product and editable before submit. */
+  readonly selectedCharges = signal<SelectedCharge[]>([]);
+  /** Which catalogue charge the add control is pointing at. */
+  chargeToAdd: number | null = null;
+
+  /** The charges not already on the application, so the add list never offers a duplicate. */
+  /** Charges whose timing the platform will not accept without a date, still missing one. */
+  readonly chargesMissingDueDate = computed(() =>
+    this.selectedCharges().filter((charge) => charge.requiresDueDate && !charge.dueDate),
+  );
+  readonly addableCharges = computed(() => {
+    const taken = new Set(this.selectedCharges().map((charge) => charge.chargeId));
+    return (this.applicationTemplate().chargeOptions ?? []).filter(
+      (option) => option.id !== undefined && !taken.has(option.id),
+    );
+  });
+
   ngOnInit() {
     this.seedPlatformDates();
     this.loadProducts();
@@ -696,6 +1087,7 @@ export class LoanFormComponent implements OnInit {
       const clientId = queryParams['clientId'];
       if (clientId) {
         this.loan().clientId = +clientId;
+        this.loadApplicationTemplate();
       }
     });
 
@@ -758,9 +1150,125 @@ export class LoanFormComponent implements OnInit {
         if (!this.isEditMode()) {
           this.applyProductDefaults(data);
         }
+        // The product and the template are fetched in parallel and either can answer first.
+        // Seeding needs both, so both callbacks attempt it; the guards inside make the second
+        // attempt a no-op.
+        this.seedProductCharges();
       },
       error: () => this.notifications.error(OPERATION_FAILED_MESSAGE),
     });
+    this.loadApplicationTemplate();
+  }
+
+  onClientSelected(clientId: number | null): void {
+    this.loan().clientId = clientId ?? undefined;
+    this.loadApplicationTemplate();
+  }
+
+  /**
+   * Loads the option lists for the ownership, linkage and charge sections.
+   *
+   * Only once a client and a product are both chosen: asked with either missing, the template
+   * answers `productOptions` and the booleans and none of these lists, so calling it earlier
+   * would quietly leave every select empty. Measured on a running platform.
+   *
+   * A failure is not reported to the operator. Every field it populates is optional, the form
+   * stays submittable without them, and a toast here would fire on the ordinary path of picking a
+   * product before a client.
+   */
+  private loadApplicationTemplate(): void {
+    const clientId = this.loan().clientId;
+    const productId = this.loan().productId;
+    if (!clientId || !productId) {
+      this.clearApplicationTemplate();
+      return;
+    }
+    this.loansService.getLoansTemplate(clientId, undefined, productId, 'individual').subscribe({
+      next: (template) => {
+        // Discard an answer for a pair that is no longer chosen. Changing product before the
+        // first request answers leaves two in flight, and the slower one must not install the
+        // other product's option lists and charges.
+        if (this.loan().clientId !== clientId || this.loan().productId !== productId) return;
+        this.applicationTemplate.set((template ?? {}) as LoanApplicationTemplate);
+        this.seedProductCharges();
+      },
+      error: () => this.clearApplicationTemplate(),
+    });
+  }
+
+  /**
+   * Empties the option lists, and only when they hold something.
+   *
+   * An unconditional `set({})` publishes a new object every time it is called, so a failed load
+   * on a form that never had any options still re-renders the whole section for no change. The
+   * template is also asked for on every client and product change, and this runs on each of
+   * them.
+   */
+  private clearApplicationTemplate(): void {
+    if (Object.keys(this.applicationTemplate()).length > 0) {
+      this.applicationTemplate.set({});
+    }
+  }
+
+  /**
+   * Puts the product's own charges on a new application.
+   *
+   * The product names only the charge ids; their names and default amounts come from the
+   * template's `chargeOptions`, which is also the only declared place to read them from — the
+   * generated `LoanProductChargeData` carries `id` and `amount` and nothing to label a row with.
+   *
+   * Only on create, and only while the operator has not touched the list: an edit loads the
+   * loan's own charges, and re-seeding after a product change must not discard a charge that was
+   * added or an amount that was overridden.
+   */
+  private seedProductCharges(): void {
+    if (this.isEditMode() || this.selectedCharges().length > 0) return;
+    const catalogue = this.applicationTemplate().chargeOptions ?? [];
+    const productCharges = this.selectedProductDetails()?.charges ?? [];
+    const seeded = productCharges
+      .map((charge) => catalogue.find((option) => option.id === charge.id))
+      .filter((option): option is ChargeOption => option !== undefined)
+      .map((option) => this.toSelectedCharge(option));
+    if (seeded.length > 0) this.selectedCharges.set(seeded);
+  }
+
+  private toSelectedCharge(option: ChargeOption): SelectedCharge {
+    return {
+      chargeId: option.id as number,
+      name: option.name ?? '',
+      amount: option.amount ?? null,
+      penalty: option.penalty === true,
+      timing: option.chargeTimeType?.value ?? '',
+      dueDate: null,
+      requiresDueDate: CHARGE_TIMINGS_NEEDING_DUE_DATE.has(option.chargeTimeType?.code ?? ''),
+    };
+  }
+
+  onChargeDueDateChange(chargeId: number, dueDate: string | null): void {
+    this.selectedCharges.update((charges) =>
+      charges.map((charge) => (charge.chargeId === chargeId ? { ...charge, dueDate } : charge)),
+    );
+  }
+
+  onAddCharge(): void {
+    const option = (this.applicationTemplate().chargeOptions ?? []).find(
+      (charge) => charge.id === this.chargeToAdd,
+    );
+    if (!option) return;
+    this.selectedCharges.update((charges) => [...charges, this.toSelectedCharge(option)]);
+    this.chargeToAdd = null;
+  }
+
+  onRemoveCharge(chargeId: number): void {
+    this.selectedCharges.update((charges) =>
+      charges.filter((charge) => charge.chargeId !== chargeId),
+    );
+  }
+
+  onChargeAmountChange(chargeId: number, amount: number | null): void {
+    this.selectedCharges.update((charges) =>
+      charges.map((charge) => (charge.chargeId === chargeId ? { ...charge, amount } : charge)),
+    );
   }
 
   /**
@@ -812,7 +1320,12 @@ export class LoanFormComponent implements OnInit {
 
   private loadLoanData() {
     if (!this.loanId) return;
-    this.loansService.getLoansLoanId(this.loanId).subscribe({
+    // `charges` and `linkedAccount` are associations: asked for without them, the response
+    // carries neither key at all, and editing an application would show no charges and no
+    // linked account however many the loan has. Measured against a running platform -- the
+    // mocked spec and the unit tests both agreed with the wrong belief, because a mock answers
+    // whatever the client asks it to.
+    this.loansService.getLoansLoanId(this.loanId, undefined, 'charges,linkedAccount').subscribe({
       next: (data: LoanResponseWithRepaymentDate) => {
         // A loaded value is display state, not an officer-selected replacement.
         this.repaymentsStartingFromDate = null;
@@ -829,6 +1342,7 @@ export class LoanFormComponent implements OnInit {
         this.loan.set({
           clientId: data.clientId,
           productId: data.loanProductId,
+          loanType: readLoanType(data),
           principal: data.principal,
           externalId: data.externalId,
           loanTermFrequency: data.termFrequency,
@@ -843,7 +1357,15 @@ export class LoanFormComponent implements OnInit {
           transactionProcessingStrategyCode: data.transactionProcessingStrategyCode,
           interestRecognitionOnDisbursementDate: data.interestRecognitionOnDisbursementDate,
           allowFullTermForTranche: data.allowFullTermForTranche,
+          // So that editing an application preserves them rather than clearing them on save.
+          // `fundId` and the linked account are read through a cast: the loan response carries
+          // both and the generated model declares neither, the same gap as the request side.
+          loanOfficerId: data.loanOfficerId,
+          loanPurposeId: data.loanPurposeId,
+          fundId: (data as unknown as { fundId?: number }).fundId,
+          linkAccountId: (data as unknown as { linkedAccount?: { id?: number } }).linkedAccount?.id,
         });
+        this.selectedCharges.set(readLoanCharges(data));
         if (data.loanProductId) {
           this.onProductSelected(data.loanProductId, false);
         }
@@ -900,6 +1422,12 @@ export class LoanFormComponent implements OnInit {
     if (!this.loan().clientId) {
       missing.push(this.i18n.translate('COMMON.CLIENT_ID'));
     }
+    // Charge rows are not controls of this form -- their names are generated per charge, so they
+    // cannot be entries in `requiredFieldLabels` -- but a charge timed on a due date is refused
+    // without one, so the gap belongs in the same summary rather than in a 403 after Save.
+    for (const charge of this.chargesMissingDueDate()) {
+      missing.push(this.i18n.translate('LOANS.CHARGE_DUE_DATE_FOR', { charge: charge.name }));
+    }
     for (const [name, label] of Object.entries(this.requiredFieldLabels)) {
       if (form.controls[name]?.invalid) {
         missing.push(this.i18n.translate(label));
@@ -923,6 +1451,20 @@ export class LoanFormComponent implements OnInit {
     }
     this.loan().dateFormat = FINERACT_DATE_FORMAT;
     this.loan().locale = FINERACT_LOCALE;
+
+    if (this.isEditMode()) {
+      // The update command does not take this one, and refuses the whole update over it:
+      //
+      //     PUT /loans/{id}  interestRecognitionOnDisbursementDate: false
+      //     400 error.msg.parameter.unsupported
+      //
+      // It is read back from the loan and sent straight out again, so every edit carried it and
+      // every edit was refused. Measured alongside `allowFullTermForTranche`, which the same
+      // command does accept, so only this field is dropped.
+      delete this.loan().interestRecognitionOnDisbursementDate;
+    }
+
+    this.applyOptionalApplicationFields();
 
     // Read the signal once: TypeScript cannot narrow a call expression, so the
     // guard above does not carry over to a second call.
@@ -983,6 +1525,43 @@ export class LoanFormComponent implements OnInit {
         error: () => this.isSaving.set(false),
       });
     }
+  }
+
+  /**
+   * Puts the optional sections into the payload, and keeps the unfilled ones out of it.
+   *
+   * An `ion-select` the operator never opened binds `null`, not `undefined`, and a null
+   * `loanOfficerId` is not the same request as an absent one: the platform validates the
+   * parameter it was sent. So each one is deleted when empty rather than sent as null, which also
+   * means a cleared select on an edit clears the value rather than failing the save.
+   *
+   * Charges are sent as the pair the platform takes — the charge and the amount for this loan —
+   * and omitted entirely when there are none, because `charges: []` on an edit is a request to
+   * remove every charge and that is not what an untouched section means.
+   */
+  private applyOptionalApplicationFields(): void {
+    const loan = this.loan();
+    for (const field of ['loanOfficerId', 'loanPurposeId', 'fundId', 'linkAccountId'] as const) {
+      if (loan[field] === null || loan[field] === undefined || (loan[field] as unknown) === '') {
+        delete loan[field];
+      }
+    }
+    if (!loan.linkAccountId) {
+      // The flag means nothing without an account to pay from, and the platform refuses the pair.
+      delete loan.createStandingInstructionAtDisbursement;
+    }
+
+    const charges = this.selectedCharges();
+    if (charges.length === 0) {
+      delete loan.charges;
+      return;
+    }
+    loan.charges = charges.map((charge): PostLoansRequestChargeData => ({
+      chargeId: charge.chargeId,
+      amount: charge.amount ?? undefined,
+      // Read against the `dateFormat`/`locale` that `onSubmit` has already set on the request.
+      ...(charge.dueDate ? { dueDate: formatDateToFineract(charge.dueDate) } : {}),
+    }));
   }
 
   onCancel() {
