@@ -566,6 +566,22 @@
     "DELETE_CONFIRM": "Delete this charge definition? Fineract refuses one that is still attached to a product or an account."
   },
   "LOANS": {
+    "CHARGE_DUE_DATE": "Due date",
+    "CHARGE_DUE_DATE_FOR": "Due date for {{charge}}",
+    "OPTIONS_NEED_CLIENT_AND_PRODUCT": "Choose a client and a product to see the loan officer, purpose, fund, linked account and charge options for this application.",
+    "OWNERSHIP_SECTION": "Ownership and purpose",
+    "LOAN_PURPOSE": "Loan Purpose",
+    "FUND": "Fund",
+    "LINKAGE_SECTION": "Savings linkage",
+    "LINKED_SAVINGS": "Linked Savings Account",
+    "ACCOUNT_OPTION": "{{accountNo}} ({{product}})",
+    "STANDING_INSTRUCTION_AT_DISBURSEMENT": "Create a standing instruction at disbursement",
+    "NO_LINKABLE_ACCOUNTS": "This client has no active savings account to link.",
+    "CHARGES_SECTION": "Charges",
+    "NO_CHARGES": "No charges apply to this application.",
+    "CHARGE_AMOUNT_FOR": "Amount for {{charge}}",
+    "REMOVE_CHARGE": "Remove {{charge}}",
+    "ADD_CHARGE": "Add a charge",
     "REPAYMENT_START_DATE_NOT_SET": "Not set",
     "CLEAR_REPAYMENT_START_DATE": "Clear repayment start date",
     "ACCOUNT_NO": "Account No",
@@ -1305,6 +1321,10 @@
     "CONFIRM_DELETE": "Delete the role \"{{name}}\"? This cannot be undone, and the platform refuses while any user still holds it."
   },
   "HELP": {
+    "LOAN_OFFICER_DESC": "The staff member who owns this loan. Only officers attached to the client office are offered.",
+    "LOAN_PURPOSE_DESC": "Why the client is borrowing. Reported on, so it is worth setting even where the platform does not demand it.",
+    "LOAN_FUND_DESC": "The source of funds this loan is drawn against.",
+    "LINKED_SAVINGS_DESC": "An active savings account of the same client. Linking it lets repayments be collected from savings, and is required before a standing instruction can be created.",
     "EDIT_CLIENT_DESC": "Update this client's details.",
     "CREATE_CLIENT_DESC": "Create a client by choosing a type and office, then entering their details.",
     "SEARCH_DESC": "Use this field to search or filter the table records.",
