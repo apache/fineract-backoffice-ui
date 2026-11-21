@@ -903,6 +903,8 @@
     "NO_LOAN_ACCOUNTS": "Aucun compte de prêt trouvé",
     "NO_SAVINGS_ACCOUNTS": "Aucun compte d'épargne trouvé",
     "GENERAL_PROFILE": "Profil général",
+    "GROUPS": "Groupes",
+    "NO_GROUPS": "Aucun groupe",
     "CONTACT_STATUS": "Contact et statut",
     "TIMELINE_SUBMITTED": "Chronologie (soumis)",
     "ADD_NEW_OFFICE": "Ajouter une agence",

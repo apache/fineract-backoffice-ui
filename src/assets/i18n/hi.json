@@ -1268,6 +1268,8 @@
     "NO_LOAN_ACCOUNTS": "कोई ऋण खाता नहीं मिला",
     "NO_SAVINGS_ACCOUNTS": "कोई बचत खाता नहीं मिला",
     "GENERAL_PROFILE": "सामान्य प्रोफ़ाइल",
+    "GROUPS": "समूह",
+    "NO_GROUPS": "कोई समूह नहीं",
     "CONTACT_STATUS": "संपर्क और स्थिति",
     "TIMELINE_SUBMITTED": "समयरेखा (जमा किया गया)",
     "ADD_NEW_OFFICE": "नया कार्यालय जोड़ें",

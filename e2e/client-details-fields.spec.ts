@@ -128,7 +128,7 @@ test.describe('Client details', () => {
       await expect(page.getByTestId('client-legal-form')).toHaveText(/ENTITY/i);
       await expect(page.getByTestId('client-date-of-birth')).toHaveText('—');
       await expect(page.getByTestId('client-gender')).toHaveText('—');
-      await expect(page.getByTestId('client-groups')).toHaveText('—');
+      await expect(page.getByTestId('client-groups')).toHaveText('No groups');
       // Nobody is assigned, so the header shows no staff chip at all.
       await expect(page.getByTestId('client-staff-name')).toHaveCount(0);
     } finally {
