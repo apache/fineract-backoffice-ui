@@ -1180,16 +1180,34 @@ export class LoanFormComponent implements OnInit {
     const clientId = this.loan().clientId;
     const productId = this.loan().productId;
     if (!clientId || !productId) {
-      this.applicationTemplate.set({});
+      this.clearApplicationTemplate();
       return;
     }
     this.loansService.getLoansTemplate(clientId, undefined, productId, 'individual').subscribe({
       next: (template) => {
+        // Discard an answer for a pair that is no longer chosen. Changing product before the
+        // first request answers leaves two in flight, and the slower one must not install the
+        // other product's option lists and charges.
+        if (this.loan().clientId !== clientId || this.loan().productId !== productId) return;
         this.applicationTemplate.set((template ?? {}) as LoanApplicationTemplate);
         this.seedProductCharges();
       },
-      error: () => this.applicationTemplate.set({}),
+      error: () => this.clearApplicationTemplate(),
     });
+  }
+
+  /**
+   * Empties the option lists, and only when they hold something.
+   *
+   * An unconditional `set({})` publishes a new object every time it is called, so a failed load
+   * on a form that never had any options still re-renders the whole section for no change. The
+   * template is also asked for on every client and product change, and this runs on each of
+   * them.
+   */
+  private clearApplicationTemplate(): void {
+    if (Object.keys(this.applicationTemplate()).length > 0) {
+      this.applicationTemplate.set({});
+    }
   }
 
   /**
