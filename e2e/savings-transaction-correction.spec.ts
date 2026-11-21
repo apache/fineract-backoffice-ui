@@ -22,7 +22,8 @@
  *
  * The screen could already record a deposit and place a hold; it could undo neither. A hold in
  * particular was a one-way door — money could be earmarked against a claim and never freed from
- * this application.
+ * this application. The second test covers the two corrections added for #782: `modify`, which
+ * replaces a transaction, and `reverse`, which posts a contra entry beside it.
  *
  * The two commands behave differently in ways that decide how the buttons are gated, and only a
  * real platform shows it. `undo` is lenient: it answers 200 against a transaction that is already
@@ -37,7 +38,13 @@
 import { test, expect, recordingTimeout } from './fixtures';
 import { login } from './utils/fineract-login';
 import { confirmDialog } from './utils/ionic-locators';
-import { createApiContext, seedSavingsAccountWithTransactions } from './utils/seed-api';
+import {
+  createApiContext,
+  savingsAccountBalance,
+  seedClient,
+  seedFundedSavingsAccount,
+  seedSavingsAccountWithTransactions,
+} from './utils/seed-api';
 
 test.describe('Savings transaction correction', () => {
   test.describe.configure({ mode: 'serial' });
@@ -80,5 +87,66 @@ test.describe('Savings transaction correction', () => {
     await page.getByTestId('savings-tab-transactions').click();
     // Marked rather than removed: deleting it would take the audit trail with it.
     await expect(page.getByTestId('savings-tx-reversed').first()).toBeVisible({ timeout: 20000 });
+  });
+
+  /**
+   * Correcting and reversing (#782), on an account of its own so the undo above cannot reach it.
+   *
+   * Both halves rest on details only the platform settles, which is why this is not mocked:
+   *
+   *  - the command word for a correction is `modify`, not `adjust`, though the handler is
+   *    `SavingsTransactionAdjustmentCommandHandler` and the permission `ADJUSTTRANSACTION_…`;
+   *  - a correction goes to the transaction's own URL. Sent to the account's collection it
+   *    would post a *second* deposit, which looks like success and silently double counts;
+   *  - the correction runs the same validator as a fresh deposit, so `paymentTypeId` is
+   *    required. It is prefilled from the transaction, and if that prefill broke, the platform —
+   *    not the form — is what refuses the save.
+   */
+  test('a deposit is corrected, then reversed', async ({ page }) => {
+    test.setTimeout(recordingTimeout(240000));
+    const api = await createApiContext();
+
+    try {
+      const client = await seedClient(api, 'E2ECorrect');
+      const savingsId = await seedFundedSavingsAccount(api, client.clientId, 500);
+      expect(await savingsAccountBalance(api, savingsId)).toBe(500);
+
+      await login(page);
+      await page.goto(`/products/savings-accounts/view/${savingsId}`);
+      await expect(page.getByTestId('savings-actions')).toBeVisible({ timeout: 20000 });
+      await page.getByTestId('savings-tab-transactions').click();
+
+      // --- Correct the amount ----------------------------------------------------------------
+      const modifyButtons = page.locator('[data-testid^="savings-tx-modify-"]');
+      await expect(modifyButtons.first()).toBeVisible({ timeout: 20000 });
+      await modifyButtons.first().click();
+
+      await expect(page).toHaveURL(/\/transactions\/modify\?transactionId=\d+/);
+      const amount = page.getByTestId('transaction-amount-input').locator('input');
+      await expect(amount).toHaveValue('500');
+      await amount.fill('300');
+      await page
+        .getByRole('button', { name: /submit|save/i })
+        .first()
+        .click();
+
+      await expect(page).toHaveURL(new RegExp(`/savings-accounts/view/${savingsId}$`), {
+        timeout: 20000,
+      });
+      // The platform's own figure, not the screen's: a correction that posted a second deposit
+      // instead of replacing the first would read 800 here and look fine on screen.
+      await expect.poll(() => savingsAccountBalance(api, savingsId), { timeout: 20000 }).toBe(300);
+
+      // --- Reverse what is left --------------------------------------------------------------
+      await page.getByTestId('savings-tab-transactions').click();
+      const reverseButtons = page.locator('[data-testid^="savings-tx-reverse-"]');
+      await expect(reverseButtons.first()).toBeVisible({ timeout: 20000 });
+      await reverseButtons.first().click();
+      await confirmDialog(page).getByTestId('confirm-dialog-confirm').click();
+
+      await expect.poll(() => savingsAccountBalance(api, savingsId), { timeout: 20000 }).toBe(0);
+    } finally {
+      await api.dispose();
+    }
   });
 });

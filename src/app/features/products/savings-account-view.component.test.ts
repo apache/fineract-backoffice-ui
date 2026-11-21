@@ -21,7 +21,7 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SavingsAccountViewComponent } from './savings-account-view.component';
-import { SavingsAccountService } from '../../api';
+import { SavingsAccountService, SavingsAccountTransactionsService } from '../../api';
 import { AuthService } from '../../core/services/auth.service';
 import { DialogService } from '../../core/services/dialog.service';
 import { ActivatedRoute, ParamMap, Router, convertToParamMap } from '@angular/router';
@@ -41,6 +41,7 @@ describe('SavingsAccountViewComponent', () => {
   let component: SavingsAccountViewComponent;
   let fixture: ComponentFixture<SavingsAccountViewComponent>;
   let savingsServiceSpy: SpyObj<SavingsAccountService>;
+  let transactionsServiceSpy: SpyObj<SavingsAccountTransactionsService>;
   let authServiceSpy: SpyObj<AuthService>;
   let routerSpy: SpyObj<Router>;
   let dialogServiceSpy: SpyObj<DialogService>;
@@ -63,6 +64,12 @@ describe('SavingsAccountViewComponent', () => {
         permissions: ['ALL_FUNCTIONS'],
       }),
     });
+    transactionsServiceSpy = createSpyObj<SavingsAccountTransactionsService>([
+      'postSavingsaccountsSavingsIdTransactionsTransactionId',
+    ]);
+    transactionsServiceSpy.postSavingsaccountsSavingsIdTransactionsTransactionId.mockReturnValue(
+      of({}) as any,
+    );
     routerSpy = createSpyObj<Router>(['navigate']);
     dialogServiceSpy = createSpyObj<DialogService>(['open', 'confirm']);
 
@@ -73,6 +80,7 @@ describe('SavingsAccountViewComponent', () => {
         provideNoopAnimations(),
         ...provideFakeAdapters().providers,
         { provide: SavingsAccountService, useValue: savingsServiceSpy },
+        { provide: SavingsAccountTransactionsService, useValue: transactionsServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: DialogService, useValue: dialogServiceSpy },
@@ -445,6 +453,77 @@ describe('SavingsAccountViewComponent', () => {
       expect(component.canRelease(openHold as any)).toBe(true);
       expect(component.canRelease(releasedHold as any)).toBe(false);
       expect(component.canRelease(deposit as any)).toBe(false);
+    });
+
+    /**
+     * Modify is stricter than undo, and the three conditions are the ones
+     * `adjustSavingsTransaction` checks before it does anything — each answered with an error
+     * rather than a no-op, so offering the control would be offering a failure.
+     */
+    describe('modify', () => {
+      const withdrawal = { id: 6, reversed: false, transactionType: { withdrawal: true } };
+      const interestPosting = {
+        id: 7,
+        reversed: false,
+        transactionType: { interestPosting: true },
+      };
+      const transferredDeposit = {
+        id: 8,
+        reversed: false,
+        transactionType: { deposit: true },
+        transfer: { id: 3 },
+      };
+
+      it('offers modify on a deposit or a withdrawal', () => {
+        expect(component.canModify(deposit as any)).toBe(true);
+        expect(component.canModify(withdrawal as any)).toBe(true);
+      });
+
+      it('withholds it from anything the platform will not adjust', () => {
+        // TransactionUpdateNotAllowedException for the first three.
+        expect(component.canModify(reversedDeposit as any)).toBe(false);
+        expect(component.canModify(interestPosting as any)).toBe(false);
+        expect(component.canModify(openHold as any)).toBe(false);
+        // error.msg.saving.account.transfer.transaction.update.not.allowed.
+        expect(component.canModify(transferredDeposit as any)).toBe(false);
+      });
+
+      /**
+       * The id travels as a query parameter so the dispatch route keeps one shape, and with it
+       * the single permission gate resolved from `:command`.
+       */
+      it('opens the transaction form for that transaction', () => {
+        component.onModifyTransaction(deposit as any);
+
+        expect(routerSpy.navigate).toHaveBeenCalledWith(
+          ['/products/savings-accounts', 789, 'transactions', 'modify'],
+          { queryParams: { transactionId: 1 } },
+        );
+      });
+    });
+
+    describe('reverse', () => {
+      it('asks first, then posts the reverse command against that transaction', async () => {
+        dialogServiceSpy.confirm.mockResolvedValue(true);
+
+        await component.onReverseTransaction(deposit as any);
+
+        expect(dialogServiceSpy.confirm).toHaveBeenCalled();
+        expect(dialogServiceSpy.confirm.mock.lastCall![0].destructive).toBe(true);
+        expect(
+          transactionsServiceSpy.postSavingsaccountsSavingsIdTransactionsTransactionId,
+        ).toHaveBeenCalledWith(789, 1, {}, 'reverse');
+      });
+
+      it('does nothing when the user declines', async () => {
+        dialogServiceSpy.confirm.mockResolvedValue(false);
+
+        await component.onReverseTransaction(deposit as any);
+
+        expect(
+          transactionsServiceSpy.postSavingsaccountsSavingsIdTransactionsTransactionId,
+        ).not.toHaveBeenCalled();
+      });
     });
   });
 
