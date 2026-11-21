@@ -103,6 +103,7 @@ const BACKEND_SPECS = [
   'group-membership.spec.ts',
   'loan-account-actions.spec.ts',
   'loan-application-fields-backend.spec.ts',
+  'loan-schedule-preview-backend.spec.ts',
   'loan-approved-amount-revision.spec.ts',
   'loan-charge-off.spec.ts',
   'loan-lifecycle.spec.ts',
