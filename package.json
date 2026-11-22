@@ -111,7 +111,7 @@
     "prettier": "^3.9.6",
     "prettier-plugin-organize-attributes": "^1.0.0",
     "typescript": "~6.0.3",
-    "typescript-eslint": "8.72.1",
+    "typescript-eslint": "8.73.0",
     "vitest": "^5.1.0"
   },
   "overrides": {
