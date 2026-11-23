@@ -26,11 +26,13 @@
 import { GetLoanProductsIncomeAccountOptions } from './getLoanProductsIncomeAccountOptions';
 import { GetLoanProductsLiabilityAccountOptions } from './getLoanProductsLiabilityAccountOptions';
 import { GetLoanProductsExpenseAccountOptions } from './getLoanProductsExpenseAccountOptions';
+import { GLAccountData } from './gLAccountData';
 import { GetLoanProductsAssetAccountOptions } from './getLoanProductsAssetAccountOptions';
 
 
 export interface GetLoanProductsAccountingMappingOptions { 
     assetAccountOptions?: Set<GetLoanProductsAssetAccountOptions>;
+    equityAccountOptions?: Array<GLAccountData>;
     expenseAccountOptions?: Set<GetLoanProductsExpenseAccountOptions>;
     incomeAccountOptions?: Set<GetLoanProductsIncomeAccountOptions>;
     liabilityAccountOptions?: Set<GetLoanProductsLiabilityAccountOptions>;

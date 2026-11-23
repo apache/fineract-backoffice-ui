@@ -23,14 +23,32 @@
  * Do not edit the class manually.
  */
 
-import { PutUpdateStandingInstructionChanges } from './putUpdateStandingInstructionChanges';
 
 
-/**
- * PutStandingInstructionsStandingInstructionIdResponse
- */
-export interface PutStandingInstructionsStandingInstructionIdResponse { 
-    changes?: PutUpdateStandingInstructionChanges;
-    resourceId?: number;
+export interface CalendarUpdateRequest { 
+    dateFormat?: string;
+    description?: string;
+    duration?: number;
+    endDate?: string;
+    firstReminder?: number;
+    frequency?: number;
+    interval?: number;
+    locale?: string;
+    location?: string;
+    meetingtime?: string;
+    newMeetingDate?: string;
+    presentMeetingDate?: string;
+    remindById?: number;
+    repeating?: boolean;
+    repeatsOnDay?: number;
+    repeatsOnDayOfMonth?: number;
+    repeatsOnLastWeekdayOfMonth?: number;
+    repeatsOnNthDayOfMonth?: number;
+    reschedulebasedOnMeetingDates?: boolean;
+    secondReminder?: number;
+    startDate?: string;
+    timeFormat?: string;
+    title?: string;
+    typeId?: number;
 }
 

@@ -48,6 +48,7 @@ export interface LoanProductRelatedDetail {
     enableAccrualActivityPosting?: boolean;
     enableAutoRepaymentForDownPayment?: boolean;
     enableBuyDownFee?: boolean;
+    enableChargeAmortization?: boolean;
     enableDownPayment?: boolean;
     enableIncomeCapitalization?: boolean;
     equalAmortization?: boolean;

@@ -25,11 +25,7 @@
 
 
 
-/**
- * PostStandingInstructionsResponse
- */
-export interface PostStandingInstructionsResponse { 
-    clientId?: number;
+export interface JobExecuteResponse { 
     resourceId?: number;
 }
 

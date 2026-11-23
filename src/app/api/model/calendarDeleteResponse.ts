@@ -25,12 +25,7 @@
 
 
 
-/**
- * PostGroupsResponse
- */
-export interface PostGroupsResponse { 
-    groupId?: number;
-    officeId?: number;
+export interface CalendarDeleteResponse { 
     resourceId?: number;
 }
 

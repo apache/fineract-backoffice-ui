@@ -23,10 +23,14 @@
  * Do not edit the class manually.
  */
 
+import { CodeValue } from './codeValue';
+import { Client } from './client';
 
 
 export interface GroupRole { 
+    client?: Client;
     id?: number;
     'new'?: boolean;
+    role?: CodeValue;
 }
 

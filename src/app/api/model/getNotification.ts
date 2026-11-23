@@ -30,6 +30,10 @@ export interface GetNotification {
     actorId?: number;
     content?: string;
     createdAt?: string;
+    /**
+     * Creation time in the tenant time zone, with offset
+     */
+    createdAtTenant?: string;
     id?: number;
     isRead?: boolean;
     isSystemGenerated?: boolean;

@@ -33,6 +33,7 @@ import { FinancialActivityData } from './financialActivityData';
 export interface GetFinancialActivityAccountsResponse { 
     financialActivityData?: FinancialActivityData;
     glAccountData?: GLAccountData;
+    glAccountOptions?: { [key: string]: Array<GLAccountData>; };
     id?: number;
 }
 

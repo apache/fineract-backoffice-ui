@@ -25,9 +25,16 @@
 
 
 
-export interface PutGroupsGroupIdChanges { 
+export interface GroupUpdateRequest { 
+    activationDate?: string;
+    active?: boolean;
+    centerId?: number;
+    dateFormat?: string;
     externalId?: string;
-    name?: string;
+    groupId?: number;
+    locale?: string;
+    name: string;
     staffId?: number;
+    submittedOnDate?: string;
 }
 

@@ -25,9 +25,9 @@
 
 
 
-export interface GetChargesFeeFrequencyResponse { 
-    code?: string;
-    id?: number;
-    value?: string;
+export interface GroupCreateResponse { 
+    groupId?: number;
+    officeId?: number;
+    resourceId?: number;
 }
 

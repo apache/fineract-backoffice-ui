@@ -41,6 +41,8 @@ import { TemplateData } from '../model/templateData';
 // @ts-ignore
 import { TemplateDeleteResponse } from '../model/templateDeleteResponse';
 // @ts-ignore
+import { TemplateDetailsData } from '../model/templateDetailsData';
+// @ts-ignore
 import { TemplateUpdateRequest } from '../model/templateUpdateRequest';
 // @ts-ignore
 import { TemplateUpdateResponse } from '../model/templateUpdateResponse';
@@ -213,9 +215,9 @@ export class TemplatesService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getTemplatesTemplate(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<TemplateData>;
-    public getTemplatesTemplate(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TemplateData>>;
-    public getTemplatesTemplate(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TemplateData>>;
+    public getTemplatesTemplate(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<TemplateDetailsData>;
+    public getTemplatesTemplate(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TemplateDetailsData>>;
+    public getTemplatesTemplate(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TemplateDetailsData>>;
     public getTemplatesTemplate(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -251,7 +253,7 @@ export class TemplatesService extends BaseService {
 
         let localVarPath = `/v1/templates/template`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<TemplateData>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<TemplateDetailsData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -334,9 +336,9 @@ export class TemplatesService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getTemplatesTemplateIdTemplate(templateId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<TemplateData>;
-    public getTemplatesTemplateIdTemplate(templateId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TemplateData>>;
-    public getTemplatesTemplateIdTemplate(templateId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TemplateData>>;
+    public getTemplatesTemplateIdTemplate(templateId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<TemplateDetailsData>;
+    public getTemplatesTemplateIdTemplate(templateId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TemplateDetailsData>>;
+    public getTemplatesTemplateIdTemplate(templateId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TemplateDetailsData>>;
     public getTemplatesTemplateIdTemplate(templateId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (templateId === null || templateId === undefined) {
             throw new Error('Required parameter templateId was null or undefined when calling getTemplatesTemplateIdTemplate.');
@@ -375,7 +377,7 @@ export class TemplatesService extends BaseService {
 
         let localVarPath = `/v1/templates/${this.configuration.encodeParam({name: "templateId", value: templateId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/template`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<TemplateData>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<TemplateDetailsData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

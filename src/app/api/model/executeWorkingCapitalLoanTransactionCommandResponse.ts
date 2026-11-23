@@ -29,12 +29,26 @@
  * Response for working capital loan transaction command execution
  */
 export interface ExecuteWorkingCapitalLoanTransactionCommandResponse { 
+    /**
+     * For command=adjust and adjustByDelta with a replacement, adjustedTransaction describes the reversed transaction (id included) and externalIdInherited tells whether its external id moved to the replacement
+     */
     changes?: { [key: string]: object; };
     clientId?: number;
     loanExternalId?: string;
     loanId?: number;
     officeId?: number;
     resourceExternalId?: string;
+    /**
+     * For command=adjust and adjustByDelta: the replacement transaction, or the reversed transaction when the adjustment reversed it in full
+     */
     resourceId?: number;
+    /**
+     * External id of subResourceId after the adjustment: empty when the replacement inherited it
+     */
+    subResourceExternalId?: string;
+    /**
+     * For command=adjust and adjustByDelta with a replacement: the transaction that was actually reversed. When the command was sent by transaction external id, this is the transaction that external id pointed to when the command ran, which may be a later replacement than the one it pointed to when the request was sent
+     */
+    subResourceId?: number;
 }
 

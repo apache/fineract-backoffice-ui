@@ -33,13 +33,13 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
+import { AddressCreateResponse } from '../model/addressCreateResponse';
+// @ts-ignore
 import { AddressData } from '../model/addressData';
 // @ts-ignore
+import { AddressUpdateResponse } from '../model/addressUpdateResponse';
+// @ts-ignore
 import { ClientAddressRequest } from '../model/clientAddressRequest';
-// @ts-ignore
-import { PostClientClientIdAddressesResponse } from '../model/postClientClientIdAddressesResponse';
-// @ts-ignore
-import { PutClientClientIdAddressesResponse } from '../model/putClientClientIdAddressesResponse';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -212,9 +212,9 @@ export class ClientsAddressService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, type?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostClientClientIdAddressesResponse>;
-    public postClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, type?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostClientClientIdAddressesResponse>>;
-    public postClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, type?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostClientClientIdAddressesResponse>>;
+    public postClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, type?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<AddressCreateResponse>;
+    public postClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, type?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<AddressCreateResponse>>;
+    public postClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, type?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<AddressCreateResponse>>;
     public postClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, type?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (clientid === null || clientid === undefined) {
             throw new Error('Required parameter clientid was null or undefined when calling postClientClientidAddresses.');
@@ -276,7 +276,7 @@ export class ClientsAddressService extends BaseService {
 
         let localVarPath = `/v1/client/${this.configuration.encodeParam({name: "clientid", value: clientid, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/addresses`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PostClientClientIdAddressesResponse>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<AddressCreateResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: clientAddressRequest,
@@ -301,9 +301,9 @@ export class ClientsAddressService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PutClientClientIdAddressesResponse>;
-    public putClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PutClientClientIdAddressesResponse>>;
-    public putClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PutClientClientIdAddressesResponse>>;
+    public putClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<AddressUpdateResponse>;
+    public putClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<AddressUpdateResponse>>;
+    public putClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<AddressUpdateResponse>>;
     public putClientClientidAddresses(clientid: number, clientAddressRequest: ClientAddressRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (clientid === null || clientid === undefined) {
             throw new Error('Required parameter clientid was null or undefined when calling putClientClientidAddresses.');
@@ -354,7 +354,7 @@ export class ClientsAddressService extends BaseService {
 
         let localVarPath = `/v1/client/${this.configuration.encodeParam({name: "clientid", value: clientid, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/addresses`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PutClientClientIdAddressesResponse>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<AddressUpdateResponse>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: clientAddressRequest,

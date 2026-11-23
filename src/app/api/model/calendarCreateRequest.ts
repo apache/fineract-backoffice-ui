@@ -25,12 +25,27 @@
 
 
 
-/**
- * PutGroupsGroupIdRequest
- */
-export interface PutGroupsGroupIdRequest { 
-    externalId?: string;
-    name?: string;
-    staffId?: number;
+export interface CalendarCreateRequest { 
+    dateFormat?: string;
+    description?: string;
+    duration?: number;
+    endDate?: string;
+    firstReminder?: number;
+    frequency?: number;
+    interval?: number;
+    locale?: string;
+    location?: string;
+    meetingtime?: string;
+    remindById?: number;
+    repeating?: boolean;
+    repeatsOnDay?: number;
+    repeatsOnDayOfMonth?: number;
+    repeatsOnLastWeekdayOfMonth?: number;
+    repeatsOnNthDayOfMonth?: number;
+    secondReminder?: number;
+    startDate: string;
+    timeFormat?: string;
+    title: string;
+    typeId: number;
 }
 

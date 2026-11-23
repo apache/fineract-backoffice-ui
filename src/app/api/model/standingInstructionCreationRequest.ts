@@ -27,27 +27,27 @@
 
 export interface StandingInstructionCreationRequest { 
     allowPartialTransfer?: boolean;
-    amount?: string;
+    amount?: number;
     dateFormat?: string;
-    fromAccountId?: string;
-    fromAccountType?: string;
-    fromClientId?: string;
-    fromOfficeId?: string;
-    instructionType?: string;
+    fromAccountId: number;
+    fromAccountType: number;
+    fromClientId: number;
+    fromOfficeId: number;
+    instructionType: number;
     locale?: string;
     monthDayFormat?: string;
-    name?: string;
-    priority?: string;
-    recurrenceFrequency?: string;
-    recurrenceInterval?: string;
+    name: string;
+    priority: number;
+    recurrenceFrequency?: number;
+    recurrenceInterval?: number;
     recurrenceOnMonthDay?: string;
-    recurrenceType?: string;
-    status?: string;
-    toAccountId?: string;
-    toAccountType?: string;
-    toClientId?: string;
-    toOfficeId?: string;
-    transferType?: string;
+    recurrenceType: number;
+    status: number;
+    toAccountId: number;
+    toAccountType: number;
+    toClientId: number;
+    toOfficeId: number;
+    transferType: number;
     validFrom?: string;
     validTill?: string;
 }

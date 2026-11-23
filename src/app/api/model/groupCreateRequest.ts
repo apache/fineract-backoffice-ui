@@ -23,12 +23,22 @@
  * Do not edit the class manually.
  */
 
+import { DatatableEntry } from './datatableEntry';
 
 
-/**
- * PostChargesResponse
- */
-export interface PostChargesResponse { 
-    resourceId?: number;
+export interface GroupCreateRequest { 
+    accountNo?: string;
+    activationDate?: string;
+    active: boolean;
+    centerId?: number;
+    clientMembers?: Set<number>;
+    datatables?: Array<DatatableEntry>;
+    dateFormat?: string;
+    externalId?: string;
+    locale?: string;
+    name: string;
+    officeId: number;
+    staffId?: number;
+    submittedOnDate?: string;
 }
 

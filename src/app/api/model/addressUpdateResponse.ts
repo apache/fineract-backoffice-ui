@@ -25,9 +25,8 @@
 
 
 
-export interface GetChargesCalculationTypeResponse { 
-    code?: string;
-    description?: string;
-    id?: number;
+export interface AddressUpdateResponse { 
+    clientId?: number;
+    resourceId?: number;
 }
 

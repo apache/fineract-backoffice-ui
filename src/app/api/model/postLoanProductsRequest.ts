@@ -86,6 +86,7 @@ export interface PostLoanProductsRequest {
     enableAccrualActivityPosting?: boolean;
     enableAutoRepaymentForDownPayment?: boolean;
     enableBuyDownFee?: boolean;
+    enableChargeAmortization?: boolean;
     enableDownPayment?: boolean;
     enableIncomeCapitalization?: boolean;
     enableInstallmentLevelDelinquency?: boolean;

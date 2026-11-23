@@ -66,5 +66,9 @@ export interface PostFixedDepositAccountsRequest {
     productId?: number;
     submittedOnDate?: string;
     transferInterestToSavings?: boolean;
+    /**
+     * Savings account credited at maturity; required when maturityInstructionId is 200 (transfer to savings)
+     */
+    transferToSavingsId?: number;
 }
 

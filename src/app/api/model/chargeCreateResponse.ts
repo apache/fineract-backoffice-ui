@@ -25,9 +25,7 @@
 
 
 
-export interface GetChargesPaymentModeResponse { 
-    code?: string;
-    description?: string;
-    id?: number;
+export interface ChargeCreateResponse { 
+    resourceId?: number;
 }
 

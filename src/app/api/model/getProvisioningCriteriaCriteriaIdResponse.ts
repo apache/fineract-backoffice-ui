@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { GLAccountData } from './gLAccountData';
 import { ProvisioningCriteriaDefinitionData } from './provisioningCriteriaDefinitionData';
 import { LoanProductData } from './loanProductData';
 
@@ -35,6 +36,7 @@ export interface GetProvisioningCriteriaCriteriaIdResponse {
     criteriaId?: number;
     criteriaName?: string;
     definitions?: Array<ProvisioningCriteriaDefinitionData>;
+    glAccounts?: Array<GLAccountData>;
     loanProducts?: Array<LoanProductData>;
 }
 

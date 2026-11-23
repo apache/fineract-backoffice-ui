@@ -25,29 +25,31 @@
 
 
 
-/**
- * PutChargesChargeIdRequest
- */
-export interface PutChargesChargeIdRequest { 
+export interface ChargeCreateRequest { 
     active?: boolean;
-    amount?: number;
-    chargeAppliesTo?: number;
-    chargeCalculationType?: number;
+    amortizationCalculationType?: string;
+    amortizationDays?: number;
+    amortizationIncomeType?: string;
+    amortizationPeriodType?: string;
+    amount: number;
+    chargeAppliesTo: number;
+    chargeCalculationType: number;
     chargePaymentMode?: number;
     chargeTimeType?: number;
     countFrequencyType?: number;
-    currencyCode?: string;
+    currencyCode: string;
     enableFreeWithdrawalCharge?: boolean;
     enablePaymentType?: boolean;
-    feeFrequency?: string;
+    feeFrequency?: number;
     feeInterval?: number;
     feeOnMonthDay?: string;
     freeWithdrawalFrequency?: number;
+    incomeAccountId?: number;
     locale?: string;
     maxCap?: number;
     minCap?: number;
     monthDayFormat?: string;
-    name?: string;
+    name: string;
     paymentTypeId?: number;
     penalty?: boolean;
     restartCountFrequency?: number;

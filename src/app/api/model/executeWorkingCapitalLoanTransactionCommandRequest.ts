@@ -36,7 +36,7 @@ export interface ExecuteWorkingCapitalLoanTransactionCommandRequest {
     classificationId?: number;
     dateFormat?: string;
     /**
-     * Optional external id for the created transaction. For command=adjust and command=adjustByDelta this is the id of the replacement, when there is one (same as term-loan adjust). The reversed transaction keeps its original external id. If omitted and auto-generation is enabled, a new id is generated for the replacement.
+     * Optional external id for the created transaction. For command=adjust and command=adjustByDelta this is the id of the replacement, when there is one (same as term-loan adjust). If omitted and auto-generation is enabled, a new id is generated for the replacement. Inheritance (command=adjust, adjustByDelta): set it to the external id of the transaction being adjusted and that external id moves to the replacement - it is removed from the reversed transaction, so the external id keeps pointing to the live transaction and the next adjustment can be sent against it again. A full reversal (new amount 0) has no replacement, so the external id stays on the reversed transaction. Any other value leaves the reversed transaction\'s external id where it is and must be unique (already.exists otherwise).
      */
     externalId?: string;
     locale?: string;

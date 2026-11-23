@@ -39,13 +39,13 @@ import { GetStandingInstructionsStandingInstructionIdResponse } from '../model/g
 // @ts-ignore
 import { GetStandingInstructionsTemplateResponse } from '../model/getStandingInstructionsTemplateResponse';
 // @ts-ignore
-import { PostStandingInstructionsResponse } from '../model/postStandingInstructionsResponse';
-// @ts-ignore
-import { PutStandingInstructionsStandingInstructionIdResponse } from '../model/putStandingInstructionsStandingInstructionIdResponse';
+import { StandingInstructionCreateResponse } from '../model/standingInstructionCreateResponse';
 // @ts-ignore
 import { StandingInstructionCreationRequest } from '../model/standingInstructionCreationRequest';
 // @ts-ignore
-import { StandingInstructionUpdatesRequest } from '../model/standingInstructionUpdatesRequest';
+import { StandingInstructionUpdateRequest } from '../model/standingInstructionUpdateRequest';
+// @ts-ignore
+import { StandingInstructionUpdateResponse } from '../model/standingInstructionUpdateResponse';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -502,9 +502,9 @@ export class StandingInstructionsService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postStandinginstructions(standingInstructionCreationRequest: StandingInstructionCreationRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostStandingInstructionsResponse>;
-    public postStandinginstructions(standingInstructionCreationRequest: StandingInstructionCreationRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostStandingInstructionsResponse>>;
-    public postStandinginstructions(standingInstructionCreationRequest: StandingInstructionCreationRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostStandingInstructionsResponse>>;
+    public postStandinginstructions(standingInstructionCreationRequest: StandingInstructionCreationRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<StandingInstructionCreateResponse>;
+    public postStandinginstructions(standingInstructionCreationRequest: StandingInstructionCreationRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<StandingInstructionCreateResponse>>;
+    public postStandinginstructions(standingInstructionCreationRequest: StandingInstructionCreationRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<StandingInstructionCreateResponse>>;
     public postStandinginstructions(standingInstructionCreationRequest: StandingInstructionCreationRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (standingInstructionCreationRequest === null || standingInstructionCreationRequest === undefined) {
             throw new Error('Required parameter standingInstructionCreationRequest was null or undefined when calling postStandinginstructions.');
@@ -552,7 +552,7 @@ export class StandingInstructionsService extends BaseService {
 
         let localVarPath = `/v1/standinginstructions`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PostStandingInstructionsResponse>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<StandingInstructionCreateResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: standingInstructionCreationRequest,
@@ -572,15 +572,15 @@ export class StandingInstructionsService extends BaseService {
      * @endpoint put /v1/standinginstructions/{standingInstructionId}
      * @param standingInstructionId standingInstructionId
      * @param command command
-     * @param standingInstructionUpdatesRequest 
+     * @param standingInstructionUpdateRequest The update payload; not required when command&#x3D;delete
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putStandinginstructionsStandingInstructionId(standingInstructionId: number, command?: string, standingInstructionUpdatesRequest?: StandingInstructionUpdatesRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PutStandingInstructionsStandingInstructionIdResponse>;
-    public putStandinginstructionsStandingInstructionId(standingInstructionId: number, command?: string, standingInstructionUpdatesRequest?: StandingInstructionUpdatesRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PutStandingInstructionsStandingInstructionIdResponse>>;
-    public putStandinginstructionsStandingInstructionId(standingInstructionId: number, command?: string, standingInstructionUpdatesRequest?: StandingInstructionUpdatesRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PutStandingInstructionsStandingInstructionIdResponse>>;
-    public putStandinginstructionsStandingInstructionId(standingInstructionId: number, command?: string, standingInstructionUpdatesRequest?: StandingInstructionUpdatesRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putStandinginstructionsStandingInstructionId(standingInstructionId: number, command?: string, standingInstructionUpdateRequest?: StandingInstructionUpdateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<StandingInstructionUpdateResponse>;
+    public putStandinginstructionsStandingInstructionId(standingInstructionId: number, command?: string, standingInstructionUpdateRequest?: StandingInstructionUpdateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<StandingInstructionUpdateResponse>>;
+    public putStandinginstructionsStandingInstructionId(standingInstructionId: number, command?: string, standingInstructionUpdateRequest?: StandingInstructionUpdateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<StandingInstructionUpdateResponse>>;
+    public putStandinginstructionsStandingInstructionId(standingInstructionId: number, command?: string, standingInstructionUpdateRequest?: StandingInstructionUpdateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (standingInstructionId === null || standingInstructionId === undefined) {
             throw new Error('Required parameter standingInstructionId was null or undefined when calling putStandinginstructionsStandingInstructionId.');
         }
@@ -638,10 +638,10 @@ export class StandingInstructionsService extends BaseService {
 
         let localVarPath = `/v1/standinginstructions/${this.configuration.encodeParam({name: "standingInstructionId", value: standingInstructionId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PutStandingInstructionsStandingInstructionIdResponse>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<StandingInstructionUpdateResponse>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: standingInstructionUpdatesRequest,
+                body: standingInstructionUpdateRequest,
                 params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),

@@ -42,6 +42,7 @@ export interface PutLoansLoanIdRequest {
     collateral?: Array<PutLoansLoanIdCollateral>;
     createStandingInstructionAtDisbursement?: boolean;
     dateFormat?: string;
+    daysInYearCustomStrategy?: PutLoansLoanIdRequest.DaysInYearCustomStrategyEnum;
     disbursedAmountPercentageForDownPayment?: number;
     disbursementData?: Array<PutLoansLoanIdDisbursementData>;
     enableAutoRepaymentForDownPayment?: boolean;
@@ -92,6 +93,11 @@ export interface PutLoansLoanIdRequest {
     transactionProcessingStrategyCode?: string;
 }
 export namespace PutLoansLoanIdRequest {
+    export const DaysInYearCustomStrategyEnum = {
+        FullLeapYear: 'FULL_LEAP_YEAR',
+        Feb29PeriodOnly: 'FEB_29_PERIOD_ONLY'
+    } as const;
+    export type DaysInYearCustomStrategyEnum = typeof DaysInYearCustomStrategyEnum[keyof typeof DaysInYearCustomStrategyEnum];
     export const MonthEndDueDateStrategyEnum = {
         LastDayOfMonth: 'LAST_DAY_OF_MONTH',
         FirstDayOfNextMonth: 'FIRST_DAY_OF_NEXT_MONTH'

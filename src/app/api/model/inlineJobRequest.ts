@@ -30,5 +30,6 @@
  */
 export interface InlineJobRequest { 
     loanIds?: Array<number>;
+    savingsIds?: Array<number>;
 }
 

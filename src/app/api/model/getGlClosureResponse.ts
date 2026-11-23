@@ -23,12 +23,14 @@
  * Do not edit the class manually.
  */
 
+import { OfficeData } from './officeData';
 
 
 /**
  * GetGLClosureResponse
  */
 export interface GetGlClosureResponse { 
+    allowedOffices?: Array<OfficeData>;
     closingDate?: string;
     comments?: string;
     createdByUserId?: number;

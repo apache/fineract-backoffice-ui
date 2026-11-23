@@ -25,10 +25,8 @@
 
 
 
-/**
- * PutClientClientIdAddressesResponse
- */
-export interface PutClientClientIdAddressesResponse { 
+export interface StandingInstructionCreateResponse { 
+    clientId?: number;
     resourceId?: number;
 }
 

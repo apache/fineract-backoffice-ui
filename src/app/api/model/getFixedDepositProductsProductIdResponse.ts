@@ -25,14 +25,15 @@
 
 import { GetFixedDepositProductsInterestCalculationType } from './getFixedDepositProductsInterestCalculationType';
 import { GetFixedDepositProductsProductIdPreClosurePenalInterestOnType } from './getFixedDepositProductsProductIdPreClosurePenalInterestOnType';
-import { GetFixedDepositProductsProductIdInterestCompoundingPeriodType } from './getFixedDepositProductsProductIdInterestCompoundingPeriodType';
-import { GetFixedDepositProductsProductIdMaxDepositTermType } from './getFixedDepositProductsProductIdMaxDepositTermType';
-import { GetFixedDepositProductsProductIdAccountingMappings } from './getFixedDepositProductsProductIdAccountingMappings';
+import { GLAccountData } from './gLAccountData';
 import { GetFixedDepositProductsProductIdFeeToIncomeAccountMappings } from './getFixedDepositProductsProductIdFeeToIncomeAccountMappings';
-import { GetFixedDepositProductsInterestCalculationDaysInYearType } from './getFixedDepositProductsInterestCalculationDaysInYearType';
 import { GetFixedDepositProductsProductIdActiveChart } from './getFixedDepositProductsProductIdActiveChart';
 import { GetFixedDepositProductsProductIdPenaltyToIncomeAccountMappings } from './getFixedDepositProductsProductIdPenaltyToIncomeAccountMappings';
 import { GetFixedDepositProductsProductIdMinDepositTermType } from './getFixedDepositProductsProductIdMinDepositTermType';
+import { GetFixedDepositProductsProductIdInterestCompoundingPeriodType } from './getFixedDepositProductsProductIdInterestCompoundingPeriodType';
+import { GetFixedDepositProductsProductIdMaxDepositTermType } from './getFixedDepositProductsProductIdMaxDepositTermType';
+import { GetFixedDepositProductsProductIdAccountingMappings } from './getFixedDepositProductsProductIdAccountingMappings';
+import { GetFixedDepositProductsInterestCalculationDaysInYearType } from './getFixedDepositProductsInterestCalculationDaysInYearType';
 import { GetFixedDepositProductsInterestPostingPeriodType } from './getFixedDepositProductsInterestPostingPeriodType';
 import { GetFixedDepositProductsProductIdCurrency } from './getFixedDepositProductsProductIdCurrency';
 
@@ -41,6 +42,7 @@ import { GetFixedDepositProductsProductIdCurrency } from './getFixedDepositProdu
  * GetFixedDepositProductsProductIdResponse
  */
 export interface GetFixedDepositProductsProductIdResponse { 
+    accountingMappingOptions?: { [key: string]: Array<GLAccountData>; };
     accountingMappings?: GetFixedDepositProductsProductIdAccountingMappings;
     activeChart?: GetFixedDepositProductsProductIdActiveChart;
     closeDate?: string;

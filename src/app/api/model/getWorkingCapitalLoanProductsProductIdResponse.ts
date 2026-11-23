@@ -40,6 +40,7 @@ import { GetPaymentAllocation } from './getPaymentAllocation';
  * GetWorkingCapitalLoanProductsProductIdResponse
  */
 export interface GetWorkingCapitalLoanProductsProductIdResponse { 
+    accountingMappingOptions?: { [key: string]: Array<GLAccountData>; };
     accountingMappings?: { [key: string]: GLAccountData; };
     accountingRule?: StringEnumOptionData;
     allowAttributeOverrides?: GetConfigurableAttributes;

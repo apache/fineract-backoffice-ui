@@ -2440,18 +2440,18 @@
         "operationId": "createCharge",
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ChargeRequest" } }
+            "application/json": { "schema": { "$ref": "#/components/schemas/ChargeCreateRequest" } }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PostChargesResponse" }
+                "schema": { "$ref": "#/components/schemas/ChargeCreateResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Create/Define a Charge",
@@ -2501,13 +2501,13 @@
           }
         ],
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DeleteChargesChargeIdResponse" }
+                "schema": { "$ref": "#/components/schemas/ChargeDeleteResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Delete a Charge",
@@ -2523,16 +2523,20 @@
             "name": "chargeId",
             "required": true,
             "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "description": "template",
+            "in": "query",
+            "name": "template",
+            "schema": { "type": "boolean" }
           }
         ],
         "responses": {
-          "200": {
+          "default": {
             "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/GetChargesResponse" }
-              }
+              "application/json": { "schema": { "$ref": "#/components/schemas/ChargeData" } }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Retrieve a Charge",
@@ -2553,18 +2557,18 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ChargeRequest" } }
+            "application/json": { "schema": { "$ref": "#/components/schemas/ChargeUpdateRequest" } }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PutChargesChargeIdResponse" }
+                "schema": { "$ref": "#/components/schemas/ChargeUpdateResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Update a Charge",
@@ -2659,7 +2663,7 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PostClientClientIdAddressesResponse" }
+                "schema": { "$ref": "#/components/schemas/AddressCreateResponse" }
               }
             },
             "description": "OK"
@@ -2693,7 +2697,7 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PutClientClientIdAddressesResponse" }
+                "schema": { "$ref": "#/components/schemas/AddressUpdateResponse" }
               }
             },
             "description": "OK"
@@ -3945,6 +3949,7 @@
         "operationId": "createClientFamilyMember",
         "parameters": [
           {
+            "description": "clientId",
             "in": "path",
             "name": "clientId",
             "required": true,
@@ -3954,15 +3959,16 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ClientFamilyMemberRequest" }
+              "schema": { "$ref": "#/components/schemas/FamilyMemberCreateRequest" }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+                "schema": { "$ref": "#/components/schemas/FamilyMemberCreateResponse" }
               }
             },
             "description": "default response"
@@ -4004,6 +4010,7 @@
         "operationId": "deleteClientFamilyMember",
         "parameters": [
           {
+            "description": "familyMemberId",
             "in": "path",
             "name": "familyMemberId",
             "required": true,
@@ -4021,7 +4028,7 @@
           "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+                "schema": { "$ref": "#/components/schemas/FamilyMemberDeleteResponse" }
               }
             },
             "description": "default response"
@@ -4066,6 +4073,7 @@
         "operationId": "updateClientFamilyMember",
         "parameters": [
           {
+            "description": "familyMemberId",
             "in": "path",
             "name": "familyMemberId",
             "required": true,
@@ -4082,15 +4090,16 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ClientFamilyMemberRequest" }
+              "schema": { "$ref": "#/components/schemas/FamilyMemberUpdateRequest" }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+                "schema": { "$ref": "#/components/schemas/FamilyMemberUpdateResponse" }
               }
             },
             "description": "default response"
@@ -9279,18 +9288,18 @@
         "operationId": "createGroup",
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/PostGroupsRequest" } }
+            "application/json": { "schema": { "$ref": "#/components/schemas/GroupCreateRequest" } }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PostGroupsResponse" }
+                "schema": { "$ref": "#/components/schemas/GroupCreateResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Create a Group",
@@ -9394,7 +9403,6 @@
         "operationId": "deleteGroup",
         "parameters": [
           {
-            "description": "groupId",
             "in": "path",
             "name": "groupId",
             "required": true,
@@ -9402,13 +9410,13 @@
           }
         ],
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DeleteGroupsGroupIdResponse" }
+                "schema": { "$ref": "#/components/schemas/GroupDeleteResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Delete a Group",
@@ -9504,7 +9512,6 @@
         "operationId": "updateGroup",
         "parameters": [
           {
-            "description": "groupId",
             "in": "path",
             "name": "groupId",
             "required": true,
@@ -9513,20 +9520,18 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/PutGroupsGroupIdRequest" }
-            }
+            "application/json": { "schema": { "$ref": "#/components/schemas/GroupUpdateRequest" } }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PutGroupsGroupIdResponse" }
+                "schema": { "$ref": "#/components/schemas/GroupUpdateResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Update a Group",
@@ -11696,7 +11701,7 @@
         "tags": ["SCHEDULER JOB"]
       },
       "post": {
-        "description": "Manually Execute Specific Job.",
+        "description": "Manually Execute Specific Job (by short name).",
         "operationId": "executeJobByShortName",
         "parameters": [
           {
@@ -11715,11 +11720,18 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ExecuteJobRequest" } }
+            "application/json": { "schema": { "$ref": "#/components/schemas/JobExecuteRequest" } }
           }
         },
         "responses": {
-          "200": { "description": "POST: jobs/short-name/SA_PINT?command=executeJob" }
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JobExecuteResponse" }
+              }
+            },
+            "description": "Accepted"
+          }
         },
         "summary": "Run a Job",
         "tags": ["SCHEDULER JOB"]
@@ -11852,10 +11864,19 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ExecuteJobRequest" } }
+            "application/json": { "schema": { "$ref": "#/components/schemas/JobExecuteRequest" } }
           }
         },
-        "responses": { "200": { "description": "POST: jobs/1?command=executeJob" } },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JobExecuteResponse" }
+              }
+            },
+            "description": "Accepted"
+          }
+        },
         "summary": "Run a Job",
         "tags": ["SCHEDULER JOB"]
       },
@@ -11873,18 +11894,16 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/PutJobsJobIDRequest" } }
+            "application/json": { "schema": { "$ref": "#/components/schemas/JobUpdateRequest" } }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
-              }
+              "application/json": { "schema": { "$ref": "#/components/schemas/JobUpdateResponse" } }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Update a Job",
@@ -12183,7 +12202,7 @@
         "x-alternative-operation-id": "retrieveAll_1"
       },
       "post": {
-        "description": "Note: A Balanced (simple) Journal entry would have atleast one \"Debit\" and one \"Credit\" entry whose amounts are equal \nCompound Journal entries may have \"n\" debits and \"m\" credits where both \"m\" and \"n\" are greater than 0 and the net sum or all debits and credits are equal \n\n\nMandatory Fields\nofficeId, transactionDate\n\n\ncredits- glAccountId, amount, comments\n\n \ndebits-  glAccountId, amount, comments\n\n \nOptional Fields\npaymentTypeId, accountNumber, checkNumber, routingCode, receiptNumber, bankNumber",
+        "description": "Note: A Balanced (simple) Journal entry would have atleast one \"Debit\" and one \"Credit\" entry whose amounts are equal \nCompound Journal entries may have \"n\" debits and \"m\" credits where both \"m\" and \"n\" are greater than 0 and the net sum or all debits and credits are equal \nA GL account may not appear on both the debit and the credit side of the same entry, even when the lines on that account do not cancel out; this also applies to entries created from an accounting rule whose debit and credit sides share an account. \n\n\nMandatory Fields\nofficeId, transactionDate\n\n\ncredits- glAccountId, amount, comments\n\n \ndebits-  glAccountId, amount, comments\n\n \nOptional Fields\npaymentTypeId, accountNumber, checkNumber, routingCode, receiptNumber, bankNumber",
         "operationId": "createGLJournalEntry",
         "parameters": [
           {
@@ -23859,13 +23878,13 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PostStandingInstructionsResponse" }
+                "schema": { "$ref": "#/components/schemas/StandingInstructionCreateResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Create new Standing Instruction",
@@ -24019,20 +24038,19 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/StandingInstructionUpdatesRequest" }
+              "schema": { "$ref": "#/components/schemas/StandingInstructionUpdateRequest" }
             }
-          }
+          },
+          "description": "The update payload; not required when command=delete"
         },
         "responses": {
-          "200": {
+          "default": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PutStandingInstructionsStandingInstructionIdResponse"
-                }
+                "schema": { "$ref": "#/components/schemas/StandingInstructionUpdateResponse" }
               }
             },
-            "description": "OK"
+            "description": "default response"
           }
         },
         "summary": "Update Standing Instruction | Delete Standing Instruction",
@@ -25449,7 +25467,9 @@
         "responses": {
           "default": {
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/TemplateData" } }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TemplateDetailsData" }
+              }
             }
           }
         },
@@ -25581,7 +25601,9 @@
         "responses": {
           "default": {
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/TemplateData" } }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TemplateDetailsData" }
+              }
             }
           }
         },
@@ -27417,7 +27439,7 @@
     },
     "/v1/working-capital-loans/external-id/{loanExternalId}/transactions/external-id/{transactionExternalId}": {
       "post": {
-        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
+        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.\n\nadjust and adjustByDelta reverse the transaction and book a replacement for the new amount, linked to it. Set externalId in the body to the adjusted transaction's own external id and the replacement inherits it: the external id is removed from the reversed transaction and points to the replacement afterwards. A full reversal (new amount 0) books no replacement and leaves the external id on the reversed transaction.\n\nundo, adjust and adjustByDelta on a transaction that is already reversed fail with 403 error.msg.wc.loan.transaction.already.undone.\n\nFor undo, adjust and adjustByDelta the transaction external id is resolved while the command runs, on every attempt of the command retry policy (fineract.retry.instances.executeCommand.*), not when the request is received. When it points to a reversed transaction - typically because a concurrent adjust on the same transaction has just moved it to its replacement - the command is retried and applies to the transaction the external id points to then. So several adjustments sent at the same time against the same external id are each applied once, to the live transaction, whatever order they run in. When the external id is still on a reversed transaction after the last attempt, the call fails with the 403 above. The response names the transaction that was actually reversed (subResourceId) and its replacement (resourceId).",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanExternalIdTransactionExternalId",
         "parameters": [
           {
@@ -27557,7 +27579,7 @@
         "tags": ["Working Capital Loan Transactions"]
       },
       "post": {
-        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
+        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.\n\nadjust and adjustByDelta reverse the transaction and book a replacement for the new amount, linked to it. Set externalId in the body to the adjusted transaction's own external id and the replacement inherits it: the external id is removed from the reversed transaction and points to the replacement afterwards. A full reversal (new amount 0) books no replacement and leaves the external id on the reversed transaction.\n\nundo, adjust and adjustByDelta on a transaction that is already reversed fail with 403 error.msg.wc.loan.transaction.already.undone. A command sent by numeric transaction id is not retried for that error: the same id stays reversed.",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanExternalIdTransactionId",
         "parameters": [
           {
@@ -28843,7 +28865,7 @@
     },
     "/v1/working-capital-loans/{loanId}/transactions/external-id/{transactionExternalId}": {
       "post": {
-        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
+        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.\n\nadjust and adjustByDelta reverse the transaction and book a replacement for the new amount, linked to it. Set externalId in the body to the adjusted transaction's own external id and the replacement inherits it: the external id is removed from the reversed transaction and points to the replacement afterwards. A full reversal (new amount 0) books no replacement and leaves the external id on the reversed transaction.\n\nundo, adjust and adjustByDelta on a transaction that is already reversed fail with 403 error.msg.wc.loan.transaction.already.undone.\n\nFor undo, adjust and adjustByDelta the transaction external id is resolved while the command runs, on every attempt of the command retry policy (fineract.retry.instances.executeCommand.*), not when the request is received. When it points to a reversed transaction - typically because a concurrent adjust on the same transaction has just moved it to its replacement - the command is retried and applies to the transaction the external id points to then. So several adjustments sent at the same time against the same external id are each applied once, to the live transaction, whatever order they run in. When the external id is still on a reversed transaction after the last attempt, the call fails with the 403 above. The response names the transaction that was actually reversed (subResourceId) and its replacement (resourceId).",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanIdTransactionExternalId",
         "parameters": [
           {
@@ -28983,7 +29005,7 @@
         "tags": ["Working Capital Loan Transactions"]
       },
       "post": {
-        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.",
+        "description": "Supported command query parameter: adjust, adjustByDelta, discountFee, discountFeeAdjustment, undo. The command value is case-insensitive and hyphens are ignored, e.g. chargeOff, chargeoff and charge-off are equivalent.\n\nadjust and adjustByDelta reverse the transaction and book a replacement for the new amount, linked to it. Set externalId in the body to the adjusted transaction's own external id and the replacement inherits it: the external id is removed from the reversed transaction and points to the replacement afterwards. A full reversal (new amount 0) books no replacement and leaves the external id on the reversed transaction.\n\nundo, adjust and adjustByDelta on a transaction that is already reversed fail with 403 error.msg.wc.loan.transaction.already.undone. A command sent by numeric transaction id is not retried for that error: the same id stays reversed.",
         "operationId": "executeWorkingCapitalLoanTransactionCommandByLoanIdTransactionId",
         "parameters": [
           {
@@ -29403,14 +29425,16 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/CalendarRequest" } }
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CalendarCreateRequest" }
+            }
           }
         },
         "responses": {
           "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+                "schema": { "$ref": "#/components/schemas/CalendarCreateResponse" }
               }
             },
             "description": "default response"
@@ -29467,7 +29491,7 @@
           "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+                "schema": { "$ref": "#/components/schemas/CalendarDeleteResponse" }
               }
             },
             "description": "default response"
@@ -29521,12 +29545,18 @@
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } } },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CalendarUpdateRequest" }
+            }
+          }
+        },
         "responses": {
           "default": {
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CommandProcessingResult" }
+                "schema": { "$ref": "#/components/schemas/CalendarUpdateResponse" }
               }
             },
             "description": "default response"
@@ -30895,6 +30925,13 @@
           "percentage": { "type": "number", "format": "double" }
         }
       },
+      "AddressCreateResponse": {
+        "type": "object",
+        "properties": {
+          "clientId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
+        }
+      },
       "AddressData": {
         "type": "object",
         "properties": {
@@ -30933,6 +30970,13 @@
           "townVillage": { "type": "string" },
           "updatedBy": { "type": "string" },
           "updatedOn": { "type": "string", "format": "date" }
+        }
+      },
+      "AddressUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "clientId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "AdvancedMappingToExpenseAccountData": {
@@ -31325,6 +31369,59 @@
           "warning": { "type": "string", "example": "Accuracy Warning" }
         }
       },
+      "CalendarCreateRequest": {
+        "type": "object",
+        "properties": {
+          "dateFormat": { "type": "string" },
+          "description": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "duration": { "type": "integer", "format": "int32" },
+          "endDate": { "type": "string" },
+          "firstReminder": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "frequency": { "type": "integer", "format": "int32", "maximum": 4, "minimum": 1 },
+          "interval": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "locale": { "type": "string" },
+          "location": { "type": "string", "maxLength": 50, "minLength": 0 },
+          "meetingtime": { "type": "string" },
+          "remindById": { "type": "integer", "format": "int32", "maximum": 3, "minimum": 1 },
+          "repeating": { "type": "boolean" },
+          "repeatsOnDay": { "type": "integer", "format": "int32", "maximum": 7, "minimum": 1 },
+          "repeatsOnDayOfMonth": { "type": "integer", "format": "int32" },
+          "repeatsOnLastWeekdayOfMonth": { "type": "integer", "format": "int32" },
+          "repeatsOnNthDayOfMonth": { "type": "integer", "format": "int32" },
+          "secondReminder": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "startDate": { "type": "string", "minLength": 1 },
+          "timeFormat": { "type": "string" },
+          "title": { "type": "string", "maxLength": 50, "minLength": 0 },
+          "typeId": { "type": "integer", "format": "int32", "maximum": 4, "minimum": 1 }
+        },
+        "required": ["startDate", "title", "typeId"]
+      },
+      "CalendarCreateResponse": {
+        "type": "object",
+        "properties": {
+          "clientId": { "type": "integer", "format": "int64" },
+          "entityId": { "type": "integer", "format": "int64" },
+          "entityType": { "type": "string" },
+          "groupId": { "type": "integer", "format": "int64" },
+          "loanId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
+        }
+      },
       "CalendarData": {
         "type": "object",
         "properties": {
@@ -31394,18 +31491,49 @@
           "typeId": { "type": "string" }
         }
       },
-      "CalendarRequest": {
+      "CalendarDeleteResponse": {
+        "type": "object",
+        "properties": { "resourceId": { "type": "integer", "format": "int64" } }
+      },
+      "CalendarUpdateRequest": {
         "type": "object",
         "properties": {
           "dateFormat": { "type": "string" },
-          "frequency": { "type": "string" },
-          "interval": { "type": "string" },
+          "description": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "duration": { "type": "integer", "format": "int32" },
+          "endDate": { "type": "string" },
+          "firstReminder": { "type": "integer", "format": "int32" },
+          "frequency": { "type": "integer", "format": "int32", "maximum": 4, "minimum": 1 },
+          "interval": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
           "locale": { "type": "string" },
-          "repeating": { "type": "string" },
-          "repeatsOnDay": { "type": "string" },
+          "location": { "type": "string", "maxLength": 50, "minLength": 0 },
+          "meetingtime": { "type": "string" },
+          "newMeetingDate": { "type": "string" },
+          "presentMeetingDate": { "type": "string" },
+          "remindById": { "type": "integer", "format": "int32", "maximum": 3, "minimum": 1 },
+          "repeating": { "type": "boolean" },
+          "repeatsOnDay": { "type": "integer", "format": "int32", "maximum": 7, "minimum": 1 },
+          "repeatsOnDayOfMonth": { "type": "integer", "format": "int32" },
+          "repeatsOnLastWeekdayOfMonth": { "type": "integer", "format": "int32" },
+          "repeatsOnNthDayOfMonth": { "type": "integer", "format": "int32" },
+          "reschedulebasedOnMeetingDates": { "type": "boolean" },
+          "secondReminder": { "type": "integer", "format": "int32" },
           "startDate": { "type": "string" },
-          "title": { "type": "string" },
-          "typeId": { "type": "string" }
+          "timeFormat": { "type": "string" },
+          "title": { "type": "string", "maxLength": 50, "minLength": 0 },
+          "typeId": { "type": "integer", "format": "int32", "maximum": 4, "minimum": 1 }
+        }
+      },
+      "CalendarUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "changes": { "type": "object", "additionalProperties": { "type": "object" } },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "CampaignPreviewData": {
@@ -31545,8 +31673,17 @@
           "allowedLoanChargeTime": { "type": "boolean" },
           "allowedSavingsChargeCalculationType": { "type": "boolean" },
           "allowedSavingsChargeTime": { "type": "boolean" },
+          "amortizationCalculationType": { "type": "string", "enum": ["FLAT", "EFFECTIVE_RATE"] },
+          "amortizationDays": { "type": "integer", "format": "int32" },
+          "amortizationIncomeType": { "type": "string", "enum": ["FEE", "INTEREST"] },
+          "amortizationPeriodType": {
+            "type": "string",
+            "enum": ["NONE", "FULL_LOAN_TERM", "NUMBER_OF_DAYS"]
+          },
+          "amortized": { "type": "boolean" },
           "amount": { "type": "number" },
           "annualFee": { "type": "boolean" },
+          "chargeAppliesTo": { "type": "integer", "format": "int32" },
           "chargeCalculation": { "type": "integer", "format": "int32" },
           "chargePaymentMode": { "type": "integer", "format": "int32" },
           "chargeTimeType": { "type": "integer", "format": "int32" },
@@ -31557,7 +31694,10 @@
           "downPaymentCharge": { "type": "boolean" },
           "enableFreeWithdrawal": { "type": "boolean" },
           "enablePaymentType": { "type": "boolean" },
+          "feeFrequency": { "type": "integer", "format": "int32" },
           "feeInterval": { "type": "integer", "format": "int32" },
+          "feeOnDay": { "type": "integer", "format": "int32" },
+          "feeOnMonth": { "type": "integer", "format": "int32" },
           "feeOnMonthDay": {
             "type": "object",
             "properties": {
@@ -31582,6 +31722,7 @@
               "monthValue": { "type": "integer", "format": "int32" }
             }
           },
+          "freeWithdrawalFrequency": { "type": "integer", "format": "int32" },
           "frequencyFreeWithdrawalCharge": { "type": "integer", "format": "int32" },
           "id": { "type": "integer", "format": "int64" },
           "incomeAccountId": { "type": "integer", "format": "int64" },
@@ -31593,6 +31734,7 @@
           "new": { "type": "boolean" },
           "overdueInstallment": { "type": "boolean" },
           "paymentType": { "$ref": "#/components/schemas/PaymentType" },
+          "paymentTypeId": { "type": "integer", "format": "int64" },
           "penalty": { "type": "boolean" },
           "percentageOfApprovedAmount": { "type": "boolean" },
           "percentageOfDisbursementAmount": { "type": "boolean" },
@@ -31600,14 +31742,104 @@
           "restartFrequencyEnum": { "type": "integer", "format": "int32" },
           "savingsCharge": { "type": "boolean" },
           "taxGroup": { "$ref": "#/components/schemas/TaxGroup" },
+          "taxGroupId": { "type": "integer", "format": "int64" },
           "workingCapitalLoanCharge": { "type": "boolean" }
         }
+      },
+      "ChargeCreateRequest": {
+        "type": "object",
+        "properties": {
+          "active": { "type": "boolean" },
+          "amortizationCalculationType": { "type": "string" },
+          "amortizationDays": { "type": "integer", "format": "int32" },
+          "amortizationIncomeType": { "type": "string" },
+          "amortizationPeriodType": { "type": "string" },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "chargeAppliesTo": { "type": "integer", "format": "int32" },
+          "chargeCalculationType": { "type": "integer", "format": "int32" },
+          "chargePaymentMode": { "type": "integer", "format": "int32" },
+          "chargeTimeType": { "type": "integer", "format": "int32" },
+          "countFrequencyType": { "type": "integer", "format": "int32" },
+          "currencyCode": { "type": "string", "maxLength": 3, "minLength": 0 },
+          "enableFreeWithdrawalCharge": { "type": "boolean" },
+          "enablePaymentType": { "type": "boolean" },
+          "feeFrequency": { "type": "integer", "format": "int32", "maximum": 3, "minimum": 0 },
+          "feeInterval": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "feeOnMonthDay": { "type": "string" },
+          "freeWithdrawalFrequency": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "incomeAccountId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "locale": { "type": "string" },
+          "maxCap": { "type": "number", "exclusiveMinimum": true, "minimum": 0 },
+          "minCap": { "type": "number", "exclusiveMinimum": true, "minimum": 0 },
+          "monthDayFormat": { "type": "string" },
+          "name": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "paymentTypeId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "penalty": { "type": "boolean" },
+          "restartCountFrequency": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "taxGroupId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          }
+        },
+        "required": ["amount", "chargeAppliesTo", "chargeCalculationType", "currencyCode", "name"]
+      },
+      "ChargeCreateResponse": {
+        "type": "object",
+        "properties": { "resourceId": { "type": "integer", "format": "int64" } }
       },
       "ChargeData": {
         "type": "object",
         "properties": {
           "accountMappingForChargeConfig": { "type": "string" },
           "active": { "type": "boolean" },
+          "amortizationCalculationType": { "$ref": "#/components/schemas/StringEnumOptionData" },
+          "amortizationCalculationTypeOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
+          "amortizationDays": { "type": "integer", "format": "int32" },
+          "amortizationIncomeType": { "$ref": "#/components/schemas/StringEnumOptionData" },
+          "amortizationIncomeTypeOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
+          "amortizationPeriodType": { "$ref": "#/components/schemas/StringEnumOptionData" },
+          "amortizationPeriodTypeOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "amount": { "type": "number" },
           "assetAccountOptions": {
             "type": "array",
@@ -31712,36 +31944,100 @@
           }
         }
       },
-      "ChargeRequest": {
+      "ChargeDeleteResponse": {
         "type": "object",
-        "properties": {
-          "active": { "type": "boolean" },
-          "amount": { "type": "number", "format": "double" },
-          "chargeAppliesTo": { "type": "integer", "format": "int32" },
-          "chargeCalculationType": { "type": "integer", "format": "int32" },
-          "chargePaymentMode": { "type": "integer", "format": "int32" },
-          "chargeTimeType": { "type": "integer", "format": "int32" },
-          "currencyCode": { "type": "string" },
-          "enablePaymentType": { "type": "boolean" },
-          "feeFrequency": { "type": "string" },
-          "feeInterval": { "type": "string" },
-          "feeOnMonthDay": { "type": "string" },
-          "incomeAccountId": { "type": "integer", "format": "int64" },
-          "locale": { "type": "string" },
-          "maxCap": { "type": "number" },
-          "minCap": { "type": "number" },
-          "monthDayFormat": { "type": "string" },
-          "name": { "type": "string" },
-          "paymentTypeId": { "type": "integer", "format": "int64" },
-          "penalty": { "type": "boolean" },
-          "taxGroupId": { "type": "integer", "format": "int64" }
-        }
+        "properties": { "resourceId": { "type": "integer", "format": "int64" } }
       },
       "ChargeToGLAccountMapper": {
         "type": "object",
         "properties": {
           "charge": { "$ref": "#/components/schemas/ChargeData" },
           "incomeAccount": { "$ref": "#/components/schemas/GLAccountData" }
+        }
+      },
+      "ChargeUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "active": { "type": "boolean" },
+          "amortizationCalculationType": { "type": "string" },
+          "amortizationDays": { "type": "integer", "format": "int32" },
+          "amortizationIncomeType": { "type": "string" },
+          "amortizationPeriodType": { "type": "string" },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "chargeAppliesTo": { "type": "integer", "format": "int32" },
+          "chargeCalculationType": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 5,
+            "minimum": 1
+          },
+          "chargePaymentMode": { "type": "integer", "format": "int32", "maximum": 1, "minimum": 0 },
+          "chargeTimeType": { "type": "integer", "format": "int32" },
+          "countFrequencyType": { "type": "integer", "format": "int32" },
+          "currencyCode": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 0,
+            "pattern": ".*\\S.*"
+          },
+          "enableFreeWithdrawalCharge": { "type": "boolean" },
+          "enablePaymentType": { "type": "boolean" },
+          "feeFrequency": { "type": "integer", "format": "int32", "maximum": 3, "minimum": 0 },
+          "feeInterval": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "feeOnMonthDay": { "type": "string" },
+          "freeWithdrawalFrequency": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "incomeAccountId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "locale": { "type": "string" },
+          "maxCap": { "type": "number", "exclusiveMinimum": true, "minimum": 0 },
+          "minCap": { "type": "number", "exclusiveMinimum": true, "minimum": 0 },
+          "monthDayFormat": { "type": "string" },
+          "name": { "type": "string", "maxLength": 100, "minLength": 0, "pattern": ".*\\S.*" },
+          "paymentTypeId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "penalty": { "type": "boolean" },
+          "restartCountFrequency": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "taxGroupId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          }
+        }
+      },
+      "ChargeUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "changes": { "type": "object", "additionalProperties": { "type": "object" } },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "ClassificationToGLAccountData": {
@@ -32005,28 +32301,6 @@
           "timeline": { "$ref": "#/components/schemas/ClientTimelineData" },
           "transferToOfficeId": { "type": "integer", "format": "int64" },
           "transferToOfficeName": { "type": "string" }
-        }
-      },
-      "ClientFamilyMemberRequest": {
-        "type": "object",
-        "properties": {
-          "age": { "type": "integer", "format": "int64" },
-          "clientId": { "type": "integer", "format": "int64" },
-          "dateFormat": { "type": "string" },
-          "dateOfBirth": { "type": "string" },
-          "familyMembers": { "type": "string" },
-          "firstName": { "type": "string" },
-          "genderId": { "type": "integer", "format": "int64" },
-          "id": { "type": "integer", "format": "int64" },
-          "isDependent": { "type": "boolean" },
-          "lastName": { "type": "string" },
-          "locale": { "type": "string" },
-          "maritalStatusId": { "type": "integer", "format": "int64" },
-          "middleName": { "type": "string" },
-          "mobileNumber": { "type": "string" },
-          "professionId": { "type": "integer", "format": "int64" },
-          "qualification": { "type": "string" },
-          "relationshipId": { "type": "integer", "format": "int64" }
         }
       },
       "ClientFamilyMembersData": {
@@ -32478,6 +32752,14 @@
         "type": "object",
         "properties": { "registeredTableName": { "type": "string" } }
       },
+      "DatatableEntry": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "object", "additionalProperties": { "type": "object" } },
+          "registeredTableName": { "type": "string", "minLength": 1 }
+        },
+        "required": ["registeredTableName"]
+      },
       "DateParam": { "type": "object" },
       "DeleteAccountNumberFormatsResponse": {
         "type": "object",
@@ -32498,11 +32780,6 @@
         }
       },
       "DeleteCentersChanges": { "type": "object" },
-      "DeleteChargesChargeIdResponse": {
-        "type": "object",
-        "description": "DeleteChargesChargeIdResponse",
-        "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 1 } }
-      },
       "DeleteClientsClientIdChargesChargeIdResponse": {
         "type": "object",
         "description": "DeleteClientsClientIdChargesChargeIdResponse",
@@ -32618,15 +32895,6 @@
         "properties": {
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
           "resourceId": { "type": "integer", "format": "int64", "example": 9 }
-        }
-      },
-      "DeleteGroupsGroupIdResponse": {
-        "type": "object",
-        "description": "DeleteGroupsGroupIdResponse",
-        "properties": {
-          "groupId": { "type": "integer", "format": "int64", "example": 2 },
-          "officeId": { "type": "integer", "format": "int64", "example": 1 },
-          "resourceId": { "type": "integer", "format": "int64", "example": 2 }
         }
       },
       "DeleteHolidaysHolidayIdResponse": {
@@ -33124,17 +33392,6 @@
           "value": { "type": "string", "example": "ASSET" }
         }
       },
-      "ExecuteJobRequest": {
-        "type": "object",
-        "description": "ExecuteJobRequest",
-        "properties": {
-          "jobParameters": {
-            "type": "array",
-            "example": "Update loan Summary",
-            "items": { "$ref": "#/components/schemas/JobParameterDTO" }
-          }
-        }
-      },
       "ExecuteWorkingCapitalLoanTransactionCommandRequest": {
         "type": "object",
         "description": "Request for transaction command executed on a transaction named in the path: undo, adjust, adjustByDelta, discountFee or discountFeeAdjustment. For command=undo use only note and reversalExternalId. For command=adjust and command=adjustByDelta dateFormat / locale / transactionDate / transactionAmount / classificationId / note / reversalExternalId / externalId / paymentDetails are accepted.",
@@ -33148,7 +33405,7 @@
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
           "externalId": {
             "type": "string",
-            "description": "Optional external id for the created transaction. For command=adjust and command=adjustByDelta this is the id of the replacement, when there is one (same as term-loan adjust). The reversed transaction keeps its original external id. If omitted and auto-generation is enabled, a new id is generated for the replacement.",
+            "description": "Optional external id for the created transaction. For command=adjust and command=adjustByDelta this is the id of the replacement, when there is one (same as term-loan adjust). If omitted and auto-generation is enabled, a new id is generated for the replacement. Inheritance (command=adjust, adjustByDelta): set it to the external id of the transaction being adjusted and that external id moves to the replacement - it is removed from the reversed transaction, so the external id keeps pointing to the live transaction and the next adjustment can be sent against it again. A full reversal (new amount 0) has no replacement, so the external id stays on the reversed transaction. Any other value leaves the reversed transaction's external id where it is and must be unique (already.exists otherwise).",
             "example": "replacement-ext-001"
           },
           "locale": { "type": "string", "example": "en_GB" },
@@ -33179,7 +33436,12 @@
         "properties": {
           "changes": {
             "type": "object",
-            "additionalProperties": { "type": "object", "example": {} },
+            "additionalProperties": {
+              "type": "object",
+              "description": "For command=adjust and adjustByDelta with a replacement, adjustedTransaction describes the reversed transaction (id included) and externalIdInherited tells whether its external id moved to the replacement",
+              "example": {}
+            },
+            "description": "For command=adjust and adjustByDelta with a replacement, adjustedTransaction describes the reversed transaction (id included) and externalIdInherited tells whether its external id moved to the replacement",
             "example": {}
           },
           "clientId": { "type": "integer", "format": "int64", "example": 2 },
@@ -33187,7 +33449,22 @@
           "loanId": { "type": "integer", "format": "int64", "example": 3 },
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
           "resourceExternalId": { "type": "string", "example": "repayment-ext-001" },
-          "resourceId": { "type": "integer", "format": "int64", "example": 4 }
+          "resourceId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "For command=adjust and adjustByDelta: the replacement transaction, or the reversed transaction when the adjustment reversed it in full",
+            "example": 4
+          },
+          "subResourceExternalId": {
+            "type": "string",
+            "description": "External id of subResourceId after the adjustment: empty when the replacement inherited it"
+          },
+          "subResourceId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "For command=adjust and adjustByDelta with a replacement: the transaction that was actually reversed. When the command was sent by transaction external id, this is the transaction that external id pointed to when the command ran, which may be a later replacement than the one it pointed to when the request was sent",
+            "example": 3
+          }
         }
       },
       "ExtensionData": {
@@ -33396,6 +33673,92 @@
         "properties": {
           "externalId": { "type": "string" },
           "id": { "type": "integer", "format": "int64" }
+        }
+      },
+      "FamilyMemberCreateRequest": {
+        "type": "object",
+        "properties": {
+          "age": { "type": "integer", "format": "int64", "minimum": 0 },
+          "dateFormat": { "type": "string" },
+          "dateOfBirth": { "type": "string" },
+          "firstName": { "type": "string", "minLength": 1 },
+          "genderId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "isDependent": { "type": "boolean" },
+          "lastName": { "type": "string" },
+          "locale": { "type": "string" },
+          "maritalStatusId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "middleName": { "type": "string" },
+          "mobileNumber": { "type": "string" },
+          "professionId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "qualification": { "type": "string" },
+          "relationshipId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          }
+        },
+        "required": ["firstName", "relationshipId"]
+      },
+      "FamilyMemberCreateResponse": {
+        "type": "object",
+        "properties": {
+          "clientId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
+        }
+      },
+      "FamilyMemberDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "clientId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
+        }
+      },
+      "FamilyMemberUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "age": { "type": "integer", "format": "int64", "minimum": 0 },
+          "dateFormat": { "type": "string" },
+          "dateOfBirth": { "type": "string" },
+          "firstName": { "type": "string" },
+          "genderId": { "type": "integer", "format": "int64", "minimum": 0 },
+          "isDependent": { "type": "boolean" },
+          "lastName": { "type": "string" },
+          "locale": { "type": "string" },
+          "maritalStatusId": { "type": "integer", "format": "int64", "minimum": 0 },
+          "middleName": { "type": "string" },
+          "mobileNumber": { "type": "string" },
+          "professionId": { "type": "integer", "format": "int64", "minimum": 0 },
+          "qualification": { "type": "string" },
+          "relationshipId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          }
+        }
+      },
+      "FamilyMemberUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "changes": { "type": "object", "additionalProperties": { "type": "object" } },
+          "clientId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "FieldConfigurationData": {
@@ -33639,6 +34002,7 @@
       "Fund": {
         "type": "object",
         "properties": {
+          "externalId": { "type": "string" },
           "id": { "type": "integer", "format": "int64" },
           "name": { "type": "string" },
           "new": { "type": "boolean" }
@@ -34801,22 +35165,6 @@
           "id": { "type": "integer", "format": "int32", "example": 1 }
         }
       },
-      "GetChargesAppliesToResponse": {
-        "type": "object",
-        "properties": {
-          "code": { "type": "string", "example": "chargeAppliesTo.loan" },
-          "description": { "type": "string", "example": "Loan" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
-      "GetChargesCalculationTypeResponse": {
-        "type": "object",
-        "properties": {
-          "code": { "type": "string", "example": "chargeCalculationType.flat" },
-          "description": { "type": "string", "example": "Flat" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
       "GetChargesChargeCalculationType": {
         "type": "object",
         "properties": {
@@ -34853,59 +35201,6 @@
           "displaySymbol": { "type": "string", "example": "$" },
           "name": { "type": "string", "example": "US Dollar" },
           "nameCode": { "type": "string", "example": "currency.USD" }
-        }
-      },
-      "GetChargesFeeFrequencyResponse": {
-        "type": "object",
-        "properties": {
-          "code": { "type": "string", "example": "periodFrequencyType.months" },
-          "id": { "type": "integer", "format": "int64", "example": 2 },
-          "value": { "type": "string", "example": "Monthly" }
-        }
-      },
-      "GetChargesPaymentModeResponse": {
-        "type": "object",
-        "properties": {
-          "code": { "type": "string", "example": "chargepaymentmode.accounttransfer" },
-          "description": { "type": "string", "example": "Account Transfer" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
-      "GetChargesResponse": {
-        "type": "object",
-        "description": "GetChargesResponse",
-        "properties": {
-          "active": { "type": "boolean", "example": true },
-          "amount": { "type": "number", "format": "double", "example": 230.56 },
-          "chargeAppliesTo": { "$ref": "#/components/schemas/GetChargesAppliesToResponse" },
-          "chargeCalculationType": {
-            "$ref": "#/components/schemas/GetChargesCalculationTypeResponse"
-          },
-          "chargePaymentMode": { "$ref": "#/components/schemas/GetChargesPaymentModeResponse" },
-          "chargeTimeType": { "$ref": "#/components/schemas/GetChargesTimeTypeResponse" },
-          "currency": { "$ref": "#/components/schemas/GetChargesCurrencyResponse" },
-          "feeFrequency": { "$ref": "#/components/schemas/GetChargesFeeFrequencyResponse" },
-          "id": { "type": "integer", "format": "int64", "example": 1 },
-          "maxCap": { "type": "number" },
-          "minCap": { "type": "number" },
-          "name": { "type": "string", "example": "Loan Service fee" },
-          "penalty": { "type": "boolean", "example": false },
-          "taxGroup": { "$ref": "#/components/schemas/GetChargesTaxGroup" }
-        }
-      },
-      "GetChargesTaxGroup": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer", "format": "int64", "example": 1 },
-          "name": { "type": "string", "example": "tax" }
-        }
-      },
-      "GetChargesTimeTypeResponse": {
-        "type": "object",
-        "properties": {
-          "code": { "type": "string", "example": "chargeTimeType.disbursement" },
-          "description": { "type": "string", "example": "Disbursement" },
-          "id": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
       "GetClassificationToIncomeAccountMappings": {
@@ -35651,6 +35946,13 @@
         "properties": {
           "financialActivityData": { "$ref": "#/components/schemas/FinancialActivityData" },
           "glAccountData": { "$ref": "#/components/schemas/GLAccountData" },
+          "glAccountOptions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/GLAccountData" }
+            }
+          },
           "id": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
@@ -36255,6 +36557,13 @@
         "type": "object",
         "description": "GetFixedDepositProductsProductIdResponse",
         "properties": {
+          "accountingMappingOptions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/GLAccountData" }
+            }
+          },
           "accountingMappings": {
             "$ref": "#/components/schemas/GetFixedDepositProductsProductIdAccountingMappings"
           },
@@ -36444,10 +36753,30 @@
         "type": "object",
         "description": "GetGLAccountsResponse",
         "properties": {
+          "assetHeaderAccountOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
+          },
           "description": { "type": "string", "example": "Desc" },
           "disabled": { "type": "boolean", "example": false },
+          "equityHeaderAccountOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
+          },
+          "expenseHeaderAccountOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
+          },
           "glCode": { "type": "string", "example": "100001" },
           "id": { "type": "integer", "format": "int64", "example": 16 },
+          "incomeHeaderAccountOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
+          },
+          "liabilityHeaderAccountOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
+          },
           "manualEntriesAllowed": { "type": "boolean", "example": true },
           "name": { "type": "string", "example": "Cash" },
           "nameDecorated": { "type": "string", "example": "....Cash" },
@@ -36499,6 +36828,10 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/GLAccountData" }
           },
+          "incomeHeaderAccountOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
+          },
           "liabilityHeaderAccountOptions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/GLAccountData" }
@@ -36524,6 +36857,10 @@
         "type": "object",
         "description": "GetGLClosureResponse",
         "properties": {
+          "allowedOffices": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OfficeData" }
+          },
           "closingDate": { "type": "string", "format": "date", "example": "2013-01-02" },
           "comments": { "type": "string", "example": "closed" },
           "createdByUserId": { "type": "integer", "format": "int64", "example": 1 },
@@ -36769,6 +37106,7 @@
       "GetGroupsPageItems": {
         "type": "object",
         "properties": {
+          "accountNo": { "type": "string", "example": "000000004" },
           "active": { "type": "boolean", "example": false },
           "externalId": { "type": "string", "example": "000-1A" },
           "hierarchy": { "type": "string", "example": ".4." },
@@ -37197,6 +37535,10 @@
             "items": { "$ref": "#/components/schemas/GetLoanProductsAssetAccountOptions" },
             "uniqueItems": true
           },
+          "equityAccountOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
+          },
           "expenseAccountOptions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/GetLoanProductsExpenseAccountOptions" },
@@ -37563,6 +37905,13 @@
         "type": "object",
         "description": "GetLoanProductsProductIdResponse",
         "properties": {
+          "accountingMappingOptions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/GLAccountData" }
+            }
+          },
           "accountingMappings": { "$ref": "#/components/schemas/GetLoanAccountingMappings" },
           "accountingRule": { "$ref": "#/components/schemas/GetLoanProductsAccountingRule" },
           "allowApprovedDisbursedAmountsOverApplied": { "type": "boolean", "example": true },
@@ -37660,6 +38009,7 @@
           "enableAccrualActivityPosting": { "type": "boolean", "example": false },
           "enableAutoRepaymentForDownPayment": { "type": "boolean", "example": false },
           "enableBuyDownFee": { "type": "boolean", "example": false },
+          "enableChargeAmortization": { "type": "boolean", "example": false },
           "enableDownPayment": { "type": "boolean", "example": false },
           "enableIncomeCapitalization": { "type": "boolean", "example": false },
           "enableInstallmentLevelDelinquency": { "type": "boolean", "example": false },
@@ -37849,6 +38199,7 @@
           },
           "daysInYearType": { "$ref": "#/components/schemas/GetLoanProductsDaysInYearType" },
           "enableBuyDownFee": { "type": "boolean", "example": false },
+          "enableChargeAmortization": { "type": "boolean", "example": false },
           "enableIncomeCapitalization": { "type": "boolean", "example": false },
           "endDate": { "type": "string", "format": "date" },
           "firstRepaymentDayOfMonth": {
@@ -38057,9 +38408,16 @@
             "uniqueItems": true
           },
           "daysInYearCustomStrategy": { "$ref": "#/components/schemas/StringEnumOptionData" },
+          "daysInYearCustomStrategyOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" },
+            "uniqueItems": true
+          },
           "daysInYearType": { "$ref": "#/components/schemas/GetLoanProductsDaysInYearType" },
           "daysInYearTypeCustomStrategyOptions": {
             "type": "array",
+            "deprecated": true,
+            "description": "Never returned by the API; use daysInYearCustomStrategyOptions",
             "items": { "$ref": "#/components/schemas/StringEnumOptionData" },
             "uniqueItems": true
           },
@@ -38069,6 +38427,7 @@
             "uniqueItems": true
           },
           "enableBuyDownFee": { "type": "boolean", "example": false },
+          "enableChargeAmortization": { "type": "boolean", "example": false },
           "enableIncomeCapitalization": { "type": "boolean", "example": false },
           "includeInBorrowerCycle": { "type": "boolean", "example": false },
           "interestCalculationPeriodType": {
@@ -38916,6 +39275,7 @@
             "items": { "$ref": "#/components/schemas/GetLoansLoanIdCollateralData" }
           },
           "currency": { "$ref": "#/components/schemas/GetLoansLoanIdCurrency" },
+          "daysInYearCustomStrategy": { "$ref": "#/components/schemas/StringEnumOptionData" },
           "delinquencyRange": { "$ref": "#/components/schemas/DelinquencyRangeData" },
           "delinquent": { "$ref": "#/components/schemas/GetLoansLoanIdDelinquencySummary" },
           "disallowExpectedDisbursements": { "type": "boolean", "example": false },
@@ -39383,6 +39743,10 @@
           "clientId": { "type": "integer", "format": "int64", "example": 1 },
           "clientName": { "type": "string", "example": "Kampala first Client" },
           "clientOfficeId": { "type": "integer", "format": "int64", "example": 2 },
+          "daysInYearCustomStrategyOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StringEnumOptionData" }
+          },
           "productOptions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/GetLoansTemplateProductOptions" },
@@ -39451,6 +39815,12 @@
           "actorId": { "type": "integer", "format": "int64", "example": 1 },
           "content": { "type": "string", "example": "a" },
           "createdAt": { "type": "string", "example": "a" },
+          "createdAtTenant": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation time in the tenant time zone, with offset",
+            "example": "2026-01-15T15:36:19.900905+05:30"
+          },
           "id": { "type": "integer", "format": "int64", "example": 1 },
           "isRead": { "type": "boolean", "example": true },
           "isSystemGenerated": { "type": "boolean", "example": true },
@@ -39903,6 +40273,10 @@
           "definitions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ProvisioningCriteriaDefinitionData" }
+          },
+          "glAccounts": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
           },
           "loanProducts": {
             "type": "array",
@@ -40571,6 +40945,13 @@
         "type": "object",
         "description": "GetRecurringDepositProductsProductIdResponse",
         "properties": {
+          "accountingMappingOptions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/GLAccountData" }
+            }
+          },
           "accountingMappings": {
             "$ref": "#/components/schemas/GetRecurringDepositProductsProductIdAccountingMappings"
           },
@@ -41216,6 +41597,10 @@
             "items": { "$ref": "#/components/schemas/GetSavingsProductsAssetAccountOptions" },
             "uniqueItems": true
           },
+          "equityAccountOptions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GLAccountData" }
+          },
           "expenseAccountOptions": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/GetSavingsProductsExpenseAccountOptions" },
@@ -41534,6 +41919,13 @@
         "type": "object",
         "description": "GetSavingsProductsProductIdResponse",
         "properties": {
+          "accountingMappingOptions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/GLAccountData" }
+            }
+          },
           "accountingMappings": {
             "$ref": "#/components/schemas/GetSavingsProductsAccountingMappings"
           },
@@ -42680,6 +43072,13 @@
         "type": "object",
         "description": "GetWorkingCapitalLoanProductsProductIdResponse",
         "properties": {
+          "accountingMappingOptions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/GLAccountData" }
+            }
+          },
           "accountingMappings": {
             "type": "object",
             "additionalProperties": { "$ref": "#/components/schemas/GLAccountData" }
@@ -42894,7 +43293,10 @@
         "properties": {
           "accountingMappingOptions": {
             "type": "object",
-            "additionalProperties": { "type": "object" }
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/GLAccountData" }
+            }
           },
           "accountingRuleOptions": {
             "type": "array",
@@ -43516,6 +43918,58 @@
           "transferOnHold": { "type": "boolean" }
         }
       },
+      "GroupCreateRequest": {
+        "type": "object",
+        "properties": {
+          "accountNo": { "type": "string", "maxLength": 20, "minLength": 0 },
+          "activationDate": { "type": "string" },
+          "active": { "type": "boolean" },
+          "centerId": { "type": "integer", "format": "int64" },
+          "clientMembers": {
+            "type": "array",
+            "items": { "type": "integer", "format": "int64" },
+            "uniqueItems": true
+          },
+          "datatables": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DatatableEntry" }
+          },
+          "dateFormat": { "type": "string" },
+          "externalId": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "locale": { "type": "string" },
+          "name": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "officeId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "staffId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "submittedOnDate": { "type": "string" }
+        },
+        "required": ["active", "name", "officeId"]
+      },
+      "GroupCreateResponse": {
+        "type": "object",
+        "properties": {
+          "groupId": { "type": "integer", "format": "int64" },
+          "officeId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
+        }
+      },
+      "GroupDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "groupId": { "type": "integer", "format": "int64" },
+          "officeId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
+        }
+      },
       "GroupGeneralData": {
         "type": "object",
         "properties": {
@@ -43619,8 +44073,10 @@
       "GroupRole": {
         "type": "object",
         "properties": {
+          "client": { "$ref": "#/components/schemas/Client" },
           "id": { "type": "integer", "format": "int64" },
-          "new": { "type": "boolean" }
+          "new": { "type": "boolean" },
+          "role": { "$ref": "#/components/schemas/CodeValue" }
         }
       },
       "GroupRoleData": {
@@ -43633,6 +44089,36 @@
         }
       },
       "GroupTimelineData": { "type": "object" },
+      "GroupUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "activationDate": { "type": "string" },
+          "active": { "type": "boolean" },
+          "centerId": { "type": "integer", "format": "int64" },
+          "dateFormat": { "type": "string" },
+          "externalId": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "groupId": { "type": "integer", "format": "int64" },
+          "locale": { "type": "string" },
+          "name": { "type": "string", "maxLength": 100, "minLength": 0 },
+          "staffId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "submittedOnDate": { "type": "string" }
+        },
+        "required": ["name"]
+      },
+      "GroupUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "changes": { "type": "object", "additionalProperties": { "type": "object" } },
+          "groupId": { "type": "integer", "format": "int64" },
+          "officeId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
+        }
+      },
       "GuarantorData": {
         "type": "object",
         "properties": {
@@ -43895,7 +44381,8 @@
         "type": "object",
         "description": "InlineJobRequest",
         "properties": {
-          "loanIds": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          "loanIds": { "type": "array", "items": { "type": "integer", "format": "int64" } },
+          "savingsIds": { "type": "array", "items": { "type": "integer", "format": "int64" } }
         }
       },
       "InlineJobResponse": {
@@ -44619,12 +45106,40 @@
           "version": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
+      "JobExecuteRequest": {
+        "type": "object",
+        "properties": {
+          "jobParameters": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/JobParameterDTO" }
+          }
+        }
+      },
+      "JobExecuteResponse": {
+        "type": "object",
+        "properties": { "resourceId": { "type": "integer", "format": "int64" } }
+      },
       "JobParameterDTO": {
         "type": "object",
-        "example": "Update loan Summary",
         "properties": {
           "parameterName": { "type": "string" },
           "parameterValue": { "type": "string" }
+        }
+      },
+      "JobUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "active": { "type": "boolean" },
+          "cronExpression": { "type": "string" },
+          "displayName": { "type": "string" },
+          "jobId": { "type": "integer", "format": "int64" }
+        }
+      },
+      "JobUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "changes": { "type": "object", "additionalProperties": { "type": "object" } },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "JournalEntryCommand": {
@@ -44741,14 +45256,24 @@
           "loanId": { "type": "integer", "format": "int64" },
           "lockOwner": {
             "type": "string",
-            "enum": ["LOAN_COB_CHUNK_PROCESSING", "LOAN_INLINE_COB_PROCESSING"]
+            "enum": [
+              "LOAN_COB_CHUNK_PROCESSING",
+              "LOAN_INLINE_COB_PROCESSING",
+              "SAVINGS_COB_CHUNK_PROCESSING",
+              "SAVINGS_INLINE_COB_PROCESSING"
+            ]
           },
           "lockPlacedOn": { "type": "string", "format": "date-time" },
           "lockPlacedOnCobBusinessDate": { "type": "string", "format": "date" },
           "new": { "type": "boolean" },
           "newLockOwner": {
             "type": "string",
-            "enum": ["LOAN_COB_CHUNK_PROCESSING", "LOAN_INLINE_COB_PROCESSING"],
+            "enum": [
+              "LOAN_COB_CHUNK_PROCESSING",
+              "LOAN_INLINE_COB_PROCESSING",
+              "SAVINGS_COB_CHUNK_PROCESSING",
+              "SAVINGS_INLINE_COB_PROCESSING"
+            ],
             "writeOnly": true
           },
           "stacktrace": { "type": "string" },
@@ -45338,6 +45863,7 @@
           "enableAccrualActivityPosting": { "type": "boolean" },
           "enableAutoRepaymentForDownPayment": { "type": "boolean" },
           "enableBuyDownFee": { "type": "boolean" },
+          "enableChargeAmortization": { "type": "boolean" },
           "enableDownPayment": { "type": "boolean" },
           "enableIncomeCapitalization": { "type": "boolean" },
           "enableInstallmentLevelDelinquency": { "type": "boolean" },
@@ -45784,6 +46310,7 @@
           "enableAccrualActivityPosting": { "type": "boolean" },
           "enableAutoRepaymentForDownPayment": { "type": "boolean" },
           "enableBuyDownFee": { "type": "boolean" },
+          "enableChargeAmortization": { "type": "boolean" },
           "enableDownPayment": { "type": "boolean" },
           "enableIncomeCapitalization": { "type": "boolean" },
           "equalAmortization": { "type": "boolean" },
@@ -47160,22 +47687,12 @@
           "expenseAccountId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
-      "PostChargesResponse": {
-        "type": "object",
-        "description": "PostChargesResponse",
-        "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 1 } }
-      },
       "PostClassificationToIncomeAccountMappings": {
         "type": "object",
         "properties": {
           "classificationCodeValueId": { "type": "integer", "format": "int64", "example": 1 },
           "incomeAccountId": { "type": "integer", "format": "int64", "example": 1 }
         }
-      },
-      "PostClientClientIdAddressesResponse": {
-        "type": "object",
-        "description": "PostClientClientIdAddressesResponse",
-        "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 15 } }
       },
       "PostClientsClientIdChanges": {
         "type": "object",
@@ -47801,7 +48318,13 @@
           "preClosurePenalInterestOnTypeId": { "type": "integer", "format": "int32", "example": 1 },
           "productId": { "type": "integer", "format": "int64", "example": 1 },
           "submittedOnDate": { "type": "string", "example": "01 March 2014" },
-          "transferInterestToSavings": { "type": "boolean", "example": false }
+          "transferInterestToSavings": { "type": "boolean", "example": false },
+          "transferToSavingsId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Savings account credited at maturity; required when maturityInstructionId is 200 (transfer to savings)",
+            "example": 1
+          }
         }
       },
       "PostFixedDepositAccountsResponse": {
@@ -47949,21 +48472,6 @@
           "resourceId": { "type": "integer", "format": "int64", "example": 9 }
         }
       },
-      "PostGroupsDatatable": {
-        "type": "object",
-        "description": "Entries for the datatables registered against this entity",
-        "properties": {
-          "data": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "object",
-              "description": "The datatable columns and their values"
-            },
-            "description": "The datatable columns and their values"
-          },
-          "registeredTableName": { "type": "string", "example": "dt_registered_table" }
-        }
-      },
       "PostGroupsGroupIdChanges": {
         "type": "object",
         "properties": {
@@ -48034,34 +48542,6 @@
           "groupId": { "type": "integer", "format": "int64", "example": 1 },
           "officeId": { "type": "integer", "format": "int64", "example": 1 },
           "resourceId": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
-      "PostGroupsRequest": {
-        "type": "object",
-        "description": "PostGroupsRequest",
-        "properties": {
-          "activationDate": { "type": "string", "example": "04 March 2011" },
-          "active": { "type": "boolean", "example": false },
-          "datatables": {
-            "type": "array",
-            "description": "Entries for the datatables registered against this entity",
-            "items": { "$ref": "#/components/schemas/PostGroupsDatatable" }
-          },
-          "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
-          "externalId": { "type": "string", "example": "externalId1" },
-          "locale": { "type": "string", "example": "en" },
-          "name": { "type": "string", "example": "Pending Group" },
-          "officeId": { "type": "integer", "format": "int64", "example": 1 },
-          "submittedOnDate": { "type": "string", "example": "04 March 2011" }
-        }
-      },
-      "PostGroupsResponse": {
-        "type": "object",
-        "description": "PostGroupsResponse",
-        "properties": {
-          "groupId": { "type": "integer", "format": "int64", "example": 2 },
-          "officeId": { "type": "integer", "format": "int64", "example": 1 },
-          "resourceId": { "type": "integer", "format": "int64", "example": 2 }
         }
       },
       "PostHolidaysHolidayIdRequest": {
@@ -48267,6 +48747,7 @@
           "enableAccrualActivityPosting": { "type": "boolean", "example": false },
           "enableAutoRepaymentForDownPayment": { "type": "boolean", "example": false },
           "enableBuyDownFee": { "type": "boolean", "example": false },
+          "enableChargeAmortization": { "type": "boolean", "example": false },
           "enableDownPayment": { "type": "boolean", "example": false },
           "enableIncomeCapitalization": { "type": "boolean", "example": false },
           "enableInstallmentLevelDelinquency": { "type": "boolean", "example": false },
@@ -50293,14 +50774,6 @@
           "locale": { "type": "string", "example": "en" }
         }
       },
-      "PostStandingInstructionsResponse": {
-        "type": "object",
-        "description": "PostStandingInstructionsResponse",
-        "properties": {
-          "clientId": { "type": "integer", "format": "int64", "example": 1 },
-          "resourceId": { "type": "integer", "format": "int32", "example": 65 }
-        }
-      },
       "PostSurveySurveyNameApptableIdRequest": {
         "type": "object",
         "description": "PostSurveySurveyNameApptableIdRequest",
@@ -51671,48 +52144,6 @@
           "principalPortion": { "type": "number", "format": "double", "example": 10.0 }
         }
       },
-      "PutChargesChargeIdRequest": {
-        "type": "object",
-        "description": "PutChargesChargeIdRequest",
-        "properties": {
-          "active": { "type": "boolean", "example": true },
-          "amount": { "type": "number", "format": "double", "example": 230.56 },
-          "chargeAppliesTo": { "type": "integer", "format": "int32", "example": 1 },
-          "chargeCalculationType": { "type": "integer", "format": "int32", "example": 1 },
-          "chargePaymentMode": { "type": "integer", "format": "int32", "example": 1 },
-          "chargeTimeType": { "type": "integer", "format": "int32", "example": 1 },
-          "countFrequencyType": { "type": "integer", "format": "int32", "example": 1 },
-          "currencyCode": { "type": "string", "example": "USD" },
-          "enableFreeWithdrawalCharge": { "type": "boolean", "example": true },
-          "enablePaymentType": { "type": "boolean", "example": true },
-          "feeFrequency": { "type": "string", "example": "1" },
-          "feeInterval": { "type": "integer", "format": "int32", "example": 1 },
-          "feeOnMonthDay": { "type": "string", "example": "01 March" },
-          "freeWithdrawalFrequency": { "type": "integer", "format": "int32", "example": 1 },
-          "locale": { "type": "string", "example": "en" },
-          "maxCap": { "type": "number", "example": 120.0 },
-          "minCap": { "type": "number", "example": 10.0 },
-          "monthDayFormat": { "type": "string", "example": "dd MMMM" },
-          "name": { "type": "string", "example": "Loan service fee(changed)" },
-          "paymentTypeId": { "type": "integer", "format": "int64", "example": 1 },
-          "penalty": { "type": "boolean", "example": false },
-          "restartCountFrequency": { "type": "integer", "format": "int32", "example": 10 },
-          "taxGroupId": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
-      "PutChargesChargeIdResponse": {
-        "type": "object",
-        "description": "PutChargesChargeIdResponse",
-        "properties": {
-          "changes": { "$ref": "#/components/schemas/PutChargesChargeIdRequest" },
-          "resourceId": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
-      "PutClientClientIdAddressesResponse": {
-        "type": "object",
-        "description": "PutClientClientIdAddressesResponse",
-        "properties": { "resourceId": { "type": "integer", "format": "int64", "example": 67 } }
-      },
       "PutClientsClientIdIdentifiersIdentifierIdChanges": {
         "type": "object",
         "description": "PutClientsClientIdIdentifiersIdentifierIdChanges",
@@ -52155,33 +52586,6 @@
           "value": { "type": "integer", "format": "int64", "example": 2 }
         }
       },
-      "PutGroupsGroupIdChanges": {
-        "type": "object",
-        "properties": {
-          "externalId": { "type": "string", "example": "externalId1" },
-          "name": { "type": "string", "example": "First Group (changed)" },
-          "staffId": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
-      "PutGroupsGroupIdRequest": {
-        "type": "object",
-        "description": "PutGroupsGroupIdRequest",
-        "properties": {
-          "externalId": { "type": "string", "example": "externalId1" },
-          "name": { "type": "string", "example": "First Group (changed)" },
-          "staffId": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
-      "PutGroupsGroupIdResponse": {
-        "type": "object",
-        "description": "PutGroupsGroupIdResponse",
-        "properties": {
-          "changes": { "$ref": "#/components/schemas/PutGroupsGroupIdChanges" },
-          "groupId": { "type": "integer", "format": "int64", "example": 1 },
-          "officeId": { "type": "integer", "format": "int64", "example": 1 },
-          "resourceId": { "type": "integer", "format": "int64", "example": 1 }
-        }
-      },
       "PutHolidaysHolidayIdRequest": {
         "type": "object",
         "description": "PutHolidaysHolidayIdRequest",
@@ -52333,6 +52737,7 @@
           "enableAccrualActivityPosting": { "type": "boolean", "example": false },
           "enableAutoRepaymentForDownPayment": { "type": "boolean", "example": false },
           "enableBuyDownFee": { "type": "boolean", "example": false },
+          "enableChargeAmortization": { "type": "boolean", "example": false },
           "enableDownPayment": { "type": "boolean", "example": false },
           "enableIncomeCapitalization": { "type": "boolean", "example": false },
           "enableInstallmentLevelDelinquency": { "type": "boolean", "example": false },
@@ -52727,6 +53132,11 @@
           },
           "createStandingInstructionAtDisbursement": { "type": "boolean", "example": true },
           "dateFormat": { "type": "string", "example": "dd MMMM yyyy" },
+          "daysInYearCustomStrategy": {
+            "type": "string",
+            "enum": ["FULL_LEAP_YEAR", "FEB_29_PERIOD_ONLY"],
+            "example": "FULL_LEAP_YEAR"
+          },
           "disbursedAmountPercentageForDownPayment": { "type": "number", "example": 0.0 },
           "disbursementData": {
             "type": "array",
@@ -53276,14 +53686,6 @@
           "resourceId": { "type": "integer", "format": "int64", "example": 1 }
         }
       },
-      "PutStandingInstructionsStandingInstructionIdResponse": {
-        "type": "object",
-        "description": "PutStandingInstructionsStandingInstructionIdResponse",
-        "properties": {
-          "changes": { "$ref": "#/components/schemas/PutUpdateStandingInstructionChanges" },
-          "resourceId": { "type": "integer", "format": "int64", "example": 20 }
-        }
-      },
       "PutTaxesComponentsChanges": {
         "type": "object",
         "properties": {
@@ -53518,12 +53920,6 @@
         "description": "PutTwoFactorConfigurationResponse",
         "properties": {
           "changes": { "$ref": "#/components/schemas/PutTwoFactorConfigurationRequest" }
-        }
-      },
-      "PutUpdateStandingInstructionChanges": {
-        "type": "object",
-        "properties": {
-          "recurrenceInterval": { "type": "integer", "format": "int32", "example": 2 }
         }
       },
       "PutUsersUserIdRequest": {
@@ -54515,6 +54911,7 @@
           "externalId": { "$ref": "#/components/schemas/ExternalId" },
           "feeCharge": { "type": "boolean" },
           "feeChargeAndNotReversed": { "type": "boolean" },
+          "forceTransaction": { "type": "boolean" },
           "id": { "type": "integer", "format": "int64" },
           "interestPosting": { "type": "boolean" },
           "interestPostingAndNotReversed": { "type": "boolean" },
@@ -55047,53 +55444,132 @@
           "uploadedInputStream": { "type": "string", "format": "binary" }
         }
       },
+      "StandingInstructionCreateResponse": {
+        "type": "object",
+        "properties": {
+          "clientId": { "type": "integer", "format": "int64" },
+          "resourceId": { "type": "integer", "format": "int64" }
+        }
+      },
       "StandingInstructionCreationRequest": {
         "type": "object",
         "properties": {
           "allowPartialTransfer": { "type": "boolean" },
-          "amount": { "type": "string" },
+          "amount": { "type": "number", "exclusiveMinimum": true, "minimum": 0 },
           "dateFormat": { "type": "string" },
-          "fromAccountId": { "type": "string" },
-          "fromAccountType": { "type": "string" },
-          "fromClientId": { "type": "string" },
-          "fromOfficeId": { "type": "string" },
-          "instructionType": { "type": "string" },
+          "fromAccountId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "fromAccountType": { "type": "integer", "format": "int32", "maximum": 2, "minimum": 1 },
+          "fromClientId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "fromOfficeId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "instructionType": { "type": "integer", "format": "int32", "maximum": 2, "minimum": 1 },
           "locale": { "type": "string" },
           "monthDayFormat": { "type": "string" },
           "name": { "type": "string" },
-          "priority": { "type": "string" },
-          "recurrenceFrequency": { "type": "string" },
-          "recurrenceInterval": { "type": "string" },
+          "priority": { "type": "integer", "format": "int32", "maximum": 4, "minimum": 1 },
+          "recurrenceFrequency": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 3,
+            "minimum": 0
+          },
+          "recurrenceInterval": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
           "recurrenceOnMonthDay": { "type": "string" },
-          "recurrenceType": { "type": "string" },
-          "status": { "type": "string" },
-          "toAccountId": { "type": "string" },
-          "toAccountType": { "type": "string" },
-          "toClientId": { "type": "string" },
-          "toOfficeId": { "type": "string" },
-          "transferType": { "type": "string" },
+          "recurrenceType": { "type": "integer", "format": "int32", "maximum": 2, "minimum": 1 },
+          "status": { "type": "integer", "format": "int32", "maximum": 2, "minimum": 1 },
+          "toAccountId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "toAccountType": { "type": "integer", "format": "int32", "maximum": 2, "minimum": 1 },
+          "toClientId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "toOfficeId": {
+            "type": "integer",
+            "format": "int64",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "transferType": { "type": "integer", "format": "int32", "maximum": 3, "minimum": 1 },
+          "validFrom": { "type": "string" },
+          "validTill": { "type": "string" }
+        },
+        "required": [
+          "fromAccountId",
+          "fromAccountType",
+          "fromClientId",
+          "fromOfficeId",
+          "instructionType",
+          "name",
+          "priority",
+          "recurrenceType",
+          "status",
+          "toAccountId",
+          "toAccountType",
+          "toClientId",
+          "toOfficeId",
+          "transferType"
+        ]
+      },
+      "StandingInstructionUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "allowPartialTransfer": { "type": "boolean" },
+          "amount": { "type": "number", "exclusiveMinimum": true, "minimum": 0 },
+          "dateFormat": { "type": "string" },
+          "instructionType": { "type": "integer", "format": "int32", "maximum": 2, "minimum": 1 },
+          "locale": { "type": "string" },
+          "monthDayFormat": { "type": "string" },
+          "priority": { "type": "integer", "format": "int32", "maximum": 4, "minimum": 1 },
+          "recurrenceFrequency": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 3,
+            "minimum": 0
+          },
+          "recurrenceInterval": {
+            "type": "integer",
+            "format": "int32",
+            "exclusiveMinimum": true,
+            "minimum": 0
+          },
+          "recurrenceOnMonthDay": { "type": "string" },
+          "recurrenceType": { "type": "integer", "format": "int32", "maximum": 2, "minimum": 1 },
+          "status": { "type": "integer", "format": "int32", "maximum": 2, "minimum": 1 },
           "validFrom": { "type": "string" },
           "validTill": { "type": "string" }
         }
       },
-      "StandingInstructionUpdatesRequest": {
+      "StandingInstructionUpdateResponse": {
         "type": "object",
         "properties": {
-          "allowPartialTransfer": { "type": "boolean" },
-          "amount": { "type": "string" },
-          "dateFormat": { "type": "string" },
-          "instructionType": { "type": "string" },
-          "locale": { "type": "string" },
-          "monthDayFormat": { "type": "string" },
-          "name": { "type": "string" },
-          "priority": { "type": "string" },
-          "recurrenceFrequency": { "type": "string" },
-          "recurrenceInterval": { "type": "string" },
-          "recurrenceOnMonthDay": { "type": "string" },
-          "recurrenceType": { "type": "string" },
-          "status": { "type": "string" },
-          "validFrom": { "type": "string" },
-          "validTill": { "type": "string" }
+          "changes": { "type": "object", "additionalProperties": { "type": "object" } },
+          "resourceId": { "type": "integer", "format": "int64" }
         }
       },
       "StringEnumOptionData": {
@@ -55328,6 +55804,24 @@
       "TemplateDeleteResponse": {
         "type": "object",
         "properties": { "resourceId": { "type": "integer", "format": "int64" } }
+      },
+      "TemplateDetailsData": {
+        "type": "object",
+        "properties": {
+          "entities": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TemplateItemData" }
+          },
+          "template": { "$ref": "#/components/schemas/TemplateData" },
+          "types": { "type": "array", "items": { "$ref": "#/components/schemas/TemplateItemData" } }
+        }
+      },
+      "TemplateItemData": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int32" },
+          "name": { "type": "string" }
+        }
       },
       "TemplateMapperData": {
         "type": "object",

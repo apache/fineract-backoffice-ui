@@ -25,9 +25,8 @@
 
 
 
-export interface GetChargesTimeTypeResponse { 
-    code?: string;
-    description?: string;
-    id?: number;
+export interface StandingInstructionUpdateResponse { 
+    changes?: { [key: string]: object; };
+    resourceId?: number;
 }
 

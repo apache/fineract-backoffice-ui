@@ -33,8 +33,6 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
-import { DeleteGroupsGroupIdResponse } from '../model/deleteGroupsGroupIdResponse';
-// @ts-ignore
 import { GetGroupsGroupIdAccountsResponse } from '../model/getGroupsGroupIdAccountsResponse';
 // @ts-ignore
 import { GetGroupsGroupIdGsimAccountsResponse } from '../model/getGroupsGroupIdGsimAccountsResponse';
@@ -45,6 +43,16 @@ import { GetGroupsResponse } from '../model/getGroupsResponse';
 // @ts-ignore
 import { GetGroupsTemplateResponse } from '../model/getGroupsTemplateResponse';
 // @ts-ignore
+import { GroupCreateRequest } from '../model/groupCreateRequest';
+// @ts-ignore
+import { GroupCreateResponse } from '../model/groupCreateResponse';
+// @ts-ignore
+import { GroupDeleteResponse } from '../model/groupDeleteResponse';
+// @ts-ignore
+import { GroupUpdateRequest } from '../model/groupUpdateRequest';
+// @ts-ignore
+import { GroupUpdateResponse } from '../model/groupUpdateResponse';
+// @ts-ignore
 import { PostGroupsGroupIdCommandUnassignStaffRequest } from '../model/postGroupsGroupIdCommandUnassignStaffRequest';
 // @ts-ignore
 import { PostGroupsGroupIdCommandUnassignStaffResponse } from '../model/postGroupsGroupIdCommandUnassignStaffResponse';
@@ -52,14 +60,6 @@ import { PostGroupsGroupIdCommandUnassignStaffResponse } from '../model/postGrou
 import { PostGroupsGroupIdRequest } from '../model/postGroupsGroupIdRequest';
 // @ts-ignore
 import { PostGroupsGroupIdResponse } from '../model/postGroupsGroupIdResponse';
-// @ts-ignore
-import { PostGroupsRequest } from '../model/postGroupsRequest';
-// @ts-ignore
-import { PostGroupsResponse } from '../model/postGroupsResponse';
-// @ts-ignore
-import { PutGroupsGroupIdRequest } from '../model/putGroupsGroupIdRequest';
-// @ts-ignore
-import { PutGroupsGroupIdResponse } from '../model/putGroupsGroupIdResponse';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -81,14 +81,14 @@ export class GroupsService extends BaseService {
      * Delete a Group
      * A group can be deleted if it is in pending state and has no associations - clients, loans or savings
      * @endpoint delete /v1/groups/{groupId}
-     * @param groupId groupId
+     * @param groupId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public deleteGroupsGroupId(groupId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<DeleteGroupsGroupIdResponse>;
-    public deleteGroupsGroupId(groupId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DeleteGroupsGroupIdResponse>>;
-    public deleteGroupsGroupId(groupId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DeleteGroupsGroupIdResponse>>;
+    public deleteGroupsGroupId(groupId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GroupDeleteResponse>;
+    public deleteGroupsGroupId(groupId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GroupDeleteResponse>>;
+    public deleteGroupsGroupId(groupId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GroupDeleteResponse>>;
     public deleteGroupsGroupId(groupId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (groupId === null || groupId === undefined) {
             throw new Error('Required parameter groupId was null or undefined when calling deleteGroupsGroupId.');
@@ -127,7 +127,7 @@ export class GroupsService extends BaseService {
 
         let localVarPath = `/v1/groups/${this.configuration.encodeParam({name: "groupId", value: groupId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<DeleteGroupsGroupIdResponse>('delete', `${basePath}${localVarPath}`,
+        return this.httpClient.request<GroupDeleteResponse>('delete', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -828,17 +828,17 @@ export class GroupsService extends BaseService {
      * Create a Group
      * Creates a Group  Mandatory Fields: name, officeId, active, activationDate (if active&#x3D;true)  Optional Fields: externalId, staffId, clientMembers
      * @endpoint post /v1/groups
-     * @param postGroupsRequest 
+     * @param groupCreateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postGroups(postGroupsRequest: PostGroupsRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostGroupsResponse>;
-    public postGroups(postGroupsRequest: PostGroupsRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostGroupsResponse>>;
-    public postGroups(postGroupsRequest: PostGroupsRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostGroupsResponse>>;
-    public postGroups(postGroupsRequest: PostGroupsRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (postGroupsRequest === null || postGroupsRequest === undefined) {
-            throw new Error('Required parameter postGroupsRequest was null or undefined when calling postGroups.');
+    public postGroups(groupCreateRequest: GroupCreateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GroupCreateResponse>;
+    public postGroups(groupCreateRequest: GroupCreateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GroupCreateResponse>>;
+    public postGroups(groupCreateRequest: GroupCreateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GroupCreateResponse>>;
+    public postGroups(groupCreateRequest: GroupCreateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (groupCreateRequest === null || groupCreateRequest === undefined) {
+            throw new Error('Required parameter groupCreateRequest was null or undefined when calling postGroups.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -883,10 +883,10 @@ export class GroupsService extends BaseService {
 
         let localVarPath = `/v1/groups`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PostGroupsResponse>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<GroupCreateResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: postGroupsRequest,
+                body: groupCreateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -1168,21 +1168,21 @@ export class GroupsService extends BaseService {
      * Update a Group
      * Updates a Group
      * @endpoint put /v1/groups/{groupId}
-     * @param groupId groupId
-     * @param putGroupsGroupIdRequest 
+     * @param groupId 
+     * @param groupUpdateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putGroupsGroupId(groupId: number, putGroupsGroupIdRequest: PutGroupsGroupIdRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PutGroupsGroupIdResponse>;
-    public putGroupsGroupId(groupId: number, putGroupsGroupIdRequest: PutGroupsGroupIdRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PutGroupsGroupIdResponse>>;
-    public putGroupsGroupId(groupId: number, putGroupsGroupIdRequest: PutGroupsGroupIdRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PutGroupsGroupIdResponse>>;
-    public putGroupsGroupId(groupId: number, putGroupsGroupIdRequest: PutGroupsGroupIdRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putGroupsGroupId(groupId: number, groupUpdateRequest: GroupUpdateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GroupUpdateResponse>;
+    public putGroupsGroupId(groupId: number, groupUpdateRequest: GroupUpdateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GroupUpdateResponse>>;
+    public putGroupsGroupId(groupId: number, groupUpdateRequest: GroupUpdateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GroupUpdateResponse>>;
+    public putGroupsGroupId(groupId: number, groupUpdateRequest: GroupUpdateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (groupId === null || groupId === undefined) {
             throw new Error('Required parameter groupId was null or undefined when calling putGroupsGroupId.');
         }
-        if (putGroupsGroupIdRequest === null || putGroupsGroupIdRequest === undefined) {
-            throw new Error('Required parameter putGroupsGroupIdRequest was null or undefined when calling putGroupsGroupId.');
+        if (groupUpdateRequest === null || groupUpdateRequest === undefined) {
+            throw new Error('Required parameter groupUpdateRequest was null or undefined when calling putGroupsGroupId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -1227,10 +1227,10 @@ export class GroupsService extends BaseService {
 
         let localVarPath = `/v1/groups/${this.configuration.encodeParam({name: "groupId", value: groupId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PutGroupsGroupIdResponse>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<GroupUpdateResponse>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: putGroupsGroupIdRequest,
+                body: groupUpdateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

@@ -33,11 +33,17 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
-import { ClientFamilyMemberRequest } from '../model/clientFamilyMemberRequest';
-// @ts-ignore
 import { ClientFamilyMembersData } from '../model/clientFamilyMembersData';
 // @ts-ignore
-import { CommandProcessingResult } from '../model/commandProcessingResult';
+import { FamilyMemberCreateRequest } from '../model/familyMemberCreateRequest';
+// @ts-ignore
+import { FamilyMemberCreateResponse } from '../model/familyMemberCreateResponse';
+// @ts-ignore
+import { FamilyMemberDeleteResponse } from '../model/familyMemberDeleteResponse';
+// @ts-ignore
+import { FamilyMemberUpdateRequest } from '../model/familyMemberUpdateRequest';
+// @ts-ignore
+import { FamilyMemberUpdateResponse } from '../model/familyMemberUpdateResponse';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -58,15 +64,15 @@ export class ClientFamilyMemberService extends BaseService {
     /**
      * Delete a client family member
      * @endpoint delete /v1/clients/{clientId}/familymembers/{familyMemberId}
-     * @param familyMemberId 
+     * @param familyMemberId familyMemberId
      * @param clientId clientId
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public deleteClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
-    public deleteClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
-    public deleteClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public deleteClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<FamilyMemberDeleteResponse>;
+    public deleteClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<FamilyMemberDeleteResponse>>;
+    public deleteClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<FamilyMemberDeleteResponse>>;
     public deleteClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (familyMemberId === null || familyMemberId === undefined) {
             throw new Error('Required parameter familyMemberId was null or undefined when calling deleteClientsClientIdFamilymembersFamilyMemberId.');
@@ -108,7 +114,7 @@ export class ClientFamilyMemberService extends BaseService {
 
         let localVarPath = `/v1/clients/${this.configuration.encodeParam({name: "clientId", value: clientId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/familymembers/${this.configuration.encodeParam({name: "familyMemberId", value: familyMemberId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<CommandProcessingResult>('delete', `${basePath}${localVarPath}`,
+        return this.httpClient.request<FamilyMemberDeleteResponse>('delete', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -314,18 +320,21 @@ export class ClientFamilyMemberService extends BaseService {
     /**
      * Add a client family member
      * @endpoint post /v1/clients/{clientId}/familymembers
-     * @param clientId 
-     * @param clientFamilyMemberRequest 
+     * @param clientId clientId
+     * @param familyMemberCreateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postClientsClientIdFamilymembers(clientId: number, clientFamilyMemberRequest?: ClientFamilyMemberRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
-    public postClientsClientIdFamilymembers(clientId: number, clientFamilyMemberRequest?: ClientFamilyMemberRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
-    public postClientsClientIdFamilymembers(clientId: number, clientFamilyMemberRequest?: ClientFamilyMemberRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
-    public postClientsClientIdFamilymembers(clientId: number, clientFamilyMemberRequest?: ClientFamilyMemberRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postClientsClientIdFamilymembers(clientId: number, familyMemberCreateRequest: FamilyMemberCreateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<FamilyMemberCreateResponse>;
+    public postClientsClientIdFamilymembers(clientId: number, familyMemberCreateRequest: FamilyMemberCreateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<FamilyMemberCreateResponse>>;
+    public postClientsClientIdFamilymembers(clientId: number, familyMemberCreateRequest: FamilyMemberCreateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<FamilyMemberCreateResponse>>;
+    public postClientsClientIdFamilymembers(clientId: number, familyMemberCreateRequest: FamilyMemberCreateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (clientId === null || clientId === undefined) {
             throw new Error('Required parameter clientId was null or undefined when calling postClientsClientIdFamilymembers.');
+        }
+        if (familyMemberCreateRequest === null || familyMemberCreateRequest === undefined) {
+            throw new Error('Required parameter familyMemberCreateRequest was null or undefined when calling postClientsClientIdFamilymembers.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -370,10 +379,10 @@ export class ClientFamilyMemberService extends BaseService {
 
         let localVarPath = `/v1/clients/${this.configuration.encodeParam({name: "clientId", value: clientId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/familymembers`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<FamilyMemberCreateResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: clientFamilyMemberRequest,
+                body: familyMemberCreateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -387,22 +396,25 @@ export class ClientFamilyMemberService extends BaseService {
     /**
      * Update a client family member
      * @endpoint put /v1/clients/{clientId}/familymembers/{familyMemberId}
-     * @param familyMemberId 
+     * @param familyMemberId familyMemberId
      * @param clientId clientId
-     * @param clientFamilyMemberRequest 
+     * @param familyMemberUpdateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, clientFamilyMemberRequest?: ClientFamilyMemberRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
-    public putClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, clientFamilyMemberRequest?: ClientFamilyMemberRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
-    public putClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, clientFamilyMemberRequest?: ClientFamilyMemberRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
-    public putClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, clientFamilyMemberRequest?: ClientFamilyMemberRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, familyMemberUpdateRequest: FamilyMemberUpdateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<FamilyMemberUpdateResponse>;
+    public putClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, familyMemberUpdateRequest: FamilyMemberUpdateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<FamilyMemberUpdateResponse>>;
+    public putClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, familyMemberUpdateRequest: FamilyMemberUpdateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<FamilyMemberUpdateResponse>>;
+    public putClientsClientIdFamilymembersFamilyMemberId(familyMemberId: number, clientId: number, familyMemberUpdateRequest: FamilyMemberUpdateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (familyMemberId === null || familyMemberId === undefined) {
             throw new Error('Required parameter familyMemberId was null or undefined when calling putClientsClientIdFamilymembersFamilyMemberId.');
         }
         if (clientId === null || clientId === undefined) {
             throw new Error('Required parameter clientId was null or undefined when calling putClientsClientIdFamilymembersFamilyMemberId.');
+        }
+        if (familyMemberUpdateRequest === null || familyMemberUpdateRequest === undefined) {
+            throw new Error('Required parameter familyMemberUpdateRequest was null or undefined when calling putClientsClientIdFamilymembersFamilyMemberId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -447,10 +459,10 @@ export class ClientFamilyMemberService extends BaseService {
 
         let localVarPath = `/v1/clients/${this.configuration.encodeParam({name: "clientId", value: clientId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/familymembers/${this.configuration.encodeParam({name: "familyMemberId", value: familyMemberId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<CommandProcessingResult>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<FamilyMemberUpdateResponse>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: clientFamilyMemberRequest,
+                body: familyMemberUpdateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
