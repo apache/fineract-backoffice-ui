@@ -18,7 +18,8 @@
       "en": "English",
       "hi": "Hindi",
       "ko": "Korean",
-      "fr": "French"
+      "fr": "French",
+      "es": "Spanish"
     }
   },
   "nav": {
@@ -1143,7 +1144,15 @@
     "ACTIVATED_ON_DATE": "Activated On Date",
     "FIELD_OFFICER": "Field Officer",
     "LOAD_FAILED": "This savings account could not be loaded.",
-    "NOT_FOUND": "This savings account doesn't exist, or you don't have permission to view it."
+    "NOT_FOUND": "This savings account doesn't exist, or you don't have permission to view it.",
+    "OVERDRAFT": "Overdraft",
+    "ALLOW_OVERDRAFT": "Allow Overdraft",
+    "OVERDRAFT_LIMIT": "Overdraft Limit",
+    "NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT": "Nominal Annual Interest Rate (Overdraft)",
+    "MIN_OVERDRAFT_FOR_INTEREST_CALCULATION": "Min Overdraft for Interest Calculation",
+    "AVAILABLE_BALANCE": "Available Balance",
+    "MAX_OVERDRAFT_LIMIT": "Maximum: {{max}}",
+    "OVERDRAFT_LIMIT_EXCEEDS_MAX": "Overdraft limit cannot exceed {{max}}."
   },
   "USERS": {
     "CREATE": "Create User",
@@ -1393,6 +1402,10 @@
     "TELLERS_DESC": "Manage tellers and cashier operations for branch offices.",
     "SAVINGS_ACCOUNTS_DESC": "View and manage customer savings and deposit accounts.",
     "SAVINGS_PRODUCT_DESC": "The savings product that defines the rules for this account.",
+    "ALLOW_OVERDRAFT_DESC": "Whether this account can draw below zero.",
+    "OVERDRAFT_LIMIT_DESC": "The maximum amount the account can draw below zero.",
+    "NOMINAL_ANNUAL_INTEREST_RATE_OVERDRAFT_DESC": "Annual interest rate charged on the negative balance.",
+    "MIN_OVERDRAFT_FOR_INTEREST_CALCULATION_DESC": "Minimum overdraft balance required before interest is calculated.",
     "TRANSACTION_DATE_DESC": "The date when the financial transaction occurred.",
     "TRANSACTION_AMOUNT_DESC": "The monetary value of the transaction.",
     "PAYMENT_TYPE_DESC": "The mode of payment (e.g. Cash, Check, Transfer).",
@@ -2008,7 +2021,12 @@
     "sso": {
       "button": "Sign in with your identity provider",
       "divider": "or",
-      "notImplemented": "Sign-in through your identity provider is not available yet. Use your username and password below."
+      "unreachable": "The identity provider could not be reached. Try again, or contact an administrator.",
+      "completing": "Signing you in…",
+      "failed": "Sign-in through your identity provider failed. Please try again.",
+      "userDetailsNotFound": "You were authenticated, but the server cannot identify users who sign in through an identity provider. Ask an administrator to enable OpenID Connect user details on the Fineract server.",
+      "userDetailsFailed": "You were authenticated, but the server did not accept your account. Ask an administrator to check that your user exists and has a role.",
+      "backToLogin": "Back to sign in"
     }
   },
   "idle": {
