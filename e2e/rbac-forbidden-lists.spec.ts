@@ -25,10 +25,12 @@
  * That is the silent-failure class the issue calls the serious one: nothing looks broken, so
  * nobody reports it.
  *
- * Route gating, the issue's other option, is not available for three of the four: the
- * permission catalogue carries no READ code for group levels, surveys or interest-rate charts,
- * so a guard would have to name a code that does not exist — the mistake #696 and #691 record.
- * Reporting the platform's refusal honestly is what is available.
+ * Route gating, the issue's other option, was not available for three of the four when this was
+ * written: the permission catalogue carried no READ code for group levels, the data-table surveys
+ * or interest-rate charts, so a guard would have had to name a code that did not exist — the
+ * mistake #696 and #691 record. Interest-rate charts gained READ_INTERESTRATECHART in
+ * FINERACT-2968 and are now gated, but the chart list also reads deposit products, so a refusal
+ * can still reach the screen. Reporting the platform's refusal honestly covers all four.
  */
 
 import { expect, test, type Page } from './fixtures';

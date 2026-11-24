@@ -195,6 +195,8 @@ export const ACCOUNTING_ROUTES: Routes = [
   },
   {
     path: 'provisioning-categories',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_PROVISIONCATEGORY' },
     title: 'nav.provisioningCategories',
     loadComponent: () =>
       import('./provisioning-categories/provisioning-categories-list.component').then(
@@ -223,6 +225,8 @@ export const ACCOUNTING_ROUTES: Routes = [
   },
   {
     path: 'provisioning-criteria',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_PROVISIONCRITERIA' },
     title: 'nav.provisioningCriteria',
     loadComponent: () =>
       import('./provisioning-criteria/provisioning-criteria-list.component').then(
@@ -251,6 +255,8 @@ export const ACCOUNTING_ROUTES: Routes = [
   },
   {
     path: 'provisioning-entries',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_PROVISIONENTRIES' },
     title: 'nav.provisioningEntries',
     loadComponent: () =>
       import('./provisioning-entries/provisioning-entries-list.component').then(
