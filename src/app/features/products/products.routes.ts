@@ -141,6 +141,8 @@ export const PRODUCTS_ROUTES: Routes = [
   },
   {
     path: 'share',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_SHAREPRODUCT' },
     title: 'nav.shareProducts',
     loadComponent: () =>
       import('./shares/share-products-list.component').then((m) => m.ShareProductsListComponent),
@@ -369,6 +371,8 @@ export const PRODUCTS_ROUTES: Routes = [
   },
   {
     path: 'shares',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_SHAREACCOUNT' },
     title: 'nav.shares',
     loadComponent: () =>
       import('./shares/share-accounts-list.component').then((m) => m.ShareAccountsListComponent),
@@ -383,6 +387,8 @@ export const PRODUCTS_ROUTES: Routes = [
   },
   {
     path: 'shares/view/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_SHAREACCOUNT' },
     title: 'SHARE_ACCOUNTS.ACCOUNT_DETAILS',
     loadComponent: () =>
       import('./shares/share-account-view.component').then((m) => m.ShareAccountViewComponent),
@@ -424,6 +430,8 @@ export const PRODUCTS_ROUTES: Routes = [
   },
   {
     path: 'interest-rate-charts',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_INTERESTRATECHART' },
     title: 'nav.interestRateCharts',
     loadComponent: () =>
       import('./interest-rate-charts/interest-rate-charts-list.component').then(
@@ -592,6 +600,8 @@ export const PRODUCTS_ROUTES: Routes = [
   },
   {
     path: 'collateral-management',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_COLLATERAL_PRODUCT' },
     title: 'nav.collateralManagement',
     loadComponent: () =>
       import('./collateral-management/collateral-management-list.component').then(

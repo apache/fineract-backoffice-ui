@@ -24,6 +24,8 @@ import { Routes } from '@angular/router';
 export const SPM_ROUTES: Routes = [
   {
     path: 'surveys',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_SURVEY' },
     loadComponent: () =>
       import('./surveys/spm-surveys-list.component').then((m) => m.SpmSurveysListComponent),
   },
@@ -43,6 +45,8 @@ export const SPM_ROUTES: Routes = [
   },
   {
     path: 'surveys/:surveyId/scorecards',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_SCORECARD' },
     loadComponent: () =>
       import('./scorecards/scorecards.component').then((m) => m.ScorecardsComponent),
   },

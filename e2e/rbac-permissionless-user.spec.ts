@@ -28,12 +28,10 @@
  *
  * `rbac-route-protection.spec.ts` covers an empty permission set against a mocked session, which
  * proves the guard reads an empty array correctly. What it cannot show is what Fineract does
- * with such a user, and that turns out to matter: some of what the navigation offers this
- * account genuinely works. Fineract's catalogue has no READ code for tellers, share products or
- * share accounts (see `DOCS/RBAC.md`, the `UNRESTRICTED` allow-list), so those endpoints answer
- * 200 to anybody signed in. The navigation a permissionless user is left with is therefore not
- * a wall of dead links, and this spec checks that both ways round — what is withheld is refused
- * by the platform, and what is offered actually loads.
+ * with such a user. Tellers and share products used to answer 200 to anybody signed in, because
+ * the catalogue had no READ code for them; FINERACT-2968 added READ_TELLER and READ_SHAREPRODUCT
+ * among others, so they are now gated like every other module and this spec checks both halves —
+ * the platform refuses them, and the navigation no longer offers them.
  */
 
 import { test, expect } from './fixtures';
@@ -121,23 +119,22 @@ test.describe('an account whose role grants nothing', () => {
     expect(await statusAs(permissionless, 'GET', '/users')).toBe(403);
   });
 
-  test('is left a navigation whose entries actually work', async ({ page }) => {
-    // The other half, and the one worth having. A screen with no permission code behind it is
-    // shown to everybody, so if Fineract refused those reads too, this account would be handed a
-    // menu of guaranteed failures — a worse outcome than being shown nothing. It does not: the
-    // endpoints behind these entries have no READ code to check.
-    expect(await statusAs(permissionless, 'GET', '/products/share')).toBe(200);
-    expect(await statusAs(permissionless, 'GET', '/tellers')).toBe(200);
+  test('is not offered tellers or share products, which Fineract now gates on a READ code', async ({
+    page,
+  }) => {
+    expect(await statusAs(permissionless, 'GET', '/products/share')).toBe(403);
+    expect(await statusAs(permissionless, 'GET', '/tellers')).toBe(403);
 
     await loginAsSeededUser(page, permissionless);
 
-    const shareProducts = page.getByRole('link', { name: 'Share Products', exact: true });
-    await expect(shareProducts).toBeVisible();
+    for (const label of ['Share Products', 'Tellers']) {
+      await expect(
+        page.getByRole('link', { name: label, exact: true }),
+        `navigation offers ${label}`,
+      ).toHaveCount(0);
+    }
 
-    expect(await landsOn(page, '/products/share')).toBe('/products/share');
-    // The list renders. `data-table-error` replaces the table on a failed load, so its absence
-    // is the assertion that the screen worked rather than merely opened.
-    await expect(page.getByTestId('data-table-error')).toHaveCount(0);
-    await expect(page.locator('.data-table')).toBeVisible();
+    expect(await landsOn(page, '/products/share')).toBe('/forbidden');
+    expect(await landsOn(page, '/tellers')).toBe('/forbidden');
   });
 });

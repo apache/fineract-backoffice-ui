@@ -157,6 +157,8 @@ export const CLIENTS_ROUTES: Routes = [
   },
   {
     path: ':clientId/collaterals',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_CLIENT_COLLATERAL_PRODUCT' },
     title: 'CLIENT_COLLATERAL.TITLE',
     loadComponent: () =>
       import('./collateral/client-collateral-list.component').then(

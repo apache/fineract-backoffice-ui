@@ -17,17 +17,23 @@
  * under the License.
  */
 
+import { authGuard } from '../../core/guards/auth.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
 import { Routes } from '@angular/router';
 
 export const FINTECH_ROUTES: Routes = [
   {
     path: 'asset-owners',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_EXTERNAL_ASSET_OWNER' },
     title: 'nav.assetOwners',
     loadComponent: () =>
       import('./asset-owners-list.component').then((m) => m.ExternalAssetOwnersListComponent),
   },
   {
     path: 'asset-owners/view/:id',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_EXTERNAL_ASSET_OWNER' },
     title: 'ASSET_OWNERS.DETAILS',
     loadComponent: () =>
       import('./asset-owner-view/asset-owner-view.component').then(

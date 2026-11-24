@@ -153,10 +153,12 @@ Entries are one of two kinds, and the distinction matters when adding one:
 
 - **Self-service** — the screen is about the signed-in user or their session (`/profile`,
   `/dashboard`, `/forbidden`, `/login`). Gating these on a Fineract permission would be wrong.
-- **No such permission** — Fineract's catalogue has no code covering the read. Tellers, share
-  products and accounts, provisioning, ad-hoc queries and several others have CREATE/UPDATE codes
-  but no READ. These are not exemptions anyone chose. Where write codes _do_ exist, the write
-  routes are gated even though the read route is not; that asymmetry is deliberate.
+- **No such permission** — Fineract's catalogue has no code covering the read. Group levels,
+  entity mapping, the poverty line and a few system screens are in this group. These are not
+  exemptions anyone chose. Where write codes _do_ exist, the write routes are gated even though the
+  read route is not; that asymmetry is deliberate. Tellers, share products and accounts,
+  provisioning, ad-hoc queries, asset owners, surveys and scorecards used to be here too, until
+  Fineract added READ codes for them (FINERACT-2968).
 
 A screen that merely looks unprivileged is not automatically an entry. Check what its API requires
 first.

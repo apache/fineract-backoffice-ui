@@ -259,6 +259,8 @@ export const SYSTEM_ROUTES: Routes = [
   },
   {
     path: 'adhoc-query',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_ADHOC' },
     title: 'nav.adhocQuery',
     loadComponent: () =>
       import('./adhoc-query/adhoc-query-list.component').then((m) => m.AdhocQueryListComponent),

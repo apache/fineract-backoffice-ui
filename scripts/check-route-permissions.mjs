@@ -81,38 +81,7 @@ const UNRESTRICTED = new Map([
   ['/fineract-mfe', 'Federation placeholder; the remote owns whatever it renders'],
 
   // --- Fineract defines no READ permission for these ---
-  ['/products/share', 'No READ_SHAREPRODUCT in the catalogue; SHAREPRODUCT has only CREATE/UPDATE'],
-  [
-    '/products/shares',
-    'No READ_SHAREACCOUNT in the catalogue; SHAREACCOUNT has only CREATE/UPDATE and actions',
-  ],
-  ['/products/shares/view/:id', 'No READ_SHAREACCOUNT in the catalogue'],
-  [
-    '/products/interest-rate-charts',
-    'No READ_INTERESTRATECHART; the catalogue has CREATE/UPDATE/DELETE only',
-  ],
-  [
-    '/products/collateral-management',
-    'No READ_COLLATERAL_PRODUCT; the catalogue has CREATE/UPDATE/DELETE only',
-  ],
-  [
-    '/clients/:clientId/collaterals',
-    'No READ_CLIENT_COLLATERAL_PRODUCT; the catalogue has CREATE/UPDATE/DELETE only',
-  ],
-  ['/accounting/provisioning-categories', 'No READ_PROVISIONCATEGORY in the catalogue'],
-  ['/accounting/provisioning-criteria', 'No READ_PROVISIONCRITERIA in the catalogue'],
-  ['/accounting/provisioning-entries', 'No READ_PROVISIONENTRIES in the catalogue'],
-  ['/tellers', 'No READ_TELLER; the cash_mgmt grouping has no read code at all'],
-  ['/tellers/:tellerId/cashiers', 'No READ_TELLER, and no CASHIER entity in the catalogue'],
-  [
-    '/tellers/:tellerId/cashiers/:cashierId/transactions',
-    'No READ_TELLER, and no CASHIER entity in the catalogue',
-  ],
   ['/organization/group-levels', 'No GROUPLEVEL permission family in the catalogue'],
-  [
-    '/system/adhoc-query',
-    'No READ_ADHOC; the authorisation grouping has CREATE/UPDATE/DELETE only',
-  ],
   ['/system/entity-mapping', 'No READ_ENTITYMAPPING; the catalogue has CREATE/UPDATE/DELETE only'],
   ['/system/instance-mode', 'No permission family covers instance mode'],
   ['/system/oidc-config', 'No permission family covers the OIDC client configuration'],
@@ -121,15 +90,11 @@ const UNRESTRICTED = new Map([
     '/system/loan-product-details',
     'Read-only presentation of loan-product template metadata; no permission family covers it',
   ],
-  [
-    '/fintech/asset-owners',
-    'No READ code for EXTERNAL_ASSET_OWNER; the catalogue has CREATE and CANCEL only',
-  ],
-  ['/fintech/asset-owners/view/:id', 'No READ code for EXTERNAL_ASSET_OWNER'],
-  ['/spm/surveys', 'The survey grouping holds only REGISTER_SURVEY; no read code exists'],
-  ['/spm/surveys/:surveyId/scorecards', 'No scorecard permission family in the catalogue'],
   ['/spm/poverty-line', 'No poverty-line permission family in the catalogue'],
-  ['/spm/survey-responses', 'The survey grouping holds only REGISTER_SURVEY; no read code exists'],
+  [
+    '/spm/survey-responses',
+    'Reads the data-table surveys at /survey, which no Fineract request rule covers',
+  ],
 
   // --- requirement is not knowable statically ---
   [

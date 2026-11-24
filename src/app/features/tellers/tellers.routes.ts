@@ -24,6 +24,8 @@ import { Routes } from '@angular/router';
 export const TELLERS_ROUTES: Routes = [
   {
     path: '',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_TELLER' },
     loadComponent: () => import('./tellers-list.component').then((m) => m.TellersListComponent),
   },
   {
@@ -40,6 +42,8 @@ export const TELLERS_ROUTES: Routes = [
   },
   {
     path: ':tellerId/cashiers',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_TELLER' },
     loadComponent: () =>
       import('./cashiers/cashiers-list.component').then((m) => m.CashiersListComponent),
   },
@@ -61,6 +65,8 @@ export const TELLERS_ROUTES: Routes = [
   // `:cashierId` is allowed to capture it.
   {
     path: ':tellerId/cashiers/:cashierId/transactions',
+    canActivate: [authGuard, permissionGuard],
+    data: { permissions: 'READ_TELLER' },
     loadComponent: () =>
       import('./cashiers/cashier-transactions.component').then(
         (m) => m.CashierTransactionsComponent,

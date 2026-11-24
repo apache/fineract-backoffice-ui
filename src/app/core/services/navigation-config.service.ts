@@ -303,6 +303,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'products.share',
         route: '/products/share',
+        requiredPermissions: 'READ_SHAREPRODUCT',
         labelKey: 'nav.shareProducts',
         icon: 'pie-chart-outline',
       },
@@ -337,6 +338,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'products.interest-rate-charts',
         route: '/products/interest-rate-charts',
+        requiredPermissions: 'READ_INTERESTRATECHART',
         labelKey: 'nav.interestRateCharts',
         icon: ICON_TRENDING_UP_OUTLINE,
       },
@@ -350,6 +352,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'products.collateral-management',
         route: '/products/collateral-management',
+        requiredPermissions: 'READ_COLLATERAL_PRODUCT',
         labelKey: 'nav.collateralManagement',
         icon: 'cube-outline',
       },
@@ -378,6 +381,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'products.shares',
         route: '/products/shares',
+        requiredPermissions: 'READ_SHAREACCOUNT',
         labelKey: 'nav.shares',
         icon: ICON_TRENDING_UP_OUTLINE,
       },
@@ -462,6 +466,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'spm.surveys',
         route: '/spm/surveys',
+        requiredPermissions: 'READ_SURVEY',
         labelKey: 'nav.spmSurveys',
         icon: 'bar-chart-outline',
       },
@@ -614,6 +619,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'fintech.asset-owners',
         route: '/fintech/asset-owners',
+        requiredPermissions: 'READ_EXTERNAL_ASSET_OWNER',
         labelKey: 'nav.assetOwners',
         icon: 'shield-checkmark-outline',
       },
@@ -683,18 +689,21 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'accounting.provisioning-categories',
         route: '/accounting/provisioning-categories',
+        requiredPermissions: 'READ_PROVISIONCATEGORY',
         labelKey: 'nav.provisioningCategories',
         icon: 'pricetags-outline',
       },
       {
         id: 'accounting.provisioning-criteria',
         route: '/accounting/provisioning-criteria',
+        requiredPermissions: 'READ_PROVISIONCRITERIA',
         labelKey: 'nav.provisioningCriteria',
         icon: 'checkbox-outline',
       },
       {
         id: 'accounting.provisioning-entries',
         route: '/accounting/provisioning-entries',
+        requiredPermissions: 'READ_PROVISIONENTRIES',
         labelKey: 'nav.provisioningEntries',
         icon: ICON_RECEIPT_OUTLINE,
       },
@@ -816,6 +825,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'teller-operations.tellers',
         route: '/tellers',
+        requiredPermissions: 'READ_TELLER',
         labelKey: 'nav.tellers',
         icon: 'storefront-outline',
       },
@@ -940,6 +950,7 @@ const NAV_CONFIG: readonly NavItemConfig[] = [
       {
         id: 'system.adhoc-query',
         route: '/system/adhoc-query',
+        requiredPermissions: 'READ_ADHOC',
         labelKey: 'nav.adhocQuery',
         icon: 'analytics-outline',
       },
