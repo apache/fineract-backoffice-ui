@@ -1239,3 +1239,133 @@ describe('LoanFormComponent schedule preview', () => {
     expect(el('loan-preview-error')?.textContent).toContain('LOANS.PREVIEW_FAILED');
   });
 });
+
+describe('LoanFormComponent for a group loan', () => {
+  let fixture: ComponentFixture<LoanFormComponent>;
+  let component: LoanFormComponent;
+  let http: HttpTestingController;
+  let routeParams: BehaviorSubject<ParamMap>;
+  let queryParams: BehaviorSubject<Record<string, string>>;
+
+  const PRODUCT = {
+    id: 1,
+    name: 'Synthetic product',
+    principal: 1000,
+    numberOfRepayments: 12,
+    repaymentEvery: 1,
+    repaymentFrequencyType: { id: 2 },
+    interestRatePerPeriod: 10,
+    interestType: { id: 0 },
+    amortizationType: { id: 1 },
+    interestCalculationPeriodType: { id: 1 },
+    transactionProcessingStrategyCode: 'mifos-standard-strategy',
+  };
+
+  async function create(query: Record<string, string>) {
+    routeParams = new BehaviorSubject(convertToParamMap({}));
+    queryParams = new BehaviorSubject(query);
+    await TestBed.configureTestingModule({
+      imports: [LoanFormComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        ...provideFakeAdapters().providers,
+        ...provideTranslateTesting(),
+        provideIonicTesting(),
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: ActivatedRoute, useValue: { queryParams, paramMap: routeParams } },
+      ],
+    }).compileComponents();
+    http = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(LoanFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    http.expectOne((request) => request.url.endsWith('/loanproducts')).flush([PRODUCT]);
+    await settle();
+  }
+  afterEach(() => http.verify());
+
+  const settle = async () => {
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
+  const el = (testid: string): HTMLElement | null =>
+    fixture.nativeElement.querySelector(`[data-testid="${CSS.escape(testid)}"]`);
+  const takeTemplate = () => http.expectOne((request) => request.url.includes('/loans/template'));
+
+  async function chooseProduct() {
+    fixture.debugElement
+      .query(By.css('ion-select[name="productId"]'))
+      .injector.get(NgModel)
+      .control.setValue(1);
+    await settle();
+    http.expectOne((request) => request.url.endsWith('/loanproducts/1')).flush(PRODUCT);
+    await settle();
+  }
+
+  it('applies for the group it was opened from, in place of a client', async () => {
+    await create({ groupId: '3' });
+    http
+      .expectOne((request) => request.url.endsWith('/groups/3'))
+      .flush({ id: 3, name: 'Market Women' });
+    await settle();
+
+    expect(el('loan-owning-group')).not.toBeNull();
+    expect(component.owningGroup()).toEqual({ id: 3, name: 'Market Women' });
+    expect(fixture.debugElement.query(By.directive(ClientSearchComponent))).toBeNull();
+
+    await chooseProduct();
+    const template = takeTemplate();
+    expect(template.request.params.get('groupId')).toBe('3');
+    expect(template.request.params.has('clientId')).toBe(false);
+    expect(template.request.params.get('templateType')).toBe('group');
+    template.flush({});
+    await settle();
+    await settle();
+
+    component.onSubmit();
+    const request = http.expectOne(
+      (request) => request.method === 'POST' && request.url.endsWith('/loans'),
+    );
+    expect(request.request.body).toMatchObject({ groupId: 3, loanType: 'group', productId: 1 });
+    expect(request.request.body.clientId).toBeUndefined();
+    request.flush({ loanId: 9 });
+  });
+
+  it('keeps the group, and sends no client, when a group loan is edited', async () => {
+    await create({});
+    routeParams.next(convertToParamMap({ id: '9' }));
+    http
+      .expectOne((request) => request.url.endsWith('/loans/9'))
+      .flush({
+        id: 9,
+        clientId: null,
+        clientName: null,
+        group: { id: 3, name: 'Market Women' },
+        loanProductId: 1,
+        loanType: { id: 2, code: 'accountType.group', value: 'Group' },
+        principal: 1000,
+        timeline: { submittedOnDate: [2026, 4, 1], expectedDisbursementDate: [2026, 4, 2] },
+      });
+    await settle();
+    http.expectOne((request) => request.url.endsWith('/loanproducts/1')).flush(PRODUCT);
+    await settle();
+    const template = takeTemplate();
+    expect(template.request.params.get('groupId')).toBe('3');
+    expect(template.request.params.get('templateType')).toBe('group');
+    template.flush({});
+    await settle();
+
+    expect(component.owningGroup()).toEqual({ id: 3, name: 'Market Women' });
+    expect(fixture.debugElement.query(By.directive(ClientSearchComponent))).toBeNull();
+
+    component.onSubmit();
+    const update = http.expectOne(
+      (request) => request.method === 'PUT' && request.url.endsWith('/loans/9'),
+    );
+    expect(update.request.body).toMatchObject({ groupId: 3, loanType: 'group' });
+    // The platform refuses `clientId: null` on update, where it takes an absent one.
+    expect(update.request.body.clientId).toBeUndefined();
+    update.flush({ loanId: 9 });
+  });
+});

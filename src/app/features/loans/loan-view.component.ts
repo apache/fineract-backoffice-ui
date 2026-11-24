@@ -89,6 +89,7 @@ import type { TransactionAdjustmentVariant } from './transaction-detail-dialog.c
 import { NotificationService } from '../../core/services/notification.service';
 import { canTerminateLoanContract, isLoanContractTerminated } from './loan-contract-termination';
 import { isRefundableLoanCharge } from './loan-charge-refund';
+import { readOwningGroup } from './loan-owning-group';
 import { CdkTableModule } from '@angular/cdk/table';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import {
@@ -305,6 +306,13 @@ export function toEditableDate(value: unknown): string {
                       [routerLink]="['/clients/view', loan()!.clientId]"
                       data-testid="loan-client-link"
                       >Client: {{ loan()?.clientName }}</a
+                    >
+                  } @else if (owningGroup(); as group) {
+                    <a
+                      class="client-name clickable-link"
+                      [routerLink]="['/groups/view', group.id]"
+                      data-testid="loan-group-link"
+                      >{{ 'COMMON.GROUP' | appTranslate }}: {{ group.name }}</a
                     >
                   } @else {
                     <span class="client-name">Client: {{ loan()?.clientName }}</span>
@@ -1976,6 +1984,12 @@ export class LoanViewComponent implements OnInit, OnDestroy {
   collateralDetailId = 0;
   readonly deleteCollateralId = signal(0);
 
+  /** The group that owns a group loan, which has no client to show in the header. */
+  readonly owningGroup = computed(() => {
+    const loan = this.loan();
+    return loan ? readOwningGroup(loan) : null;
+  });
+
   /**
    * Fineract keeps a charged-off loan `Active` and flags it separately, so the status badge alone
    * cannot tell the two apart — an officer would see a normal active loan.
@@ -2332,22 +2346,11 @@ export class LoanViewComponent implements OnInit, OnDestroy {
       });
     }
 
-    const group = 'group' in data ? data.group : undefined;
-    const groupOwner =
-      typeof group === 'object' &&
-      group !== null &&
-      'id' in group &&
-      typeof group.id === 'number' &&
-      'name' in group &&
-      typeof group.name === 'string' &&
-      group.name.trim().length > 0
-        ? { type: 'group' as const, id: group.id, name: group.name }
-        : null;
-
+    const group = readOwningGroup(data);
     const owner =
       data.clientId != null && data.clientName?.trim()
         ? { type: 'client' as const, id: data.clientId, name: data.clientName }
-        : groupOwner;
+        : group && { type: 'group' as const, ...group };
 
     if (owner && data.accountNo?.trim()) {
       this.breadcrumbService.setOverride(
@@ -2829,6 +2832,11 @@ export class LoanViewComponent implements OnInit, OnDestroy {
     const clientId = this.loan()?.clientId;
     if (clientId) {
       this.router.navigate(['/clients/view', clientId]);
+      return;
+    }
+    const group = this.owningGroup();
+    if (group) {
+      this.router.navigate(['/groups/view', group.id]);
       return;
     }
     this.router.navigate(['/loans']);

@@ -125,9 +125,24 @@ describe('mapLoan', () => {
       accountNo: '000000053',
       clientId: 1,
       clientName: 'E2E Client',
+      groupId: null,
+      groupName: '',
       loanProductName: 'E2E Product',
       status: mapLoanStatus(APPROVED),
     });
+  });
+
+  it('names the owning group of a group loan, which has no client', () => {
+    const loan = mapLoan({
+      ...LOAN,
+      clientId: undefined,
+      clientName: undefined,
+      group: { id: 3, name: 'Market Women' },
+    });
+    expect(loan.clientId).toBeNull();
+    expect(loan.clientName).toBe('');
+    expect(loan.groupId).toBe(3);
+    expect(loan.groupName).toBe('Market Women');
   });
 
   it('refuses a loan with no id rather than routing somewhere wrong', () => {

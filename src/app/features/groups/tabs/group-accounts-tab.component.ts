@@ -21,9 +21,10 @@ import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { GroupsService } from '../../../api';
-import { StatusBadgeComponent } from '../../../shared';
+import { RequiresPermissionDirective, StatusBadgeComponent } from '../../../shared';
 import { TranslatePipe } from '../../../core/adapters';
 import { SpinnerComponent } from '../../../ui/spinner/spinner.component';
+import { ButtonComponent } from '../../../ui/button/button.component';
 
 /**
  * The accounts a group holds in its own name.
@@ -36,12 +37,32 @@ import { SpinnerComponent } from '../../../ui/spinner/spinner.component';
 @Component({
   selector: 'app-group-accounts-tab',
   standalone: true,
-  imports: [StatusBadgeComponent, TranslatePipe, SpinnerComponent],
+  imports: [
+    ButtonComponent,
+    StatusBadgeComponent,
+    RequiresPermissionDirective,
+    TranslatePipe,
+    SpinnerComponent,
+  ],
   template: `
     @if (isLoading()) {
       <app-spinner />
     } @else {
-      <h2>{{ 'GROUPS.LOAN_ACCOUNTS' | appTranslate }}</h2>
+      <div class="section-header">
+        <h2>{{ 'GROUPS.LOAN_ACCOUNTS' | appTranslate }}</h2>
+        @if (canApplyForLoan()) {
+          <app-button
+            type="button"
+            emphasis="outline"
+            size="small"
+            appRequiresPermission="CREATE_LOAN"
+            data-testid="group-create-loan"
+            (click)="createLoan()"
+          >
+            {{ 'LOANS.CREATE_LOAN' | appTranslate }}
+          </app-button>
+        }
+      </div>
       @if (loanAccounts().length === 0) {
         <p class="empty-state" data-testid="group-loan-accounts-empty">
           {{ 'GROUPS.NO_LOAN_ACCOUNTS' | appTranslate }}
@@ -86,6 +107,12 @@ import { SpinnerComponent } from '../../../ui/spinner/spinner.component';
         font-size: 1rem;
         margin: 16px 0 8px;
       }
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
       .accounts-table {
         width: 100%;
         border-collapse: collapse;
@@ -106,6 +133,8 @@ import { SpinnerComponent } from '../../../ui/spinner/spinner.component';
 })
 export class GroupAccountsTabComponent implements OnInit {
   readonly groupId = input.required<number>();
+  /** Fineract refuses a loan for a group that is not active, so the action is only offered then. */
+  readonly canApplyForLoan = input(false);
 
   private readonly groupsService = inject(GroupsService);
   private readonly router = inject(Router);
@@ -129,6 +158,10 @@ export class GroupAccountsTabComponent implements OnInit {
         this.isLoading.set(false);
       },
     });
+  }
+
+  createLoan(): void {
+    void this.router.navigate(['/loans/create'], { queryParams: { groupId: this.groupId() } });
   }
 
   openLoan(id: number | undefined): void {

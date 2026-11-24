@@ -30,6 +30,7 @@ import {
   LoanDisbursementDetailsService,
   LoanTransactionsService,
   BASE_PATH,
+  type GetLoansLoanIdResponse,
 } from '../../api';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -1242,6 +1243,34 @@ describe('LoanViewComponent', () => {
 
       expect(link).not.toBeNull();
       expect(link?.textContent).toContain('Jane Smith');
+    });
+
+    describe('of a group loan, which has no client', () => {
+      beforeEach(() => {
+        component.loan.set({
+          ...component.loan(),
+          clientId: undefined,
+          clientName: undefined,
+          group: { id: 3, name: 'Market Women' },
+        } as GetLoansLoanIdResponse);
+        fixture.detectChanges();
+      });
+
+      it('names and links the group in place of the client', () => {
+        const root = fixture.nativeElement as HTMLElement;
+        const link = root.querySelector('[data-testid="loan-group-link"]');
+
+        expect(link?.textContent).toContain('Market Women');
+        expect(root.querySelector('[data-testid="loan-client-link"]')).toBeNull();
+      });
+
+      it('goes back to the group', () => {
+        routerSpy.navigate.mockClear();
+
+        component.onBack();
+
+        expect(routerSpy.navigate).toHaveBeenCalledWith(['/groups/view', 3]);
+      });
     });
   });
 });

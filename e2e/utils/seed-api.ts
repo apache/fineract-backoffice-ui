@@ -1625,6 +1625,15 @@ export async function seedGroup(
   return { groupId: resourceId, groupName };
 }
 
+/** Activates a seeded group; Fineract takes no loan application for a pending one. */
+export async function activateGroup(api: APIRequestContext, groupId: number): Promise<void> {
+  await post(api, `/groups/${groupId}?command=activate`, {
+    activationDate: fineractDate(),
+    locale: LOCALE,
+    dateFormat: DATE_FORMAT,
+  });
+}
+
 export interface SeededStaff {
   staffId: number;
   staffName: string;
