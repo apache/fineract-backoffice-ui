@@ -34,7 +34,7 @@ export class AppComponent {
   protected readonly title = signal('fineract-backoffice-ui');
 
   constructor() {
-    this.i18n.registerLangs(['en', 'hi', 'ko', 'fr']);
+    this.i18n.registerLangs(['en', 'hi', 'ko', 'fr', 'es']);
     this.i18n.setFallbackLang('en');
 
     const browserLang = this.i18n.detectBrowserLang();
