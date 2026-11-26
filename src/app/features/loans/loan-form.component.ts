@@ -28,6 +28,7 @@ import { I18N, TranslatePipe } from '../../core/adapters';
 import { MutationOutcomeService } from '../../core/services/mutation-outcome.service';
 import { ClientSearchComponent } from '../../shared/components/client-search/client-search.component';
 import {
+  GroupsService,
   LoansService,
   PostLoansRequest,
   PostLoansRequestChargeData,
@@ -76,6 +77,7 @@ import {
 import { createPickersReady } from '../../shared/utils/pickers-ready';
 import { toIsoFineractDate } from '../../core/adapters/api/fineract-date';
 import { skipErrorToast } from '../../core/http/http-context';
+import { LoanOwningGroup, readOwningGroup } from './loan-owning-group';
 
 // The loan read API exposes this date, but the generated response model omits it.
 type LoanResponseWithRepaymentDate = GetLoansLoanIdResponse & {
@@ -296,27 +298,40 @@ const CHARGE_TIMINGS_NEEDING_DUE_DATE = new Set([
           } @else {
             <form #loanForm="ngForm" (ngSubmit)="onSubmit()" class="loan-form">
               <div class="form-grid">
-                <!-- Client Search with Create Option -->
-                <div class="field-container-row">
-                  <app-client-search
-                    [label]="'COMMON.CLIENT_ID' | appTranslate"
-                    [required]="true"
-                    [initialClientId]="loan().clientId || null"
-                    (clientSelected)="onClientSelected($event)"
-                    class="flex-grow"
-                  >
-                  </app-client-search>
-                  <ion-button
-                    fill="clear"
-                    type="button"
-                    [attr.aria-label]="'CLIENTS.CREATE_CLIENT' | appTranslate"
-                    [appTooltip]="'CLIENTS.CREATE_CLIENT' | appTranslate"
-                    (click)="onCreateClient()"
-                    style="margin-top: 4px;"
-                  >
-                    <ion-icon color="primary" name="add-circle-outline"></ion-icon>
-                  </ion-button>
-                </div>
+                @if (owningGroup(); as group) {
+                  <ion-item fill="outline">
+                    <ion-label position="stacked">{{ 'COMMON.GROUP' | appTranslate }}</ion-label>
+                    <ion-input
+                      [attr.aria-label]="'COMMON.GROUP' | appTranslate"
+                      name="groupName"
+                      [value]="group.name"
+                      [readonly]="true"
+                      data-testid="loan-owning-group"
+                    ></ion-input>
+                  </ion-item>
+                } @else {
+                  <!-- Client Search with Create Option -->
+                  <div class="field-container-row">
+                    <app-client-search
+                      [label]="'COMMON.CLIENT_ID' | appTranslate"
+                      [required]="true"
+                      [initialClientId]="loan().clientId || null"
+                      (clientSelected)="onClientSelected($event)"
+                      class="flex-grow"
+                    >
+                    </app-client-search>
+                    <ion-button
+                      fill="clear"
+                      type="button"
+                      [attr.aria-label]="'CLIENTS.CREATE_CLIENT' | appTranslate"
+                      [appTooltip]="'CLIENTS.CREATE_CLIENT' | appTranslate"
+                      (click)="onCreateClient()"
+                      style="margin-top: 4px;"
+                    >
+                      <ion-icon color="primary" name="add-circle-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+                }
 
                 <!-- Product Selection with Create Option -->
                 <div class="field-container-row">
@@ -743,7 +758,7 @@ const CHARGE_TIMINGS_NEEDING_DUE_DATE = new Set([
                 required and none belongs in requiredFieldLabels; the options arrive from the loan
                 template, which answers them only once a client and a product are both chosen.
               -->
-              @if (!loan().clientId || !loan().productId) {
+              @if (!hasApplicant() || !loan().productId) {
                 <ion-note color="medium" class="field-note" data-testid="loan-options-hint">
                   {{ 'LOANS.OPTIONS_NEED_CLIENT_AND_PRODUCT' | appTranslate }}
                 </ion-note>
@@ -1141,7 +1156,7 @@ const CHARGE_TIMINGS_NEEDING_DUE_DATE = new Set([
                   type="submit"
                   [disabled]="
                     loanForm.invalid ||
-                    !loan().clientId ||
+                    !hasApplicant() ||
                     chargesMissingDueDate().length > 0 ||
                     isSaving()
                   "
@@ -1283,6 +1298,7 @@ export class LoanFormComponent implements OnInit {
   readonly pickersReady = createPickersReady();
 
   private readonly loansService = inject(LoansService);
+  private readonly groupsService = inject(GroupsService);
   private readonly productService = inject(LoanProductsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -1312,6 +1328,8 @@ export class LoanFormComponent implements OnInit {
    * and stops an edit form flashing empty defaults over a real loan.
    */
   readonly isModelReady = signal(false);
+  /** Set when the application is for a group rather than a client: a group loan has no client. */
+  readonly owningGroup = signal<LoanOwningGroup | null>(null);
   readonly submittedOnDate = signal(this.platformDate.today());
   readonly expectedDisbursementDate = signal(this.platformDate.today());
   repaymentsStartingFromDate: string | null = null;
@@ -1363,9 +1381,12 @@ export class LoanFormComponent implements OnInit {
 
     this.route.queryParams.subscribe((queryParams) => {
       const clientId = queryParams['clientId'];
+      const groupId = queryParams['groupId'];
       if (clientId) {
         this.loan().clientId = +clientId;
         this.loadApplicationTemplate();
+      } else if (groupId) {
+        this.startGroupApplication(+groupId);
       }
     });
 
@@ -1438,6 +1459,27 @@ export class LoanFormComponent implements OnInit {
     this.loadApplicationTemplate();
   }
 
+  /** Whether the application names who it is for: a client, or the group of a group loan. */
+  hasApplicant(): boolean {
+    return !!(this.loan().clientId || this.loan().groupId);
+  }
+
+  /**
+   * Turns the form into an application for a group. Fineract takes the group in place of the
+   * client, with `loanType: 'group'`, and answers the template for it the same way.
+   */
+  private startGroupApplication(groupId: number): void {
+    this.loan().groupId = groupId;
+    this.loan().loanType = 'group';
+    this.groupsService.getGroupsGroupId(groupId).subscribe({
+      next: (group) => {
+        this.owningGroup.set({ id: groupId, name: group.name ?? '' });
+        this.loadApplicationTemplate();
+      },
+      error: () => this.notifications.error(OPERATION_FAILED_MESSAGE),
+    });
+  }
+
   onClientSelected(clientId: number | null): void {
     this.loan().clientId = clientId ?? undefined;
     this.loadApplicationTemplate();
@@ -1446,22 +1488,22 @@ export class LoanFormComponent implements OnInit {
   /**
    * Loads the option lists for the ownership, linkage and charge sections.
    *
-   * Only once a client and a product are both chosen: asked with either missing, the template
-   * answers `productOptions` and the booleans and none of these lists, so calling it earlier
-   * would quietly leave every select empty. Measured on a running platform.
+   * Only once a client (or the group, for a group loan) and a product are both chosen: asked with
+   * either missing, the template answers `productOptions` and the booleans and none of these
+   * lists, so calling it earlier would quietly leave every select empty. Measured on a running
+   * platform.
    *
    * A failure is not reported to the operator. Every field it populates is optional, the form
    * stays submittable without them, and a toast here would fire on the ordinary path of picking a
    * product before a client.
    */
   private loadApplicationTemplate(): void {
-    const clientId = this.loan().clientId;
-    const productId = this.loan().productId;
-    if (!clientId || !productId) {
+    const { clientId, groupId, productId, loanType } = this.loan();
+    if (!(clientId || groupId) || !productId) {
       this.clearApplicationTemplate();
       return;
     }
-    this.loansService.getLoansTemplate(clientId, undefined, productId, 'individual').subscribe({
+    this.loansService.getLoansTemplate(clientId, groupId, productId, loanType).subscribe({
       next: (template) => {
         // Discard an answer for a pair that is no longer chosen. Changing product before the
         // first request answers leaves two in flight, and the slower one must not install the
@@ -1611,8 +1653,13 @@ export class LoanFormComponent implements OnInit {
           this.expectedDisbursementDate.set(formatArrayDate(expDisbDateArray));
         }
 
+        const group = readOwningGroup(data);
+        this.owningGroup.set(group);
         this.loan.set({
-          clientId: data.clientId,
+          // A group loan comes back with `clientId: null`, and the update refuses a null one
+          // ("The parameter `clientId` is mandatory") where it takes an absent one.
+          clientId: data.clientId ?? undefined,
+          groupId: group?.id,
           productId: data.loanProductId,
           loanType: readLoanType(data),
           principal: data.principal,
@@ -1691,7 +1738,7 @@ export class LoanFormComponent implements OnInit {
    */
   missingRequiredFields(form: NgForm): string {
     const missing: string[] = [];
-    if (!this.loan().clientId) {
+    if (!this.hasApplicant()) {
       missing.push(this.i18n.translate('COMMON.CLIENT_ID'));
     }
     // Charge rows are not controls of this form -- their names are generated per charge, so they

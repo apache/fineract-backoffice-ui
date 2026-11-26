@@ -93,6 +93,9 @@ export interface Loan {
   readonly accountNo: string;
   readonly clientName: string;
   readonly clientId: number | null;
+  /** The owning group of a group loan, which has no client; empty and null on any other loan. */
+  readonly groupName: string;
+  readonly groupId: number | null;
   readonly loanProductName: string;
   readonly status: LoanStatus;
 }

@@ -32,24 +32,28 @@ describe('GroupAccountsTabComponent', () => {
   let fixture: ComponentFixture<GroupAccountsTabComponent>;
   let groupsSpy: SpyObj<GroupsService>;
 
-  function build(response: unknown) {
+  let routerSpy: SpyObj<Router>;
+
+  function build(response: unknown, canApplyForLoan = false) {
     groupsSpy.getGroupsGroupIdAccounts.mockReturnValue(
       of(response) as unknown as Observable<never>,
     );
     fixture = TestBed.createComponent(GroupAccountsTabComponent);
     fixture.componentRef.setInput('groupId', 1);
+    fixture.componentRef.setInput('canApplyForLoan', canApplyForLoan);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }
 
   beforeEach(async () => {
     groupsSpy = createSpyObj(['getGroupsGroupIdAccounts']);
+    routerSpy = createSpyObj(['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [GroupAccountsTabComponent],
       providers: [
         { provide: GroupsService, useValue: groupsSpy },
-        { provide: Router, useValue: createSpyObj(['navigate']) },
+        { provide: Router, useValue: routerSpy },
         ...provideFakeAdapters().providers,
         provideNoopAnimations(),
       ],
@@ -73,5 +77,24 @@ describe('GroupAccountsTabComponent', () => {
 
     expect(component.savingsAccounts()).toHaveLength(1);
     expect(component.loanAccounts()).toHaveLength(1);
+  });
+
+  it('offers a loan application for the group, on the loan form', () => {
+    build({}, true);
+
+    const button: HTMLElement | null = fixture.nativeElement.querySelector(
+      '[data-testid="group-create-loan"]',
+    );
+    button?.click();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/loans/create'], {
+      queryParams: { groupId: 1 },
+    });
+  });
+
+  it('does not offer one for a group that is not active, which Fineract refuses', () => {
+    build({}, false);
+
+    expect(fixture.nativeElement.querySelector('[data-testid="group-create-loan"]')).toBeNull();
   });
 });

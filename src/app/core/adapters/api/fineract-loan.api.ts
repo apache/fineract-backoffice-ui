@@ -36,9 +36,15 @@ type LoanStatusPayload = Omit<GetLoansLoanIdStatus, 'description'> & {
   readonly value?: string;
 };
 
-/** A loan payload, with the status corrected. */
+/**
+ * A loan payload, with the status corrected and the owning group added.
+ *
+ * A group loan comes back with `clientId` and `clientName` null and the owner under `group`,
+ * which the generated model does not declare.
+ */
 type LoanPayload = Omit<GetLoansLoanIdResponse, 'status'> & {
   readonly status?: LoanStatusPayload;
+  readonly group?: { readonly id?: number; readonly name?: string };
 };
 
 /**
@@ -93,6 +99,8 @@ export function mapLoan(payload: LoanPayload): Loan {
     accountNo: payload.accountNo ?? '',
     clientName: payload.clientName ?? '',
     clientId: payload.clientId ?? null,
+    groupName: payload.group?.name ?? '',
+    groupId: payload.group?.id ?? null,
     loanProductName: payload.loanProductName ?? '',
     status: mapLoanStatus(payload.status),
   };

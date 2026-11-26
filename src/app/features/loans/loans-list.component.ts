@@ -116,6 +116,19 @@ import {
         <a class="clickable-link" [routerLink]="['/loans/view', loan.id]">{{ loan.accountNo }}</a>
       </ng-template>
 
+      <ng-template appCellTemplate="clientName" let-loan>
+        @if (loan.clientName) {
+          {{ loan.clientName }}
+        } @else if (loan.groupId) {
+          <a
+            class="clickable-link"
+            [routerLink]="['/groups/view', loan.groupId]"
+            data-testid="loan-group-link"
+            >{{ loan.groupName }}</a
+          >
+        }
+      </ng-template>
+
       <ng-template appCellTemplate="actions" let-loan>
         <ion-button
           fill="clear"

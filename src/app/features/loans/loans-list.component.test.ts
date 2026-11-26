@@ -41,6 +41,8 @@ function loan(status: Partial<Loan['status']>): Loan {
     accountNo: '000000053',
     clientName: 'E2E Client',
     clientId: 1,
+    groupName: '',
+    groupId: null,
     loanProductName: 'E2E Product',
     status: {
       id: null,
@@ -153,6 +155,30 @@ describe('LoansListComponent', () => {
 
       expect(actionCount('approve')).toBe(0);
       expect(actionCount('disburse')).toBe(0);
+    });
+  });
+
+  describe('the client name column', () => {
+    it('names the client of an individual loan', () => {
+      renderWith(loan({}));
+
+      expect(fixture.nativeElement.textContent).toContain('E2E Client');
+      expect(fixture.nativeElement.querySelector('[data-testid="loan-group-link"]')).toBeNull();
+    });
+
+    it('names and links the group of a group loan, which has no client', () => {
+      renderWith({
+        ...loan({}),
+        clientName: '',
+        clientId: null,
+        groupName: 'Market Women',
+        groupId: 3,
+      });
+
+      const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
+        '[data-testid="loan-group-link"]',
+      );
+      expect(link?.textContent?.trim()).toBe('Market Women');
     });
   });
 

@@ -425,7 +425,10 @@ export type GroupTab = (typeof GROUP_TAB)[keyof typeof GROUP_TAB];
 
           @if (activeTab() === TAB.accounts) {
             <div class="tab-content">
-              <app-group-accounts-tab [groupId]="groupId"></app-group-accounts-tab>
+              <app-group-accounts-tab
+                [groupId]="groupId"
+                [canApplyForLoan]="isActive()"
+              ></app-group-accounts-tab>
             </div>
           }
 
