@@ -25,6 +25,8 @@ import { AuthService } from '../services/auth.service';
 import { signal } from '@angular/core';
 import { firstValueFrom, of } from 'rxjs';
 import { provideTestConfig } from '../../testing/config';
+import { OidcService } from '../services/oidc.service';
+import { vi, type Mock } from 'vitest';
 
 describe('authInterceptor', () => {
   let authServiceSpy: SpyObj<AuthService>;
@@ -190,6 +192,62 @@ describe('authInterceptor', () => {
       const headers = await headersFor(`${window.location.origin}/api/v1/loans`);
 
       expect(headers.get('Authorization')).toBe(`Basic ${token}`);
+    });
+  });
+  describe('identity-provider session', () => {
+    let oidc: { hasSession: Mock; ensureFresh: Mock; getAccessToken: Mock };
+
+    beforeEach(() => {
+      oidc = {
+        hasSession: vi.fn().mockReturnValue(true),
+        ensureFresh: vi.fn().mockResolvedValue(undefined),
+        getAccessToken: vi.fn().mockReturnValue('AT'),
+      };
+      TestBed.overrideProvider(OidcService, { useValue: oidc });
+      authServiceSpy.getAuthToken.mockReturnValue(null);
+      authServiceSpy.getTfaToken.mockReturnValue(null);
+    });
+
+    function sent(url: string): Promise<HttpHeaders> {
+      const request = new HttpRequest('GET', url);
+      return new Promise((resolve, reject) => {
+        const next: HttpHandlerFn = (req) => {
+          resolve(req.headers);
+          return of(new HttpResponse({ status: 200 }));
+        };
+        TestBed.runInInjectionContext(() => authInterceptor(request, next)).subscribe({
+          error: reject,
+        });
+      });
+    }
+
+    it('sends the Bearer token and the tenant, never a Basic credential', async () => {
+      const headers = await sent('/api/v1/clients');
+
+      expect(headers.get('Authorization')).toBe('Bearer AT');
+      expect(headers.get(TENANT_HEADER)).toBe(testTenant);
+    });
+
+    it('refreshes before sending, and sends the new token', async () => {
+      oidc.getAccessToken.mockReturnValueOnce('NEW');
+      const headers = await sent('/api/v1/clients');
+
+      expect(oidc.ensureFresh).toHaveBeenCalledTimes(1);
+      expect(headers.get('Authorization')).toBe('Bearer NEW');
+    });
+
+    it('still sends the request when the refresh fails on the network', async () => {
+      oidc.ensureFresh.mockRejectedValue(new TypeError('network down'));
+      const headers = await sent('/api/v1/clients');
+
+      expect(headers.get('Authorization')).toBe('Bearer AT');
+    });
+
+    it('sends the Bearer token nowhere but the API', async () => {
+      const headers = await sent(foreignUrl);
+
+      expect(headers.get('Authorization')).toBeNull();
+      expect(oidc.ensureFresh).not.toHaveBeenCalled();
     });
   });
 });
