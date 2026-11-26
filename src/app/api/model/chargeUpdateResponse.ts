@@ -25,10 +25,8 @@
 
 
 
-/**
- * DeleteChargesChargeIdResponse
- */
-export interface DeleteChargesChargeIdResponse { 
+export interface ChargeUpdateResponse { 
+    changes?: { [key: string]: object; };
     resourceId?: number;
 }
 

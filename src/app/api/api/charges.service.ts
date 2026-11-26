@@ -33,17 +33,17 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
+import { ChargeCreateRequest } from '../model/chargeCreateRequest';
+// @ts-ignore
+import { ChargeCreateResponse } from '../model/chargeCreateResponse';
+// @ts-ignore
 import { ChargeData } from '../model/chargeData';
 // @ts-ignore
-import { ChargeRequest } from '../model/chargeRequest';
+import { ChargeDeleteResponse } from '../model/chargeDeleteResponse';
 // @ts-ignore
-import { DeleteChargesChargeIdResponse } from '../model/deleteChargesChargeIdResponse';
+import { ChargeUpdateRequest } from '../model/chargeUpdateRequest';
 // @ts-ignore
-import { GetChargesResponse } from '../model/getChargesResponse';
-// @ts-ignore
-import { PostChargesResponse } from '../model/postChargesResponse';
-// @ts-ignore
-import { PutChargesChargeIdResponse } from '../model/putChargesChargeIdResponse';
+import { ChargeUpdateResponse } from '../model/chargeUpdateResponse';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -70,9 +70,9 @@ export class ChargesService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public deleteChargesChargeId(chargeId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<DeleteChargesChargeIdResponse>;
-    public deleteChargesChargeId(chargeId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DeleteChargesChargeIdResponse>>;
-    public deleteChargesChargeId(chargeId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DeleteChargesChargeIdResponse>>;
+    public deleteChargesChargeId(chargeId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ChargeDeleteResponse>;
+    public deleteChargesChargeId(chargeId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ChargeDeleteResponse>>;
+    public deleteChargesChargeId(chargeId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ChargeDeleteResponse>>;
     public deleteChargesChargeId(chargeId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (chargeId === null || chargeId === undefined) {
             throw new Error('Required parameter chargeId was null or undefined when calling deleteChargesChargeId.');
@@ -111,7 +111,7 @@ export class ChargesService extends BaseService {
 
         let localVarPath = `/v1/charges/${this.configuration.encodeParam({name: "chargeId", value: chargeId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<DeleteChargesChargeIdResponse>('delete', `${basePath}${localVarPath}`,
+        return this.httpClient.request<ChargeDeleteResponse>('delete', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -188,17 +188,29 @@ export class ChargesService extends BaseService {
      * Returns the details of a defined Charge.  Example Requests:  charges/1
      * @endpoint get /v1/charges/{chargeId}
      * @param chargeId chargeId
+     * @param template template
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getChargesChargeId(chargeId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<GetChargesResponse>;
-    public getChargesChargeId(chargeId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<GetChargesResponse>>;
-    public getChargesChargeId(chargeId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<GetChargesResponse>>;
-    public getChargesChargeId(chargeId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getChargesChargeId(chargeId: number, template?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ChargeData>;
+    public getChargesChargeId(chargeId: number, template?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ChargeData>>;
+    public getChargesChargeId(chargeId: number, template?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ChargeData>>;
+    public getChargesChargeId(chargeId: number, template?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (chargeId === null || chargeId === undefined) {
             throw new Error('Required parameter chargeId was null or undefined when calling getChargesChargeId.');
         }
+
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'template',
+            <any>template,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -233,9 +245,10 @@ export class ChargesService extends BaseService {
 
         let localVarPath = `/v1/charges/${this.configuration.encodeParam({name: "chargeId", value: chargeId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<GetChargesResponse>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<ChargeData>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -332,17 +345,17 @@ export class ChargesService extends BaseService {
      * Create/Define a Charge
      * Define a new charge that can later be associated with loans and savings through their respective product definitions or directly on each account instance.
      * @endpoint post /v1/charges
-     * @param chargeRequest 
+     * @param chargeCreateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postCharges(chargeRequest: ChargeRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PostChargesResponse>;
-    public postCharges(chargeRequest: ChargeRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PostChargesResponse>>;
-    public postCharges(chargeRequest: ChargeRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PostChargesResponse>>;
-    public postCharges(chargeRequest: ChargeRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (chargeRequest === null || chargeRequest === undefined) {
-            throw new Error('Required parameter chargeRequest was null or undefined when calling postCharges.');
+    public postCharges(chargeCreateRequest: ChargeCreateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ChargeCreateResponse>;
+    public postCharges(chargeCreateRequest: ChargeCreateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ChargeCreateResponse>>;
+    public postCharges(chargeCreateRequest: ChargeCreateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ChargeCreateResponse>>;
+    public postCharges(chargeCreateRequest: ChargeCreateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (chargeCreateRequest === null || chargeCreateRequest === undefined) {
+            throw new Error('Required parameter chargeCreateRequest was null or undefined when calling postCharges.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -387,10 +400,10 @@ export class ChargesService extends BaseService {
 
         let localVarPath = `/v1/charges`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PostChargesResponse>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<ChargeCreateResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: chargeRequest,
+                body: chargeCreateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -406,20 +419,20 @@ export class ChargesService extends BaseService {
      * Updates the details of a Charge.
      * @endpoint put /v1/charges/{chargeId}
      * @param chargeId chargeId
-     * @param chargeRequest 
+     * @param chargeUpdateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putChargesChargeId(chargeId: number, chargeRequest: ChargeRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PutChargesChargeIdResponse>;
-    public putChargesChargeId(chargeId: number, chargeRequest: ChargeRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PutChargesChargeIdResponse>>;
-    public putChargesChargeId(chargeId: number, chargeRequest: ChargeRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PutChargesChargeIdResponse>>;
-    public putChargesChargeId(chargeId: number, chargeRequest: ChargeRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putChargesChargeId(chargeId: number, chargeUpdateRequest: ChargeUpdateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ChargeUpdateResponse>;
+    public putChargesChargeId(chargeId: number, chargeUpdateRequest: ChargeUpdateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ChargeUpdateResponse>>;
+    public putChargesChargeId(chargeId: number, chargeUpdateRequest: ChargeUpdateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ChargeUpdateResponse>>;
+    public putChargesChargeId(chargeId: number, chargeUpdateRequest: ChargeUpdateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (chargeId === null || chargeId === undefined) {
             throw new Error('Required parameter chargeId was null or undefined when calling putChargesChargeId.');
         }
-        if (chargeRequest === null || chargeRequest === undefined) {
-            throw new Error('Required parameter chargeRequest was null or undefined when calling putChargesChargeId.');
+        if (chargeUpdateRequest === null || chargeUpdateRequest === undefined) {
+            throw new Error('Required parameter chargeUpdateRequest was null or undefined when calling putChargesChargeId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -464,10 +477,10 @@ export class ChargesService extends BaseService {
 
         let localVarPath = `/v1/charges/${this.configuration.encodeParam({name: "chargeId", value: chargeId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<PutChargesChargeIdResponse>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<ChargeUpdateResponse>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: chargeRequest,
+                body: chargeUpdateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

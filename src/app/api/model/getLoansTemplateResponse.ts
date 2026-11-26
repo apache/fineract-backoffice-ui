@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { StringEnumOptionData } from './stringEnumOptionData';
 import { GetLoansTemplateTimeline } from './getLoansTemplateTimeline';
 import { GetLoansTemplateProductOptions } from './getLoansTemplateProductOptions';
 
@@ -34,6 +35,7 @@ export interface GetLoansTemplateResponse {
     clientId?: number;
     clientName?: string;
     clientOfficeId?: number;
+    daysInYearCustomStrategyOptions?: Array<StringEnumOptionData>;
     productOptions?: Set<GetLoansTemplateProductOptions>;
     timeline?: GetLoansTemplateTimeline;
 }

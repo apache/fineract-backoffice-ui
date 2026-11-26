@@ -25,15 +25,9 @@
 
 
 
-export interface CalendarRequest { 
-    dateFormat?: string;
-    frequency?: string;
-    interval?: string;
-    locale?: string;
-    repeating?: string;
-    repeatsOnDay?: string;
-    startDate?: string;
-    title?: string;
-    typeId?: string;
+export interface FamilyMemberUpdateResponse { 
+    changes?: { [key: string]: object; };
+    clientId?: number;
+    resourceId?: number;
 }
 

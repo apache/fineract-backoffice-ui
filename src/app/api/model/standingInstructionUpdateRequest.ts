@@ -23,24 +23,22 @@
  * Do not edit the class manually.
  */
 
-import { PostGroupsDatatable } from './postGroupsDatatable';
 
 
-/**
- * PostGroupsRequest
- */
-export interface PostGroupsRequest { 
-    activationDate?: string;
-    active?: boolean;
-    /**
-     * Entries for the datatables registered against this entity
-     */
-    datatables?: Array<PostGroupsDatatable>;
+export interface StandingInstructionUpdateRequest { 
+    allowPartialTransfer?: boolean;
+    amount?: number;
     dateFormat?: string;
-    externalId?: string;
+    instructionType?: number;
     locale?: string;
-    name?: string;
-    officeId?: number;
-    submittedOnDate?: string;
+    monthDayFormat?: string;
+    priority?: number;
+    recurrenceFrequency?: number;
+    recurrenceInterval?: number;
+    recurrenceOnMonthDay?: string;
+    recurrenceType?: number;
+    status?: number;
+    validFrom?: string;
+    validTill?: string;
 }
 

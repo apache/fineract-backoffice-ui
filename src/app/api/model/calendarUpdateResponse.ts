@@ -25,14 +25,8 @@
 
 
 
-/**
- * Entries for the datatables registered against this entity
- */
-export interface PostGroupsDatatable { 
-    /**
-     * The datatable columns and their values
-     */
-    data?: { [key: string]: object; };
-    registeredTableName?: string;
+export interface CalendarUpdateResponse { 
+    changes?: { [key: string]: object; };
+    resourceId?: number;
 }
 

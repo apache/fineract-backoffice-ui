@@ -23,14 +23,10 @@
  * Do not edit the class manually.
  */
 
-import { PutChargesChargeIdRequest } from './putChargesChargeIdRequest';
+import { JobParameterDTO } from './jobParameterDTO';
 
 
-/**
- * PutChargesChargeIdResponse
- */
-export interface PutChargesChargeIdResponse { 
-    changes?: PutChargesChargeIdRequest;
-    resourceId?: number;
+export interface JobExecuteRequest { 
+    jobParameters?: Array<JobParameterDTO>;
 }
 

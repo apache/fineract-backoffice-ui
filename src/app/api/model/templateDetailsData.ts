@@ -23,23 +23,13 @@
  * Do not edit the class manually.
  */
 
+import { TemplateData } from './templateData';
+import { TemplateItemData } from './templateItemData';
 
 
-export interface StandingInstructionUpdatesRequest { 
-    allowPartialTransfer?: boolean;
-    amount?: string;
-    dateFormat?: string;
-    instructionType?: string;
-    locale?: string;
-    monthDayFormat?: string;
-    name?: string;
-    priority?: string;
-    recurrenceFrequency?: string;
-    recurrenceInterval?: string;
-    recurrenceOnMonthDay?: string;
-    recurrenceType?: string;
-    status?: string;
-    validFrom?: string;
-    validTill?: string;
+export interface TemplateDetailsData { 
+    entities?: Array<TemplateItemData>;
+    template?: TemplateData;
+    types?: Array<TemplateItemData>;
 }
 

@@ -25,9 +25,8 @@
 
 
 
-export interface GetChargesAppliesToResponse { 
-    code?: string;
-    description?: string;
-    id?: number;
+export interface FamilyMemberCreateResponse { 
+    clientId?: number;
+    resourceId?: number;
 }
 

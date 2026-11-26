@@ -24,6 +24,7 @@
  */
 
 import { PaymentTypeData } from './paymentTypeData';
+import { StringEnumOptionData } from './stringEnumOptionData';
 import { CurrencyData } from './currencyData';
 import { GLAccountData } from './gLAccountData';
 import { TaxGroupData } from './taxGroupData';
@@ -33,6 +34,13 @@ import { EnumOptionData } from './enumOptionData';
 export interface ChargeData { 
     accountMappingForChargeConfig?: string;
     active?: boolean;
+    amortizationCalculationType?: StringEnumOptionData;
+    amortizationCalculationTypeOptions?: Array<StringEnumOptionData>;
+    amortizationDays?: number;
+    amortizationIncomeType?: StringEnumOptionData;
+    amortizationIncomeTypeOptions?: Array<StringEnumOptionData>;
+    amortizationPeriodType?: StringEnumOptionData;
+    amortizationPeriodTypeOptions?: Array<StringEnumOptionData>;
     amount?: number;
     assetAccountOptions?: Array<GLAccountData>;
     chargeAppliesTo?: EnumOptionData;

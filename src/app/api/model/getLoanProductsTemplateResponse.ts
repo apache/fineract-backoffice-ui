@@ -89,10 +89,16 @@ export interface GetLoanProductsTemplateResponse {
     daysInMonthType?: GetLoanProductsDaysInMonthType;
     daysInMonthTypeOptions?: Set<StringEnumOptionData>;
     daysInYearCustomStrategy?: StringEnumOptionData;
+    daysInYearCustomStrategyOptions?: Set<StringEnumOptionData>;
     daysInYearType?: GetLoanProductsDaysInYearType;
+    /**
+     * Never returned by the API; use daysInYearCustomStrategyOptions
+     * @deprecated
+     */
     daysInYearTypeCustomStrategyOptions?: Set<StringEnumOptionData>;
     daysInYearTypeOptions?: Set<GetLoanProductsInterestTemplateType>;
     enableBuyDownFee?: boolean;
+    enableChargeAmortization?: boolean;
     enableIncomeCapitalization?: boolean;
     includeInBorrowerCycle?: boolean;
     interestCalculationPeriodType?: GetLoansProductsInterestCalculationPeriodType;

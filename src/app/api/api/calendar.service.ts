@@ -33,11 +33,17 @@ import { Observable }                                        from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
+import { CalendarCreateRequest } from '../model/calendarCreateRequest';
+// @ts-ignore
+import { CalendarCreateResponse } from '../model/calendarCreateResponse';
+// @ts-ignore
 import { CalendarData } from '../model/calendarData';
 // @ts-ignore
-import { CalendarRequest } from '../model/calendarRequest';
+import { CalendarDeleteResponse } from '../model/calendarDeleteResponse';
 // @ts-ignore
-import { CommandProcessingResult } from '../model/commandProcessingResult';
+import { CalendarUpdateRequest } from '../model/calendarUpdateRequest';
+// @ts-ignore
+import { CalendarUpdateResponse } from '../model/calendarUpdateResponse';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -65,9 +71,9 @@ export class CalendarService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public deleteEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
-    public deleteEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
-    public deleteEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
+    public deleteEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CalendarDeleteResponse>;
+    public deleteEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CalendarDeleteResponse>>;
+    public deleteEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CalendarDeleteResponse>>;
     public deleteEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (entityType === null || entityType === undefined) {
             throw new Error('Required parameter entityType was null or undefined when calling deleteEntityTypeEntityIdCalendarsCalendarId.');
@@ -112,7 +118,7 @@ export class CalendarService extends BaseService {
 
         let localVarPath = `/v1/${this.configuration.encodeParam({name: "entityType", value: entityType, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/${this.configuration.encodeParam({name: "entityId", value: entityId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/calendars/${this.configuration.encodeParam({name: "calendarId", value: calendarId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<CommandProcessingResult>('delete', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CalendarDeleteResponse>('delete', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -345,15 +351,15 @@ export class CalendarService extends BaseService {
      * @endpoint post /v1/{entityType}/{entityId}/calendars
      * @param entityType 
      * @param entityId 
-     * @param calendarRequest 
+     * @param calendarCreateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postEntityTypeEntityIdCalendars(entityType: string, entityId: number, calendarRequest?: CalendarRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
-    public postEntityTypeEntityIdCalendars(entityType: string, entityId: number, calendarRequest?: CalendarRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
-    public postEntityTypeEntityIdCalendars(entityType: string, entityId: number, calendarRequest?: CalendarRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
-    public postEntityTypeEntityIdCalendars(entityType: string, entityId: number, calendarRequest?: CalendarRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postEntityTypeEntityIdCalendars(entityType: string, entityId: number, calendarCreateRequest?: CalendarCreateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CalendarCreateResponse>;
+    public postEntityTypeEntityIdCalendars(entityType: string, entityId: number, calendarCreateRequest?: CalendarCreateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CalendarCreateResponse>>;
+    public postEntityTypeEntityIdCalendars(entityType: string, entityId: number, calendarCreateRequest?: CalendarCreateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CalendarCreateResponse>>;
+    public postEntityTypeEntityIdCalendars(entityType: string, entityId: number, calendarCreateRequest?: CalendarCreateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (entityType === null || entityType === undefined) {
             throw new Error('Required parameter entityType was null or undefined when calling postEntityTypeEntityIdCalendars.');
         }
@@ -403,10 +409,10 @@ export class CalendarService extends BaseService {
 
         let localVarPath = `/v1/${this.configuration.encodeParam({name: "entityType", value: entityType, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/${this.configuration.encodeParam({name: "entityId", value: entityId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/calendars`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<CommandProcessingResult>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CalendarCreateResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: calendarRequest,
+                body: calendarCreateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -423,15 +429,15 @@ export class CalendarService extends BaseService {
      * @param entityType 
      * @param entityId 
      * @param calendarId 
-     * @param body 
+     * @param calendarUpdateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, body?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
-    public putEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, body?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
-    public putEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, body?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
-    public putEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, calendarUpdateRequest?: CalendarUpdateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CalendarUpdateResponse>;
+    public putEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, calendarUpdateRequest?: CalendarUpdateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CalendarUpdateResponse>>;
+    public putEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, calendarUpdateRequest?: CalendarUpdateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CalendarUpdateResponse>>;
+    public putEntityTypeEntityIdCalendarsCalendarId(entityType: string, entityId: number, calendarId: number, calendarUpdateRequest?: CalendarUpdateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (entityType === null || entityType === undefined) {
             throw new Error('Required parameter entityType was null or undefined when calling putEntityTypeEntityIdCalendarsCalendarId.');
         }
@@ -484,10 +490,10 @@ export class CalendarService extends BaseService {
 
         let localVarPath = `/v1/${this.configuration.encodeParam({name: "entityType", value: entityType, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/${this.configuration.encodeParam({name: "entityId", value: entityId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}/calendars/${this.configuration.encodeParam({name: "calendarId", value: calendarId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<CommandProcessingResult>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<CalendarUpdateResponse>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: body,
+                body: calendarUpdateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

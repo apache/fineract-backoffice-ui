@@ -40,12 +40,16 @@ export interface LoanAccountLock {
 export namespace LoanAccountLock {
     export const LockOwnerEnum = {
         LoanCobChunkProcessing: 'LOAN_COB_CHUNK_PROCESSING',
-        LoanInlineCobProcessing: 'LOAN_INLINE_COB_PROCESSING'
+        LoanInlineCobProcessing: 'LOAN_INLINE_COB_PROCESSING',
+        SavingsCobChunkProcessing: 'SAVINGS_COB_CHUNK_PROCESSING',
+        SavingsInlineCobProcessing: 'SAVINGS_INLINE_COB_PROCESSING'
     } as const;
     export type LockOwnerEnum = typeof LockOwnerEnum[keyof typeof LockOwnerEnum];
     export const NewLockOwnerEnum = {
         LoanCobChunkProcessing: 'LOAN_COB_CHUNK_PROCESSING',
-        LoanInlineCobProcessing: 'LOAN_INLINE_COB_PROCESSING'
+        LoanInlineCobProcessing: 'LOAN_INLINE_COB_PROCESSING',
+        SavingsCobChunkProcessing: 'SAVINGS_COB_CHUNK_PROCESSING',
+        SavingsInlineCobProcessing: 'SAVINGS_INLINE_COB_PROCESSING'
     } as const;
     export type NewLockOwnerEnum = typeof NewLockOwnerEnum[keyof typeof NewLockOwnerEnum];
 }

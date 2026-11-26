@@ -23,24 +23,26 @@
  * Do not edit the class manually.
  */
 
-import { GetSavingsProductsInterestCalculationDaysInYearType } from './getSavingsProductsInterestCalculationDaysInYearType';
-import { GetSavingsProductsPaymentChannelToFundSourceMappings } from './getSavingsProductsPaymentChannelToFundSourceMappings';
-import { GetSavingsProductsInterestCalculationType } from './getSavingsProductsInterestCalculationType';
 import { GetSavingsCurrency } from './getSavingsCurrency';
-import { GetSavingsProductsTaxGroup } from './getSavingsProductsTaxGroup';
+import { GLAccountData } from './gLAccountData';
 import { GetSavingsProductsFeeToIncomeAccountMappings } from './getSavingsProductsFeeToIncomeAccountMappings';
 import { GetSavingsProductsInterestCompoundingPeriodType } from './getSavingsProductsInterestCompoundingPeriodType';
 import { GetSavingsProductsAccountingMappings } from './getSavingsProductsAccountingMappings';
 import { GetSavingsProductsInterestPostingPeriodType } from './getSavingsProductsInterestPostingPeriodType';
-import { GetSavingsProductsPenaltyToIncomeAccountMappings } from './getSavingsProductsPenaltyToIncomeAccountMappings';
 import { GetSavingsProductsAccountingRule } from './getSavingsProductsAccountingRule';
 import { GetSavingsProductsLockinPeriodFrequencyType } from './getSavingsProductsLockinPeriodFrequencyType';
+import { GetSavingsProductsInterestCalculationDaysInYearType } from './getSavingsProductsInterestCalculationDaysInYearType';
+import { GetSavingsProductsPaymentChannelToFundSourceMappings } from './getSavingsProductsPaymentChannelToFundSourceMappings';
+import { GetSavingsProductsInterestCalculationType } from './getSavingsProductsInterestCalculationType';
+import { GetSavingsProductsTaxGroup } from './getSavingsProductsTaxGroup';
+import { GetSavingsProductsPenaltyToIncomeAccountMappings } from './getSavingsProductsPenaltyToIncomeAccountMappings';
 
 
 /**
  * GetSavingsProductsProductIdResponse
  */
 export interface GetSavingsProductsProductIdResponse { 
+    accountingMappingOptions?: { [key: string]: Array<GLAccountData>; };
     accountingMappings?: GetSavingsProductsAccountingMappings;
     accountingRule?: GetSavingsProductsAccountingRule;
     allowOverdraft?: boolean;

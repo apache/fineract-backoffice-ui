@@ -35,11 +35,17 @@ import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 // @ts-ignore
 import { CommandProcessingResult } from '../model/commandProcessingResult';
 // @ts-ignore
-import { ExecuteJobRequest } from '../model/executeJobRequest';
-// @ts-ignore
 import { GetJobsJobIDJobRunHistoryResponse } from '../model/getJobsJobIDJobRunHistoryResponse';
 // @ts-ignore
 import { GetJobsResponse } from '../model/getJobsResponse';
+// @ts-ignore
+import { JobExecuteRequest } from '../model/jobExecuteRequest';
+// @ts-ignore
+import { JobExecuteResponse } from '../model/jobExecuteResponse';
+// @ts-ignore
+import { JobUpdateRequest } from '../model/jobUpdateRequest';
+// @ts-ignore
+import { JobUpdateResponse } from '../model/jobUpdateResponse';
 // @ts-ignore
 import { PutJobsJobIDRequest } from '../model/putJobsJobIDRequest';
 
@@ -462,15 +468,15 @@ export class SCHEDULERJOBService extends BaseService {
      * @endpoint post /v1/jobs/{jobId}
      * @param jobId jobId
      * @param command command
-     * @param executeJobRequest 
+     * @param jobExecuteRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postJobsJobId(jobId: number, command?: string, executeJobRequest?: ExecuteJobRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public postJobsJobId(jobId: number, command?: string, executeJobRequest?: ExecuteJobRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public postJobsJobId(jobId: number, command?: string, executeJobRequest?: ExecuteJobRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public postJobsJobId(jobId: number, command?: string, executeJobRequest?: ExecuteJobRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postJobsJobId(jobId: number, command?: string, jobExecuteRequest?: JobExecuteRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<JobExecuteResponse>;
+    public postJobsJobId(jobId: number, command?: string, jobExecuteRequest?: JobExecuteRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<JobExecuteResponse>>;
+    public postJobsJobId(jobId: number, command?: string, jobExecuteRequest?: JobExecuteRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<JobExecuteResponse>>;
+    public postJobsJobId(jobId: number, command?: string, jobExecuteRequest?: JobExecuteRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (jobId === null || jobId === undefined) {
             throw new Error('Required parameter jobId was null or undefined when calling postJobsJobId.');
         }
@@ -495,6 +501,7 @@ export class SCHEDULERJOBService extends BaseService {
         localVarHeaders = this.configuration.addCredentialToHeaders('tenantid', 'fineract-platform-tenantid', localVarHeaders);
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -527,10 +534,10 @@ export class SCHEDULERJOBService extends BaseService {
 
         let localVarPath = `/v1/jobs/${this.configuration.encodeParam({name: "jobId", value: jobId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<JobExecuteResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: executeJobRequest,
+                body: jobExecuteRequest,
                 params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
@@ -544,19 +551,19 @@ export class SCHEDULERJOBService extends BaseService {
 
     /**
      * Run a Job
-     * Manually Execute Specific Job.
+     * Manually Execute Specific Job (by short name).
      * @endpoint post /v1/jobs/short-name/{shortName}
      * @param shortName short-name
      * @param command command
-     * @param executeJobRequest 
+     * @param jobExecuteRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public postJobsShortNameShortName(shortName: string, command?: string, executeJobRequest?: ExecuteJobRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public postJobsShortNameShortName(shortName: string, command?: string, executeJobRequest?: ExecuteJobRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public postJobsShortNameShortName(shortName: string, command?: string, executeJobRequest?: ExecuteJobRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public postJobsShortNameShortName(shortName: string, command?: string, executeJobRequest?: ExecuteJobRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public postJobsShortNameShortName(shortName: string, command?: string, jobExecuteRequest?: JobExecuteRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<JobExecuteResponse>;
+    public postJobsShortNameShortName(shortName: string, command?: string, jobExecuteRequest?: JobExecuteRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<JobExecuteResponse>>;
+    public postJobsShortNameShortName(shortName: string, command?: string, jobExecuteRequest?: JobExecuteRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<JobExecuteResponse>>;
+    public postJobsShortNameShortName(shortName: string, command?: string, jobExecuteRequest?: JobExecuteRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (shortName === null || shortName === undefined) {
             throw new Error('Required parameter shortName was null or undefined when calling postJobsShortNameShortName.');
         }
@@ -581,6 +588,7 @@ export class SCHEDULERJOBService extends BaseService {
         localVarHeaders = this.configuration.addCredentialToHeaders('tenantid', 'fineract-platform-tenantid', localVarHeaders);
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -613,10 +621,10 @@ export class SCHEDULERJOBService extends BaseService {
 
         let localVarPath = `/v1/jobs/short-name/${this.configuration.encodeParam({name: "shortName", value: shortName, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<JobExecuteResponse>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: executeJobRequest,
+                body: jobExecuteRequest,
                 params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
@@ -633,20 +641,20 @@ export class SCHEDULERJOBService extends BaseService {
      * Updates the details of a job.
      * @endpoint put /v1/jobs/{jobId}
      * @param jobId jobId
-     * @param putJobsJobIDRequest 
+     * @param jobUpdateRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public putJobsJobId(jobId: number, putJobsJobIDRequest: PutJobsJobIDRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CommandProcessingResult>;
-    public putJobsJobId(jobId: number, putJobsJobIDRequest: PutJobsJobIDRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CommandProcessingResult>>;
-    public putJobsJobId(jobId: number, putJobsJobIDRequest: PutJobsJobIDRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CommandProcessingResult>>;
-    public putJobsJobId(jobId: number, putJobsJobIDRequest: PutJobsJobIDRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public putJobsJobId(jobId: number, jobUpdateRequest: JobUpdateRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<JobUpdateResponse>;
+    public putJobsJobId(jobId: number, jobUpdateRequest: JobUpdateRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<JobUpdateResponse>>;
+    public putJobsJobId(jobId: number, jobUpdateRequest: JobUpdateRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<JobUpdateResponse>>;
+    public putJobsJobId(jobId: number, jobUpdateRequest: JobUpdateRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (jobId === null || jobId === undefined) {
             throw new Error('Required parameter jobId was null or undefined when calling putJobsJobId.');
         }
-        if (putJobsJobIDRequest === null || putJobsJobIDRequest === undefined) {
-            throw new Error('Required parameter putJobsJobIDRequest was null or undefined when calling putJobsJobId.');
+        if (jobUpdateRequest === null || jobUpdateRequest === undefined) {
+            throw new Error('Required parameter jobUpdateRequest was null or undefined when calling putJobsJobId.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -691,10 +699,10 @@ export class SCHEDULERJOBService extends BaseService {
 
         let localVarPath = `/v1/jobs/${this.configuration.encodeParam({name: "jobId", value: jobId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<CommandProcessingResult>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<JobUpdateResponse>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: putJobsJobIDRequest,
+                body: jobUpdateRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

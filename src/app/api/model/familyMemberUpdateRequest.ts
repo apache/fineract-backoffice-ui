@@ -25,10 +25,20 @@
 
 
 
-/**
- * PostClientClientIdAddressesResponse
- */
-export interface PostClientClientIdAddressesResponse { 
-    resourceId?: number;
+export interface FamilyMemberUpdateRequest { 
+    age?: number;
+    dateFormat?: string;
+    dateOfBirth?: string;
+    firstName?: string;
+    genderId?: number;
+    isDependent?: boolean;
+    lastName?: string;
+    locale?: string;
+    maritalStatusId?: number;
+    middleName?: string;
+    mobileNumber?: string;
+    professionId?: number;
+    qualification?: string;
+    relationshipId?: number;
 }
 

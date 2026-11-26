@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { GLAccountData } from './gLAccountData';
 import { GetSavingsProductsAssetAccountOptions } from './getSavingsProductsAssetAccountOptions';
 import { GetSavingsProductsExpenseAccountOptions } from './getSavingsProductsExpenseAccountOptions';
 import { GetSavingsProductsLiabilityAccountOptions } from './getSavingsProductsLiabilityAccountOptions';
@@ -31,6 +32,7 @@ import { GetSavingsProductsIncomeAccountOptions } from './getSavingsProductsInco
 
 export interface GetSavingsProductsAccountingMappingOptions { 
     assetAccountOptions?: Set<GetSavingsProductsAssetAccountOptions>;
+    equityAccountOptions?: Array<GLAccountData>;
     expenseAccountOptions?: Set<GetSavingsProductsExpenseAccountOptions>;
     incomeAccountOptions?: Set<GetSavingsProductsIncomeAccountOptions>;
     liabilityAccountOptions?: Set<GetSavingsProductsLiabilityAccountOptions>;

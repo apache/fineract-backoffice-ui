@@ -42,6 +42,7 @@ export interface GetGLAccountsTemplateResponse {
     disabled?: boolean;
     equityHeaderAccountOptions?: Array<GLAccountData>;
     expenseHeaderAccountOptions?: Array<GLAccountData>;
+    incomeHeaderAccountOptions?: Array<GLAccountData>;
     liabilityHeaderAccountOptions?: Array<GLAccountData>;
     manualEntriesAllowed?: boolean;
     type?: EnumOptionData;

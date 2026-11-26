@@ -66,6 +66,7 @@ export interface SavingsAccountTransactionData {
     externalId?: ExternalId;
     feeCharge?: boolean;
     feeChargeAndNotReversed?: boolean;
+    forceTransaction?: boolean;
     id?: number;
     interestPosting?: boolean;
     interestPostingAndNotReversed?: boolean;

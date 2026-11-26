@@ -23,16 +23,9 @@
  * Do not edit the class manually.
  */
 
-import { PutGroupsGroupIdChanges } from './putGroupsGroupIdChanges';
 
 
-/**
- * PutGroupsGroupIdResponse
- */
-export interface PutGroupsGroupIdResponse { 
-    changes?: PutGroupsGroupIdChanges;
-    groupId?: number;
-    officeId?: number;
+export interface ChargeDeleteResponse { 
     resourceId?: number;
 }
 

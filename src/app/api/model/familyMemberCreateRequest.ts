@@ -25,15 +25,12 @@
 
 
 
-export interface ClientFamilyMemberRequest { 
+export interface FamilyMemberCreateRequest { 
     age?: number;
-    clientId?: number;
     dateFormat?: string;
     dateOfBirth?: string;
-    familyMembers?: string;
-    firstName?: string;
+    firstName: string;
     genderId?: number;
-    id?: number;
     isDependent?: boolean;
     lastName?: string;
     locale?: string;
@@ -42,6 +39,6 @@ export interface ClientFamilyMemberRequest {
     mobileNumber?: string;
     professionId?: number;
     qualification?: string;
-    relationshipId?: number;
+    relationshipId: number;
 }
 

@@ -25,8 +25,12 @@
 
 
 
-export interface GetChargesTaxGroup { 
-    id?: number;
-    name?: string;
+export interface CalendarCreateResponse { 
+    clientId?: number;
+    entityId?: number;
+    entityType?: string;
+    groupId?: number;
+    loanId?: number;
+    resourceId?: number;
 }
 

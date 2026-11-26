@@ -25,6 +25,7 @@
 
 import { GetLoanProductsChargeOffReasonOptions } from './getLoanProductsChargeOffReasonOptions';
 import { GetLoanProductsRepaymentStartDateType } from './getLoanProductsRepaymentStartDateType';
+import { GLAccountData } from './gLAccountData';
 import { GetLoanProductsInterestTemplateType } from './getLoanProductsInterestTemplateType';
 import { GetLoanFeeToIncomeAccountMappings } from './getLoanFeeToIncomeAccountMappings';
 import { EnumOptionData } from './enumOptionData';
@@ -55,6 +56,7 @@ import { GetLoanProductsPrincipalVariationsForBorrowerCycle } from './getLoanPro
  * GetLoanProductsProductIdResponse
  */
 export interface GetLoanProductsProductIdResponse { 
+    accountingMappingOptions?: { [key: string]: Array<GLAccountData>; };
     accountingMappings?: GetLoanAccountingMappings;
     accountingRule?: GetLoanProductsAccountingRule;
     allowApprovedDisbursedAmountsOverApplied?: boolean;
@@ -102,6 +104,7 @@ export interface GetLoanProductsProductIdResponse {
     enableAccrualActivityPosting?: boolean;
     enableAutoRepaymentForDownPayment?: boolean;
     enableBuyDownFee?: boolean;
+    enableChargeAmortization?: boolean;
     enableDownPayment?: boolean;
     enableIncomeCapitalization?: boolean;
     enableInstallmentLevelDelinquency?: boolean;

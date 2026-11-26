@@ -24,6 +24,7 @@
  */
 
 import { GetRecurringDepositProductsProductIdMinDepositTermType } from './getRecurringDepositProductsProductIdMinDepositTermType';
+import { GLAccountData } from './gLAccountData';
 import { GetRecurringDepositProductsProductIdFeeToIncomeAccountMappings } from './getRecurringDepositProductsProductIdFeeToIncomeAccountMappings';
 import { GetRecurringDepositProductsProductIdInterestCompoundingPeriodType } from './getRecurringDepositProductsProductIdInterestCompoundingPeriodType';
 import { GetRecurringDepositProductsProductIdMaxDepositTermType } from './getRecurringDepositProductsProductIdMaxDepositTermType';
@@ -42,6 +43,7 @@ import { GetRecurringDepositProductsInterestCalculationDaysInYearType } from './
  * GetRecurringDepositProductsProductIdResponse
  */
 export interface GetRecurringDepositProductsProductIdResponse { 
+    accountingMappingOptions?: { [key: string]: Array<GLAccountData>; };
     accountingMappings?: GetRecurringDepositProductsProductIdAccountingMappings;
     activeChart?: GetRecurringDepositProductsProductIdActiveChart;
     closeDate?: string;

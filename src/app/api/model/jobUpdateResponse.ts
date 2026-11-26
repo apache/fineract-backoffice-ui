@@ -25,7 +25,8 @@
 
 
 
-export interface PutUpdateStandingInstructionChanges { 
-    recurrenceInterval?: number;
+export interface JobUpdateResponse { 
+    changes?: { [key: string]: object; };
+    resourceId?: number;
 }
 

@@ -25,12 +25,8 @@
 
 
 
-/**
- * DeleteGroupsGroupIdResponse
- */
-export interface DeleteGroupsGroupIdResponse { 
-    groupId?: number;
-    officeId?: number;
-    resourceId?: number;
+export interface DatatableEntry { 
+    data?: { [key: string]: object; };
+    registeredTableName: string;
 }
 

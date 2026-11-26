@@ -23,6 +23,7 @@
  * Do not edit the class manually.
  */
 
+import { GLAccountData } from './gLAccountData';
 import { CodeValueData } from './codeValueData';
 import { EnumOptionData } from './enumOptionData';
 
@@ -31,10 +32,15 @@ import { EnumOptionData } from './enumOptionData';
  * GetGLAccountsResponse
  */
 export interface GetGLAccountsResponse { 
+    assetHeaderAccountOptions?: Array<GLAccountData>;
     description?: string;
     disabled?: boolean;
+    equityHeaderAccountOptions?: Array<GLAccountData>;
+    expenseHeaderAccountOptions?: Array<GLAccountData>;
     glCode?: string;
     id?: number;
+    incomeHeaderAccountOptions?: Array<GLAccountData>;
+    liabilityHeaderAccountOptions?: Array<GLAccountData>;
     manualEntriesAllowed?: boolean;
     name?: string;
     nameDecorated?: string;

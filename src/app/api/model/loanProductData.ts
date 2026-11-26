@@ -114,6 +114,7 @@ export interface LoanProductData {
     enableAccrualActivityPosting?: boolean;
     enableAutoRepaymentForDownPayment?: boolean;
     enableBuyDownFee?: boolean;
+    enableChargeAmortization?: boolean;
     enableDownPayment?: boolean;
     enableIncomeCapitalization?: boolean;
     enableInstallmentLevelDelinquency?: boolean;

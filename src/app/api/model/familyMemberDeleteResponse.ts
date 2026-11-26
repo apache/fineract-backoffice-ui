@@ -23,13 +23,10 @@
  * Do not edit the class manually.
  */
 
-import { JobParameterDTO } from './jobParameterDTO';
 
 
-/**
- * ExecuteJobRequest
- */
-export interface ExecuteJobRequest { 
-    jobParameters?: Array<JobParameterDTO>;
+export interface FamilyMemberDeleteResponse { 
+    clientId?: number;
+    resourceId?: number;
 }
 

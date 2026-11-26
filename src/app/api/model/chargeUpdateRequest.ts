@@ -23,32 +23,36 @@
  * Do not edit the class manually.
  */
 
-import { GetChargesFeeFrequencyResponse } from './getChargesFeeFrequencyResponse';
-import { GetChargesAppliesToResponse } from './getChargesAppliesToResponse';
-import { GetChargesPaymentModeResponse } from './getChargesPaymentModeResponse';
-import { GetChargesTaxGroup } from './getChargesTaxGroup';
-import { GetChargesCalculationTypeResponse } from './getChargesCalculationTypeResponse';
-import { GetChargesTimeTypeResponse } from './getChargesTimeTypeResponse';
-import { GetChargesCurrencyResponse } from './getChargesCurrencyResponse';
 
 
-/**
- * GetChargesResponse
- */
-export interface GetChargesResponse { 
+export interface ChargeUpdateRequest { 
     active?: boolean;
+    amortizationCalculationType?: string;
+    amortizationDays?: number;
+    amortizationIncomeType?: string;
+    amortizationPeriodType?: string;
     amount?: number;
-    chargeAppliesTo?: GetChargesAppliesToResponse;
-    chargeCalculationType?: GetChargesCalculationTypeResponse;
-    chargePaymentMode?: GetChargesPaymentModeResponse;
-    chargeTimeType?: GetChargesTimeTypeResponse;
-    currency?: GetChargesCurrencyResponse;
-    feeFrequency?: GetChargesFeeFrequencyResponse;
-    id?: number;
+    chargeAppliesTo?: number;
+    chargeCalculationType?: number;
+    chargePaymentMode?: number;
+    chargeTimeType?: number;
+    countFrequencyType?: number;
+    currencyCode?: string;
+    enableFreeWithdrawalCharge?: boolean;
+    enablePaymentType?: boolean;
+    feeFrequency?: number;
+    feeInterval?: number;
+    feeOnMonthDay?: string;
+    freeWithdrawalFrequency?: number;
+    incomeAccountId?: number;
+    locale?: string;
     maxCap?: number;
     minCap?: number;
+    monthDayFormat?: string;
     name?: string;
+    paymentTypeId?: number;
     penalty?: boolean;
-    taxGroup?: GetChargesTaxGroup;
+    restartCountFrequency?: number;
+    taxGroupId?: number;
 }
 

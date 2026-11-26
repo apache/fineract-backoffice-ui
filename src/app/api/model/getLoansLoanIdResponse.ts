@@ -79,6 +79,7 @@ export interface GetLoansLoanIdResponse {
     clientOfficeId?: number;
     collateral?: Array<GetLoansLoanIdCollateralData>;
     currency?: GetLoansLoanIdCurrency;
+    daysInYearCustomStrategy?: StringEnumOptionData;
     delinquencyRange?: DelinquencyRangeData;
     delinquent?: GetLoansLoanIdDelinquencySummary;
     disallowExpectedDisbursements?: boolean;

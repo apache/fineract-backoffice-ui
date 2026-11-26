@@ -25,26 +25,8 @@
 
 
 
-export interface ChargeRequest { 
-    active?: boolean;
-    amount?: number;
-    chargeAppliesTo?: number;
-    chargeCalculationType?: number;
-    chargePaymentMode?: number;
-    chargeTimeType?: number;
-    currencyCode?: string;
-    enablePaymentType?: boolean;
-    feeFrequency?: string;
-    feeInterval?: string;
-    feeOnMonthDay?: string;
-    incomeAccountId?: number;
-    locale?: string;
-    maxCap?: number;
-    minCap?: number;
-    monthDayFormat?: string;
+export interface TemplateItemData { 
+    id?: number;
     name?: string;
-    paymentTypeId?: number;
-    penalty?: boolean;
-    taxGroupId?: number;
 }
 

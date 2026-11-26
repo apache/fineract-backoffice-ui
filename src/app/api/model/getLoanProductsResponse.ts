@@ -57,6 +57,7 @@ export interface GetLoanProductsResponse {
     daysInYearCustomStrategy?: GetLoanProductsDaysInYearCustomStrategy;
     daysInYearType?: GetLoanProductsDaysInYearType;
     enableBuyDownFee?: boolean;
+    enableChargeAmortization?: boolean;
     enableIncomeCapitalization?: boolean;
     endDate?: string;
     /**
